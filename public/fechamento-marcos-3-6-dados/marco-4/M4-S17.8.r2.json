@@ -1,0 +1,980 @@
+{
+ "id": "M4-§17.8",
+ "secao": "§17 Antifraude",
+ "requisito": "Risco \"Estorno frequente\" → controle \"Anomaly case\".",
+ "substitui": "evidencias/marco-4/M4-S17.8.json",
+ "motivo": "Recaptura: a evidência anterior trazia o token assinado da confirmação de nível 3 (impactToken) sem redação; o capturador foi corrigido e a evidência refeita contra o código atual, em banco descartável. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "a3342c49",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T08:20:27.195Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-§17.8 --sufixo r2",
+ "respostasHttp": [
+  {
+   "id": "H41-a",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Recebível 1/2 para o alerta de estorno frequente",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 12,
+    "description": "Estorno frequente 1 5128289",
+    "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 922,
+   "quando": "2026-11-11T08:20:17.446Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "e3105b14-15c1-4612-8772-dc3f000ff031",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+     "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "12.00",
+     "description": "Estorno frequente 1 5128289",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updated_at": "2026-11-11T08:20:17.245Z",
+     "created_at": "2026-11-11T08:20:17.245Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H41-b",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Recebimento 1/2 (MFA recente)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/e3105b14-15c1-4612-8772-dc3f000ff031/settle",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-ef1-5128289"
+   },
+   "corpoEnviado": {
+    "idempotencyKey": "m4-ef1-5128289"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 511,
+   "quando": "2026-11-11T08:20:17.959Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "e3105b14-15c1-4612-8772-dc3f000ff031",
+     "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+     "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "12.00",
+     "description": "Estorno frequente 1 5128289",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": "2026-11-11T08:20:17.898Z",
+     "status": "SETTLED",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "created_at": "2026-11-11T08:20:17.245Z",
+     "updated_at": "2026-11-11T08:20:17.898Z",
+     "bank_account_id": null,
+     "cost_center_id": null,
+     "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H41-c",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Impacto do estorno 1/2",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/entries/e3105b14-15c1-4612-8772-dc3f000ff031/impact",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 29,
+   "quando": "2026-11-11T08:20:17.989Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "actionKey": "finance.entry.reverse",
+     "action": "Estornar lançamento financeiro",
+     "counts": {
+      "entries": 1,
+      "activeChildEntries": 0,
+      "paymentIntents": 0
+     },
+     "totalAmountCents": 1200,
+     "blockers": [],
+     "items": [
+      {
+       "type": "ENTRY",
+       "id": "e3105b14-15c1-4612-8772-dc3f000ff031",
+       "label": "Estorno frequente 1 5128289",
+       "amount": "12.00"
+      }
+     ],
+     "impactToken": "[REDACTED]",
+     "expiresInMinutes": 10,
+     "level": 3,
+     "mfaRequired": false,
+     "record": {
+      "id": "e3105b14-15c1-4612-8772-dc3f000ff031",
+      "code": "LAN-E3105B14",
+      "label": "Estorno frequente 1 5128289",
+      "codeLabel": "o código do lançamento"
+     },
+     "confirm": {
+      "understood": true,
+      "typedCode": true,
+      "justification": true,
+      "justificationMin": 20
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H41-d",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Estorno 1/2",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/e3105b14-15c1-4612-8772-dc3f000ff031/reverse",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "reason": "Estorno de teste para o alerta de estorno frequente.",
+    "confirmation": {
+     "typedCode": "LAN-E3105B14",
+     "justification": "Estorno de teste para o alerta de estorno frequente.",
+     "impactToken": "[REDACTED]",
+     "understood": true
+    }
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 550,
+   "quando": "2026-11-11T08:20:18.539Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "e3105b14-15c1-4612-8772-dc3f000ff031",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "12.00",
+      "description": "Estorno frequente 1 5128289",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:17.898Z",
+      "status": "REVERSED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 2,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:20:17.245Z",
+      "updated_at": "2026-11-11T08:20:18.314Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "reversal": {
+      "id": "3c0a4a4a-3368-4a10-82d3-0a964956dfd3",
+      "isThirdPartyFunds": false,
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "entryType": "DEBIT",
+      "nature": "ADJUSTMENT",
+      "amount": "12.00",
+      "description": null,
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:18.214Z",
+      "status": "SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": "e3105b14-15c1-4612-8772-dc3f000ff031",
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "constructionProjectId": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updated_at": "2026-11-11T08:20:18.215Z",
+      "created_at": "2026-11-11T08:20:18.215Z",
+      "originRef": null,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H42-a",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Recebível 2/2 para o alerta de estorno frequente",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 13,
+    "description": "Estorno frequente 2 5128289",
+    "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 988,
+   "quando": "2026-11-11T08:20:19.532Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+     "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "13.00",
+     "description": "Estorno frequente 2 5128289",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updated_at": "2026-11-11T08:20:18.856Z",
+     "created_at": "2026-11-11T08:20:18.856Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H42-b",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Recebimento 2/2 (MFA recente)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/068f08ab-b97c-4c2f-8806-adb667a50d6b/settle",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-ef2-5128289"
+   },
+   "corpoEnviado": {
+    "idempotencyKey": "m4-ef2-5128289"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 473,
+   "quando": "2026-11-11T08:20:20.009Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+     "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+     "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "13.00",
+     "description": "Estorno frequente 2 5128289",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": "2026-11-11T08:20:19.664Z",
+     "status": "SETTLED",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "created_at": "2026-11-11T08:20:18.856Z",
+     "updated_at": "2026-11-11T08:20:19.664Z",
+     "bank_account_id": null,
+     "cost_center_id": null,
+     "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H42-c",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Impacto do estorno 2/2",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/entries/068f08ab-b97c-4c2f-8806-adb667a50d6b/impact",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 342,
+   "quando": "2026-11-11T08:20:20.351Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "actionKey": "finance.entry.reverse",
+     "action": "Estornar lançamento financeiro",
+     "counts": {
+      "entries": 1,
+      "activeChildEntries": 0,
+      "paymentIntents": 0
+     },
+     "totalAmountCents": 1300,
+     "blockers": [],
+     "items": [
+      {
+       "type": "ENTRY",
+       "id": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+       "label": "Estorno frequente 2 5128289",
+       "amount": "13.00"
+      }
+     ],
+     "impactToken": "[REDACTED]",
+     "expiresInMinutes": 10,
+     "level": 3,
+     "mfaRequired": false,
+     "record": {
+      "id": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+      "code": "LAN-068F08AB",
+      "label": "Estorno frequente 2 5128289",
+      "codeLabel": "o código do lançamento"
+     },
+     "confirm": {
+      "understood": true,
+      "typedCode": true,
+      "justification": true,
+      "justificationMin": 20
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H42-d",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8",
+    "M4-G§14.11"
+   ],
+   "titulo": "Estorno 2/2: terceiro estorno em 30 dias abre caso FREQUENT_REVERSAL",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/068f08ab-b97c-4c2f-8806-adb667a50d6b/reverse",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "reason": "Estorno de teste para o alerta de estorno frequente.",
+    "confirmation": {
+     "typedCode": "LAN-068F08AB",
+     "justification": "Estorno de teste para o alerta de estorno frequente.",
+     "impactToken": "[REDACTED]",
+     "understood": true
+    }
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 150,
+   "quando": "2026-11-11T08:20:20.502Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "13.00",
+      "description": "Estorno frequente 2 5128289",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:19.664Z",
+      "status": "REVERSED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 2,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:20:18.856Z",
+      "updated_at": "2026-11-11T08:20:20.421Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "reversal": {
+      "id": "8dc51112-bb35-409a-857c-6b1d08011ae5",
+      "isThirdPartyFunds": false,
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "entryType": "DEBIT",
+      "nature": "ADJUSTMENT",
+      "amount": "13.00",
+      "description": null,
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:20.418Z",
+      "status": "SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "constructionProjectId": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updated_at": "2026-11-11T08:20:20.419Z",
+      "created_at": "2026-11-11T08:20:20.419Z",
+      "originRef": null,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H43",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8"
+   ],
+   "titulo": "Caso FREQUENT_REVERSAL aberto depois do 3º estorno em 30 dias",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/anomaly-cases?status=OPEN",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200,
+    "conteudo": "existe caso FREQUENT_REVERSAL"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "existe caso FREQUENT_REVERSAL",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 406,
+   "quando": "2026-11-11T08:20:20.909Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "19b6d384-2442-490e-86c6-cb48b07f7d0a",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "caseType": "FREQUENT_REVERSAL",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+      "reason": "Estorno frequente: 3 estornos na empresa nos últimos 30 dias (limiar 3); 3 estornos feitos pela mesma pessoa (usuário 7daae525-8240-44a8-89e9-d737d8e64f19) nos últimos 30 dias (limiar 3).",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:20:20.440Z",
+      "updated_at": "2026-11-11T08:20:20.440Z",
+      "createdAt": "2026-11-11T08:20:20.440Z",
+      "updatedAt": "2026-11-11T08:20:20.440Z",
+      "caseTypeLabel": "Estornos frequentes",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+       "description": "Estorno frequente 2 5128289",
+       "amount": "13.00",
+       "status": "REVERSED"
+      }
+     },
+     {
+      "id": "78133824-b036-44e5-a29d-d341e9ef67e4",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "caseType": "NEW_SUPPLIER_HIGH_VALUE",
+      "riskLevel": "MEDIUM",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "861121f6-ba76-4fb5-9468-5e291bf13eff",
+      "reason": "Fornecedor novo de alto valor: conta do favorecido cadastrada há 0 dia(s) (menos de 30), pagamento de 30000.00 (a partir de 20000.00). Confira o cadastro do favorecido antes de liberar.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T08:20:16.009Z",
+      "updated_at": "2026-11-11T08:20:16.009Z",
+      "createdAt": "2026-11-11T08:20:16.009Z",
+      "updatedAt": "2026-11-11T08:20:16.009Z",
+      "caseTypeLabel": "Fornecedor novo de alto valor",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "861121f6-ba76-4fb5-9468-5e291bf13eff",
+       "description": "Pagamento fora do padrão 5128289",
+       "amount": "30000.00",
+       "status": "PENDING"
+      }
+     },
+     {
+      "id": "c95c5b6a-7eb6-4b34-8ad9-0d26c08f4e1d",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "caseType": "AMOUNT_OUTLIER",
+      "riskLevel": "CRITICAL",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "861121f6-ba76-4fb5-9468-5e291bf13eff",
+      "reason": "Valor 30000.00 é 46.7x a média histórica (642.50) dos 4 pagamentos já liquidados desta conta bancária (limiar FIN-005: 3x revisa, 10x bloqueia). O pagamento fica bloqueado até a revisão.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T08:20:16.005Z",
+      "updated_at": "2026-11-11T08:20:16.005Z",
+      "createdAt": "2026-11-11T08:20:16.005Z",
+      "updatedAt": "2026-11-11T08:20:16.005Z",
+      "caseTypeLabel": "Valor fora do padrão",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "861121f6-ba76-4fb5-9468-5e291bf13eff",
+       "description": "Pagamento fora do padrão 5128289",
+       "amount": "30000.00",
+       "status": "PENDING"
+      }
+     },
+     {
+      "id": "0887ef76-a82b-486b-b78a-5207893d609b",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "caseType": "RECURRING_MANUAL_RECONCILIATION",
+      "riskLevel": "MEDIUM",
+      "relatedEntityType": null,
+      "relatedEntityId": null,
+      "reason": "Conciliação manual recorrente: 1 de 2 conciliações deste mês feitas à mão (50.0%, limiar 30%). Vale revisar a qualidade dos dados do extrato e dos lançamentos, que o motor de sugestão não está casando sozinho.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:20:02.374Z",
+      "updated_at": "2026-11-11T08:20:02.374Z",
+      "createdAt": "2026-11-11T08:20:02.374Z",
+      "updatedAt": "2026-11-11T08:20:02.374Z",
+      "caseTypeLabel": "Conciliação manual recorrente",
+      "resolvedByName": null,
+      "relatedEntry": null
+     },
+     {
+      "id": "10928893-e419-44b3-89e9-7874448640fa",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "caseType": "NEW_SUPPLIER_HIGH_VALUE",
+      "riskLevel": "MEDIUM",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "d8914373-c5ba-4a8c-a59d-0c0dc7637d78",
+      "reason": "Fornecedor novo de alto valor: conta do favorecido cadastrada há 0 dia(s) (menos de 30) e sem pagamento anterior, pagamento de 25000.00 (a partir de 20000.00). Confira o cadastro do favorecido antes de liberar.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T08:19:59.249Z",
+      "updated_at": "2026-11-11T08:19:59.249Z",
+      "createdAt": "2026-11-11T08:19:59.249Z",
+      "updatedAt": "2026-11-11T08:19:59.249Z",
+      "caseTypeLabel": "Fornecedor novo de alto valor",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "d8914373-c5ba-4a8c-a59d-0c0dc7637d78",
+       "description": "Pagamento alto na conta nova 5128289",
+       "amount": "25000.00",
+       "status": "PENDING"
+      }
+     },
+     {
+      "id": "0fc3c271-1bff-4932-bdfe-a7dc8f1196e8",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "caseType": "AMOUNT_OUTLIER",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "d8914373-c5ba-4a8c-a59d-0c0dc7637d78",
+      "reason": "Primeiro pagamento desta conta bancária já no valor de 25000.00 (limite FIN-005 para conta sem histórico: 5000.00).",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T08:19:59.230Z",
+      "updated_at": "2026-11-11T08:19:59.230Z",
+      "createdAt": "2026-11-11T08:19:59.230Z",
+      "updatedAt": "2026-11-11T08:19:59.230Z",
+      "caseTypeLabel": "Valor fora do padrão",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "d8914373-c5ba-4a8c-a59d-0c0dc7637d78",
+       "description": "Pagamento alto na conta nova 5128289",
+       "amount": "25000.00",
+       "status": "PENDING"
+      }
+     },
+     {
+      "id": "4cce515d-2185-447b-bbb4-bb430695e81e",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "caseType": "BENEFICIARY_CHANGED",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "4f1789e0-f7c8-41b4-b9dd-5225d44feb01",
+      "reason": "A conta bancária do favorecido foi trocada depois da criação do lançamento. As aprovações anteriores foram invalidadas e o pagamento exige revisão manual antes de ser liquidado.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:19:58.530Z",
+      "updated_at": "2026-11-11T08:19:58.530Z",
+      "createdAt": "2026-11-11T08:19:58.530Z",
+      "updatedAt": "2026-11-11T08:19:58.530Z",
+      "caseTypeLabel": "Conta bancária do favorecido trocada",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "4f1789e0-f7c8-41b4-b9dd-5225d44feb01",
+       "description": "Pagamento com troca de favorecido 5128289",
+       "amount": "980.00",
+       "status": "PENDING"
+      }
+     }
+    ]
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": "nenhum",
+ "consultasBanco": [],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "antifraude: estorno frequente abre AnomalyCase (nunca bloqueia o estorno em si); conciliação manual recorrente só sinaliza",
+   "status": "passou",
+   "duracaoMs": 99,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ]
+}

@@ -1,0 +1,842 @@
+{
+ "id": "M5-A0206-d4f5e0",
+ "secao": "P2 > 12. Deadline service",
+ "linhaCaderno": 635,
+ "requisito": "async createDeadline(input, ctx) {\n    if (!input.sourceFileId && !input.sourceEventId) {\n        throw new ValidationError('DEADLINE_SOURCE_REQUIRED');\n    }\n    const d = await deadlines.create(input);\n    await tasks.create({\n        responsibleUserId: d.responsibleUserId,\n        dueAt: d.dueAt,\n        severity: d.severity,\n        sourceType: 'LEGAL_DEADLINE',\n        sourceId: d.id,\n    });\n    return d;\n}",
+ "demandas": "M5-D035;M5-D036",
+ "implementacao": "src/modules/legal/cases/deadline.service.js createLegalDeadline + src/modules/legal/cases/legalDeadlineSource.js resolveDeadlineSource (sourceFileId = arquivo íntegro da empresa; sourceEventId = evento real em integration.outbox_events ou audit.audit_log; sem os dois: 400 DEADLINE_SOURCE_REQUIRED, o código do Guia) + src/modules/legal/cases/legalDeadlineTask.js (tarefa LEGAL_DEADLINE com responsável, due_at e prioridade criada na mesma transação; sincronizada em concluir/cancelar/reabrir/remarcar/reatribuir, inclusive troca do responsável do processo); migration 20260101009997 (source_file_id, source_event_id/type, task_id, cancelamento)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.prazosLivro.test.js",
+   "nome": "JR prazo livro: origem por sourceFileId (arquivo íntegro da empresa) ou sourceEventId (evento real: outbox ou auditoria); inexistente, sem SHA-256 ou só texto é recusado",
+   "status": "pass",
+   "ms": 63.49,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazosLivro.test.js",
+   "nome": "JR prazo livro: a tarefa do responsável nasce com o prazo (LEGAL_DEADLINE, dueAt, prioridade) e acompanha remarcação, reatribuição, conclusão e reabertura (Guia §12)",
+   "status": "pass",
+   "ms": 59.274,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazosLivro.test.js",
+   "nome": "JR prazo livro: cancelar exige motivo, é proibido em legal hold e, pela API, exige legal:approve; cancelado é terminal e a tarefa vira CANCELLED",
+   "status": "pass",
+   "ms": 66.288,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazosLivro.test.js",
+   "nome": "JR prazo livro: prazo legado só com texto de origem continua válido e editável; a tarefa que faltava é criada na primeira alteração",
+   "status": "pass",
+   "ms": 16.576,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-008: criar prazo crítico sem origem verificável é bloqueado (DEADLINE_SOURCE_REQUIRED, Guia §12) e nada é gravado; texto de origem sozinho não basta",
+   "status": "pass",
+   "ms": 87,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.failureDrills.test.js",
+   "nome": "Drill 1: falha ao gravar a tarefa no meio da criação do prazo não deixa prazo, evento nem auditoria; retry cria 1 prazo com 1 tarefa",
+   "status": "pass",
+   "ms": 134.792,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.carga.test.js",
+   "nome": "Carga: 20 prazos ao mesmo tempo no mesmo processo — 20 prazos, 20 tarefas 1:1, 20 eventos, origem e responsável em todos",
+   "status": "pass",
+   "ms": 312.092,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.carga.test.js",
+   "nome": "Carga: 10 conclusões e 10 remarcações simultâneas do mesmo prazo — estado final coerente, tarefa alinhada, um evento de conclusão",
+   "status": "pass",
+   "ms": 159.492,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-D02",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "resumo": "erro DEADLINE_SOURCE_REQUIRED: Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jur",
+   "quando": "2026-11-11T03:42:37.618Z"
+  },
+  {
+   "passo": "JR-D03",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "resumo": "erro DEADLINE_SOURCE_REQUIRED: Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jur",
+   "quando": "2026-11-11T03:42:37.625Z"
+  },
+  {
+   "passo": "JR-D03b",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_SOURCE_NOT_FOUND",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_SOURCE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_DEADLINE_SOURCE_NOT_FOUND: O documento ou evento de origem não foi encontrado nesta empresa.",
+   "quando": "2026-11-11T03:42:37.632Z"
+  },
+  {
+   "passo": "JR-D05a",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "FILE_ATTACH_FORBIDDEN",
+   "esperado": {
+    "status": 403,
+    "codigo": "FILE_ATTACH_FORBIDDEN"
+   },
+   "resumo": "erro FILE_ATTACH_FORBIDDEN: Você não pode anexar um arquivo que não tem permissão para acessar — envie um arquivo seu ou peça a ",
+   "quando": "2026-11-11T03:42:37.716Z"
+  },
+  {
+   "passo": "JR-D06",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=70785ddb-efe1-4fd5-aaef-db3b4ff26c6f, criticality=MEDIUM",
+   "quando": "2026-11-11T03:42:37.742Z"
+  },
+  {
+   "passo": "JR-D32b",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=f259bacb-e168-4e08-8f3a-22baaf7c59c3, criticality=MEDIUM",
+   "quando": "2026-11-11T03:42:38.211Z"
+  },
+  {
+   "passo": "JR-D32c",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CANCEL_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CANCEL_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CANCEL_REASON_REQUIRED: Cancelar um prazo exige informar o motivo.",
+   "quando": "2026-11-11T03:42:38.221Z"
+  },
+  {
+   "passo": "JR-D32f",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=CANCELLED, id=f259bacb-e168-4e08-8f3a-22baaf7c59c3, criticality=MEDIUM",
+   "quando": "2026-11-11T03:42:38.252Z"
+  },
+  {
+   "passo": "JR-D32g",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_DEADLINE_INVALID_TRANSITION",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_DEADLINE_INVALID_TRANSITION"
+   },
+   "resumo": "erro LEGAL_DEADLINE_INVALID_TRANSITION: O prazo não pode ir de CANCELLED para PENDING.",
+   "quando": "2026-11-11T03:42:38.262Z"
+  },
+  {
+   "passo": "JR-D01b",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=905567a5-5f76-4ee6-9676-dd512cb8c715",
+   "quando": "2026-11-11T03:42:37.605Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0206-d4f5e0.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: origem por id verificável e tarefa do responsável implementadas. DECISÕES registradas: o código passou a ser DEADLINE_SOURCE_REQUIRED (literal do Guia; o antigo LEGAL_DEADLINE_SOURCE_REQUIRED não tinha uso no Front e os testes foram atualizados, sem alias); \"compatibilidade com o texto de origem\" = prazos legados só com texto continuam válidos/editáveis e o texto acompanha o id; só a contingência do BCP cria com texto (formulário registrado na operação). core.tasks não tem source_type/source_id: o par do Guia fica em related_entity_type = LEGAL_DEADLINE / related_entity_id. Cancelamento (o livro não trata): motivo obrigatório, proibido em legal hold, pela API só com legal:approve, terminal.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.prazosLivro.test.js test/m5fech.juridico.adversariais.test.js test/m5fech.juridico.failureDrills.test.js test/m5fech.juridico.carga.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-D02, JR-D03, JR-D03b, JR-D05a, JR-D05b, JR-D06, JR-D11, JR-D32b, JR-D32c, JR-D32e, JR-D32f, JR-D32g, JR-D32h, JR-D01b)"
+ },
+ "passos": [
+  {
+   "id": "JR-D02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico sem origem é bloqueado (JUR-TS-008)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.605Z",
+    "criticality": "CRITICAL",
+    "responsibleUserId": null
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.618Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "DEADLINE_SOURCE_REQUIRED",
+     "message": "Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jurídico precisa de uma origem verificável.",
+     "traceId": "60b1eca8-18d9-49d0-8f7b-986dd3966bae"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0107-dce0a2",
+    "M5-A0156-d0fcff",
+    "M5-A0238-193275",
+    "M5-A0258-4d0dd8",
+    "M5-A0206-d4f5e0",
+    "M5-A0218-5853eb"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Origem só em TEXTO não basta (Guia §12: sourceFileId/sourceEventId)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.618Z",
+    "criticality": "CRITICAL",
+    "sourceDocument": "Intimação fictícia (só texto)"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:37.625Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "DEADLINE_SOURCE_REQUIRED",
+     "message": "Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jurídico precisa de uma origem verificável.",
+     "traceId": "8250154f-7b87-475a-b7a0-c8c1f686ae03"
+    }
+   },
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0156-d0fcff",
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D03b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Arquivo de origem inexistente é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.625Z",
+    "sourceFileId": "00000000-0000-4000-8000-000000000000"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_SOURCE_NOT_FOUND"
+   },
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_SOURCE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:37.632Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_SOURCE_NOT_FOUND",
+     "message": "O documento ou evento de origem não foi encontrado nesta empresa.",
+     "traceId": "660f9cac-dd5b-4aed-b06e-6a993bd93270"
+    }
+   },
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D05a",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Arquivo de origem que o ator não pode ler não é vinculado (guarda de vínculo de arquivo): o maker tem legal:create, mas não lê o arquivo avulso do gestor",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "x",
+    "dueAt": "2026-11-16T03:42:37.701Z",
+    "sourceFileId": "bfea01d2-14b7-4303-8136-37de006e045e"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "FILE_ATTACH_FORBIDDEN"
+   },
+   "status": 403,
+   "codigo": "FILE_ATTACH_FORBIDDEN",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:37.716Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FILE_ATTACH_FORBIDDEN",
+     "message": "Você não pode anexar um arquivo que não tem permissão para acessar — envie um arquivo seu ou peça a quem tem acesso ao módulo dele.",
+     "details": {
+      "fileId": "bfea01d2-14b7-4303-8136-37de006e045e"
+     },
+     "traceId": "7928924b-d7ce-429e-b0c1-c6d8543958f4"
+    }
+   },
+   "req": [
+    "M5-A0206-d4f5e0",
+    "M5-A0148-c670b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR pelo maker (legal:create): prazo MEDIUM sem responsável próprio (vale o do processo), só com a data (vence 23:59 de Brasília) e origem por EVENTO real",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Réplica mwbkpk2qm6ml",
+    "dueAt": "2030-01-01",
+    "sourceEventId": "f88dd3ab-4640-40b3-8456-7941ca704408",
+    "sourceEvent": "Juntada de contestação (evento fictício)"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T03:42:37.742Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Réplica mwbkpk2qm6ml",
+     "dueAt": "2030-01-02T02:59:00.000Z",
+     "sourceFileId": null,
+     "sourceEventId": "f88dd3ab-4640-40b3-8456-7941ca704408",
+     "sourceEventType": "OUTBOX_EVENT",
+     "sourceDocument": null,
+     "sourceEvent": "Juntada de contestação (evento fictício)",
+     "responsibleUserId": null,
+     "criticality": "MEDIUM",
+     "status": "PENDING",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updated_at": "2026-11-11T03:42:37.734Z",
+     "created_at": "2026-11-11T03:42:37.731Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "222092e9-2d96-4e8b-8bf7-e88483972d23",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0218-5853eb",
+    "M5-A0108-eed49f"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D32b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: prazo que será cancelado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Audiência mwbkpk2qm6ml",
+    "dueAt": "2026-11-23T03:42:38.183Z",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 27,
+   "quando": "2026-11-11T03:42:38.211Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Audiência mwbkpk2qm6ml",
+     "dueAt": "2026-11-23T03:42:38.183Z",
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": null,
+     "sourceEvent": null,
+     "responsibleUserId": null,
+     "criticality": "MEDIUM",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.204Z",
+     "created_at": "2026-11-11T03:42:38.201Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "8f657f80-d21e-43fd-9579-1c16b67f3c3f",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D32c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CANCELAR sem motivo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "corpoEnviado": {
+    "status": "CANCELLED"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CANCEL_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CANCEL_REASON_REQUIRED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:38.221Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CANCEL_REASON_REQUIRED",
+     "message": "Cancelar um prazo exige informar o motivo.",
+     "traceId": "26749998-5f57-4415-b390-e26ec2a4ba00"
+    }
+   },
+   "req": [
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D32e",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "CANCELAR por quem tem legal:update mas não legal:approve é recusado (regra conservadora registrada)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "legalDeadlines.updateLegalDeadline(prazo, {status:'CANCELLED', changeReason}, maker, tx, {actorPermissions:['legal:read','legal:update']})",
+   "corpoEnviado": null,
+   "esperado": {
+    "erro": "LEGAL_DEADLINE_CANCEL_NOT_ALLOWED"
+   },
+   "status": "erro",
+   "codigo": "LEGAL_DEADLINE_CANCEL_NOT_ALLOWED",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:38.230Z",
+   "corpo": {
+    "error": {
+     "code": "LEGAL_DEADLINE_CANCEL_NOT_ALLOWED",
+     "message": "Cancelar prazo jurídico exige a permissão de aprovação jurídica (legal:approve)."
+    }
+   },
+   "req": [
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-D32f",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CANCELAR com motivo (gestor, legal:approve)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "corpoEnviado": {
+    "status": "CANCELLED",
+    "changeReason": "Audiência cancelada pelo juízo"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:38.252Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "sourceDocument": null,
+     "sourceEvent": null,
+     "description": "Audiência mwbkpk2qm6ml",
+     "dueAt": "2026-11-23T03:42:38.183Z",
+     "status": "CANCELLED",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "responsibleUserId": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "criticality": "MEDIUM",
+     "occurrenceTaskId": null,
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "taskId": "8f657f80-d21e-43fd-9579-1c16b67f3c3f",
+     "cancelledAt": "2026-11-11T03:42:38.242Z",
+     "cancelledBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "cancelReason": "Audiência cancelada pelo juízo",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:38.201Z",
+     "updated_at": "2026-11-11T03:42:38.243Z",
+     "deleted_at": null,
+     "legal_case_id": "632a809b-fcfe-4173-9852-e69456dfa385"
+    }
+   },
+   "req": [
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D32g",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Prazo cancelado não reabre (estado terminal)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "corpoEnviado": {
+    "status": "PENDING"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_DEADLINE_INVALID_TRANSITION"
+   },
+   "status": 409,
+   "codigo": "LEGAL_DEADLINE_INVALID_TRANSITION",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:38.262Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_INVALID_TRANSITION",
+     "message": "O prazo não pode ir de CANCELLED para PENDING.",
+     "traceId": "fda5fb89-34af-43d7-8514-dbf50afca3c3"
+    }
+   },
+   "req": [
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D01b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: intimação de origem (arquivo íntegro da empresa, SHA-256 no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "intimacao-mwbkpk2qm6ml.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgSW50aW1hw6fDo28gZmljdMOtY2lhIG13YmtwazJxbTZtbA==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 39,
+   "quando": "2026-11-11T03:42:37.605Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/a02ff1f6-8a80-4a54-a75d-ce6de970aabb-intimacao-mwbkpk2qm6ml.pdf",
+     "fileName": "intimacao-mwbkpk2qm6ml.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 43,
+     "checksumSha256": "9ca820eed9475a924c5ec2111cb4af2b8f1349e1d69b0c493868fb518aa09686",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:37.580Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.581Z",
+     "created_at": "2026-11-11T03:42:37.581Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-D05b",
+   "req": [
+    "M5-A0206-d4f5e0"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:gestor",
+   "descricao": "Preparação: id de um evento real da empresa (legal.case.created do processo no outbox) para servir de origem",
+   "sql": "SELECT id FROM integration.outbox_events WHERE aggregate_id = :id AND event_type = 'legal.case.created'",
+   "resultado": [
+    {
+     "id": "f88dd3ab-4640-40b3-8456-7941ca704408"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.718Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-D11",
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0108-eed49f",
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:leitura",
+   "descricao": "Prazos gravados: origem verificável (arquivo ou evento), due_at no fuso de São Paulo (\"2030-01-01\" = 23:59 de Brasília), criticidade, responsável e a TAREFA do responsável (Guia §12)",
+   "sql": "SELECT d.description, d.source_file_id IS NOT NULL AS origem_arquivo, d.source_event_type, d.source_document, d.due_at::text AS due_at_utc, to_char(d.due_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD HH24:MI') AS due_at_sao_paulo, d.criticality, d.responsible_user_id IS NOT NULL AS tem_responsavel_proprio, d.status, t.related_entity_type AS tarefa_tipo, t.status AS tarefa_status, t.priority AS tarefa_prioridade, t.assigned_to_user_id = COALESCE(d.responsible_user_id, c.responsible_user_id) AS tarefa_do_responsavel, t.due_at = d.due_at AS tarefa_mesmo_vencimento FROM legal.legal_deadlines d JOIN legal.legal_cases c ON c.id = d.legal_case_id LEFT JOIN core.tasks t ON t.id = d.task_id WHERE d.legal_case_id = :id ORDER BY d.created_at",
+   "resultado": [
+    {
+     "description": "Contestação mwbkpk2qm6ml",
+     "origem_arquivo": true,
+     "source_event_type": null,
+     "source_document": "Intimação fictícia DJe 03/11/2026",
+     "due_at_utc": "2026-11-26 03:42:37.632+00",
+     "due_at_sao_paulo": "2026-11-26 00:42",
+     "criticality": "CRITICAL",
+     "tem_responsavel_proprio": true,
+     "status": "PENDING",
+     "tarefa_tipo": "LEGAL_DEADLINE",
+     "tarefa_status": "OPEN",
+     "tarefa_prioridade": "CRITICAL",
+     "tarefa_do_responsavel": true,
+     "tarefa_mesmo_vencimento": true
+    },
+    {
+     "description": "Réplica mwbkpk2qm6ml",
+     "origem_arquivo": false,
+     "source_event_type": "OUTBOX_EVENT",
+     "source_document": null,
+     "due_at_utc": "2030-01-02 02:59:00+00",
+     "due_at_sao_paulo": "2030-01-01 23:59",
+     "criticality": "MEDIUM",
+     "tem_responsavel_proprio": false,
+     "status": "PENDING",
+     "tarefa_tipo": "LEGAL_DEADLINE",
+     "tarefa_status": "OPEN",
+     "tarefa_prioridade": "MEDIUM",
+     "tarefa_do_responsavel": true,
+     "tarefa_mesmo_vencimento": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.842Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-D32h",
+   "req": [
+    "M5-A0206-d4f5e0",
+    "M5-A0173-2531a4",
+    "M5-A0271-64d1b2"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:gestor",
+   "descricao": "Tarefa acompanha o prazo (Guia §12): reaberto = OPEN, concluído = DONE, cancelado = CANCELLED; remarcado = mesmo vencimento; reatribuído = novo responsável",
+   "sql": "SELECT d.description, d.status, d.cancel_reason, t.status AS tarefa_status, t.due_at = d.due_at AS mesmo_vencimento, t.assigned_to_user_id = COALESCE(d.responsible_user_id, c.responsible_user_id) AS do_responsavel FROM legal.legal_deadlines d JOIN legal.legal_cases c ON c.id = d.legal_case_id JOIN core.tasks t ON t.id = d.task_id WHERE d.id IN (:a, :b, :c) ORDER BY d.created_at",
+   "resultado": [
+    {
+     "description": "Contestação mwbkpk2qm6ml",
+     "status": "PENDING",
+     "cancel_reason": null,
+     "tarefa_status": "OPEN",
+     "mesmo_vencimento": true,
+     "do_responsavel": true
+    },
+    {
+     "description": "Réplica mwbkpk2qm6ml",
+     "status": "DONE",
+     "cancel_reason": null,
+     "tarefa_status": "DONE",
+     "mesmo_vencimento": true,
+     "do_responsavel": true
+    },
+    {
+     "description": "Audiência mwbkpk2qm6ml",
+     "status": "CANCELLED",
+     "cancel_reason": "Audiência cancelada pelo juízo",
+     "tarefa_status": "CANCELLED",
+     "mesmo_vencimento": true,
+     "do_responsavel": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.265Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

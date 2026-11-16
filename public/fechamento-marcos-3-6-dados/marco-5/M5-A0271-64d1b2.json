@@ -1,0 +1,370 @@
+{
+ "id": "M5-A0271-64d1b2",
+ "secao": "P2 > 20. Definition of Done do Marcelo",
+ "linhaCaderno": 816,
+ "requisito": "☐ Cases/deadlines.",
+ "demandas": "M5-D032;M5-D035;M5-D037",
+ "implementacao": "src/modules/legal/cases/legal-case.service.js, src/modules/legal/cases/deadline.service.js, src/engines/jobs/legalDeadlineAlertJob.js (FOR UPDATE SKIP LOCKED)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: tem número, órgão, classe, status, partes, valor, risco e responsável (§14)",
+   "status": "pass",
+   "ms": 91.25,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazosLivro.test.js",
+   "nome": "JR prazo livro: a tarefa do responsável nasce com o prazo (LEGAL_DEADLINE, dueAt, prioridade) e acompanha remarcação, reatribuição, conclusão e reabertura (Guia §12)",
+   "status": "pass",
+   "ms": 59.274,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-009: prazo crítico vencido sem conclusão alerta o responsável, abre UMA ocorrência CRITICAL, publica legal.deadline.overdue e escala após 24 h",
+   "status": "pass",
+   "ms": 39.016,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.failureDrills.test.js",
+   "nome": "Drill 4: duas instâncias do job em paralelo (2 conexões) sobre o mesmo prazo vencido: uma ocorrência, um evento, um escalonamento",
+   "status": "pass",
+   "ms": 51.453,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.carga.test.js",
+   "nome": "Carga: 20 prazos ao mesmo tempo no mesmo processo — 20 prazos, 20 tarefas 1:1, 20 eventos, origem e responsável em todos",
+   "status": "pass",
+   "ms": 312.092,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.batch2.test.js",
+   "nome": "M5-34: jornada E2E jurídica — processo, prazo, alerta, escalonamento, dossiê, export verificável e encerramento",
+   "status": "pass",
+   "ms": 88.09,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-P02",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=f5959797-2ec3-4630-a457-21529e647cfe",
+   "quando": "2026-11-11T03:42:37.163Z"
+  },
+  {
+   "passo": "JR-D04",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=832465e8-2280-4049-bcd2-8ecb455ba2e8, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:37.660Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0271-64d1b2.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: mesmo fechamento de M5-A0173.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.processos.test.js test/m5fech.juridico.prazosLivro.test.js test/m5fech.juridico.adversariais.test.js test/m5fech.juridico.failureDrills.test.js test/m5fech.juridico.carga.test.js test/marco5.batch2.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-P02, JR-D04, JR-D11, JR-D32h, JR-D36)"
+ },
+ "passos": [
+  {
+   "id": "JR-P02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria processo com número, órgão, classe, valor estimado, risco, responsável e escalonamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "caseNumber": "0001234-55.2026.8.26.mwbk",
+    "court": "1ª Vara Cível (fictícia)",
+    "caseClass": "Despejo por falta de pagamento",
+    "estimatedAmount": 18500.75,
+    "riskLevel": "HIGH",
+    "summary": "Processo fictício JR mwbkpjpjaok7",
+    "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+    "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:37.163Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "caseNumber": "0001234-55.2026.8.26.mwbk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": "Processo fictício JR mwbkpjpjaok7",
+     "court": "1ª Vara Cível (fictícia)",
+     "caseClass": "Despejo por falta de pagamento",
+     "riskLevel": "HIGH",
+     "estimatedAmount": "18500.75",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.153Z",
+     "created_at": "2026-11-11T03:42:37.153Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "confirmedAmount": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0102-1a6313",
+    "M5-A0217-4b2e80",
+    "M5-A0173-2531a4",
+    "M5-A0271-64d1b2",
+    "M5-A0106-ace96c",
+    "M5-A0273-a39e38",
+    "M5-A0138-650e64"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico com origem e responsável (gestor, legal:create)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação mwbkpk2qm6ml",
+    "dueAt": "2026-11-26T03:42:37.632Z",
+    "criticality": "CRITICAL",
+    "sourceDocument": "Intimação fictícia DJe 03/11/2026",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T03:42:37.660Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "832465e8-2280-4049-bcd2-8ecb455ba2e8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Contestação mwbkpk2qm6ml",
+     "dueAt": "2026-11-26T03:42:37.632Z",
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": "Intimação fictícia DJe 03/11/2026",
+     "sourceEvent": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "criticality": "CRITICAL",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.654Z",
+     "created_at": "2026-11-11T03:42:37.648Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "6144eadf-c7e1-476c-9104-3401112bec77",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0108-eed49f",
+    "M5-A0306-a4b4b7",
+    "M5-A0218-5853eb",
+    "M5-A0173-2531a4",
+    "M5-A0271-64d1b2",
+    "M5-A0229-87c693",
+    "M5-A0139-b9fb17",
+    "M5-A0273-a39e38"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-D11",
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0108-eed49f",
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:leitura",
+   "descricao": "Prazos gravados: origem verificável (arquivo ou evento), due_at no fuso de São Paulo (\"2030-01-01\" = 23:59 de Brasília), criticidade, responsável e a TAREFA do responsável (Guia §12)",
+   "sql": "SELECT d.description, d.source_file_id IS NOT NULL AS origem_arquivo, d.source_event_type, d.source_document, d.due_at::text AS due_at_utc, to_char(d.due_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD HH24:MI') AS due_at_sao_paulo, d.criticality, d.responsible_user_id IS NOT NULL AS tem_responsavel_proprio, d.status, t.related_entity_type AS tarefa_tipo, t.status AS tarefa_status, t.priority AS tarefa_prioridade, t.assigned_to_user_id = COALESCE(d.responsible_user_id, c.responsible_user_id) AS tarefa_do_responsavel, t.due_at = d.due_at AS tarefa_mesmo_vencimento FROM legal.legal_deadlines d JOIN legal.legal_cases c ON c.id = d.legal_case_id LEFT JOIN core.tasks t ON t.id = d.task_id WHERE d.legal_case_id = :id ORDER BY d.created_at",
+   "resultado": [
+    {
+     "description": "Contestação mwbkpk2qm6ml",
+     "origem_arquivo": true,
+     "source_event_type": null,
+     "source_document": "Intimação fictícia DJe 03/11/2026",
+     "due_at_utc": "2026-11-26 03:42:37.632+00",
+     "due_at_sao_paulo": "2026-11-26 00:42",
+     "criticality": "CRITICAL",
+     "tem_responsavel_proprio": true,
+     "status": "PENDING",
+     "tarefa_tipo": "LEGAL_DEADLINE",
+     "tarefa_status": "OPEN",
+     "tarefa_prioridade": "CRITICAL",
+     "tarefa_do_responsavel": true,
+     "tarefa_mesmo_vencimento": true
+    },
+    {
+     "description": "Réplica mwbkpk2qm6ml",
+     "origem_arquivo": false,
+     "source_event_type": "OUTBOX_EVENT",
+     "source_document": null,
+     "due_at_utc": "2030-01-02 02:59:00+00",
+     "due_at_sao_paulo": "2030-01-01 23:59",
+     "criticality": "MEDIUM",
+     "tem_responsavel_proprio": false,
+     "status": "PENDING",
+     "tarefa_tipo": "LEGAL_DEADLINE",
+     "tarefa_status": "OPEN",
+     "tarefa_prioridade": "MEDIUM",
+     "tarefa_do_responsavel": true,
+     "tarefa_mesmo_vencimento": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.842Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-D32h",
+   "req": [
+    "M5-A0206-d4f5e0",
+    "M5-A0173-2531a4",
+    "M5-A0271-64d1b2"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:gestor",
+   "descricao": "Tarefa acompanha o prazo (Guia §12): reaberto = OPEN, concluído = DONE, cancelado = CANCELLED; remarcado = mesmo vencimento; reatribuído = novo responsável",
+   "sql": "SELECT d.description, d.status, d.cancel_reason, t.status AS tarefa_status, t.due_at = d.due_at AS mesmo_vencimento, t.assigned_to_user_id = COALESCE(d.responsible_user_id, c.responsible_user_id) AS do_responsavel FROM legal.legal_deadlines d JOIN legal.legal_cases c ON c.id = d.legal_case_id JOIN core.tasks t ON t.id = d.task_id WHERE d.id IN (:a, :b, :c) ORDER BY d.created_at",
+   "resultado": [
+    {
+     "description": "Contestação mwbkpk2qm6ml",
+     "status": "PENDING",
+     "cancel_reason": null,
+     "tarefa_status": "OPEN",
+     "mesmo_vencimento": true,
+     "do_responsavel": true
+    },
+    {
+     "description": "Réplica mwbkpk2qm6ml",
+     "status": "DONE",
+     "cancel_reason": null,
+     "tarefa_status": "DONE",
+     "mesmo_vencimento": true,
+     "do_responsavel": true
+    },
+    {
+     "description": "Audiência mwbkpk2qm6ml",
+     "status": "CANCELLED",
+     "cancel_reason": "Audiência cancelada pelo juízo",
+     "tarefa_status": "CANCELLED",
+     "mesmo_vencimento": true,
+     "do_responsavel": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.265Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-D36",
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0109-d70c4e",
+    "M5-A0110-29f58b",
+    "M5-A0140-1d5cc9",
+    "M5-A0157-aeca75",
+    "M5-A0230-6b9dbf",
+    "M5-A0139-b9fb17",
+    "M5-A0229-87c693",
+    "M5-A0273-a39e38"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:gestor",
+   "descricao": "Prazo vencido: severidade alertada, ocorrência CRITICAL única, escalonado, eventos legal.deadline.created e legal.deadline.overdue (uma vez) e notificações ao responsável e ao escalonamento",
+   "sql": "SELECT d.last_alerted_severity, d.escalated_at IS NOT NULL AS escalado, d.status, (SELECT count(*) FROM core.tasks t WHERE t.related_entity_type = 'legal.legal_deadlines' AND t.related_entity_id = d.id AND t.priority = 'CRITICAL') AS ocorrencias, (SELECT count(*) FROM integration.outbox_events o WHERE o.aggregate_id = d.id AND o.event_type = 'legal.deadline.overdue') AS eventos_overdue, (SELECT count(*) FROM integration.outbox_events o WHERE o.aggregate_id = d.id AND o.event_type = 'legal.deadline.created') AS eventos_created, (SELECT count(*) FROM core.notifications n WHERE n.user_id = :resp AND n.title = 'Prazo jurídico VENCIDO' AND n.body LIKE '%' || d.description || '%') AS avisos_responsavel, (SELECT count(*) FROM core.notifications n WHERE n.user_id = :esc AND n.body LIKE '%' || d.description || '%') AS avisos_escalonamento FROM legal.legal_deadlines d WHERE d.id = :id",
+   "resultado": [
+    {
+     "last_alerted_severity": "OVERDUE",
+     "escalado": true,
+     "status": "PENDING",
+     "ocorrencias": "1",
+     "eventos_overdue": "1",
+     "eventos_created": "1",
+     "avisos_responsavel": "1",
+     "avisos_escalonamento": "1"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.345Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

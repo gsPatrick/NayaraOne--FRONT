@@ -1,0 +1,69 @@
+{
+  "id": "M6-97",
+  "requisito": "Todo lançamento financeiro de Obras carrega project_id (e centro de custo).",
+  "secaoDoLivro": "Centro Financeiro §4: \"Projeto/obra ... como dimensões quando aplicáveis\"",
+  "implementacao": "ledger-movement.js#buildPartialSettlementValues copia construction_project_id; costBasis.js/projectHealth.service.js/obras-project-cost.readmodel.js contam o pago sem somar obrigação e baixas duas vezes; correção das baixas existentes (migration 20260101006604, auditada pelo gatilho do ledger)",
+  "telaParaReteste": "Painel → obra → Saúde da obra (custo realizado) e Painel de Obras",
+  "commitApi": "6952bb50",
+  "branchApi": "m6fix/verificacao",
+  "commitFront": "1d3d1f2",
+  "branchFront": "m6fix/verificacao",
+  "status": "Atendido",
+  "motivoDaVerificacao": "ver Maturacao/fechamento-m3-m6/verificacao/marco-6.md",
+  "testes": [
+    {
+      "arquivo": "test/construction.m6v.medicaoConta.test.js",
+      "nome": "M6-97: baixa parcial de conta de Obras carrega a obra; drill-down e painel contam o pago sem dobrar (parcial e quitação)",
+      "resultadoHead": "passou",
+      "duracaoMs": 538.499,
+      "resultadoBase": "FALHA (a baixa parcial carrega a obra\n+ actual - expected\n\n+ null\n- '6d3c68ed-847d-4193-91d5-5072d00fbeaa'\n)"
+    },
+    {
+      "arquivo": "test/construction.m6v.medicaoConta.test.js",
+      "nome": "M6-97: custo realizado da obra no read model do BI (rm_project_cost) e no painel conta cada real pago uma vez — baixas parciais, sem somar a obrigação quitada",
+      "resultadoHead": "passou",
+      "duracaoMs": 564.442,
+      "resultadoBase": "FALHA (read model: a baixa parcial paga entra pelo valor pago\n\n0 !== 4000\n)"
+    },
+    {
+      "arquivo": "test/construction.e2e.test.js",
+      "nome": "M6-98: jornada E2E completa — orçamento→material→diário→medição→pagamento→qualidade→entrega→pós-obra",
+      "resultadoHead": "passou",
+      "duracaoMs": 1234.078,
+      "resultadoBase": "FALHA (etapa com responsável (Caderno §2)\n+ actual - expected\n\n+ undefined\n- '19653ea5-c5d2-4043-b55c-b14a662fb845'\n)"
+    }
+  ],
+  "provasDoVerificador": [
+    {
+      "prova": "V5-M6-97: a baixa parcial (movimento SETTLED filho) de uma conta de Obras carrega a obra (construction_project_id)",
+      "head": "passou",
+      "base41addaa2": "falhou (a baixa parcial deveria carregar a obra\n+ actual - expected\n\n+ null\n- '95e207dd-137c-4ad5-a542-fd4693393d4c'\n)"
+    },
+    {
+      "prova": "V5-DEF3: painel agregado de Obras conta so a parte paga de um lancamento PARCIALMENTE pago (igual ao drill-down)",
+      "head": "passou",
+      "base41addaa2": "passou"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Execução real dos testes no commit corrigido e na base (banco descartável, RLS real, antivírus real)",
+    "resultado": "3/3 passaram no HEAD 6952bb50; na base 41addaa2: falham",
+    "comando": "node scripts/withDisposableDb.js --port 5575 -- env CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 DISPOSABLE_DB=1 bash -c \"node scripts/seed-ci-two-tenants.js && NODE_ENV=test node --test --test-concurrency=1 <116 arquivos de Obras e vizinhos> verificacao/provas/v5-provas.test.js\" (fila global vez.sh, worktree destacado no commit 5630ac0d)",
+    "dataHora": "2026-11-12T07:21:42-03:00"
+  },
+  "telaPlaywright": "não se aplica (tela listada em telaParaReteste)",
+  "decisoes": [
+    "DI-M6V-11"
+  ],
+  "migrations": [
+    "migrations/20260101006600-m6v-tipo-de-obra-e-checklist-por-etapa.js",
+    "migrations/20260101006601-m6v-responsavel-da-etapa.js",
+    "migrations/20260101006602-m6v-baseline-imutavel-e-revisoes.js",
+    "migrations/20260101006603-m6v-evidencia-da-medicao.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006604-finance-source-event-id-e-obra-na-baixa-parcial.js",
+    "migrations/20260101006605-m6v-alcada-permissao-propria-e-quem-propoe.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006606-finance-indices-da-obra-no-ledger.js",
+    "migrations/20260101006607-m6v-indices-da-saude-da-obra.js"
+  ],
+  "geradoEm": "2026-11-12T10:41:46.763Z"
+}

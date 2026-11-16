@@ -1,0 +1,554 @@
+{
+ "id": "M5-A0101-c67620",
+ "secao": "P1 > 13. Aditivos e notificações",
+ "linhaCaderno": 239,
+ "requisito": "• IA pode rascunhar; envio jurídico sensível requer revisão humana.",
+ "demandas": "M5-D030;M5-D041",
+ "implementacao": "src/modules/legal/contracts/application/notices.service.js isSensitive (draftedByAi ou sensível) + :156 approveNotice (sensível só sai de PENDING_REVIEW) + :211 sendNotice (só APPROVED); envio exige MFA (legal.routes.js POST /legal/notices/:id/send)",
+ "tela": "Contratos > Notificações (/painel/contratos/notificacoes)",
+ "testes": [
+  {
+   "arquivo": "test/legal.notices.test.js",
+   "nome": "notice sensível (draftedByAi) não pode ser enviada sem passar por PENDING_REVIEW -> APPROVED",
+   "status": "pass",
+   "ms": 74.386,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G7: notificação SENSÍVEL (rascunhada por IA) NÃO pode ser aprovada/enviada sem passar por PENDING_REVIEW humano; não sensível pode ir direto",
+   "status": "pass",
+   "ms": 67.438,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-N04",
+   "metodo": "POST",
+   "rota": "/legal/notices",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=acbdd236-1e30-431c-8880-3e29ca2d841e",
+   "quando": "2026-11-11T03:42:39.226Z"
+  },
+  {
+   "passo": "JR-N06",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/approve",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_NOTICE_REVIEW_REQUIRED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_NOTICE_REVIEW_REQUIRED"
+   },
+   "resumo": "erro LEGAL_NOTICE_REVIEW_REQUIRED: Notificação jurídica sensível (marcada como sensível e/ou rascunhada por IA) precisa passar por \"PEN",
+   "quando": "2026-11-11T03:42:39.241Z"
+  },
+  {
+   "passo": "JR-N07",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/send",
+   "perfil": "A:gestor",
+   "status": 403,
+   "codigo": "MFA_REQUIRED_NOT_ENABLED",
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_REQUIRED_NOT_ENABLED"
+   },
+   "resumo": "erro MFA_REQUIRED_NOT_ENABLED: Esta ação exige MFA habilitado. Configure o MFA em \"/users/me/mfa/setup\" antes de continuar.",
+   "quando": "2026-11-11T03:42:39.247Z"
+  },
+  {
+   "passo": "JR-N09",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/submit-for-review",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PENDING_REVIEW, id=acbdd236-1e30-431c-8880-3e29ca2d841e",
+   "quando": "2026-11-11T03:42:39.297Z"
+  },
+  {
+   "passo": "JR-N11",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/approve",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=APPROVED, id=acbdd236-1e30-431c-8880-3e29ca2d841e",
+   "quando": "2026-11-11T03:42:39.318Z"
+  },
+  {
+   "passo": "JR-N12",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/send",
+   "perfil": "A:gestor",
+   "status": 403,
+   "codigo": "MFA_REQUIRED_NOT_ENABLED",
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_REQUIRED_NOT_ENABLED"
+   },
+   "resumo": "erro MFA_REQUIRED_NOT_ENABLED: Esta ação exige MFA habilitado. Configure o MFA em \"/users/me/mfa/setup\" antes de continuar.",
+   "quando": "2026-11-11T03:42:39.327Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0101-c67620.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.notices.test.js test/marco5.auditGapClosureR1.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-N04, JR-N06, JR-N07, JR-N08, JR-N09, JR-N11, JR-N12, JR-N13, JR-N18, JR-N22)"
+ },
+ "passos": [
+  {
+   "id": "JR-N04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rascunho de notificação extrajudicial feito pela IA (draftedByAi): canal, destinatário e conteúdo",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/notices",
+   "corpoEnviado": {
+    "contractId": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+    "channel": "POSTAL_MAIL",
+    "recipientDescription": "Locatário fictício — Rua Exemplo, 100",
+    "content": "Notificação de atraso fictícia mwbkplbqsf31",
+    "draftedByAi": true
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:39.226Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "acbdd236-1e30-431c-8880-3e29ca2d841e",
+     "currentVersion": 1,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+     "legalCaseId": null,
+     "channel": "POSTAL_MAIL",
+     "recipientPersonId": null,
+     "recipientDescription": "Locatário fictício — Rua Exemplo, 100",
+     "content": "Notificação de atraso fictícia mwbkplbqsf31",
+     "contentFileId": null,
+     "isLegallySensitive": false,
+     "draftedByAi": true,
+     "status": "DRAFT",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updated_at": "2026-11-11T03:42:39.216Z",
+     "created_at": "2026-11-11T03:42:39.216Z",
+     "reviewedByUserId": null,
+     "reviewedAt": null,
+     "sentAt": null,
+     "sentByUserId": null,
+     "deliveryEvidenceFileId": null,
+     "deliveredAt": null,
+     "approvedVersion": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0100-a24518",
+    "M5-A0101-c67620",
+    "M5-A0305-1ecad7"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rascunho da IA não pode ser aprovado direto do DRAFT (revisão humana obrigatória)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/approve",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_NOTICE_REVIEW_REQUIRED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_NOTICE_REVIEW_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:39.241Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_NOTICE_REVIEW_REQUIRED",
+     "message": "Notificação jurídica sensível (marcada como sensível e/ou rascunhada por IA) precisa passar por \"PENDING_REVIEW\" antes de ser aprovada — não pode ser aprovada direto de DRAFT.",
+     "traceId": "452073db-2336-4dfd-826e-c09a3cbb43b3"
+    }
+   },
+   "req": [
+    "M5-A0101-c67620",
+    "M5-A0305-1ecad7",
+    "M5-A0175-e0569a",
+    "M5-A0274-fcaec5"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Enviar sem aprovação: a rota exige MFA recente (recusa real)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/send",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_REQUIRED_NOT_ENABLED"
+   },
+   "status": 403,
+   "codigo": "MFA_REQUIRED_NOT_ENABLED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:39.247Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_REQUIRED_NOT_ENABLED",
+     "message": "Esta ação exige MFA habilitado. Configure o MFA em \"/users/me/mfa/setup\" antes de continuar.",
+     "traceId": "65097e9e-b73f-4478-b0f8-d05671094a67"
+    }
+   },
+   "req": [
+    "M5-A0101-c67620"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N08",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Enviar rascunho da IA ainda em DRAFT é bloqueado pela regra (camada de serviço)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "notices.sendNotice(rascunho)",
+   "corpoEnviado": null,
+   "esperado": {
+    "erro": "LEGAL_NOTICE_SEND_BLOCKED"
+   },
+   "status": "erro",
+   "codigo": "LEGAL_NOTICE_SEND_BLOCKED",
+   "ok": true,
+   "ms": 2,
+   "quando": "2026-11-11T03:42:39.249Z",
+   "corpo": {
+    "error": {
+     "code": "LEGAL_NOTICE_SEND_BLOCKED",
+     "message": "Não é possível enviar: notificação precisa estar \"APPROVED\" (atual: \"DRAFT\"). Notificações sensíveis exigem revisão humana (PENDING_REVIEW -> APPROVED) antes do envio."
+    }
+   },
+   "req": [
+    "M5-A0101-c67620",
+    "M5-A0305-1ecad7"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-N09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Submete o rascunho à revisão humana",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/submit-for-review",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:39.297Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "acbdd236-1e30-431c-8880-3e29ca2d841e",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+     "legalCaseId": null,
+     "channel": "POSTAL_MAIL",
+     "recipientPersonId": null,
+     "recipientDescription": "Locatário fictício — Rua Exemplo, 100",
+     "content": "Notificação de atraso fictícia mwbkplbqsf31 — valor corrigido para R$ 2.500,00",
+     "contentFileId": null,
+     "isLegallySensitive": false,
+     "status": "PENDING_REVIEW",
+     "draftedByAi": true,
+     "reviewedByUserId": null,
+     "reviewedAt": null,
+     "sentAt": null,
+     "sentByUserId": null,
+     "deliveryEvidenceFileId": null,
+     "deliveredAt": null,
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "currentVersion": 2,
+     "approvedVersion": null,
+     "created_at": "2026-11-11T03:42:39.216Z",
+     "updated_at": "2026-11-11T03:42:39.294Z",
+     "deleted_at": null,
+     "contract_id": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+     "legal_case_id": null
+    }
+   },
+   "req": [
+    "M5-A0101-c67620"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Revisor humano (checker, legal:approve) aprova",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/approve",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:39.318Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "acbdd236-1e30-431c-8880-3e29ca2d841e",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+     "legalCaseId": null,
+     "channel": "POSTAL_MAIL",
+     "recipientPersonId": null,
+     "recipientDescription": "Locatário fictício — Rua Exemplo, 100",
+     "content": "Notificação de atraso fictícia mwbkplbqsf31 — valor corrigido para R$ 2.500,00",
+     "contentFileId": null,
+     "isLegallySensitive": false,
+     "status": "APPROVED",
+     "draftedByAi": true,
+     "reviewedByUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "reviewedAt": "2026-11-11T03:42:39.314Z",
+     "sentAt": null,
+     "sentByUserId": null,
+     "deliveryEvidenceFileId": null,
+     "deliveredAt": null,
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "currentVersion": 2,
+     "approvedVersion": 2,
+     "created_at": "2026-11-11T03:42:39.216Z",
+     "updated_at": "2026-11-11T03:42:39.314Z",
+     "deleted_at": null,
+     "contract_id": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+     "legal_case_id": null
+    }
+   },
+   "req": [
+    "M5-A0101-c67620",
+    "M5-A0175-e0569a",
+    "M5-A0274-fcaec5"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Enviar aprovada: a rota continua exigindo MFA recente (recusa real)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/send",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_REQUIRED_NOT_ENABLED"
+   },
+   "status": 403,
+   "codigo": "MFA_REQUIRED_NOT_ENABLED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:39.327Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_REQUIRED_NOT_ENABLED",
+     "message": "Esta ação exige MFA habilitado. Configure o MFA em \"/users/me/mfa/setup\" antes de continuar.",
+     "traceId": "61f60366-6d2d-49c0-8fc0-13f7c2c03b96"
+    }
+   },
+   "req": [
+    "M5-A0101-c67620"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N13",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envio da notificação aprovada (camada de serviço, o que a rota faz após o MFA): SENT com data e autor",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "notices.sendNotice(aprovada)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:39.338Z",
+   "corpo": {
+    "result": {
+     "id": "acbdd236-1e30-431c-8880-3e29ca2d841e",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+     "legalCaseId": null,
+     "channel": "POSTAL_MAIL",
+     "recipientPersonId": null,
+     "recipientDescription": "Locatário fictício — Rua Exemplo, 100",
+     "content": "Notificação de atraso fictícia mwbkplbqsf31 — valor corrigido para R$ 2.500,00",
+     "contentFileId": null,
+     "isLegallySensitive": false,
+     "status": "SENT",
+     "draftedByAi": true,
+     "reviewedByUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "reviewedAt": {},
+     "sentAt": {},
+     "sentByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveryEvidenceFileId": null,
+     "deliveredAt": null,
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "currentVersion": 2,
+     "approvedVersion": 2,
+     "created_at": {},
+     "updated_at": {},
+     "deleted_at": null,
+     "contract_id": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+     "legal_case_id": null
+    }
+   },
+   "req": [
+    "M5-A0100-a24518",
+    "M5-A0101-c67620"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "servico"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-N18",
+   "req": [
+    "M5-A0100-a24518",
+    "M5-A0101-c67620",
+    "M5-A0305-1ecad7"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "perfil": "A:leitura",
+   "descricao": "Notificação: canal, destinatário, conteúdo, rascunho da IA, revisor humano, data de envio, data e evidência de recebimento",
+   "sql": "SELECT channel, recipient_description, content IS NOT NULL AS tem_conteudo, drafted_by_ai, status, reviewed_by_user_id IS NOT NULL AS revisada_por_humano, reviewed_by_user_id <> created_by AS revisor_diferente_do_autor, sent_at::text AS sent_at, delivered_at::text AS delivered_at, delivery_evidence_file_id IS NOT NULL AS tem_evidencia FROM legal.notices WHERE id = :id",
+   "resultado": [
+    {
+     "channel": "POSTAL_MAIL",
+     "recipient_description": "Locatário fictício — Rua Exemplo, 100",
+     "tem_conteudo": true,
+     "drafted_by_ai": true,
+     "status": "DELIVERED",
+     "revisada_por_humano": true,
+     "revisor_diferente_do_autor": true,
+     "sent_at": "2026-11-11 03:42:39.33+00",
+     "delivered_at": "2026-11-11 03:42:39.453+00",
+     "tem_evidencia": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:39.467Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-N22",
+   "req": [
+    "M5-A0172-5ed491",
+    "M5-A0101-c67620"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "perfil": "A:gestor",
+   "descricao": "Versões gravadas (append-only): v1 e v2 com conteúdo e SHA-256 distintos e o motivo; a notificação saiu na versão aprovada (current = approved = 2)",
+   "sql": "SELECT v.version_number, v.content_sha256, v.reason, n.current_version, n.approved_version, n.status FROM legal.notice_versions v JOIN legal.notices n ON n.id = v.notice_id WHERE v.notice_id = :id ORDER BY v.version_number",
+   "resultado": [
+    {
+     "version_number": 1,
+     "content_sha256": "3c942598e0de615c0a62272b8c5f13f48c3583519f930b1f5b6cc748013032d3",
+     "reason": "Versão inicial.",
+     "current_version": 2,
+     "approved_version": 2,
+     "status": "DELIVERED"
+    },
+    {
+     "version_number": 2,
+     "content_sha256": "b78639c313d69585786b7b0741e2cd8e4b68fe4f4c44bab92db11ae4e2b65393",
+     "reason": "Correção do valor em atraso",
+     "current_version": 2,
+     "approved_version": 2,
+     "status": "DELIVERED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:39.512Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

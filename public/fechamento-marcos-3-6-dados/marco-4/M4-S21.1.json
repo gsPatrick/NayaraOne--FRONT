@@ -1,0 +1,124 @@
+{
+ "id": "M4-§21.1",
+ "secao": "§21 Definition of Done",
+ "requisito": "\"Plano de contas/centros implementados.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-01 cria hierarquia de contas, vincula lançamento e filtra a listagem por conta contábil",
+   "status": "passou",
+   "duracaoMs": 106,
+   "commitDoArquivo": "fa15be9f"
+  },
+  {
+   "arquivo": "test/marco4.httpRoutes.test.js",
+   "nome": "Marco 4 ponta a ponta via HTTP real: plano de contas -> centros -> lançamento -> listagem -> orçamento -> relatório",
+   "status": "passou",
+   "duracaoMs": 553,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N03",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§1.1",
+    "M4-§21.1"
+   ],
+   "titulo": "Gestor cria conta ANALÍTICA filha (hierarquia do plano)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/chart-of-accounts",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "code": "3.1-0871300",
+    "name": "Manutenção predial (analítica)",
+    "accountType": "EXPENSE",
+    "parentAccountId": "a665c8cd-fd4c-4afa-8b5c-19be8fb26d56"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T01:35:01.255Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "490c2c5b-8aa8-46f2-a9b1-48fd7660dd78",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "code": "3.1-0871300",
+     "name": "Manutenção predial (analítica)",
+     "accountType": "EXPENSE",
+     "parentAccountId": "a665c8cd-fd4c-4afa-8b5c-19be8fb26d56",
+     "isActive": true,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:01.236Z",
+     "created_at": "2026-11-11T01:35:01.236Z"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "N05",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.2",
+    "M4-§21.1"
+   ],
+   "titulo": "Centro de custo criado (finance.cost_centers)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/cost-centers",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "code": "CC2-0871300",
+    "name": "Centro de custo Locação"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T01:35:01.307Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "844a874b-9730-47fc-8a11-198533439449",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "code": "CC2-0871300",
+     "name": "Centro de custo Locação",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:01.284Z",
+     "created_at": "2026-11-11T01:35:01.284Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

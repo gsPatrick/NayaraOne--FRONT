@@ -1,0 +1,15 @@
+c8ccff0
+✖ m3 radar api: explainRadarMatch lê GET /radar/:id/matches/:propertyId/explain e devolve a explicação (1.945625ms)
+✔ m3 radar api: createRadar (POST) e updateRadar (PATCH) enviam obrigatórios, preferências, flexíveis e exclusões (1.927625ms)
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@/components' imported from <worktree-base>/test/m3.radarExplicacao.test.mjs
+✖ test/m3.radarExplicacao.test.mjs (2087.928333ms)
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@/components' imported from <worktree-base>/test/m3.radarFormulario.test.mjs
+✖ test/m3.radarFormulario.test.mjs (2293.395041ms)
+ℹ tests 4
+ℹ pass 1
+ℹ fail 3
+✖ failing tests:
+✖ m3 radar api: explainRadarMatch lê GET /radar/:id/matches/:propertyId/explain e devolve a explicação (1.945625ms)
+  AssertionError [ERR_ASSERTION]: lib/api/radar.js precisa expor a explicação do match
+✖ test/m3.radarExplicacao.test.mjs (2087.928333ms)
+✖ test/m3.radarFormulario.test.mjs (2293.395041ms)

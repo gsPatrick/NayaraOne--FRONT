@@ -1,0 +1,62 @@
+{
+  "capturadoEm": "2026-11-11T12:48:58.065Z",
+  "pedido": {
+    "taskType": "rascunhar_descricao_imovel",
+    "imovel": "area 120, Curitiba, R$ 750.000; sem quartos/vagas; observação interna no cadastro"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "d60df47d-7ea9-4cde-be11-8b57b84b6560",
+        "status": "COMPLETED",
+        "answer": "RASCUNHO — não foi publicado nem enviado; revise antes de usar.\nDescrição do imóvel IMV-D7C35D6EBE [1]: tipo: residential; finalidade: venda; cidade: Curitiba; área total: 120 m²; preço: R$ 750.000,00.\nSó constam fatos públicos aprovados do cadastro; o que não está preenchido não foi incluído.",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "properties",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Fatos públicos aprovados do imóvel IMV-D7C35D6EBE : tipo: residential. finalidade: venda. cidade: Curitiba. área total: 120 m². preço: R$ 750.000,00.",
+            "retrievedAt": "2026-11-11T12:48:57.910Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:57.910Z",
+        "proposals": [],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": {
+          "rascunho": true,
+          "tipo": "DESCRICAO_IMOVEL",
+          "imovel": "550b4aa3-67f1-4773-b60b-cca785b8a9dd",
+          "codigoPublico": "IMV-D7C35D6EBE",
+          "atributos": [
+            "tipo",
+            "finalidade",
+            "cidade",
+            "área total",
+            "preço"
+          ],
+          "fonte": "FATOS_PUBLICOS_APROVADOS",
+          "guardaDescricao": {
+            "aprovada": true,
+            "violacoes": []
+          }
+        },
+        "replayed": false
+      }
+    }
+  }
+}

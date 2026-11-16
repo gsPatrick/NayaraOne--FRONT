@@ -1,0 +1,939 @@
+{
+ "id": "M5-A0338-d0b0bc",
+ "secao": "(abertura 3)",
+ "linhaCaderno": 873,
+ "requisito": "• WATER/ELECTRICITY/GAS/CONDO/IPTU/SPU/OTHER com responsável, provider, account, transfer_required, evidence e status.",
+ "demandas": "M5-D350",
+ "implementacao": "src/features/billing/utilities.service.js:26 UTILITY_TYPES e src/features/billing/utilities.service.js:32 createUtilityObligation (responsible_party, provider, account_number, transfer_required, evidence_file_id, status)",
+ "tela": "Contratos > Locação (/painel/contratos/locacao)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.cobranca.test.js",
+   "nome": "fechamento M5 §12: água, luz, gás, condomínio, IPTU, SPU e outra ficam vinculadas ao contrato com responsável, provedor, conta, troca exigida, evidência e status",
+   "status": "pass",
+   "ms": 395.045,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: requestOwnershipTransfer abre tarefa numa obrigação existente, recusa duplicada e a conclusão grava o comprovante na obrigação",
+   "status": "pass",
+   "ms": 31.19,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (CRÍTICO): entrega com vistoria de outro contrato, obrigação com comprovante de outra empresa ou pessoa inexistente e conta com titular inexistente são recusadas",
+   "status": "pass",
+   "ms": 55.77,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (ALTO): texto longo demais em pagamento do garantido, conta de consumo e pagamento de utilidade é 400",
+   "status": "pass",
+   "ms": 12.393,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-OB-01",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.847Z"
+  },
+  {
+   "passo": "LC-OB-02",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.870Z"
+  },
+  {
+   "passo": "LC-OB-03",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.883Z"
+  },
+  {
+   "passo": "LC-OB-04",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.894Z"
+  },
+  {
+   "passo": "LC-OB-05",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.904Z"
+  },
+  {
+   "passo": "LC-OB-06",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.914Z"
+  },
+  {
+   "passo": "LC-OB-07",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.925Z"
+  },
+  {
+   "passo": "LC-OB-08",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "UTILITY_OBLIGATION_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_OBLIGATION_VALIDATION"
+   },
+   "resumo": "erro UTILITY_OBLIGATION_VALIDATION: \"utilityType\" deve ser um de: WATER, ELECTRICITY, GAS, CONDO, IPTU, SPU, OTHER.",
+   "quando": "2026-11-11T03:42:33.931Z"
+  },
+  {
+   "passo": "LC-OB-14",
+   "metodo": "POST",
+   "rota": "/billing/utility-accounts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=fd37b911-450f-43b5-be51-48d8279595ec",
+   "quando": "2026-11-11T03:42:34.005Z"
+  },
+  {
+   "passo": "LC-OB-42",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "UTILITY_OBLIGATION_EVIDENCE_NOT_FOUND",
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_OBLIGATION_EVIDENCE_NOT_FOUND"
+   },
+   "resumo": "erro UTILITY_OBLIGATION_EVIDENCE_NOT_FOUND: O arquivo informado em \"evidenceFileId\" não existe nesta empresa.",
+   "quando": "2026-11-11T03:42:34.344Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0338-d0b0bc.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo m5fech.locacao.cobranca (os 7 tipos com responsável, provedor, conta, troca exigida, evidência e status).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.cobranca.test.js test/billing.test.js test/m5fech.locacao.pentest.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-OB-01, LC-OB-02, LC-OB-03, LC-OB-04, LC-OB-05, LC-OB-06, LC-OB-07, LC-OB-08, LC-OB-13, LC-OB-14, LC-OB-42)"
+ },
+ "passos": [
+  {
+   "id": "LC-OB-01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação WATER vinculada ao contrato (responsável TENANT, troca de titularidade exigida)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "WATER",
+    "responsibleParty": "TENANT",
+    "provider": "Companhia de Água Fictícia",
+    "accountNumber": "AG-001",
+    "transferRequired": true,
+    "evidenceFileId": "2d620c5a-8ba8-4e4d-8e2f-5c6f82a8938c",
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 37,
+   "quando": "2026-11-11T03:42:33.847Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "WATER",
+      "responsibleParty": "TENANT",
+      "provider": "Companhia de Água Fictícia",
+      "accountNumber": "AG-001",
+      "transferRequired": true,
+      "evidenceFileId": "2d620c5a-8ba8-4e4d-8e2f-5c6f82a8938c",
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "TRANSFER_PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.833Z",
+      "created_at": "2026-11-11T03:42:33.833Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": {
+      "id": "e90a5fa4-40a1-4e88-a322-05973545e82d",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+      "fromPersonId": null,
+      "toPersonId": null,
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.838Z",
+      "created_at": "2026-11-11T03:42:33.838Z",
+      "evidenceFileId": null,
+      "completedAt": null,
+      "dueDate": null,
+      "deletedBy": null,
+      "deleted_at": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd",
+    "M5-A0095-1df93e"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação ELECTRICITY vinculada ao contrato (responsável TENANT, troca de titularidade exigida)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "ELECTRICITY",
+    "responsibleParty": "TENANT",
+    "provider": "Distribuidora de Energia Fictícia",
+    "accountNumber": "EL-002",
+    "transferRequired": true,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:33.870Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "515517c4-e447-4d08-b4ac-633db5f485a3",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "ELECTRICITY",
+      "responsibleParty": "TENANT",
+      "provider": "Distribuidora de Energia Fictícia",
+      "accountNumber": "EL-002",
+      "transferRequired": true,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "TRANSFER_PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.854Z",
+      "created_at": "2026-11-11T03:42:33.854Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": {
+      "id": "e35a5c8a-6d1d-4a7e-8395-2b50e13506dc",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "515517c4-e447-4d08-b4ac-633db5f485a3",
+      "fromPersonId": null,
+      "toPersonId": null,
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.856Z",
+      "created_at": "2026-11-11T03:42:33.856Z",
+      "evidenceFileId": null,
+      "completedAt": null,
+      "dueDate": null,
+      "deletedBy": null,
+      "deleted_at": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd",
+    "M5-A0095-1df93e"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação GAS vinculada ao contrato (responsável TENANT)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "GAS",
+    "responsibleParty": "TENANT",
+    "provider": "Gás Fictício",
+    "accountNumber": "GS-003",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:33.883Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "cced2296-66dd-46a7-ac10-ab96452c9795",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "GAS",
+      "responsibleParty": "TENANT",
+      "provider": "Gás Fictício",
+      "accountNumber": "GS-003",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.879Z",
+      "created_at": "2026-11-11T03:42:33.879Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação CONDO vinculada ao contrato (responsável TENANT)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "CONDO",
+    "responsibleParty": "TENANT",
+    "provider": "Condomínio Edifício Fictício",
+    "accountNumber": "CD-004",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:33.894Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "8b7f8c3d-5e34-4483-a2bb-9c0b71dca383",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "CONDO",
+      "responsibleParty": "TENANT",
+      "provider": "Condomínio Edifício Fictício",
+      "accountNumber": "CD-004",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.890Z",
+      "created_at": "2026-11-11T03:42:33.890Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação IPTU vinculada ao contrato (responsável LANDLORD)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "IPTU",
+    "responsibleParty": "LANDLORD",
+    "provider": "Prefeitura Fictícia",
+    "accountNumber": "IP-005",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:33.904Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "a16635ff-ba1f-47c0-b21c-fba8394df2e2",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "IPTU",
+      "responsibleParty": "LANDLORD",
+      "provider": "Prefeitura Fictícia",
+      "accountNumber": "IP-005",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.901Z",
+      "created_at": "2026-11-11T03:42:33.901Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação SPU vinculada ao contrato (responsável LANDLORD)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "SPU",
+    "responsibleParty": "LANDLORD",
+    "provider": "SPU Fictícia",
+    "accountNumber": "SP-006",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:33.914Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "1af5af4f-477e-401e-af61-af3982a77525",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "SPU",
+      "responsibleParty": "LANDLORD",
+      "provider": "SPU Fictícia",
+      "accountNumber": "SP-006",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.911Z",
+      "created_at": "2026-11-11T03:42:33.911Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação OTHER vinculada ao contrato (responsável LANDLORD)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "OTHER",
+    "responsibleParty": "LANDLORD",
+    "provider": "Taxa de lixo fictícia",
+    "accountNumber": "OT-007",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:33.925Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "19f8e0fe-b31f-4cdf-bc26-368f5d3a2845",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "OTHER",
+      "responsibleParty": "LANDLORD",
+      "provider": "Taxa de lixo fictícia",
+      "accountNumber": "OT-007",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.922Z",
+      "created_at": "2026-11-11T03:42:33.922Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tipo de obrigação fora da lista é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "INTERNET",
+    "responsibleParty": "TENANT"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_OBLIGATION_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "UTILITY_OBLIGATION_VALIDATION",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:33.931Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "UTILITY_OBLIGATION_VALIDATION",
+     "message": "\"utilityType\" deve ser um de: WATER, ELECTRICITY, GAS, CONDO, IPTU, SPU, OTHER.",
+     "traceId": "a7ff67ad-f04f-4204-b8f4-1af5b93cb192"
+    }
+   },
+   "req": [
+    "M5-A0338-d0b0bc"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Conta de consumo da obrigação de água",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-accounts",
+   "corpoEnviado": {
+    "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+    "provider": "Companhia de Água Fictícia",
+    "accountNumber": "AG-001",
+    "holderPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:34.005Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "fd37b911-450f-43b5-be51-48d8279595ec",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+     "provider": "Companhia de Água Fictícia",
+     "accountNumber": "AG-001",
+     "holderPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+     "status": "ACTIVE",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:33.995Z",
+     "created_at": "2026-11-11T03:42:33.995Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0270-5f73bd",
+    "M5-A0327-22b135",
+    "M5-A0343-c56197",
+    "M5-A0338-d0b0bc"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-42",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: comprovante que não é arquivo desta empresa é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "GAS",
+    "responsibleParty": "TENANT",
+    "evidenceFileId": "00000000-0000-4000-8000-000000000007"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_OBLIGATION_EVIDENCE_NOT_FOUND"
+   },
+   "status": 400,
+   "codigo": "UTILITY_OBLIGATION_EVIDENCE_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:34.344Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "UTILITY_OBLIGATION_EVIDENCE_NOT_FOUND",
+     "message": "O arquivo informado em \"evidenceFileId\" não existe nesta empresa.",
+     "traceId": "058a381c-9ba3-40f1-a66b-3badcbd6d93c"
+    }
+   },
+   "req": [
+    "M5-A0094-c81c5a",
+    "M5-A0093-f1f8ea",
+    "M5-A0338-d0b0bc"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-OB-13",
+   "req": [
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "perfil": "A:gestor",
+   "descricao": "Obrigações na tabela do livro legal.lease_obligations: responsável, periodicidade e dia do vencimento, provedor, conta, troca exigida, comprovante e status",
+   "sql": "SELECT utility_type, responsible_party, periodicity, due_day, provider, account_number, transfer_required, evidence_file_id, status FROM legal.lease_obligations WHERE contract_id = :c ORDER BY utility_type",
+   "resultado": [
+    {
+     "utility_type": "CONDO",
+     "responsible_party": "TENANT",
+     "periodicity": "MONTHLY",
+     "due_day": 10,
+     "provider": "Condomínio Edifício Fictício",
+     "account_number": "CD-004",
+     "transfer_required": false,
+     "evidence_file_id": null,
+     "status": "ACTIVE"
+    },
+    {
+     "utility_type": "ELECTRICITY",
+     "responsible_party": "TENANT",
+     "periodicity": "MONTHLY",
+     "due_day": 10,
+     "provider": "Distribuidora de Energia Fictícia",
+     "account_number": "EL-002",
+     "transfer_required": true,
+     "evidence_file_id": null,
+     "status": "TRANSFER_PENDING"
+    },
+    {
+     "utility_type": "GAS",
+     "responsible_party": "TENANT",
+     "periodicity": "MONTHLY",
+     "due_day": 10,
+     "provider": "Gás Fictício",
+     "account_number": "GS-003",
+     "transfer_required": false,
+     "evidence_file_id": null,
+     "status": "ACTIVE"
+    },
+    {
+     "utility_type": "IPTU",
+     "responsible_party": "LANDLORD",
+     "periodicity": "ANNUAL",
+     "due_day": null,
+     "provider": "Prefeitura Fictícia",
+     "account_number": "IP-PADRAO",
+     "transfer_required": false,
+     "evidence_file_id": null,
+     "status": "ACTIVE"
+    },
+    {
+     "utility_type": "IPTU",
+     "responsible_party": "LANDLORD",
+     "periodicity": "MONTHLY",
+     "due_day": 10,
+     "provider": "Prefeitura Fictícia",
+     "account_number": "IP-005",
+     "transfer_required": false,
+     "evidence_file_id": null,
+     "status": "ACTIVE"
+    },
+    {
+     "utility_type": "OTHER",
+     "responsible_party": "LANDLORD",
+     "periodicity": "MONTHLY",
+     "due_day": 10,
+     "provider": "Taxa de lixo fictícia",
+     "account_number": "OT-007",
+     "transfer_required": false,
+     "evidence_file_id": null,
+     "status": "ACTIVE"
+    },
+    {
+     "utility_type": "SPU",
+     "responsible_party": "LANDLORD",
+     "periodicity": "MONTHLY",
+     "due_day": 10,
+     "provider": "SPU Fictícia",
+     "account_number": "SP-006",
+     "transfer_required": false,
+     "evidence_file_id": null,
+     "status": "ACTIVE"
+    },
+    {
+     "utility_type": "WATER",
+     "responsible_party": "TENANT",
+     "periodicity": "MONTHLY",
+     "due_day": 10,
+     "provider": "Companhia de Água Fictícia",
+     "account_number": "AG-001",
+     "transfer_required": true,
+     "evidence_file_id": "2d620c5a-8ba8-4e4d-8e2f-5c6f82a8938c",
+     "status": "TRANSFER_PENDING"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:33.984Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

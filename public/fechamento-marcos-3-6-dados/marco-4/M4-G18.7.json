@@ -1,0 +1,115 @@
+{
+ "id": "M4-G§18.7",
+ "secao": "Guia §18 Não improvisar",
+ "requisito": "\"❌ Não calcular comissão com percentual hard-coded.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM1 percentual/base/versão nunca vêm do pedido; sem regra publicada falha fechado",
+   "status": "passou",
+   "duracaoMs": 25,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T41",
+   "tipo": "http",
+   "linhas": [
+    "M4-§14.1",
+    "M4-G§1.6",
+    "M4-G§18.7"
+   ],
+   "titulo": "Checker publica a regra de comissão (MFA recente): percentuais por componente, versão gravada",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/commission-rule",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "componentPercentages": {
+     "BROKER": 5,
+     "MANAGER": 2,
+     "CORRESPONDENT": 1
+    },
+    "description": "Regra fictícia da captura do Marco 4"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 58,
+   "quando": "2026-11-11T01:35:13.066Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "90c6f137-0045-4c83-a150-a5e57502e768",
+     "ruleCode": "REG-FIN-002",
+     "versionNumber": 1,
+     "components": {
+      "BROKER": 5,
+      "MANAGER": 2,
+      "CORRESPONDENT": 1
+     },
+     "base": "SOURCE_ENTRY_AMOUNT"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T45",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§18.7"
+   ],
+   "titulo": "Percentual informado no pedido: recusado (vem da regra vigente, nunca fixo no código)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "3d3d0645-f19e-4982-a04a-51813387630c",
+    "sourceEntryId": "700ff4f4-4cd0-4c9f-81ec-75a6333203ae",
+    "component": "BROKER",
+    "installmentsCount": 2,
+    "firstDueAt": "2026-11-16T01:35:13.236Z",
+    "idempotencyKey": "m4-com-0871300",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+    "percentage": 10
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_COMMISSION_VALUES_FROM_RULE"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_COMMISSION_VALUES_FROM_RULE",
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T01:35:13.270Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_COMMISSION_VALUES_FROM_RULE",
+     "message": "Percentual, base e versão da regra não são informados no pedido: vêm da regra de comissão vigente (Caderno §14).",
+     "traceId": "17f13c1f-dc57-475a-bf97-a172615f579a"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

@@ -1,0 +1,50 @@
+{
+  "id": "M5-A0316-86b11c",
+  "capturadoEm": "2026-11-11T10:27:20.385Z",
+  "passos": [
+    {
+      "id": "CT5-48",
+      "req": [
+        "M5-A0316-86b11c",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Entrega de imóvel usado liberada (locação ativa, vistoria de entrada assinada, checklist dispensado, foto e via do termo; a assinatura da vistoria pela rota exige MFA humano)",
+      "perfil": "serviço (sem HTTP)",
+      "metodo": "CALL",
+      "rota": "key-delivery.service.releaseKeyDelivery",
+      "status": "ok",
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": "ok"
+      },
+      "ok": true,
+      "resumo": "{\"id\":\"dd1543f3-a8c6-4f4d-909c-6808861c8c75\",\"termVersion\":\"KD-TERM-v4\"}",
+      "quando": "2026-11-11T10:27:12.384Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "CT5-49",
+      "req": [
+        "M5-A0316-86b11c",
+        "M5-A0311-23bfba"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "Termo gravado com a versão PUBLICADA do modelo jurídico do imóvel usado (nome e versão no texto, coberto pelo hash) e keys.delivered publicado uma vez",
+      "sql": "SELECT k.term_version, tv.status AS status_modelo, tv.origin, t.name AS modelo, position(t.name in k.term_text) > 0 AS nome_no_texto, k.term_hash = encode(sha256(convert_to(k.term_text, 'UTF8')), 'hex') AS hash_confere, (SELECT count(*)::int FROM integration.outbox_events WHERE event_type = 'keys.delivered' AND aggregate_id = k.id) AS keys_delivered FROM legal.key_deliveries k JOIN legal.template_versions tv ON tv.id = k.term_template_version_id JOIN legal.contract_templates t ON t.id = tv.template_id WHERE k.id = :id",
+      "resultado": [
+        {
+          "term_version": "KD-TERM-v4",
+          "status_modelo": "PUBLISHED",
+          "origin": "CODE_SEED",
+          "modelo": "Termo de entrega de imóvel usado",
+          "nome_no_texto": true,
+          "hash_confere": true,
+          "keys_delivered": 1
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:27:12.581Z"
+    }
+  ]
+}

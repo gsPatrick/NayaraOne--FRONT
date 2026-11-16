@@ -1,0 +1,949 @@
+{
+ "geradoEm": "2026-11-12T10:20:26.166Z",
+ "arquivoDeTeste": "test/people.cadastroDedupMerge.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-12T10:20:22.555Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "a861cd9e-1a1b-4d1c-afda-3c352a1265f2",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+      "name": "CI gestor — tenant A",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "roles": [
+      "CI GESTOR"
+     ],
+     "permissions": [
+      "finance:read",
+      "finance:create",
+      "finance:update",
+      "finance:settle",
+      "finance:approve",
+      "finance:reconcile",
+      "finance:bankAccounts",
+      "finance:chartOfAccounts",
+      "legal:read",
+      "legal:create",
+      "legal:update",
+      "legal:sign",
+      "legal:approve",
+      "legal:deliverKeys",
+      "lease.keys.deliver",
+      "legal:waive",
+      "legal:evidence:export",
+      "billing:read",
+      "billing:create",
+      "billing:update",
+      "billing:approve",
+      "billing:cadence:manage",
+      "people:read",
+      "people:create",
+      "people:update",
+      "properties:read",
+      "properties:create",
+      "properties:update",
+      "users:read"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:22.814Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "bc24b5bc-7e8a-4e61-b9f6-b29d16dc6e7c",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "4bb5aabc-9bc7-4477-b62c-74c25e6cab17",
+      "name": "CI checker — tenant A",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "roles": [
+      "CI CHECKER"
+     ],
+     "permissions": [
+      "procurement:approve",
+      "procurement:read",
+      "procurement:create",
+      "finance:approve",
+      "finance:read",
+      "finance:create",
+      "legal:approve",
+      "legal:read",
+      "legal:create",
+      "people:read",
+      "people:create",
+      "people:dedup:override"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:22.887Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Sonda CPF 1794478819092",
+    "taxIdNormalized": "[CPF omitido]"
+   },
+   "status": 422,
+   "codigo": "PERSON_TAX_ID_INVALID",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_TAX_ID_INVALID",
+     "message": "CPF inválido: os dígitos verificadores não conferem. Confira o número digitado.",
+     "details": {
+      "fields": [
+       {
+        "field": "taxIdNormalized",
+        "message": "CPF inválido: os dígitos verificadores não conferem. Confira o número digitado."
+       }
+      ]
+     },
+     "traceId": "404fb226-95aa-470c-a21b-62a23da245f9"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:22.929Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PJ",
+    "legalName": "Sonda CNPJ 1794478819092",
+    "taxIdNormalized": "11.222.333/0001-80"
+   },
+   "status": 422,
+   "codigo": "PERSON_TAX_ID_INVALID",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_TAX_ID_INVALID",
+     "message": "CNPJ inválido: os dígitos verificadores não conferem. Confira o número digitado.",
+     "details": {
+      "fields": [
+       {
+        "field": "taxIdNormalized",
+        "message": "CNPJ inválido: os dígitos verificadores não conferem. Confira o número digitado."
+       }
+      ]
+     },
+     "traceId": "c2f91e9e-511b-4550-af31-ec4aac4054c4"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:23.177Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "CPF válido 1794478819092",
+    "taxIdNormalized": "14443282041"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "9ffccf06-8f1b-4b52-a6c3-b2a685ac7744",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "CPF válido 1794478819092",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-41",
+     "taxIdNormalizedHash": "****1460",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:20:22.961Z",
+     "updated_at": "2026-11-12T10:20:22.961Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:23.221Z",
+   "requisicao": "GET /api/v1/people/roles-catalog",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "code": "CLIENTE",
+      "label": "Cliente"
+     },
+     {
+      "code": "PROPRIETARIO",
+      "label": "Proprietário"
+     },
+     {
+      "code": "VENDEDOR",
+      "label": "Vendedor"
+     },
+     {
+      "code": "LOCATARIO",
+      "label": "Locatário"
+     },
+     {
+      "code": "FORNECEDOR",
+      "label": "Fornecedor"
+     },
+     {
+      "code": "CORRETOR",
+      "label": "Corretor"
+     },
+     {
+      "code": "COMPRADOR",
+      "label": "Comprador"
+     },
+     {
+      "code": "FIADOR",
+      "label": "Fiador"
+     },
+     {
+      "code": "COLABORADOR",
+      "label": "Colaborador"
+     },
+     {
+      "code": "LOCADOR",
+      "label": "Locador"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:23.451Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Papéis 1794478819092",
+    "roles": [
+     "CLIENTE",
+     "VENDEDOR"
+    ]
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Papéis 1794478819092\",\"preferredName\":null,\"taxIdNormalized\":null,\"taxIdNormalizedHash\":null,\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:23.289Z\",\"updated_at\":\"2026-11-12T10:20:23.289Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[],\"documents\":[],\"roles\":[{\"id\":\"68467465-c5ce-4b19-adc6-98a9c964d9b1\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\",\"roleCode\":\"CLIENTE\",\"startsAt\":null,\"endsAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:23.305Z\",\"updated_at\":\"2026-11-12T10:20:23.305Z\",\"deleted_at\":null,\"person_id\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\"},{\"id\":\"c3196524-4b79-44b0-b707-819d95807fd2\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\",\"roleCode\":\"VENDEDOR\",\"startsAt\":null,\"endsAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b…"
+  },
+  {
+   "em": "2026-11-12T10:20:23.530Z",
+   "requisicao": "POST /api/v1/people/d3af4cab-0cef-4da6-b22e-6016ab18301b/roles",
+   "corpoEnviado": {
+    "roleCode": "LOCATARIO"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "9001f56c-f3fb-4a31-aa79-410fd154d30c",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personId": "d3af4cab-0cef-4da6-b22e-6016ab18301b",
+     "roleCode": "LOCATARIO",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "updated_at": "2026-11-12T10:20:23.468Z",
+     "created_at": "2026-11-12T10:20:23.468Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:23.569Z",
+   "requisicao": "GET /api/v1/people/d3af4cab-0cef-4da6-b22e-6016ab18301b/roles",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":[{\"id\":\"9001f56c-f3fb-4a31-aa79-410fd154d30c\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\",\"roleCode\":\"LOCATARIO\",\"startsAt\":null,\"endsAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:23.468Z\",\"updated_at\":\"2026-11-12T10:20:23.468Z\",\"deleted_at\":null,\"person_id\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\"},{\"id\":\"c3196524-4b79-44b0-b707-819d95807fd2\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\",\"roleCode\":\"VENDEDOR\",\"startsAt\":null,\"endsAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:23.312Z\",\"updated_at\":\"2026-11-12T10:20:23.312Z\",\"deleted_at\":null,\"person_id\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\"},{\"id\":\"68467465-c5ce-4b19-adc6-98a9c964d9b1\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"d3af4cab-0cef-4da6-b22e-6016ab18301b\",\"roleCode\":\"CLIENTE\",\"startsAt\":null,\"endsAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:23.305Z\",\"updated_at\":\"2026-11-12T10:20:23.305Z…"
+  },
+  {
+   "em": "2026-11-12T10:20:23.593Z",
+   "requisicao": "POST /api/v1/people/d3af4cab-0cef-4da6-b22e-6016ab18301b/roles",
+   "corpoEnviado": {
+    "roleCode": "INVESTIDOR"
+   },
+   "status": 400,
+   "codigo": "PERSON_ROLE_VALIDATION",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_ROLE_VALIDATION",
+     "message": "O papel \"INVESTIDOR\" não está no catálogo de papéis desta empresa. Papéis aceitos: Cliente, Proprietário, Vendedor, Locatário, Fornecedor, Corretor, Comprador, Fiador, Colaborador, Locador.",
+     "details": {
+      "fields": [
+       {
+        "field": "roleCode",
+        "message": "Escolha um papel do catálogo."
+       }
+      ],
+      "aceitos": [
+       "CLIENTE",
+       "PROPRIETARIO",
+       "VENDEDOR",
+       "LOCATARIO",
+       "FORNECEDOR",
+       "CORRETOR",
+       "COMPRADOR",
+       "FIADOR",
+       "COLABORADOR",
+       "LOCADOR"
+      ]
+     },
+     "traceId": "bd7920dc-e03e-4fe2-9c3e-036e90683eac"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:23.839Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Rosa1794478819092 Amaral",
+    "birthOrFoundationDate": "1975-09-09",
+    "contacts": [
+     {
+      "contactType": "PHONE",
+      "valueNormalized": "(31) 978819092",
+      "isPrimary": true
+     }
+    ]
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"b25a23b4-0714-498a-be17-95c57b6e936f\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Rosa1794478819092 Amaral\",\"preferredName\":null,\"taxIdNormalized\":null,\"taxIdNormalizedHash\":null,\"birthOrFoundationDate\":\"1975-09-09\",\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:23.628Z\",\"updated_at\":\"2026-11-12T10:20:23.628Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"56fd9173-8b44-47eb-afee-91a573bee4c8\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"b25a23b4-0714-498a-be17-95c57b6e936f\",\"contactType\":\"PHONE\",\"valueNormalized\":\"(31) 978819092\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:23.638Z\",\"updated_at\":\"2026-11-12T10:20:23.638Z\",\"deleted_at\":null,\"person_id\":\"b25a23b4-0714-498a-be17-95c57b6e936f\"}],\"documents\":[],\"roles\":[],\"addresses\":[],\"dataQuality\":{\"score\":33,\"missing\":[{\"key\":\"taxId\",\"label\":\"CPF/CNPJ informado\"},{\"key\":\"address\",\"label\":\"Ao menos um endereço cadastrado\"},{\"key\":\"document\",\"label\":\"Ao menos um documento anexado\"},{\"key\":\"role\",\"label\"…"
+  },
+  {
+   "em": "2026-11-12T10:20:23.907Z",
+   "requisicao": "POST /api/v1/people/duplicates/check",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "ROSA1794478819092 M. AMARAL",
+    "birthOrFoundationDate": "1975-09-09",
+    "contacts": [
+     {
+      "contactType": "WHATSAPP",
+      "valueNormalized": "+55 31 978819092"
+     }
+    ]
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "forte": {
+      "nestaEmpresa": null,
+      "noGrupo": false,
+      "podeVincular": false
+     },
+     "medio": {
+      "candidatos": [
+       {
+        "personId": "b25a23b4-0714-498a-be17-95c57b6e936f",
+        "legalName": "Rosa1794478819092 Amaral",
+        "motivo": "MESMO_TELEFONE",
+        "contactType": "PHONE"
+       }
+      ],
+      "noGrupo": false,
+      "podeForcar": false,
+      "motivoMinimo": 10
+     },
+     "fraco": {
+      "candidatos": []
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:24.007Z",
+   "requisicao": "POST /api/v1/people/duplicates/check",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "ROSA1794478819092 M. AMARAL",
+    "birthOrFoundationDate": "1975-09-09"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "forte": {
+      "nestaEmpresa": null,
+      "noGrupo": false,
+      "podeVincular": false
+     },
+     "medio": {
+      "candidatos": [],
+      "noGrupo": false,
+      "podeForcar": false,
+      "motivoMinimo": 10
+     },
+     "fraco": {
+      "candidatos": [
+       {
+        "personId": "b25a23b4-0714-498a-be17-95c57b6e936f",
+        "legalName": "Rosa1794478819092 Amaral",
+        "reason": "NOME_E_DATA_NASCIMENTO_SEMELHANTES"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:24.035Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "ROSA1794478819092 M. AMARAL",
+    "birthOrFoundationDate": "1975-09-09"
+   },
+   "status": 409,
+   "codigo": "PERSON_SIMILAR_REVIEW_REQUIRED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_SIMILAR_REVIEW_REQUIRED",
+     "message": "Encontramos cadastro parecido (mesmo nome e mesma data de nascimento ou endereço). Revise antes de criar.",
+     "details": {
+      "nivel": "FRACO",
+      "candidatos": [
+       {
+        "personId": "b25a23b4-0714-498a-be17-95c57b6e936f",
+        "legalName": "Rosa1794478819092 Amaral",
+        "reason": "NOME_E_DATA_NASCIMENTO_SEMELHANTES"
+       }
+      ]
+     },
+     "traceId": "dce705b0-a046-47b5-b93a-6376d9217dee"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:24.281Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "ROSA1794478819092 M. AMARAL",
+    "birthOrFoundationDate": "1975-09-09",
+    "similarReviewed": true
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "85ca8de7-6552-49ce-a803-f28ec6f656a5",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "ROSA1794478819092 M. AMARAL",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": "1975-09-09",
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:20:24.069Z",
+     "updated_at": "2026-11-12T10:20:24.069Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:24.457Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Base Exceção 1794478819092",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": "[e-mail omitido]"
+     }
+    ]
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"13dadb89-11c1-45be-ab8a-1fc46d3b46c9\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Base Exceção 1794478819092\",\"preferredName\":null,\"taxIdNormalized\":null,\"taxIdNormalizedHash\":null,\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:24.305Z\",\"updated_at\":\"2026-11-12T10:20:24.305Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"653a3087-e969-4b70-b7ae-43c413dbe3e1\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"13dadb89-11c1-45be-ab8a-1fc46d3b46c9\",\"contactType\":\"EMAIL\",\"valueNormalized\":\"[e-mail omitido]\",\"isPrimary\":false,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:24.319Z\",\"updated_at\":\"2026-11-12T10:20:24.319Z\",\"deleted_at\":null,\"person_id\":\"13dadb89-11c1-45be-ab8a-1fc46d3b46c9\"}],\"documents\":[],\"roles\":[],\"addresses\":[],\"dataQuality\":{\"score\":33,\"missing\":[{\"key\":\"taxId\",\"label\":\"CPF/CNPJ informado\"},{\"key\":\"address\",\"label\":\"Ao menos um endereço cadastrado\"},{\"key\":\"document\",\"label\":\"Ao menos um documento anexado\"},{\"key\":…"
+  },
+  {
+   "em": "2026-11-12T10:20:24.468Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Outra Pessoa 1794478819092",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": " [e-mail omitido]"
+     }
+    ]
+   },
+   "status": 409,
+   "codigo": "PERSON_DUPLICATE",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_DUPLICATE",
+     "message": "Já existe pessoa com o mesmo telefone ou e-mail. Revise o cadastro existente antes de criar outro.",
+     "details": {
+      "nivel": "MEDIO",
+      "existingPersonId": "13dadb89-11c1-45be-ab8a-1fc46d3b46c9",
+      "candidatos": [
+       {
+        "personId": "13dadb89-11c1-45be-ab8a-1fc46d3b46c9",
+        "legalName": "Base Exceção 1794478819092",
+        "motivo": "MESMO_EMAIL",
+        "contactType": "EMAIL"
+       }
+      ],
+      "podeForcar": false,
+      "motivoMinimo": 10
+     },
+     "traceId": "2b16b61c-68dd-4bf3-ab9e-e5cd5c244627"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:24.483Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Outra Pessoa 1794478819092",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": " [e-mail omitido]"
+     }
+    ],
+    "allowDuplicate": true,
+    "duplicateReason": "Pessoa diferente que usa o e-mail do escritório."
+   },
+   "status": 403,
+   "codigo": "PERSON_DUPLICATE_OVERRIDE_DENIED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_DUPLICATE_OVERRIDE_DENIED",
+     "message": "Para criar um cadastro com o mesmo telefone ou e-mail de outro é preciso a permissão de exceção de duplicidade. Peça a quem administra o cadastro.",
+     "details": {
+      "required": "people:dedup:override"
+     },
+     "traceId": "5ebcd796-bbdf-4a88-9cc9-d2a6fe38bc7d"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:24.510Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Outra Pessoa 1794478819092",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": " [e-mail omitido]"
+     }
+    ],
+    "allowDuplicate": true
+   },
+   "status": 422,
+   "codigo": "PERSON_DUPLICATE_REASON_REQUIRED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_DUPLICATE_REASON_REQUIRED",
+     "message": "Explique por que este cadastro não é a mesma pessoa (mínimo de 10 caracteres).",
+     "details": {
+      "fields": [
+       {
+        "field": "duplicateReason",
+        "message": "Explique por que este cadastro não é a mesma pessoa (mínimo de 10 caracteres)."
+       }
+      ],
+      "motivoMinimo": 10
+     },
+     "traceId": "4db2ae9c-5b68-4977-b03f-5eb40c9913cd"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:24.672Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Outra Pessoa 1794478819092",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": " [e-mail omitido]"
+     }
+    ],
+    "allowDuplicate": true,
+    "duplicateReason": "Pessoa diferente que usa o e-mail do escritório."
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"f33468f5-97f2-4f89-a6cb-8673a8c619a6\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Outra Pessoa 1794478819092\",\"preferredName\":null,\"taxIdNormalized\":null,\"taxIdNormalizedHash\":null,\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"4bb5aabc-9bc7-4477-b62c-74c25e6cab17\",\"updatedBy\":\"4bb5aabc-9bc7-4477-b62c-74c25e6cab17\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:24.520Z\",\"updated_at\":\"2026-11-12T10:20:24.520Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"c4f7fcac-68c1-46b6-b9d2-d296574acfca\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"f33468f5-97f2-4f89-a6cb-8673a8c619a6\",\"contactType\":\"EMAIL\",\"valueNormalized\":\" [e-mail omitido]\",\"isPrimary\":false,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"4bb5aabc-9bc7-4477-b62c-74c25e6cab17\",\"updatedBy\":\"4bb5aabc-9bc7-4477-b62c-74c25e6cab17\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:24.527Z\",\"updated_at\":\"2026-11-12T10:20:24.527Z\",\"deleted_at\":null,\"person_id\":\"f33468f5-97f2-4f89-a6cb-8673a8c619a6\"}],\"documents\":[],\"roles\":[],\"addresses\":[],\"dataQuality\":{\"score\":33,\"missing\":[{\"key\":\"taxId\",\"label\":\"CPF/CNPJ informado\"},{\"key\":\"address\",\"label\":\"Ao menos um endereço cadastrado\"},{\"key\":\"document\",\"label\":\"Ao menos um documento anexado\"},{\"key\"…"
+  },
+  {
+   "em": "2026-11-12T10:20:24.938Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Canon 1794478819092",
+    "taxIdNormalized": "30926196251"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "e26366bc-2931-4f83-9c95-e2053a70d098",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "Canon 1794478819092",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-51",
+     "taxIdNormalizedHash": "****6923",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:20:24.700Z",
+     "updated_at": "2026-11-12T10:20:24.700Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:25.227Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Absorvida 1794478819092"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "37640f6e-6f50-4678-82f8-a4fa70520904",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "Absorvida 1794478819092",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:20:24.955Z",
+     "updated_at": "2026-11-12T10:20:24.955Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:25.553Z",
+   "requisicao": "POST /api/v1/people/e26366bc-2931-4f83-9c95-e2053a70d098/merge",
+   "corpoEnviado": {
+    "absorbedId": "37640f6e-6f50-4678-82f8-a4fa70520904"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "canonicalId": "e26366bc-2931-4f83-9c95-e2053a70d098",
+     "absorbedId": "37640f6e-6f50-4678-82f8-a4fa70520904",
+     "status": "MERGED",
+     "remappedReferences": {
+      "crm.feedback_cases.person_id": 1,
+      "crm.proposals.proposed_by_person_id": 1
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:25.785Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Outro CPF 1794478819092",
+    "taxIdNormalized": "37733759641"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "8595eca1-b4ec-4acd-8bf0-c5f453f03b74",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "Outro CPF 1794478819092",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-41",
+     "taxIdNormalizedHash": "****9401",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:20:25.594Z",
+     "updated_at": "2026-11-12T10:20:25.594Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:25.817Z",
+   "requisicao": "POST /api/v1/people/e26366bc-2931-4f83-9c95-e2053a70d098/merge",
+   "corpoEnviado": {
+    "absorbedId": "8595eca1-b4ec-4acd-8bf0-c5f453f03b74"
+   },
+   "status": 422,
+   "codigo": "PERSON_MERGE_CONFLICT",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_MERGE_CONFLICT",
+     "message": "Conflito de identidade: as duas pessoas têm documentos (CPF/CNPJ) preenchidos e diferentes entre si.",
+     "details": {
+      "canonicalTaxId": "30926196251",
+      "absorbedTaxId": "37733759641"
+     },
+     "traceId": "3e7e2be3-6eb0-417d-9e0e-da094e336830"
+    }
+   }
+  }
+ ]
+}

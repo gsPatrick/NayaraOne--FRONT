@@ -1,0 +1,85 @@
+{
+  "capturadoEm": "2026-11-11T12:48:45.533Z",
+  "pedido": {
+    "taskType": "classificar_cadastro"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "fe7c5086-e19a-4498-af12-51a157dd679e",
+        "status": "COMPLETED",
+        "answer": "Qualidade do cadastro de QA-M3CB Cliente 179440132513098716 [1]: ruim (nota 14 de 100; bom a partir de 80, regular a partir de 50).\nFalta no cadastro [1]: CPF/CNPJ informado; Ao menos um contato (telefone/e-mail) cadastrado; Ao menos um endereço cadastrado; Ao menos um documento anexado; Ao menos um papel (cliente/proprietário/etc.) atribuído; RG ou CIN ou CNH ou RG_CPF (faltante).",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "people",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Cadastro de QA-M3CB Cliente 179440132513098716. Nota de completude 14. Campos faltantes: CPF/CNPJ informado; Ao menos um contato (telefone/e-mail) cadastrado; Ao menos um endereço cadastrado; Ao menos um documento anexado; Ao menos um papel (cliente/proprietário/etc.) atribuído.",
+            "retrievedAt": "2026-11-11T12:48:45.368Z"
+          },
+          {
+            "ref": 2,
+            "type": "READ_MODEL",
+            "title": "people.documents",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Documentos exigidos: RG ou CIN ou CNH ou RG_CPF faltante. Pendentes do financiamento: nenhum.",
+            "retrievedAt": "2026-11-11T12:48:45.368Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:45.368Z",
+        "proposals": [],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": {
+          "tipo": "QUALIDADE_CADASTRO",
+          "pessoa": "e9f0d14c-0bcf-477d-9044-d1ee6c5129da",
+          "tipoPessoa": "PF",
+          "nota": 14,
+          "classe": "RUIM",
+          "camposFaltantes": [
+            "CPF/CNPJ informado",
+            "Ao menos um contato (telefone/e-mail) cadastrado",
+            "Ao menos um endereço cadastrado",
+            "Ao menos um documento anexado",
+            "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+          ],
+          "documentos": [
+            {
+              "exigido": "RG ou CIN ou CNH ou RG_CPF",
+              "situacao": "FALTANTE"
+            }
+          ],
+          "documentosFaltantes": [
+            "RG ou CIN ou CNH ou RG_CPF (faltante)"
+          ],
+          "documentosPendentesFinanciamento": [],
+          "notasDeCorte": {
+            "bom": 80,
+            "regular": 50
+          }
+        },
+        "replayed": false
+      }
+    }
+  }
+}

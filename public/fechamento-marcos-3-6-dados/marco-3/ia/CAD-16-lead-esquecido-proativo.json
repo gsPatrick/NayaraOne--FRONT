@@ -1,0 +1,75 @@
+{
+  "capturadoEm": "2026-11-11T12:48:32.082Z",
+  "pedido": {
+    "rota": "GET /ai/recommendations?status=PENDING (corretor responsável, depois da rotina)"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "acf191dd-236a-4bbe-806b-efab717a373a",
+          "aiRunId": null,
+          "agentCode": "NAY_COMERCIAL",
+          "relatedEntityType": "CRM_OPPORTUNITY",
+          "relatedEntityId": "35bf0475-cb21-43b9-b4b3-59dd8238b510",
+          "recommendationType": "LEAD_ESQUECIDO",
+          "title": "Lead esquecido: QA-M3CB Cliente 179440131123027606 sem contato há 12 dias",
+          "rationale": "Oportunidade na etapa NEW, nenhum contato desde a abertura. Sugestão: retomar o contato.",
+          "confidence": null,
+          "riskLevel": "LOW",
+          "status": "PENDING",
+          "proposedAction": null,
+          "payload": {
+            "base": "CREATED",
+            "etapa": "NEW",
+            "deteccao": "AUTOMATICA",
+            "diasSemContato": 12,
+            "ultimoContatoEm": null
+          },
+          "decision": null,
+          "decisionReason": null,
+          "decidedByUserId": null,
+          "decidedAt": null,
+          "outcome": null,
+          "outcomeDetail": null,
+          "outcomeAt": null,
+          "targetUserId": "3f6766f7-e479-4050-941d-a07ca492ea60",
+          "dedupKey": "dad2b11a12e803a8795a3258334921dba52e0586242eabaa4859f989b12962c1",
+          "createdAt": "2026-11-11T12:48:31.817Z"
+        },
+        {
+          "id": "aeda033d-b3b7-428d-a3a2-bd63d18ba1de",
+          "aiRunId": null,
+          "agentCode": "NAY_COMERCIAL",
+          "relatedEntityType": "CRM_OPPORTUNITY",
+          "relatedEntityId": "8fe3ff25-91e0-4734-8494-777f3ea28d82",
+          "recommendationType": "LEAD_ESQUECIDO",
+          "title": "Lead esquecido: QA-M3CB Cliente 179440130942949724 sem contato há 30 dias",
+          "rationale": "Oportunidade na etapa NEW, nenhum contato desde a abertura. Sugestão: retomar o contato.",
+          "confidence": null,
+          "riskLevel": "LOW",
+          "status": "PENDING",
+          "proposedAction": null,
+          "payload": {
+            "base": "CREATED",
+            "etapa": "NEW",
+            "deteccao": "AUTOMATICA",
+            "diasSemContato": 30,
+            "ultimoContatoEm": null
+          },
+          "decision": null,
+          "decisionReason": null,
+          "decidedByUserId": null,
+          "decidedAt": null,
+          "outcome": null,
+          "outcomeDetail": null,
+          "outcomeAt": null,
+          "targetUserId": "3f6766f7-e479-4050-941d-a07ca492ea60",
+          "dedupKey": "e4812478bd7d623764e9b0731d28a48d16db37d1659c6b43ff0272c38481fcb6",
+          "createdAt": "2026-11-11T12:48:31.800Z"
+        }
+      ]
+    }
+  }
+}

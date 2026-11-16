@@ -1,0 +1,264 @@
+{
+ "id": "M5-A0312-5a734e",
+ "secao": "P1 > 2. Princípios constitucionais [tabela: Código | Princípio | Regra]",
+ "linhaCaderno": 55,
+ "requisito": "JUR-015 | Fail closed | Na dúvida crítica/documento ausente, bloquear etapa em vez de presumir conformidade.",
+ "demandas": "M5-D013;M5-D006;M5-D024",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js gate de partes ao entrar em DOCUMENTS_PENDING; requirements.service.js (sem checklist gera e cobra; tipo sem modelo bloqueia; documento inexistente não satisfaz); src/modules/legal/contracts/application/requirementRules.service.js regra indisponível = LEGAL_REQUIREMENT_RULE_UNAVAILABLE",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "checklist documental: tipo SEM modelo bloqueia (falha fechado)",
+   "status": "pass",
+   "ms": 20.09,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "M5-07: com o padrão do tenant (true), criar versão SEM documentFileId é rejeitado na hora da criação",
+   "status": "pass",
+   "ms": 27.375,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.rodada3.test.js",
+   "nome": "Pentest (alto): id que não é uuid no corpo devolve 400 LEGAL_INVALID_ID, nunca 500, nas rotas de versão, checklist e modelo",
+   "status": "pass",
+   "ms": 499.899,
+   "commitDoTeste": "cbd80b79"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-105",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_REQUIREMENTS_GATE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_REQUIREMENTS_GATE"
+   },
+   "resumo": "erro LEGAL_CONTRACT_REQUIREMENTS_GATE: Contrato do tipo \"LEASE_RESIDENTIAL\" precisa ter partes com os papéis: LANDLORD, TENANT antes de ava",
+   "quando": "2026-11-11T03:42:24.349Z"
+  },
+  {
+   "passo": "CT-122",
+   "metodo": "POST",
+   "rota": "/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/versions",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED"
+   },
+   "resumo": "erro LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED: O campo \"documentFileId\" é obrigatório para criar uma versão de contrato: uma versão sem o arquivo d",
+   "quando": "2026-11-11T03:42:25.013Z"
+  },
+  {
+   "passo": "CT-122b",
+   "metodo": "POST",
+   "rota": "/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/versions",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_INVALID_ID",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INVALID_ID"
+   },
+   "resumo": "erro LEGAL_INVALID_ID: \"documentFileId\" precisa ser um identificador válido (uuid).",
+   "quando": "2026-11-11T03:42:25.022Z"
+  },
+  {
+   "passo": "CT-516",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_REQUIREMENT_FILE_NOT_FOUND: Documento informado em \"satisfiedByFileId\" não encontrado nesta empresa.",
+   "quando": "2026-11-11T03:42:29.147Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0312-5a734e.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.checklist.test.js \"JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança\"; test/legal.frente5.rules.test.js \"checklist documental: tipo SEM modelo bloqueia (falha fechado)\"; test/marco5.legal.test.js \"M5-07: com o padrão do tenant (true), criar versão SEM documentFileId é rejeitado na hora da criação\"; test/m5fech.contratos.rodada3.test.js \"Pentest (alto): id que não é uuid no corpo devolve 400 LEGAL_INVALID_ID, nunca 500, nas rotas de versão, checklist e modelo\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.checklist.test.js test/legal.frente5.rules.test.js test/marco5.legal.test.js test/m5fech.contratos.rodada3.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-105, CT-122, CT-122b, CT-516)"
+ },
+ "passos": [
+  {
+   "id": "CT-105",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Entrar em DOCUMENTS_PENDING exige as partes mínimas do tipo (fail closed)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "DOCUMENTS_PENDING"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_REQUIREMENTS_GATE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_REQUIREMENTS_GATE",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:24.349Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_REQUIREMENTS_GATE",
+     "message": "Contrato do tipo \"LEASE_RESIDENTIAL\" precisa ter partes com os papéis: LANDLORD, TENANT antes de avançar de status.",
+     "traceId": "5f86f8e6-1504-4865-9431-99f58dd86e0d"
+    }
+   },
+   "req": [
+    "M5-A0312-5a734e",
+    "M5-A0196-8a7471"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-122",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão sem o arquivo do documento é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/versions",
+   "corpoEnviado": {
+    "content": "Texto sem arquivo"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:25.013Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_VERSION_DOCUMENT_REQUIRED",
+     "message": "O campo \"documentFileId\" é obrigatório para criar uma versão de contrato: uma versão sem o arquivo do documento não é rastreável nem assinável. Para permitir rascunhos sem arquivo neste tenant, configure \"legal.contract_version_requires_document\" como false.",
+     "traceId": "1ff3a877-aebd-4ca9-9e98-cfc7fb992e84"
+    }
+   },
+   "req": [
+    "M5-A0209-33bcfa",
+    "M5-A0312-5a734e"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-122b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: id que não é uuid no corpo (objeto) é recusado com 400, nunca 500",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/versions",
+   "corpoEnviado": {
+    "content": "x",
+    "documentFileId": {
+     "$gt": ""
+    }
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INVALID_ID"
+   },
+   "status": 400,
+   "codigo": "LEGAL_INVALID_ID",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:25.022Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INVALID_ID",
+     "message": "\"documentFileId\" precisa ser um identificador válido (uuid).",
+     "details": {
+      "field": "documentFileId"
+     },
+     "traceId": "7f545d47-f2c6-4e88-b045-ba491187d920"
+    }
+   },
+   "req": [
+    "M5-A0209-33bcfa",
+    "M5-A0312-5a734e"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-516",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fail closed: documento inexistente não satisfaz exigência",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede",
+   "corpoEnviado": {
+    "satisfiedByFileId": "11111111-1111-4111-8111-111111111111"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:29.147Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENT_FILE_NOT_FOUND",
+     "message": "Documento informado em \"satisfiedByFileId\" não encontrado nesta empresa.",
+     "traceId": "3b3a8d9b-5faf-4cf7-9dc6-66889ccf40fc"
+    }
+   },
+   "req": [
+    "M5-A0312-5a734e",
+    "M5-A0301-5baec1"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

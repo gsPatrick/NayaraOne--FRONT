@@ -1,0 +1,65 @@
+{
+  "capturadoEm": "2026-11-11T12:48:26.402Z",
+  "pedido": {
+    "taskType": "resumir_mensagem_recebida",
+    "mensagem": "Estou insatisfeito com a demora na visita. Aguardo retorno ainda hoje."
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "560bb0c0-c34b-4374-9c63-b58bee5a3931",
+        "status": "COMPLETED",
+        "answer": "Apoio da NAY — sugestão, não decisão: não altera o cadastro do cliente nem abre ocorrência; quem decide é você no CRM.\nResumo da mensagem recebida [1]: Estou insatisfeito com a demora na visita. Aguardo retorno ainda hoje.\nSentimento (indício pelas palavras da mensagem): negativo.\nSugestão: avaliar abrir uma ocorrência de reclamação; a ocorrência só é aberta por uma pessoa.",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "crm.messages",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Mensagem recebida por WhatsApp em 11/11/2026. Texto: Estou insatisfeito com a demora na visita. Aguardo retorno ainda hoje.",
+            "retrievedAt": "2026-11-11T12:48:26.045Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:26.045Z",
+        "proposals": [
+          {
+            "id": "74523bcc-938c-4580-b89c-fd3372bb21f0",
+            "kind": "RESUMO_MENSAGEM",
+            "status": "PENDING"
+          }
+        ],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": {
+          "apoio": true,
+          "tipo": "RESUMO_MENSAGEM_RECEBIDA",
+          "mensagem": "f12a932d-8dd6-4024-a7b7-7686d8a48b22",
+          "oportunidade": "c31eb8e3-5a8c-4ae5-b510-31bd98663af5",
+          "resumo": "Estou insatisfeito com a demora na visita. Aguardo retorno ainda hoje.",
+          "sentimento": "NEGATIVO",
+          "ocorrenciaSugerida": {
+            "tipo": "COMPLAINT",
+            "rotulo": "reclamação"
+          },
+          "sensivelRemovido": [],
+          "alteraCadastro": false,
+          "abreOcorrencia": false
+        },
+        "replayed": false
+      }
+    }
+  }
+}

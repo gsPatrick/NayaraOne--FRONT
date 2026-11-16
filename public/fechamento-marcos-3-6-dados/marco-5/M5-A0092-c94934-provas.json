@@ -1,0 +1,20 @@
+{
+ "linha": "M5-A0092-c94934",
+ "marco": 5,
+ "provas": [
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-5/M5-A0092-c94934.json",
+   "bytes": 22056,
+   "sha256": "f2db810fba1024ed8286a063f3e5e106224b3692d5d99fb64cb81fdb7697f648",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-5/M5-A0092-c94934.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-5/m5vp/M5-A0092-c94934.json",
+   "bytes": 1504,
+   "sha256": "660bc21f98cd1d2d5c9677a27928e77f803076634ca0b64a35287a556c2d5b41",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-5/m5vp/M5-A0092-c94934.json",
+   "mascarado": false
+  }
+ ]
+}

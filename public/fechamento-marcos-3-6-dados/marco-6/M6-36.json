@@ -1,0 +1,170 @@
+{
+  "id": "M6-36",
+  "requisito": "API mínima: POST /measurements/:id/approve.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#approveStageMeasurement",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/medicoes: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/measurements/:id/approve aprova a medição já revisada (200)",
+      "resultado": "passou",
+      "duracaoMs": 514,
+      "executadoEm": "2026-11-11T00:13:30.578Z"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/measurements/:id/approve SEM permissão construction:approve é bloqueado (403)",
+      "resultado": "passou",
+      "duracaoMs": 84,
+      "executadoEm": "2026-11-11T00:13:30.662Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H094",
+      "H095"
+    ],
+    "resumo": [
+      "H094 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve → 403 PERMISSION_DENIED",
+      "H095 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:16.240Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H094",
+      "requisitos": [
+        "M6-36",
+        "M6-27"
+      ],
+      "cenario": "NEGATIVO: aprovar medição sem permissão de aprovação (perfil de campo)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve",
+      "perfil": "Equipe de campo da Empresa A (só construction:create/read)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 403,
+      "codigoErro": "PERMISSION_DENIED",
+      "esperado": "403",
+      "conferiu": true,
+      "duracaoMs": 41,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+          "details": {
+            "required": "construction:approve"
+          },
+          "traceId": "89b7db17-8765-4e1e-97ae-cf9313de7ade"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.240Z"
+    },
+    {
+      "id": "H095",
+      "requisitos": [
+        "M6-36",
+        "M6-10",
+        "M6-21",
+        "M6-76",
+        "M6-72",
+        "M6-85",
+        "M6-97",
+        "M6-49",
+        "M6-98",
+        "M6-106"
+      ],
+      "cenario": "Aprovar medição: conta a pagar real no Financeiro (com obra e centro de custo), status PAYABLE, etapa concluída",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 682,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "PAYABLE",
+          "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "decidedAt": "2026-11-11T00:12:16.623Z",
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:15.995Z",
+          "reviewedAt": "2026-11-11T00:12:16.190Z",
+          "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "reviewNotes": "Conferido em campo pelo fiscal",
+          "approvedAt": "2026-11-11T00:12:16.623Z",
+          "totalAmount": "41200.00",
+          "payableFinancialEntryId": "c6c73a47-c908-452c-a3db-8d8338177778",
+          "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "revisionNumber": 2,
+          "costCenterId": null,
+          "idempotencyKey": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:15.900Z",
+          "updated_at": "2026-11-11T00:12:16.897Z",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.922Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C006",
+      "requisitos": [
+        "M6-21",
+        "M6-36",
+        "M6-55",
+        "M6-68",
+        "M6-84",
+        "M6-85",
+        "M6-97",
+        "M6-76"
+      ],
+      "descricao": "Medição aprovada: exatamente UMA conta a pagar real no Financeiro, com a obra (project_id) e centro de custo",
+      "sql": "SELECT m.status, m.total_amount, (SELECT count(*) FROM finance.financial_entries f WHERE f.idempotency_key = 'measurement.payable:' || m.id)::int AS contas, f.nature, f.entry_type, f.amount, f.status AS status_conta, f.construction_project_id = $2 AS da_obra, f.cost_center_id IS NOT NULL AS com_centro_de_custo FROM construction.stage_measurements m JOIN finance.financial_entries f ON f.id = m.payable_financial_entry_id WHERE m.id = $1",
+      "resultado": [
+        {
+          "status": "PAYABLE",
+          "total_amount": "41200.00",
+          "contas": 1,
+          "nature": "PAYABLE",
+          "entry_type": "DEBIT",
+          "amount": "41200.00",
+          "status_conta": "PENDING",
+          "da_obra": true,
+          "com_centro_de_custo": true
+        }
+      ],
+      "invariante": "PAYABLE, 1 conta, PAYABLE/DEBIT do mesmo valor, ligada à obra e com centro de custo",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.184Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.403Z"
+}

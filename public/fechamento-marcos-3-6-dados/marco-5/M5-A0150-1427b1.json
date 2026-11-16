@@ -1,0 +1,102 @@
+{
+ "id": "M5-A0150-1427b1",
+ "secao": "P1 > 20. Testes adversariais [tabela: Teste | Tema | Cenário | Resultado]",
+ "linhaCaderno": 356,
+ "requisito": "JUR-TS-002 | Assinar errado | Signature aponta hash diferente | Rejeitado.",
+ "demandas": "X45-D074;M5-D015;X45-D014",
+ "implementacao": "src/modules/legal/signatures/signature.service.js:124 LEGAL_SIGNATURE_HASH_MISMATCH; src/modules/legal/signatures/framework/signature.events.js markHashMismatch (envelope HASH_MISMATCH, contrato não vai a SIGNED)",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-002: assinatura que aponta hash diferente da versão é rejeitada e o contrato continua em SIGNING",
+   "status": "pass",
+   "ms": 3594.335,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-03 JUR-TS-002/§8: webhook com hash diferente da versão enviada é rejeitado; o mesmo hash confirma",
+   "status": "pass",
+   "ms": 227.718,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco9/integracoes/m9d236.fluxo.test.js",
+   "nome": "assinatura_hash_diverge_bloqueia",
+   "status": "pass",
+   "ms": 729.034,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-201",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH"
+   },
+   "resumo": "erro LEGAL_SIGNATURE_HASH_MISMATCH: O hash do documento assinado não corresponde ao hash da versão do contrato enviada para assinatura.",
+   "quando": "2026-11-11T03:42:25.422Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0150-1427b1.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.adversariais.test.js test/m45.cadernoM5Gaps.test.js test/marco9/integracoes/m9d236.fluxo.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-201)"
+ },
+ "passos": [
+  {
+   "id": "CT-201",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-002: webhook com hash diferente do da versão é rejeitado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "abababababababababababababababababababababababababababababababab"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH"
+   },
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:25.422Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_SIGNATURE_HASH_MISMATCH",
+     "message": "O hash do documento assinado não corresponde ao hash da versão do contrato enviada para assinatura.",
+     "traceId": "ab6b9db4-0822-4941-9b2a-a26d421de10f"
+    }
+   },
+   "req": [
+    "M5-A0150-1427b1",
+    "M5-A0233-5d1840",
+    "M5-A0302-11ebaa"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

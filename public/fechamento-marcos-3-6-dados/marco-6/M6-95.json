@@ -1,0 +1,64 @@
+{
+  "id": "M6-95",
+  "requisito": "Obra aponta para group_id/company_id e, quando aplicável, unit_id.",
+  "secaoDoLivro": "Anexo I §4 Entidades núcleo: group → company → unit",
+  "implementacao": "projectReferences.js + companyRefs.js: obra confere unidade, imóvel, responsável (membro ativo) e tipo de obra da empresa; varredura: NC (obra, etapa, responsável, aceite), linha de orçamento, requisição/recebimento/devolução de material (local de estoque), chamado de garantia (quem abriu, responsável, executor da ação), locais/perdas/patrimônio do Estoque e lançamento financeiro (obra)",
+  "telaParaReteste": "Painel → Obras → Nova obra / Editar: responsáveis listados só da empresa (GET /construction/members)",
+  "commitApi": "6952bb50",
+  "branchApi": "m6fix/verificacao",
+  "commitFront": "1d3d1f2",
+  "branchFront": "m6fix/verificacao",
+  "status": "Atendido",
+  "motivoDaVerificacao": "ver Maturacao/fechamento-m3-m6/verificacao/marco-6.md",
+  "testes": [
+    {
+      "arquivo": "test/construction.m6v.referencias.test.js",
+      "nome": "M6-95: obra não aceita unidade, imóvel nem responsável de outra empresa; tipo de obra também é conferido",
+      "resultadoHead": "passou",
+      "duracaoMs": 99.873,
+      "resultadoBase": "FALHA (Missing expected rejection.)"
+    },
+    {
+      "arquivo": "test/construction.m6v.referencias.test.js",
+      "nome": "varredura: NC, linha de orçamento, lançamento financeiro e local de estoque recusam obra de outra empresa",
+      "resultadoHead": "passou",
+      "duracaoMs": 49.201,
+      "resultadoBase": "FALHA (Missing expected rejection.)"
+    },
+    {
+      "arquivo": "test/construction.m6v.referencias.test.js",
+      "nome": "varredura: etapa de outra obra, responsável/aceite fora da empresa e quem abriu o chamado de outra empresa são recusados",
+      "resultadoHead": "passou",
+      "duracaoMs": 131.931,
+      "resultadoBase": "FALHA (Missing expected rejection.)"
+    }
+  ],
+  "provasDoVerificador": [
+    {
+      "prova": "V5-M6-95: obra nao pode apontar para unit_id de OUTRA empresa",
+      "head": "passou",
+      "base41addaa2": "falhou (obra criada apontando para unidade de outra empresa (unitId=1c13e38e-53e0-4a52-a4ee-2bc07987ad60))"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Execução real dos testes no commit corrigido e na base (banco descartável, RLS real, antivírus real)",
+    "resultado": "3/3 passaram no HEAD 6952bb50; na base 41addaa2: falham",
+    "comando": "node scripts/withDisposableDb.js --port 5575 -- env CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 DISPOSABLE_DB=1 bash -c \"node scripts/seed-ci-two-tenants.js && NODE_ENV=test node --test --test-concurrency=1 <116 arquivos de Obras e vizinhos> verificacao/provas/v5-provas.test.js\" (fila global vez.sh, worktree destacado no commit 5630ac0d)",
+    "dataHora": "2026-11-12T07:21:42-03:00"
+  },
+  "telaPlaywright": "não se aplica (tela listada em telaParaReteste)",
+  "decisoes": [
+    "DI-M6V-8"
+  ],
+  "migrations": [
+    "migrations/20260101006600-m6v-tipo-de-obra-e-checklist-por-etapa.js",
+    "migrations/20260101006601-m6v-responsavel-da-etapa.js",
+    "migrations/20260101006602-m6v-baseline-imutavel-e-revisoes.js",
+    "migrations/20260101006603-m6v-evidencia-da-medicao.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006604-finance-source-event-id-e-obra-na-baixa-parcial.js",
+    "migrations/20260101006605-m6v-alcada-permissao-propria-e-quem-propoe.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006606-finance-indices-da-obra-no-ledger.js",
+    "migrations/20260101006607-m6v-indices-da-saude-da-obra.js"
+  ],
+  "geradoEm": "2026-11-12T10:41:46.760Z"
+}

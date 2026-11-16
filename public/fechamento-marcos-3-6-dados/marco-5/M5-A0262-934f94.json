@@ -1,0 +1,226 @@
+{
+ "id": "M5-A0262-934f94",
+ "secao": "P2 > 19. O que Marcelo NÃO pode improvisar",
+ "linhaCaderno": 798,
+ "requisito": "❌ Não misturar contrato de empresa diferente.",
+ "demandas": "M5-D044",
+ "implementacao": "RLS FORCE em legal.*; ids de outra empresa resolvem 404",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-013: documento da empresa B é bloqueado na versão, no checklist e no aditivo da empresa A, e B não lê o contrato de A",
+   "status": "pass",
+   "ms": 806.798,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L01: contrato de outra empresa não vaza nem por consulta direta por id (RLS bloqueia, não é filtro de aplicação)",
+   "status": "pass",
+   "ms": 105.632,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.crossCompanyIsolation.test.js",
+   "nome": "JUR-013: legal.contracts — outra empresa não enxerga nem edita o contrato via SELECT/UPDATE direto",
+   "status": "pass",
+   "ms": 79.905,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-341",
+   "metodo": "POST",
+   "rota": "/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/versions",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_VERSION_FILE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CONTRACT_VERSION_FILE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CONTRACT_VERSION_FILE_NOT_FOUND: Arquivo do documento não encontrado nesta empresa.",
+   "quando": "2026-11-11T03:42:28.062Z"
+  },
+  {
+   "passo": "CT-343",
+   "metodo": "POST",
+   "rota": "/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/versions",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro LEGAL_CONTRACT_NOT_FOUND: Contrato não encontrado.",
+   "quando": "2026-11-11T03:42:28.088Z"
+  },
+  {
+   "passo": "CT-530",
+   "metodo": "GET",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro LEGAL_CONTRACT_NOT_FOUND: Contrato não encontrado.",
+   "quando": "2026-11-11T03:42:29.378Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0262-934f94.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo e correção: test/m5fech.contratos.adversariais.test.js (JUR-TS-013) e test/m5fech.contratos.checklist.test.js; correção em contractVersions.service.js e requirements.service.js (o id de arquivo de outra empresa ou inexistente era gravado — o guard de vínculo ignora id que o RLS não mostra e o serviço não conferia).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.adversariais.test.js test/adversarial.legal.test.js test/legal.crossCompanyIsolation.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-341, CT-343, CT-530, CT-534)"
+ },
+ "passos": [
+  {
+   "id": "CT-341",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-013: versão do tenant A com o arquivo do tenant B é bloqueada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/versions",
+   "corpoEnviado": {
+    "content": "Versão com documento da empresa B",
+    "documentFileId": "595bde75-8411-4504-a702-1a36a259d40d"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CONTRACT_VERSION_FILE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_VERSION_FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:28.062Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_VERSION_FILE_NOT_FOUND",
+     "message": "Arquivo do documento não encontrado nesta empresa.",
+     "traceId": "4553f73d-672b-4af3-ab58-cd57f3a306c9"
+    }
+   },
+   "req": [
+    "M5-A0161-7c8ef5",
+    "M5-A0310-1efdf0",
+    "M5-A0240-e021a0",
+    "M5-A0262-934f94"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-343",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-013: tenant B não cria versão no contrato de A",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/versions",
+   "corpoEnviado": {
+    "content": "x",
+    "documentFileId": "595bde75-8411-4504-a702-1a36a259d40d"
+   },
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_NOT_FOUND",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:28.088Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_NOT_FOUND",
+     "message": "Contrato não encontrado.",
+     "traceId": "76d825a2-4e7a-4ec9-a4be-8facf79d5ea9"
+    }
+   },
+   "req": [
+    "M5-A0161-7c8ef5",
+    "M5-A0262-934f94"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-530",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não lê o contrato de A",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_NOT_FOUND",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:29.378Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_NOT_FOUND",
+     "message": "Contrato não encontrado.",
+     "traceId": "ccf0dd8b-1d5d-4eb1-a189-9a1a2ba28b32"
+    }
+   },
+   "req": [
+    "M5-A0161-7c8ef5",
+    "M5-A0240-e021a0",
+    "M5-A0262-934f94",
+    "M5-A0310-1efdf0"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-534",
+   "req": [
+    "M5-A0310-1efdf0",
+    "M5-A0262-934f94",
+    "M5-A0240-e021a0"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "B:gestor",
+   "descricao": "RLS: B não enxerga contratos, versões, assinaturas, exigências nem aditivos de A",
+   "sql": "SELECT (SELECT count(*) FROM legal.contracts WHERE id IN (:ids))::int AS contratos, (SELECT count(*) FROM legal.contract_versions WHERE contract_id IN (:ids))::int AS versoes, (SELECT count(*) FROM legal.signatures WHERE contract_version_id IN (SELECT id FROM legal.contract_versions WHERE contract_id IN (:ids)))::int AS assinaturas, (SELECT count(*) FROM legal.contract_requirements WHERE contract_id IN (:ids))::int AS exigencias, (SELECT count(*) FROM legal.addenda WHERE contract_id IN (:ids))::int AS aditivos",
+   "resultado": [
+    {
+     "contratos": 0,
+     "versoes": 0,
+     "assinaturas": 0,
+     "exigencias": 0,
+     "aditivos": 0
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.409Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

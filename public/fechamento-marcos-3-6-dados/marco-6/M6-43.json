@@ -1,0 +1,241 @@
+{
+  "id": "M6-43",
+  "requisito": "Tela: Lista de obras/projetos.",
+  "secaoDoLivro": "Checklist de escopo §6 (telas inferidas do escopo; o Caderno é de backend)",
+  "implementacao": "NayaraOne--FRONT app/painel/obras/lista/page.js → API listProjects",
+  "telaParaReteste": "Painel → /painel/obras/lista: abrir a tela e executar o fluxo",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: GET /construction/maintenance-cases devolve formato paginado {data, pagination} (mesmo padrão de GET /construction/projects)",
+      "resultado": "passou",
+      "duracaoMs": 46,
+      "executadoEm": "2026-11-11T00:13:30.996Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H009",
+      "H010"
+    ],
+    "resumo": [
+      "H009 POST /api/v1/construction/projects → 201",
+      "H010 GET /api/v1/construction/projects?pageSize=5 → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:01.289Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js",
+      "requisitos": [
+        "M6-98",
+        "M6-43",
+        "M6-44",
+        "M6-45",
+        "M6-46",
+        "M6-48",
+        "M6-49",
+        "M6-50",
+        "M6-51",
+        "M6-52"
+      ],
+      "iniciadoEm": "2026-11-11T00:13:46Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "1. login — <usuário de teste>"
+        },
+        {
+          "ok": true,
+          "passo": "2. criar obra — http://localhost:3106/painel/obras/lista/03829419-92d3-4027-9579-6b39b911662c"
+        },
+        {
+          "ok": true,
+          "passo": "3. criar etapa — Fundação e estrutura"
+        },
+        {
+          "ok": true,
+          "passo": "4. orçamento (linha criada) — R$ 10.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "5. aprovar orçamento"
+        },
+        {
+          "ok": true,
+          "passo": "6. medição registrada — 20% / R$ 2.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "7. medição aprovada (fluxo DRAFT->SUBMITTED->REVIEWED->APPROVED)"
+        },
+        {
+          "ok": true,
+          "passo": "8. diário (RDO) registrado — 8 trabalhadores"
+        },
+        {
+          "ok": true,
+          "passo": "9. não conformidade aberta — Trinca na fundação"
+        },
+        {
+          "ok": true,
+          "passo": "10a. tentativa de entrega da obra — botão de entrega não visível no status atual da obra"
+        },
+        {
+          "ok": true,
+          "passo": "10b. chamado de pós-obra criado"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H009",
+      "requisitos": [
+        "M6-30",
+        "M6-01",
+        "M6-69",
+        "M6-43",
+        "M6-45",
+        "M6-95",
+        "M6-98"
+      ],
+      "cenario": "Criar a obra principal (código gerado automaticamente, status PLANNED)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "name": "Residencial Captura M6 c4fcd6",
+        "budgetAmount": 120000,
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "managerUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "startsAt": "2026-10-01",
+        "endsAtPlanned": "2027-08-31",
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 275,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6",
+          "code": "OBRA-2026-0002",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "120000.00",
+          "costCenterId": null,
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "status": "PLANNED",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:01.264Z",
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "actualEndDate": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:01.289Z"
+    },
+    {
+      "id": "H010",
+      "requisitos": [
+        "M6-43"
+      ],
+      "cenario": "Listar obras",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects?pageSize=5",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 158,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "unitId": null,
+            "name": "Residencial Captura M6 c4fcd6",
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "budgetAmount": "120000.00",
+            "startsAt": "2026-10-01T00:00:00.000Z",
+            "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+            "code": "OBRA-2026-0002",
+            "actualEndDate": null,
+            "costCenterId": null,
+            "status": "PLANNED",
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:01.264Z",
+            "updated_at": "2026-11-11T00:12:01.264Z",
+            "deleted_at": null,
+            "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "unit_id": null
+          },
+          {
+            "id": "5542dd9a-1eb8-48b2-bfa9-9ac0a97b7648",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "propertyId": null,
+            "unitId": null,
+            "name": "Obra margem baixa c4fcd6",
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "budgetAmount": "10000.00",
+            "startsAt": null,
+            "endsAtPlanned": null,
+            "code": "OBRA-2026-0001",
+            "actualEndDate": null,
+            "costCenterId": null,
+            "status": "PLANNED",
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:11:59.370Z",
+            "updated_at": "2026-11-11T00:11:59.370Z",
+            "deleted_at": null,
+            "property_id": null,
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "unit_id": null
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "pageSize": 5,
+          "total": 2
+        }
+      },
+      "dataHora": "2026-11-11T00:12:01.447Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.406Z"
+}

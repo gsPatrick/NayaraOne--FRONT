@@ -1,0 +1,402 @@
+{
+ "id": "M4-G§20.4",
+ "secao": "Guia §20 DoD do Marcelo",
+ "requisito": "\"Pagamento idempotente/concorrente seguro.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-002: duas execuções CONCORRENTES da mesma payment intent — uma vence, a outra é rejeitada (idempotente, não duplica ledger)",
+   "status": "passou",
+   "duracaoMs": 86,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "B3: duas criações SIMULTÂNEAS de intenção para o mesmo lançamento — a 2ª espera o lock; o índice único barra a duplicata",
+   "status": "passou",
+   "duracaoMs": 1551,
+   "commitDoArquivo": "7dd7af78"
+  },
+  {
+   "arquivo": "test/m4.settlePartialIdempotency.test.js",
+   "nome": "FIN-004 settle-partial: duas requisições SIMULTÂNEAS com a mesma chave geram uma baixa só (uma original e uma idempotentReplay)",
+   "status": "passou",
+   "duracaoMs": 77,
+   "commitDoArquivo": "76cb9777"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "I02",
+   "tipo": "http",
+   "linhas": [
+    "M4-§7",
+    "M4-G§20.4"
+   ],
+   "titulo": "Replay com a mesma chave não cria segundo lançamento (UNIQUE)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 777,
+    "description": "Idempotência 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "idempotencyKey": "m4-idem-0871300"
+   },
+   "esperado": {
+    "status": [
+     200,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_DUPLICATE_PAYMENT",
+   "ok": true,
+   "ms": 27,
+   "quando": "2026-11-11T01:35:04.802Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_DUPLICATE_PAYMENT",
+     "message": "Já existe um lançamento com esta mesma chave de idempotência — pagamento/recebimento duplicado bloqueado.",
+     "details": {
+      "existingId": "ba171275-3afc-46af-b3ae-f80708f01d38"
+     },
+     "traceId": "39dc8524-72d3-41d4-9baf-1ed0b8efad03"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "I03-4",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§20.4"
+   ],
+   "titulo": "Cinco criações SIMULTÂNEAS com a mesma chave (requisição 4/5): um efeito só",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 333,
+    "description": "Concorrência 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "idempotencyKey": "m4-par-0871300"
+   },
+   "esperado": {
+    "status": [
+     200,
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_DUPLICATE_PAYMENT",
+   "ok": true,
+   "ms": 173,
+   "quando": "2026-11-11T01:35:04.977Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_DUPLICATE_PAYMENT",
+     "message": "Já existe um lançamento com esta mesma chave de idempotência — pagamento/recebimento duplicado bloqueado.",
+     "traceId": "45a32223-1d00-4236-9579-150f42a7a063"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "I03-5",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§20.4"
+   ],
+   "titulo": "Cinco criações SIMULTÂNEAS com a mesma chave (requisição 5/5): um efeito só",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 333,
+    "description": "Concorrência 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "idempotencyKey": "m4-par-0871300"
+   },
+   "esperado": {
+    "status": [
+     200,
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_DUPLICATE_PAYMENT",
+   "ok": true,
+   "ms": 173,
+   "quando": "2026-11-11T01:35:04.977Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_DUPLICATE_PAYMENT",
+     "message": "Já existe um lançamento com esta mesma chave de idempotência — pagamento/recebimento duplicado bloqueado.",
+     "traceId": "3b3ff208-cb99-41c4-be77-6b2a83cb5481"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P34",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-019",
+    "M4-G§20.4"
+   ],
+   "titulo": "Depois do replay: nenhuma baixa nova (mesmo lançamento, sem filhas)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/payment-intents?financialEntryId=de217925-818a-4dd1-baab-fe97fa407a38",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 56,
+   "quando": "2026-11-11T01:35:08.678Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "statusMessage": null,
+      "id": "da58d0e3-b0ed-431d-9ebc-20e84c111029",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+      "snapshotJson": {
+       "dueAt": "2026-11-13T01:35:07.127Z",
+       "amount": "1200.00",
+       "nature": "PAYABLE",
+       "status": "PENDING",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "entryType": "DEBIT",
+       "contractId": null,
+       "description": "Pagamento ao fornecedor 0871300",
+       "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+       "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+       "resultCenterId": null,
+       "chartOfAccountId": null,
+       "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+       "isThirdPartyFunds": false,
+       "thirdPartyReference": null
+      },
+      "snapshotHash": "d47169ea87874322c1555b7b75a2ca3590cca5cb92094ef36d58ee3c93412777",
+      "status": "EXECUTED",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "beneficiarySnapshot": {
+       "name": "Pagamento ao fornecedor 0871300",
+       "branch": "0001",
+       "pixKey": "••••••",
+       "account": "PAGAMENTOS-0871300",
+       "bankCode": "••••••",
+       "personId": null
+      },
+      "paymentMethod": "PIX",
+      "idempotencyKey": "payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+      "externalSubmissionId": "sandbox-payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+      "externalStatus": "CONFIRMED",
+      "submittedAt": "2026-11-11T01:35:08.117Z",
+      "failedAt": null,
+      "failureReason": null,
+      "approvalRequestId": null,
+      "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "approvedAt": "2026-11-11T01:35:07.537Z",
+      "executedAt": "2026-11-11T01:35:08.509Z",
+      "cancelledAt": null,
+      "cancelReason": null,
+      "uncertainSince": null,
+      "lastReconciledAt": null,
+      "reconciliationAttempts": 0,
+      "reconciledAt": null,
+      "reconciledEntryId": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:07.236Z",
+      "updated_at": "2026-11-11T01:35:08.509Z",
+      "financial_entry_id": "de217925-818a-4dd1-baab-fe97fa407a38",
+      "approval_request_id": null
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "A08-2",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§19.F9",
+    "M4-G§20.4"
+   ],
+   "titulo": "Duas baixas SIMULTÂNEAS de R$ 30,00 sobre saldo de R$ 50,00 (requisição 2/2): serializadas pelo bloqueio da linha — a 2ª só aplica o saldo restante (R$ 20,00) e o excedente vira pendência de classificação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/e0046248-b6fd-4c07-b8d3-061384ffbf0b/settle-partial",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-conc-0871300-2"
+   },
+   "corpoEnviado": {
+    "partialAmount": "30.00",
+    "idempotencyKey": "m4-conc-0871300-2"
+   },
+   "esperado": {
+    "status": [
+     200,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 125,
+   "quando": "2026-11-11T01:35:19.530Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "e0046248-b6fd-4c07-b8d3-061384ffbf0b",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "50.00",
+      "description": "Concorrência de saldo 0871300",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PARTIALLY_SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 1,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:19.222Z",
+      "updated_at": "2026-11-11T01:35:19.473Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "settlement": {
+      "id": "09bce97d-aabd-4809-b955-e3dad9e67268",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contractId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "30.00",
+      "description": "Baixa parcial de R$ 30,00 — Concorrência de saldo 0871300",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T01:35:19.470Z",
+      "status": "SETTLED",
+      "idempotencyKey": "baixa-parcial:18750bf526a6c12bbd91971e13697027992053975c6ac8eb85d3c3115e73a2a1",
+      "reversalOfEntryId": null,
+      "parentEntryId": "e0046248-b6fd-4c07-b8d3-061384ffbf0b",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updated_at": "2026-11-11T01:35:19.470Z",
+      "created_at": "2026-11-11T01:35:19.470Z",
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyCompensatedEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     },
+     "remainingAmount": "20.00",
+     "classificationPending": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

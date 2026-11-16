@@ -1,0 +1,68 @@
+{
+ "id": "M4-FIN-014",
+ "secao": "§2 Princípios",
+ "requisito": "FIN-014 NAY recomenda, não paga: \"IA não efetiva pagamento nem altera favorecido.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.nayNoExecution.test.js",
+   "nome": "FIN-TS-014: não existe nenhum módulo de execução financeira acessível por \"NAY\" fora das rotas HTTP protegidas",
+   "status": "passou",
+   "duracaoMs": 84,
+   "commitDoArquivo": "e0eec045"
+  },
+  {
+   "arquivo": "test/finance.nay.test.js",
+   "nome": "NAY-FIN-04: não executa nada — lançamentos, intenções, fechamentos, extratos, conciliações, aprovações e contas bancárias idênticos depois de chamar a NAY; só ai_runs cresce",
+   "status": "passou",
+   "duracaoMs": 307,
+   "commitDoArquivo": "390b60db"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H22",
+   "tipo": "http",
+   "linhas": [
+    "M4-§18.3",
+    "M4-FIN-014",
+    "M4-FIN-TS-014"
+   ],
+   "titulo": "NAY não tem rota de escrita: POST na NAY Financeira não existe",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/nay/insights",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "action": "pay",
+    "paymentIntentId": "00000000-0000-4000-8000-000000000000"
+   },
+   "esperado": {
+    "status": 404
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "ok": true,
+   "ms": 31,
+   "quando": "2026-11-11T01:35:16.466Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "ROUTE_NOT_FOUND",
+     "message": "Rota não encontrada.",
+     "traceId": "27ae4f1e-7640-4527-a5ee-d16024f27f91"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

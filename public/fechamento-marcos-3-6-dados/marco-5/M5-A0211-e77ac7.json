@@ -1,0 +1,773 @@
+{
+ "id": "M5-A0211-e77ac7",
+ "secao": "P2 > 14. APIs mínimas [tabela: Endpoint | Função]",
+ "linhaCaderno": 683,
+ "requisito": "POST /contract-versions/:id/send-signature | Enviar.",
+ "demandas": "M5-D016;M5-D047",
+ "implementacao": "src/modules/legal/shared/legal.routes.js POST /contract-versions/:id/send-signature (legal:sign) -> src/modules/legal/contracts/application/contractVersionActions.service.js sendContractVersionForSignature (APPROVED -> SIGNING + envelope)",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash",
+   "status": "pass",
+   "ms": 555.894,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-130",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/send-signature",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:25.142Z"
+  },
+  {
+   "passo": "CT-131",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/send-signature",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "contentHash=f2d7a516a52a412258e579bc5fe7f3817e6b381a",
+   "quando": "2026-11-11T03:42:25.321Z"
+  },
+  {
+   "passo": "CT-315",
+   "metodo": "POST",
+   "rota": "/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814/send-signature",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED"
+   },
+   "resumo": "erro LEGAL_CONTRACT_VERSION_SUPERSEDED: A versão 1 foi substituída pela versão 2: só a versão vigente do contrato pode ser aprovada ou envia",
+   "quando": "2026-11-11T03:42:26.514Z"
+  },
+  {
+   "passo": "CT-323",
+   "metodo": "POST",
+   "rota": "/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/send-signature",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED"
+   },
+   "resumo": "erro LEGAL_SIGNATURE_VERSION_NOT_APPROVED: Só a versão APROVADA vigente do contrato vai para assinatura: aprove a versão atual (POST /contract-",
+   "quando": "2026-11-11T03:42:26.838Z"
+  },
+  {
+   "passo": "CT-316d",
+   "metodo": "POST",
+   "rota": "/contract-versions/527d37c1-f7f3-494e-b3e7-405cf16354ff/send-signature",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "contentHash=833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5",
+   "quando": "2026-11-11T03:42:26.662Z"
+  },
+  {
+   "passo": "CT-323c",
+   "metodo": "POST",
+   "rota": "/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/send-signature",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "contentHash=bfc93e2c948dfeac57558027411a0bd6dbaf5bf8",
+   "quando": "2026-11-11T03:42:26.942Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0211-e77ac7.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Rota literal nova e teste novo: test/m5fech.contratos.rotasLivro.test.js \"Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.rotasLivro.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-130, CT-131, CT-315, CT-323, CT-316d, CT-323c)"
+ },
+ "passos": [
+  {
+   "id": "CT-130",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checker (sem legal:sign) não envia para assinatura",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:25.142Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:sign"
+     },
+     "traceId": "d00c30bf-e295-4453-a5f7-44aeacf904c7"
+    }
+   },
+   "req": [
+    "M5-A0143-9820a9",
+    "M5-A0211-e77ac7"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-131",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envia a versão aprovada para assinatura (POST /contract-versions/:id/send-signature): contrato em SIGNING",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 178,
+   "quando": "2026-11-11T03:42:25.321Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contract": {
+      "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "propertyId": null,
+      "opportunityId": null,
+      "contractType": "LEASE_RESIDENTIAL",
+      "constructionProjectId": null,
+      "approvedVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "parentContractId": null,
+      "contractNumber": "LOC-2026-0004",
+      "status": "SIGNING",
+      "totalValue": "1500.00",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 6,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:24.319Z",
+      "updated_at": "2026-11-11T03:42:25.155Z",
+      "deleted_at": null,
+      "property_id": null,
+      "opportunity_id": null,
+      "construction_project_id": null,
+      "versions": [
+       {
+        "id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "versionNumber": 1,
+        "documentFileId": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+        "content": "Contrato de locação fictício 8543269",
+        "signedDocumentFileId": null,
+        "status": "APPROVED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:25.109Z",
+        "contentFileId": "d56640aa-875b-4b77-9332-1c278a72e3fc",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:25.050Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "created_at": "2026-11-11T03:42:25.051Z",
+        "updated_at": "2026-11-11T03:42:25.109Z",
+        "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "document_file_id": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "template_id": null,
+        "template": null
+       }
+      ]
+     },
+     "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "signatures": [
+      {
+       "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-ae7beb6c48f75b88",
+       "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:25.223Z",
+       "updated_at": "2026-11-11T03:42:25.276Z",
+       "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+      },
+      {
+       "id": "bde0ac1f-a166-41f5-ac2f-0f569771d38f",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-902c25d73e267f69",
+       "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:25.229Z",
+       "updated_at": "2026-11-11T03:42:25.290Z",
+       "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0211-e77ac7",
+    "M5-A0055-965151",
+    "M5-A0143-9820a9",
+    "M5-A0129-794350",
+    "M5-A0222-998a77",
+    "M5-A0200-0787a9",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-315",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão substituída não é enviada para assinatura",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:26.514Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_VERSION_SUPERSEDED",
+     "message": "A versão 1 foi substituída pela versão 2: só a versão vigente do contrato pode ser aprovada ou enviada para assinatura.",
+     "traceId": "99404973-5818-48be-992b-43d3788ee17e"
+    }
+   },
+   "req": [
+    "M5-A0211-e77ac7",
+    "M5-A0072-5023f6"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-323",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão 3 (DRAFT) não vai para assinatura antes de aprovada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:26.838Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED",
+     "message": "Só a versão APROVADA vigente do contrato vai para assinatura: aprove a versão atual (POST /contract-versions/:id/approve) antes de enviar.",
+     "traceId": "bfb9efda-72e6-4f4f-aae4-a0c4cd899ae9"
+    }
+   },
+   "req": [
+    "M5-A0211-e77ac7",
+    "M5-A0143-9820a9"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-316d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão 2 aprovada vai para assinatura",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/527d37c1-f7f3-494e-b3e7-405cf16354ff/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 97,
+   "quando": "2026-11-11T03:42:26.662Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contract": {
+      "id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "propertyId": null,
+      "opportunityId": null,
+      "contractType": "LEASE_RESIDENTIAL",
+      "constructionProjectId": null,
+      "approvedVersionId": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+      "parentContractId": null,
+      "contractNumber": "LOC-2026-0005",
+      "status": "SIGNING",
+      "totalValue": "2000.00",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 5,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:26.008Z",
+      "updated_at": "2026-11-11T03:42:26.577Z",
+      "deleted_at": null,
+      "property_id": null,
+      "opportunity_id": null,
+      "construction_project_id": null,
+      "versions": [
+       {
+        "id": "9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "versionNumber": 1,
+        "documentFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+        "contentHash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+        "content": "Contrato de locação 8543269ctV v1",
+        "signedDocumentFileId": null,
+        "status": "SUPERSEDED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:26.418Z",
+        "contentFileId": "b2a40f80-eb9a-4a91-b17b-50b84fe23628",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:26.307Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "created_at": "2026-11-11T03:42:26.307Z",
+        "updated_at": "2026-11-11T03:42:26.498Z",
+        "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "document_file_id": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+        "template_id": null,
+        "template": null
+       },
+       {
+        "id": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "versionNumber": 2,
+        "documentFileId": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+        "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+        "content": "Versão 2 após aprovação 1794368546473",
+        "signedDocumentFileId": null,
+        "status": "APPROVED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:26.555Z",
+        "contentFileId": "8218f7a5-2153-4722-874d-22faa66484f8",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:26.494Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "created_at": "2026-11-11T03:42:26.494Z",
+        "updated_at": "2026-11-11T03:42:26.555Z",
+        "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "document_file_id": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+        "template_id": null,
+        "template": null
+       }
+      ]
+     },
+     "contractVersionId": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+     "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+     "signatures": [
+      {
+       "id": "bb50c2cb-086d-4b6c-93c0-55ef58054cd1",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+       "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-b6807ff5ee58fc03",
+       "providerEnvelopeId": "sbx-env-b68e286bac90ca39",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+       "envelopeId": "15d50429-d3d2-4ca0-a116-24ed270a7358",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:26.606Z",
+       "updated_at": "2026-11-11T03:42:26.636Z",
+       "contract_version_id": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+       "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+      },
+      {
+       "id": "930f8543-8d81-4c41-9176-4fa7190970d8",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+       "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-82258d152822ff5d",
+       "providerEnvelopeId": "sbx-env-b68e286bac90ca39",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+       "envelopeId": "15d50429-d3d2-4ca0-a116-24ed270a7358",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:26.607Z",
+       "updated_at": "2026-11-11T03:42:26.639Z",
+       "contract_version_id": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+       "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0143-9820a9",
+    "M5-A0211-e77ac7"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-323c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Reenvia a versão 3 (vigente e aprovada) para assinatura",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 87,
+   "quando": "2026-11-11T03:42:26.942Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contract": {
+      "id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "propertyId": null,
+      "opportunityId": null,
+      "contractType": "LEASE_RESIDENTIAL",
+      "constructionProjectId": null,
+      "approvedVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+      "parentContractId": null,
+      "contractNumber": "LOC-2026-0005",
+      "status": "SIGNING",
+      "totalValue": "2000.00",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 8,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:26.008Z",
+      "updated_at": "2026-11-11T03:42:26.865Z",
+      "deleted_at": null,
+      "property_id": null,
+      "opportunity_id": null,
+      "construction_project_id": null,
+      "versions": [
+       {
+        "id": "9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "versionNumber": 1,
+        "documentFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+        "contentHash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+        "content": "Contrato de locação 8543269ctV v1",
+        "signedDocumentFileId": null,
+        "status": "SUPERSEDED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:26.418Z",
+        "contentFileId": "b2a40f80-eb9a-4a91-b17b-50b84fe23628",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:26.307Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "created_at": "2026-11-11T03:42:26.307Z",
+        "updated_at": "2026-11-11T03:42:26.498Z",
+        "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "document_file_id": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+        "template_id": null,
+        "template": null
+       },
+       {
+        "id": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "versionNumber": 2,
+        "documentFileId": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+        "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+        "content": "Versão 2 após aprovação 1794368546473",
+        "signedDocumentFileId": null,
+        "status": "SUPERSEDED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:26.555Z",
+        "contentFileId": "8218f7a5-2153-4722-874d-22faa66484f8",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:26.494Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "created_at": "2026-11-11T03:42:26.494Z",
+        "updated_at": "2026-11-11T03:42:26.754Z",
+        "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "document_file_id": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+        "template_id": null,
+        "template": null
+       },
+       {
+        "id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "versionNumber": 3,
+        "documentFileId": "9e49452d-68e3-4667-848a-a7a5dca21308",
+        "contentHash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+        "content": "Versão 3 com conteúdo alterado 1794368546717",
+        "signedDocumentFileId": null,
+        "status": "APPROVED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:26.848Z",
+        "contentFileId": "c485394b-25a5-4a63-9e7f-35c509d9c32d",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:26.749Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "created_at": "2026-11-11T03:42:26.749Z",
+        "updated_at": "2026-11-11T03:42:26.848Z",
+        "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "document_file_id": "9e49452d-68e3-4667-848a-a7a5dca21308",
+        "template_id": null,
+        "template": null
+       }
+      ]
+     },
+     "contractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "contentHash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "signatures": [
+      {
+       "id": "ccba4b7e-ca2b-428e-8ebc-a36416e77b87",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+       "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-d106074788f86e42",
+       "providerEnvelopeId": "sbx-env-38c749430ebcf89c",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+       "envelopeId": "526783c9-5b9f-4456-bf9f-3741ca94e6f5",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:26.891Z",
+       "updated_at": "2026-11-11T03:42:26.919Z",
+       "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+       "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+      },
+      {
+       "id": "2b385460-b9b6-4063-89ef-d9d0e59310cd",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+       "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-1bcdcbf03e57bb1d",
+       "providerEnvelopeId": "sbx-env-38c749430ebcf89c",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+       "envelopeId": "526783c9-5b9f-4456-bf9f-3741ca94e6f5",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:26.893Z",
+       "updated_at": "2026-11-11T03:42:26.922Z",
+       "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+       "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0211-e77ac7"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

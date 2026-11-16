@@ -1,0 +1,568 @@
+{
+  "id": "M6-18",
+  "requisito": "\"PLANNED → BUDGETED → READY → ACTIVE → FINAL_INSPECTION → DELIVERED → WARRANTY → CLOSED; PAUSED pode ocorrer durante ACTIVE.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §4",
+  "implementacao": "projects.service.js#transitionProject/deliverProject/closeProjectWarranty",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>: botões de status da obra",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.delivery.test.js",
+      "nome": "delivery: máquina de estados completa PLANNED->BUDGETED->READY->ACTIVE->PAUSED->ACTIVE->FINAL_INSPECTION funciona de ponta a ponta",
+      "resultado": "passou",
+      "duracaoMs": 349,
+      "executadoEm": "2026-11-11T00:12:50.186Z"
+    },
+    {
+      "arquivo": "test/construction.delivery.test.js",
+      "nome": "delivery: transitionProject genérico não permite ir direto para DELIVERED (só via gate dedicado)",
+      "resultado": "passou",
+      "duracaoMs": 321,
+      "executadoEm": "2026-11-11T00:12:49.823Z"
+    },
+    {
+      "arquivo": "test/construction.delivery.test.js",
+      "nome": "delivery: READY -> ACTIVE exige orçamento/cronograma/responsável preenchidos (TAB-0700)",
+      "resultado": "passou",
+      "duracaoMs": 136,
+      "executadoEm": "2026-11-11T00:12:50.321Z"
+    },
+    {
+      "arquivo": "test/construction.delivery.test.js",
+      "nome": "closeProjectWarranty: fecha a obra quando todos os casos de garantia estão CLOSED",
+      "resultado": "passou",
+      "duracaoMs": 646,
+      "executadoEm": "2026-11-11T00:12:54.218Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H043",
+      "H044",
+      "H045",
+      "H046",
+      "H047",
+      "H098",
+      "H134",
+      "H142",
+      "H177",
+      "H182",
+      "H183"
+    ],
+    "resumo": [
+      "H043 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition → 409 PROJECT_STATUS_TRANSITION_INVALID",
+      "H044 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition → 200",
+      "H045 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition → 200",
+      "H046 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition → 200",
+      "H047 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition → 200",
+      "H098 PATCH /api/v1/construction/stages/3fd2487d-8fb0-4890-9750-0b6799ce9e5e → 200",
+      "H134 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition → 200",
+      "H142 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/deliver → 200",
+      "H177 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/close-warranty → 409 PROJECT_WARRANTY_CLOSE_BLOCKED_BY_OPEN_CASE",
+      "H182 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/close-warranty → 200",
+      "H183 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:09.950Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H043",
+      "requisitos": [
+        "M6-18",
+        "M6-81"
+      ],
+      "cenario": "NEGATIVO: pular direto para DELIVERED pela transição genérica",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "targetStatus": "DELIVERED"
+      },
+      "statusHttp": 409,
+      "codigoErro": "PROJECT_STATUS_TRANSITION_INVALID",
+      "esperado": "409",
+      "conferiu": true,
+      "duracaoMs": 17,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PROJECT_STATUS_TRANSITION_INVALID",
+          "message": "Não é possível mover a obra de \"Orçamento aprovado\" para \"Entregue\".",
+          "traceId": "430d95af-b22a-4b79-9ae9-c440a5aa0fba"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.950Z"
+    },
+    {
+      "id": "H044",
+      "requisitos": [
+        "M6-18",
+        "M6-81"
+      ],
+      "cenario": "Transição BUDGETED → READY",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "targetStatus": "READY"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 23,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": null,
+          "costCenterId": null,
+          "status": "READY",
+          "lockVersion": 4,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:09.967Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.973Z"
+    },
+    {
+      "id": "H045",
+      "requisitos": [
+        "M6-18",
+        "M6-71",
+        "M6-81"
+      ],
+      "cenario": "Transição READY → ACTIVE (publica project.started)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "targetStatus": "ACTIVE"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 24,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": null,
+          "costCenterId": null,
+          "status": "ACTIVE",
+          "lockVersion": 5,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:09.987Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.997Z"
+    },
+    {
+      "id": "H046",
+      "requisitos": [
+        "M6-18"
+      ],
+      "cenario": "Transição ACTIVE → PAUSED",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "targetStatus": "PAUSED"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 317,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": null,
+          "costCenterId": null,
+          "status": "PAUSED",
+          "lockVersion": 6,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:10.168Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:10.314Z"
+    },
+    {
+      "id": "H047",
+      "requisitos": [
+        "M6-18"
+      ],
+      "cenario": "Transição PAUSED → ACTIVE",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "targetStatus": "ACTIVE"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 434,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": null,
+          "costCenterId": null,
+          "status": "ACTIVE",
+          "lockVersion": 7,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:10.628Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:10.748Z"
+    },
+    {
+      "id": "H098",
+      "requisitos": [
+        "M6-18"
+      ],
+      "cenario": "Iniciar a etapa Alvenaria",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/stages/3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "IN_PROGRESS"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 33,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "name": "Alvenaria",
+          "stageCode": "ALV-c4fcd6",
+          "plannedCost": "35000.00",
+          "sequence": 2,
+          "plannedPct": "100.000000",
+          "measuredPct": null,
+          "status": "IN_PROGRESS",
+          "startsAt": "2026-10-05T00:00:00.000Z",
+          "endsAt": "2027-02-28T00:00:00.000Z",
+          "publicVisible": false,
+          "publicSince": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:09.358Z",
+          "updated_at": "2026-11-11T00:12:16.985Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:17.000Z"
+    },
+    {
+      "id": "H134",
+      "requisitos": [
+        "M6-18",
+        "M6-81"
+      ],
+      "cenario": "Transição ACTIVE → FINAL_INSPECTION",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/transition",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "targetStatus": "FINAL_INSPECTION"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 74,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": "2026-11-11",
+          "costCenterId": null,
+          "status": "FINAL_INSPECTION",
+          "lockVersion": 8,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:24.975Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:24.989Z"
+    },
+    {
+      "id": "H142",
+      "requisitos": [
+        "M6-25",
+        "M6-39",
+        "M6-79",
+        "M6-18",
+        "M6-87",
+        "M6-51",
+        "M6-98"
+      ],
+      "cenario": "Entregar a obra sem pendência crítica: DELIVERED e em seguida WARRANTY (publica project.delivered)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/deliver",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 29,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": "2026-11-11",
+          "costCenterId": null,
+          "status": "WARRANTY",
+          "lockVersion": 10,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:26.096Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.102Z"
+    },
+    {
+      "id": "H177",
+      "requisitos": [
+        "M6-18"
+      ],
+      "cenario": "NEGATIVO: encerrar a obra com chamado de garantia aberto",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/close-warranty",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 409,
+      "codigoErro": "PROJECT_WARRANTY_CLOSE_BLOCKED_BY_OPEN_CASE",
+      "esperado": "409 PROJECT_WARRANTY_CLOSE_BLOCKED_BY_OPEN_CASE",
+      "conferiu": true,
+      "duracaoMs": 100,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PROJECT_WARRANTY_CLOSE_BLOCKED_BY_OPEN_CASE",
+          "message": "Não é possível encerrar a garantia da obra: existe(m) caso(s) de garantia ainda aberto(s).",
+          "traceId": "afc8f305-90d5-484d-bf70-5116d265c626"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.940Z"
+    },
+    {
+      "id": "H182",
+      "requisitos": [
+        "M6-18",
+        "M6-81",
+        "M6-98"
+      ],
+      "cenario": "Encerrar a obra (WARRANTY → CLOSED)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/close-warranty",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 135,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": "2026-11-11",
+          "costCenterId": null,
+          "status": "CLOSED",
+          "lockVersion": 11,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:29.253Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:29.266Z"
+    },
+    {
+      "id": "H183",
+      "requisitos": [
+        "M6-18",
+        "M6-44"
+      ],
+      "cenario": "Obra encerrada",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 145,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": "2026-11-11",
+          "costCenterId": null,
+          "status": "CLOSED",
+          "lockVersion": 11,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:29.253Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:29.411Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.384Z"
+}

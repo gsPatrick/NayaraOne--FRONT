@@ -1,0 +1,534 @@
+{
+ "id": "M5-A0070-aa260b",
+ "secao": "P1 > 8. Assinatura digital/manual",
+ "linhaCaderno": 161,
+ "requisito": "• Webhook do provider é idempotente e validado.",
+ "demandas": "M5-D015",
+ "implementacao": "src/modules/legal/shared/legal.controller.js verifyProviderWebhookSignature (HMAC do corpo bruto, timing-safe) e clicksignPublicWebhook; rota única de webhooks (src/features/integrations/webhooks) com caixa de entrada; src/modules/legal/signatures/signature.service.js:95 handleSignatureWebhook idempotente (SIGNED não reaplica)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/legal.signatureProviders.test.js",
+   "nome": "legal webhook: verifyProviderWebhookSignature aceita HMAC válido e rejeita ausente/errado (timing-safe)",
+   "status": "pass",
+   "ms": 0.825,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.signatureProviders.test.js",
+   "nome": "legal webhook: rejeita payload SEM HMAC válido quando há provider real (clicksign) configurado",
+   "status": "pass",
+   "ms": 178.101,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.signatureProviders.test.js",
+   "nome": "legal webhook: sandbox funciona SEM HMAC, mas só com o hash do documento enviado para assinatura (B1)",
+   "status": "pass",
+   "ms": 263.473,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco9/integracoes/m9d236.fluxo.test.js",
+   "nome": "assinatura_webhook_hmac_pelo_framework",
+   "status": "pass",
+   "ms": 919.354,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-007: webhook de assinatura duplicado (mesmo id externo) gera uma única atualização, e SIGNED só com todas as assinaturas da versão",
+   "status": "pass",
+   "ms": 558.993,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G3: callback forjado (externalSignatureId inexistente) é rejeitado, não cria nem altera nada",
+   "status": "pass",
+   "ms": 2.284,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.modelosAditivos.test.js",
+   "nome": "Guia §14: POST /webhooks/signature/:provider — Clicksign pelo webhook público validado; fornecedor com canal vai à rota única; desconhecido 404",
+   "status": "pass",
+   "ms": 24.424,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-202",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HASH_REQUIRED: Informe o hash do documento assinado (contentHash) no payload do webhook.",
+   "quando": "2026-11-11T03:42:25.430Z"
+  },
+  {
+   "passo": "CT-203",
+   "metodo": "POST",
+   "rota": "/legal/signatures/forjado-inexistente/webhook",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "LEGAL_SIGNATURE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_SIGNATURE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_SIGNATURE_NOT_FOUND: Assinatura não encontrada para o externalSignatureId informado.",
+   "quando": "2026-11-11T03:42:25.442Z"
+  },
+  {
+   "passo": "CT-204",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HMAC_INVALID: Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+   "quando": "2026-11-11T03:42:25.449Z"
+  },
+  {
+   "passo": "CT-204b",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HMAC_INVALID: Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+   "quando": "2026-11-11T03:42:25.459Z"
+  },
+  {
+   "passo": "CT-205",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:25.485Z"
+  },
+  {
+   "passo": "CT-207",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:25.498Z"
+  },
+  {
+   "passo": "CT-538",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/clicksign",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HMAC_INVALID: Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+   "quando": "2026-11-11T03:42:29.417Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0070-aa260b.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.signatureProviders.test.js test/marco9/integracoes/m9d236.fluxo.test.js test/m5fech.contratos.adversariais.test.js test/marco5.auditGapClosureR1.test.js test/m5fech.contratos.modelosAditivos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-202, CT-203, CT-204, CT-204b, CT-205, CT-207, CT-537, CT-538)"
+ },
+ "passos": [
+  {
+   "id": "CT-202",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Webhook de laboratório sem o hash do documento assinado é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:25.430Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HASH_REQUIRED",
+     "message": "Informe o hash do documento assinado (contentHash) no payload do webhook.",
+     "traceId": "3f3c7fd7-4e8a-4a7d-880a-8e9faa73176c"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0254-adf071"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-203",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Callback forjado (id externo inexistente) não cria nem altera nada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/forjado-inexistente/webhook",
+   "corpoEnviado": {
+    "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_SIGNATURE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_SIGNATURE_NOT_FOUND",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:25.442Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_SIGNATURE_NOT_FOUND",
+     "message": "Assinatura não encontrada para o externalSignatureId informado.",
+     "traceId": "4920c217-381d-4831-9e99-9767154714a3"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-204",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Webhook público do provedor sem assinatura válida: 401, igual para signatário existente ou não (sem oráculo)",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "corpoEnviado": {
+    "event": {
+     "name": "sign",
+     "data": {
+      "signer": {
+       "key": "chave-desconhecida"
+      }
+     }
+    }
+   },
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:25.449Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+     "traceId": "3848c42b-4f3f-434c-9936-5e61456a5239"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0201-67738d"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-204b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Mesmo webhook sem HMAC para um signatário EXISTENTE: mesma resposta 401",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "corpoEnviado": {
+    "event": {
+     "name": "sign",
+     "data": {
+      "signer": {
+       "key": "sbx-sig-902c25d73e267f69"
+      }
+     }
+    }
+   },
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:25.459Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+     "traceId": "72c3c9d6-e1ed-431a-8c05-4b3445798ce7"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-205",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Primeira assinatura confirmada com o hash da versão",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T03:42:25.485Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "signature": {
+      "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+      "signedAt": "2026-11-11T03:42:25.469Z",
+      "status": "SIGNED",
+      "externalSignatureId": "sbx-sig-ae7beb6c48f75b88",
+      "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+      "signatureMethod": "ELECTRONIC",
+      "evidenceFileId": null,
+      "collectedByUserId": null,
+      "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+      "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+      "signerEmail": null,
+      "evidenceJson": {
+       "providerCode": "signature-sandbox",
+       "simulated": true,
+       "signedAtProvider": "2026-11-11T03:42:25.471Z",
+       "authMethod": "SANDBOX_SIMULATED",
+       "documentSha256": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "receivedAt": "2026-11-11T03:42:25.471Z"
+      },
+      "evidenceComplete": true,
+      "evidenceType": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": null,
+      "created_at": "2026-11-11T03:42:25.223Z",
+      "updated_at": "2026-11-11T03:42:25.471Z",
+      "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+     },
+     "contractTransitioned": false,
+     "alreadyProcessed": false
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0069-ea344f"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-207",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-007: o MESMO webhook (mesmo id externo) repetido não reaplica efeito",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:25.498Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "signature": {
+      "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+      "signedAt": "2026-11-11T03:42:25.469Z",
+      "status": "SIGNED",
+      "externalSignatureId": "sbx-sig-ae7beb6c48f75b88",
+      "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+      "signatureMethod": "ELECTRONIC",
+      "evidenceFileId": null,
+      "collectedByUserId": null,
+      "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+      "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+      "signerEmail": null,
+      "evidenceJson": {
+       "simulated": true,
+       "authMethod": "SANDBOX_SIMULATED",
+       "receivedAt": "2026-11-11T03:42:25.471Z",
+       "providerCode": "signature-sandbox",
+       "documentSha256": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "signedAtProvider": "2026-11-11T03:42:25.471Z"
+      },
+      "evidenceComplete": true,
+      "evidenceType": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": null,
+      "created_at": "2026-11-11T03:42:25.223Z",
+      "updated_at": "2026-11-11T03:42:25.471Z",
+      "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+     },
+     "contractTransitioned": false,
+     "alreadyProcessed": true
+    }
+   },
+   "req": [
+    "M5-A0155-f65cd8",
+    "M5-A0236-cf6596",
+    "M5-A0167-e05f18",
+    "M5-A0266-f06596",
+    "M5-A0070-aa260b"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-538",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rota literal do livro POST /webhooks/signature/clicksign: webhook público validado (sem assinatura válida, 401)",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/clicksign",
+   "corpoEnviado": {
+    "event": {
+     "name": "sign",
+     "data": {
+      "signer": {
+       "key": "chave-desconhecida"
+      }
+     }
+    }
+   },
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:29.417Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+     "traceId": "172a7178-3fc3-49cd-98ac-487ba82b228d"
+    }
+   },
+   "req": [
+    "M5-A0212-b95d57",
+    "M5-A0070-aa260b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-537",
+   "grupos": [],
+   "f": [],
+   "descricao": "Caixa de entrada do webhook: unicidade (empresa, provedor, id externo do evento) — o tryInsert do Guia §8 é garantido pelo banco",
+   "sql": "SELECT conname, pg_get_constraintdef(oid) AS definicao FROM pg_constraint WHERE conrelid = 'integration.webhook_inbox'::regclass AND contype = 'u'",
+   "resultado": [
+    {
+     "conname": "webhook_inbox_company_provider_event_unique",
+     "definicao": "UNIQUE (company_id, provider_code, external_event_id)"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.412Z",
+   "req": [
+    "M5-A0201-67738d",
+    "M5-A0070-aa260b",
+    "M5-A0236-cf6596",
+    "M5-A0266-f06596"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

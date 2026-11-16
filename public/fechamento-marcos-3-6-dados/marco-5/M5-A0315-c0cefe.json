@@ -1,0 +1,283 @@
+{
+ "id": "M5-A0315-c0cefe",
+ "secao": "P1 > 7. Checklist documental [tabela: Fluxo | Exemplos de requirements]",
+ "linhaCaderno": 148,
+ "requisito": "Entrega de casa nova | Termo, vistoria final, manual do proprietário, fotos, chaves.",
+ "demandas": "M5-D012;M5-D024;M5-D025",
+ "implementacao": "src/modules/legal/contracts/application/requirement.service.js:86 REQUIREMENT_TEMPLATES_BY_CONTRACT_TYPE.NEW_PROPERTY_DELIVERY (templateKey)",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "§7 Entrega de casa nova e imóvel usado: termo, vistoria final, manual do proprietário, fotos, chaves; termo específico do usado",
+   "status": "pass",
+   "ms": 99.047,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-507",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=8d9b9de8-3fc4-4987-83bf-d02220ea7d28, contractType=SALE_CASH",
+   "quando": "2026-11-11T03:42:28.961Z"
+  },
+  {
+   "passo": "CT-508",
+   "metodo": "POST",
+   "rota": "/legal/contracts/8d9b9de8-3fc4-4987-83bf-d02220ea7d28/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 5 item(ns)",
+   "quando": "2026-11-11T03:42:29.040Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0315-c0cefe.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo: test/m5fech.contratos.checklist.test.js \"§7 Entrega de casa nova e imóvel usado: termo, vistoria final, manual do proprietário, fotos, chaves; termo específico do usado\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.checklist.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-507, CT-508, CT-509)"
+ },
+ "passos": [
+  {
+   "id": "CT-507",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: contrato SALE_CASH para o checklist",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_CASH",
+    "totalValue": 1000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:28.961Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8d9b9de8-3fc4-4987-83bf-d02220ea7d28",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_CASH",
+     "contractNumber": "VEN-2026-0006",
+     "status": "DRAFT",
+     "totalValue": "1000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:28.951Z",
+     "created_at": "2026-11-11T03:42:28.951Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0315-c0cefe"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-508",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checklist de entrega de casa nova",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/8d9b9de8-3fc4-4987-83bf-d02220ea7d28/requirements/generate",
+   "corpoEnviado": {
+    "templateKey": "NEW_PROPERTY_DELIVERY"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 79,
+   "quando": "2026-11-11T03:42:29.040Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "250c8ed0-1291-4164-aecd-28506036deec",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "8d9b9de8-3fc4-4987-83bf-d02220ea7d28",
+      "requirementCode": "NEW_DELIVERY_TERM",
+      "description": "Termo de entrega.",
+      "requirementType": "DELIVERY_TERM",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.981Z",
+      "created_at": "2026-11-11T03:42:28.981Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "10e7eecb-eb3e-4d76-b744-f94807f8adfa",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "8d9b9de8-3fc4-4987-83bf-d02220ea7d28",
+      "requirementCode": "NEW_FINAL_INSPECTION",
+      "description": "Vistoria final.",
+      "requirementType": "FINAL_INSPECTION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.984Z",
+      "created_at": "2026-11-11T03:42:28.984Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "6e332eaf-6f1b-487f-bb87-d5e94f9a8d7e",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "8d9b9de8-3fc4-4987-83bf-d02220ea7d28",
+      "requirementCode": "NEW_OWNER_MANUAL",
+      "description": "Manual do proprietário.",
+      "requirementType": "OWNER_MANUAL",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.987Z",
+      "created_at": "2026-11-11T03:42:28.987Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "8b5bba25-8380-44d3-a88f-73e7d18c9de0",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "8d9b9de8-3fc4-4987-83bf-d02220ea7d28",
+      "requirementCode": "NEW_PHOTOS",
+      "description": "Fotos.",
+      "requirementType": "PHOTOS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.990Z",
+      "created_at": "2026-11-11T03:42:28.990Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "21ba5d65-af69-47dd-975f-ff0c79df95ff",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "8d9b9de8-3fc4-4987-83bf-d02220ea7d28",
+      "requirementCode": "NEW_KEYS",
+      "description": "Chaves.",
+      "requirementType": "KEYS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.993Z",
+      "created_at": "2026-11-11T03:42:28.993Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0315-c0cefe"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-509",
+   "req": [
+    "M5-A0315-c0cefe"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "A:leitura",
+   "descricao": "Entrega de casa nova: termo, vistoria final, manual do proprietário, fotos, chaves",
+   "sql": "SELECT requirement_code, requirement_type, status FROM legal.contract_requirements WHERE contract_id = :id ORDER BY created_at, requirement_code",
+   "resultado": [
+    {
+     "requirement_code": "NEW_DELIVERY_TERM",
+     "requirement_type": "DELIVERY_TERM",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "NEW_FINAL_INSPECTION",
+     "requirement_type": "FINAL_INSPECTION",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "NEW_OWNER_MANUAL",
+     "requirement_type": "OWNER_MANUAL",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "NEW_PHOTOS",
+     "requirement_type": "PHOTOS",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "NEW_KEYS",
+     "requirement_type": "KEYS",
+     "status": "PENDING"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.042Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

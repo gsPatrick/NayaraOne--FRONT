@@ -1,0 +1,258 @@
+{
+  "id": "M6-37",
+  "requisito": "API mínima: POST /projects/:id/nonconformities.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#createNonconformity",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-109: abrir NC com evidência \"antes\" inexistente é recusado; com arquivo real abre",
+      "resultado": "passou",
+      "duracaoMs": 569,
+      "executadoEm": "2026-11-11T00:13:09.614Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H117",
+      "H118",
+      "H119",
+      "H120",
+      "H121"
+    ],
+    "resumo": [
+      "H117 POST /api/v1/files → 201",
+      "H118 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 400 NONCONFORMITY_RESPONSIBLE_REQUIRED",
+      "H119 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 400 NONCONFORMITY_BEFORE_EVIDENCE_REQUIRED",
+      "H120 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "H121 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:21.235Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H117",
+      "requisitos": [
+        "M6-13",
+        "M6-37"
+      ],
+      "cenario": "Envio da foto/documento \"nc-reboco-antes\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "nc-reboco-antes.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 237,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "6c0b56ed-0934-4bac-8039-7d036e7e58bb",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/007886ad-a32f-4952-8f9b-337f52ffc910-nc-reboco-antes.jpg",
+          "fileName": "nc-reboco-antes.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "decc76a62e2bb4f5448b19f737753747b7368aa4bbea513e8cb663e1b104039b",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:21.162Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:21.162Z",
+          "created_at": "2026-11-11T00:12:21.162Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:21.235Z"
+    },
+    {
+      "id": "H118",
+      "requisitos": [
+        "M6-13",
+        "M6-37"
+      ],
+      "cenario": "NEGATIVO: abrir NC sem responsável",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "severity": "HIGH",
+        "description": "Reboco solto",
+        "beforeEvidenceFileIds": [
+          "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+        ]
+      },
+      "statusHttp": 400,
+      "codigoErro": "NONCONFORMITY_RESPONSIBLE_REQUIRED",
+      "esperado": "400 NONCONFORMITY_RESPONSIBLE_REQUIRED",
+      "conferiu": true,
+      "duracaoMs": 24,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "NONCONFORMITY_RESPONSIBLE_REQUIRED",
+          "message": "\"responsibleUserId\" é obrigatório para abrir uma não conformidade.",
+          "traceId": "ebc6ac00-ac17-4985-b7a6-cefd6d660254"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:21.259Z"
+    },
+    {
+      "id": "H119",
+      "requisitos": [
+        "M6-13",
+        "M6-37"
+      ],
+      "cenario": "NEGATIVO: abrir NC sem evidência \"antes\"",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "severity": "HIGH",
+        "description": "Reboco solto",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeEvidenceFileIds": []
+      },
+      "statusHttp": 400,
+      "codigoErro": "NONCONFORMITY_BEFORE_EVIDENCE_REQUIRED",
+      "esperado": "400 NONCONFORMITY_BEFORE_EVIDENCE_REQUIRED",
+      "conferiu": true,
+      "duracaoMs": 322,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "NONCONFORMITY_BEFORE_EVIDENCE_REQUIRED",
+          "message": "Pelo menos uma evidência \"antes\" (\"beforeEvidenceFileIds\") é obrigatória para abrir uma não conformidade.",
+          "traceId": "4f2657db-023c-476e-9f86-b386daa9ccb6"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:21.581Z"
+    },
+    {
+      "id": "H120",
+      "requisitos": [
+        "M6-13",
+        "M6-37",
+        "M6-110"
+      ],
+      "cenario": "NEGATIVO: abrir NC com evidência que não é arquivo enviado",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "severity": "HIGH",
+        "description": "Reboco solto",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeEvidenceFileIds": [
+          "99999999-9999-4999-8999-999999999999"
+        ]
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 148,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"beforeEvidenceFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "beforeEvidenceFileIds",
+            "missingFileIds": [
+              "99999999-9999-4999-8999-999999999999"
+            ]
+          },
+          "traceId": "c381a451-5b7b-40fd-9ede-607afa80fbab"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:21.729Z"
+    },
+    {
+      "id": "H121",
+      "requisitos": [
+        "M6-37",
+        "M6-13",
+        "M6-78",
+        "M6-50"
+      ],
+      "cenario": "Abrir NC com severidade, responsável, evidência \"antes\" e aceite exigido (SLA calculado pela severidade)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "severity": "HIGH",
+        "description": "Reboco solto na parede da escada",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeEvidenceFileIds": [
+          "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+        ],
+        "requiresAcceptance": true,
+        "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 443,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "severity": "HIGH",
+          "description": "Reboco solto na parede da escada",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-16T00:12:22.026Z",
+          "status": "OPEN",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [],
+          "requiresAcceptance": true,
+          "causeCode": null,
+          "teamLabel": null,
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:22.026Z",
+          "created_at": "2026-11-11T00:12:22.026Z",
+          "acceptedByUserId": null,
+          "closedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.172Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.403Z"
+}

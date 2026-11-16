@@ -1,0 +1,573 @@
+{
+  "id": "M6-06",
+  "requisito": "Tabela change_orders. \"Change Order registra motivo, impacto financeiro, impacto de prazo, evidências e aprovação\" (§5); objeto obrigatório projectId, reasonCode, description, budgetImpact Decimal, scheduleImpactDays, evidenceFileIds, status DRAFT/PENDING_APPROVAL/APPROVED/REJECTED (Guia §4).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.change_orders (src/models/ChangeOrder.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/change-orders: novo aditivo com motivo, impacto, prazo e evidência",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-4: createChangeOrder exige scheduleImpactDays (pode ser 0) e evidenceFileIds não vazio",
+      "resultado": "passou",
+      "duracaoMs": 256,
+      "executadoEm": "2026-11-11T00:12:11.706Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-5: createChangeOrder exige idempotencyKey, e reenviar a MESMA chave devolve o registro original (sem duplicar aditivo)",
+      "resultado": "passou",
+      "duracaoMs": 380,
+      "executadoEm": "2026-11-11T00:12:12.086Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-06/M6-109: Change Order com evidência inexistente é recusado; com arquivo real é criado",
+      "resultado": "passou",
+      "duracaoMs": 44,
+      "executadoEm": "2026-11-11T00:13:09.876Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H023",
+      "H024",
+      "H025",
+      "H026",
+      "H027",
+      "H033"
+    ],
+    "resumo": [
+      "H023 POST /api/v1/files → 201",
+      "H024 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "H025 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 400 CHANGE_ORDER_VALIDATION",
+      "H026 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 201",
+      "H027 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 201",
+      "H033 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:07.868Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-change-order.spec.js",
+      "requisitos": [
+        "M6-47",
+        "M6-33",
+        "M6-06"
+      ],
+      "iniciadoEm": "2026-11-11T00:14:47Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "1. login — <usuário de teste>"
+        },
+        {
+          "ok": true,
+          "passo": "2. criar obra — http://localhost:3106/painel/obras/lista/c9ac843b-d503-432c-8ba2-4992e781b57d"
+        },
+        {
+          "ok": true,
+          "passo": "2b. orçamento aprovado (pré-requisito do Change Order)"
+        },
+        {
+          "ok": true,
+          "passo": "3a. botão \"Criar Change Order\" desabilitado sem evidência anexada — bloqueado corretamente antes de chamar a API"
+        },
+        {
+          "ok": true,
+          "passo": "3. criar Change Order sem erro de idempotencyKey — sem erro de idempotência"
+        },
+        {
+          "ok": true,
+          "passo": "4. nenhum erro de idempotencyKey no console do navegador — limpo"
+        },
+        {
+          "ok": true,
+          "passo": "4b. nenhum erro de evidenceFileIds após anexar evidência — sem erro de evidência"
+        },
+        {
+          "ok": true,
+          "passo": "5. Change Order aparece na listagem após criação"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H023",
+      "requisitos": [
+        "M6-06",
+        "M6-33"
+      ],
+      "cenario": "Envio da foto/documento \"aditivo-laudo\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "aditivo-laudo.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 3433,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "3c960577-5959-4b51-98eb-0a166caf0d64",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/df4162cb-51e3-4feb-a5fc-5e2a298b8867-aditivo-laudo.jpg",
+          "fileName": "aditivo-laudo.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "eabe7d8b50735d9c130f3599c3dbcbe2c716b79f39a548fa884fae9f40155569",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:04.905Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:04.910Z",
+          "created_at": "2026-11-11T00:12:04.910Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:07.868Z"
+    },
+    {
+      "id": "H024",
+      "requisitos": [
+        "M6-06",
+        "M6-33",
+        "M6-109"
+      ],
+      "cenario": "NEGATIVO: Change Order com evidência que não é arquivo enviado (UUID inventado)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Reforço da viga V12",
+        "budgetImpact": 6000,
+        "scheduleImpactDays": 7,
+        "evidenceFileIds": [
+          "99999999-9999-4999-8999-999999999999"
+        ],
+        "idempotencyKey": "co-c4fcd6"
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 172,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"evidenceFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "evidenceFileIds",
+            "missingFileIds": [
+              "99999999-9999-4999-8999-999999999999"
+            ]
+          },
+          "traceId": "458c9b07-e973-4092-ae2f-72c3692be040"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.040Z"
+    },
+    {
+      "id": "H025",
+      "requisitos": [
+        "M6-06",
+        "M6-33"
+      ],
+      "cenario": "NEGATIVO: Change Order sem impacto de prazo e sem evidência",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Sem prazo",
+        "budgetImpact": 6000,
+        "evidenceFileIds": [],
+        "idempotencyKey": "co-x-c4fcd6"
+      },
+      "statusHttp": 400,
+      "codigoErro": "CHANGE_ORDER_VALIDATION",
+      "esperado": "400 CHANGE_ORDER_VALIDATION",
+      "conferiu": true,
+      "duracaoMs": 106,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CHANGE_ORDER_VALIDATION",
+          "message": "\"scheduleImpactDays\" é obrigatório e precisa ser numérico (use 0 quando não houver impacto de prazo).",
+          "traceId": "e4bb9355-407e-4c26-b69f-1efda8373111"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.147Z"
+    },
+    {
+      "id": "H026",
+      "requisitos": [
+        "M6-06",
+        "M6-33",
+        "M6-47"
+      ],
+      "cenario": "Criar Change Order (motivo, impacto financeiro, impacto de prazo, evidência)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Reforço da viga V12 (laudo do calculista)",
+        "budgetImpact": 6000,
+        "scheduleImpactDays": 7,
+        "evidenceFileIds": [
+          "3c960577-5959-4b51-98eb-0a166caf0d64"
+        ],
+        "idempotencyKey": "co-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 299,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "9171674e-4a45-4aba-bcb8-93af92951511",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reasonCode": "ESCOPO_ADICIONAL",
+          "description": "Reforço da viga V12 (laudo do calculista)",
+          "budgetImpact": "6000.00",
+          "scheduleImpactDays": 7,
+          "evidenceFileIds": [
+            "3c960577-5959-4b51-98eb-0a166caf0d64"
+          ],
+          "idempotencyKey": "co-c4fcd6",
+          "status": "PENDING_APPROVAL",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:08.430Z",
+          "created_at": "2026-11-11T00:12:08.430Z",
+          "decidedBy": null,
+          "decidedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.446Z"
+    },
+    {
+      "id": "H027",
+      "requisitos": [
+        "M6-06",
+        "M6-33"
+      ],
+      "cenario": "Reenviar o MESMO Change Order (mesma idempotencyKey): devolve o registro original, sem duplicar",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Reforço da viga V12 (laudo do calculista)",
+        "budgetImpact": 6000,
+        "scheduleImpactDays": 7,
+        "evidenceFileIds": [
+          "3c960577-5959-4b51-98eb-0a166caf0d64"
+        ],
+        "idempotencyKey": "co-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 36,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "9171674e-4a45-4aba-bcb8-93af92951511",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reasonCode": "ESCOPO_ADICIONAL",
+          "description": "Reforço da viga V12 (laudo do calculista)",
+          "budgetImpact": "6000.00",
+          "scheduleImpactDays": 7,
+          "evidenceFileIds": [
+            "3c960577-5959-4b51-98eb-0a166caf0d64"
+          ],
+          "idempotencyKey": "co-c4fcd6",
+          "status": "PENDING_APPROVAL",
+          "decidedBy": null,
+          "decidedAt": null,
+          "lockVersion": 0,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:08.430Z",
+          "updated_at": "2026-11-11T00:12:08.430Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.482Z"
+    },
+    {
+      "id": "H033",
+      "requisitos": [
+        "M6-06",
+        "M6-47"
+      ],
+      "cenario": "Listar Change Orders da obra",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 173,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "4ca1dc9e-f1b7-4fd7-934a-63586b9b4d33",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "reasonCode": "ESCOPO_ADICIONAL",
+            "description": "Troca de revestimento",
+            "budgetImpact": "2500.00",
+            "scheduleImpactDays": 7,
+            "evidenceFileIds": [
+              "66c36f3f-a94f-483d-b610-087615b7a6e3"
+            ],
+            "idempotencyKey": "co2-c4fcd6",
+            "status": "REJECTED",
+            "decidedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "decidedAt": "2026-11-11T00:12:08.940Z",
+            "lockVersion": 1,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:08.866Z",
+            "updated_at": "2026-11-11T00:12:08.940Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          },
+          {
+            "id": "9171674e-4a45-4aba-bcb8-93af92951511",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "reasonCode": "ESCOPO_ADICIONAL",
+            "description": "Reforço da viga V12 (laudo do calculista)",
+            "budgetImpact": "6000.00",
+            "scheduleImpactDays": 7,
+            "evidenceFileIds": [
+              "3c960577-5959-4b51-98eb-0a166caf0d64"
+            ],
+            "idempotencyKey": "co-c4fcd6",
+            "status": "APPROVED",
+            "decidedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "decidedAt": "2026-11-11T00:12:08.694Z",
+            "lockVersion": 1,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:08.430Z",
+            "updated_at": "2026-11-11T00:12:08.694Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:09.145Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.377Z"
+}

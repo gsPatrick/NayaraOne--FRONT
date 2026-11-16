@@ -1,0 +1,261 @@
+{
+ "id": "M4-G§15.10",
+ "secao": "Guia §15 APIs mínimas",
+ "requisito": "\"POST /finance/periods/:month/close\" — Fechar período.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F02-8 (HTTP): a rota de fechamento bloqueia sem pré-condições e expõe o checklist — sem gravar fechamento",
+   "status": "passou",
+   "duracaoMs": 178,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/m4.officialRoutes.guia15.test.js",
+   "nome": "Guia §15 POST /finance/periods/:month/close: com as conferências feitas o mês vai para REVIEW (201); mês inválido 400; sem finance:settle é 403",
+   "status": "passou",
+   "duracaoMs": 68,
+   "commitDoArquivo": "76cb9777"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "O16",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.10"
+   ],
+   "titulo": "Conferência de terceiros de 2073-05",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/checks",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "referenceMonth": "2073-05",
+    "checkType": "THIRD_PARTY_CASH",
+    "note": "Conferido (captura)"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 35,
+   "quando": "2026-11-11T01:35:18.569Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "25f18f7e-01a5-4a8c-addf-74ddeb91c9aa",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "referenceMonth": "2073-05",
+     "status": "OPEN",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:18.551Z",
+     "created_at": "2026-11-11T01:35:18.543Z",
+     "thirdPartyCheckedAt": "2026-11-11T01:35:18.550Z",
+     "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "thirdPartyCheckNote": "Conferido (captura)",
+     "thirdPartyBalanceAtCheck": "1650.00",
+     "commissionsReviewedAt": null,
+     "commissionsReviewedByUserId": null,
+     "commissionsReviewNote": null,
+     "commissionsFingerprintAtReview": null,
+     "currentSnapshotId": null,
+     "reviewRequestedByUserId": null,
+     "reviewRequestedAt": null,
+     "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": null,
+     "closedByUserId": null,
+     "reopenedAt": null,
+     "reopenedByUserId": null,
+     "reopenReason": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O17",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.10"
+   ],
+   "titulo": "Conferência de comissões/repasses de 2073-05",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/checks",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "referenceMonth": "2073-05",
+    "checkType": "COMMISSIONS_REPASSES",
+    "note": "Conferido (captura)"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 38,
+   "quando": "2026-11-11T01:35:18.607Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "25f18f7e-01a5-4a8c-addf-74ddeb91c9aa",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "referenceMonth": "2073-05",
+     "status": "OPEN",
+     "thirdPartyCheckedAt": "2026-11-11T01:35:18.550Z",
+     "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "thirdPartyCheckNote": "Conferido (captura)",
+     "thirdPartyBalanceAtCheck": "1650.00",
+     "commissionsReviewedAt": "2026-11-11T01:35:18.583Z",
+     "commissionsReviewedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "commissionsReviewNote": "Conferido (captura)",
+     "commissionsFingerprintAtReview": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+     "currentSnapshotId": null,
+     "reviewRequestedByUserId": null,
+     "reviewRequestedAt": null,
+     "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": null,
+     "closedByUserId": null,
+     "reopenedAt": null,
+     "reopenedByUserId": null,
+     "reopenReason": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:18.543Z",
+     "updated_at": "2026-11-11T01:35:18.583Z",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O18",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.10",
+    "M4-G§12"
+   ],
+   "titulo": "POST /finance/periods/2073-05/close: pedido de fechamento pelo caminho literal",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/periods/2073-05/close",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": [
+     200,
+     201
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 79,
+   "quando": "2026-11-11T01:35:18.686Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "25f18f7e-01a5-4a8c-addf-74ddeb91c9aa",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "referenceMonth": "2073-05",
+     "status": "REVIEW",
+     "thirdPartyCheckedAt": "2026-11-11T01:35:18.550Z",
+     "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "thirdPartyCheckNote": "Conferido (captura)",
+     "thirdPartyBalanceAtCheck": "1650.00",
+     "commissionsReviewedAt": "2026-11-11T01:35:18.583Z",
+     "commissionsReviewedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "commissionsReviewNote": "Conferido (captura)",
+     "commissionsFingerprintAtReview": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+     "currentSnapshotId": null,
+     "reviewRequestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "reviewRequestedAt": "2026-11-11T01:35:18.648Z",
+     "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": null,
+     "closedByUserId": null,
+     "reopenedAt": null,
+     "reopenedByUserId": null,
+     "reopenReason": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:18.543Z",
+     "updated_at": "2026-11-11T01:35:18.648Z",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O19",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.10"
+   ],
+   "titulo": "Rota oficial de fechamento sem permissão (leitura): recusada",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/finance/periods/2073-05/close",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T01:35:18.696Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "finance:settle"
+     },
+     "traceId": "c13aacce-3b17-45d8-bce9-6adc904ed43c"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

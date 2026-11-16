@@ -1,0 +1,105 @@
+{
+  "id": "CRM-TS-008",
+  "secao": "Livro §19 Adversariais",
+  "requisito": "Lost no reason: marcar LOST → bloqueado.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 127,
+      "casos": [
+        "perda_sem_motivo"
+      ],
+      "descricao": "Cria oportunidade (caminho do livro) com responsável e próxima ação",
+      "metodo": "POST",
+      "rota": "/api/v1/crm/opportunities",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+        "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+        "stage": "NEW",
+        "ownerUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "nextAction": "Ligar para qualificar",
+        "nextActionDueAt": "2026-11-13T00:16:25.972Z"
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "c3955ba0-9185-4e01-8405-49c1555478d6",
+          "lockVersion": 0,
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+          "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+          "ownerUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "stage": "NEW",
+          "temperature": null,
+          "expectedValue": null,
+          "nextAction": "Ligar para qualificar",
+          "nextActionDueAt": "2026-11-13T00:16:25.972Z",
+          "wonReason": null,
+          "lostReason": null,
+          "withdrawnReason": null,
+          "closedAt": null,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updated_at": "2026-11-11T00:16:25.987Z",
+          "created_at": "2026-11-11T00:16:25.987Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:16:25.972Z"
+    },
+    {
+      "seq": 128,
+      "casos": [
+        "perda_sem_motivo"
+      ],
+      "descricao": "Perda sem motivo pelo caminho do livro: bloqueada",
+      "metodo": "POST",
+      "rota": "/api/v1/crm/opportunities/c3955ba0-9185-4e01-8405-49c1555478d6/lost",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {},
+      "status": 422,
+      "codigoErro": "OPPORTUNITY_OUTCOME_REASON_REQUIRED",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "OPPORTUNITY_OUTCOME_REASON_REQUIRED",
+          "message": "Fechar uma oportunidade como \"CLOSED_LOST\" exige o motivo de perda em \"lostReason\" (um de: PRICE_TOO_HIGH, COMPETITOR, FINANCING_DENIED, LOCATION, OTHER).",
+          "details": {
+            "stage": "CLOSED_LOST",
+            "field": "lostReason",
+            "allowed": [
+              "PRICE_TOO_HIGH",
+              "COMPETITOR",
+              "FINANCING_DENIED",
+              "LOCATION",
+              "OTHER"
+            ]
+          },
+          "traceId": "da89e663-495d-4965-97f3-faa92043c6db"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:25.994Z"
+    }
+  ],
+  "consultasBanco": []
+}

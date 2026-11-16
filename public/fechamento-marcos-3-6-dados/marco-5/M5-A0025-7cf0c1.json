@@ -1,0 +1,190 @@
+{
+ "id": "M5-A0025-7cf0c1",
+ "secao": "P1 > 3. Tipos de contrato [tabela: Código | Uso]",
+ "linhaCaderno": 71,
+ "requisito": "PROPERTY_ADMIN | Administração de imóvel.",
+ "demandas": "M5-D001;M5-D012",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js:29 CONTRACT_TYPES (PROPERTY_ADMIN); src/modules/legal/contracts/application/contract.service.js:331 createContract; rotas POST /api/v1/legal/contracts e POST /api/v1/contracts (literal do Guia §14); tabela legal.contracts (contract_type, contract_number por prefixo)",
+ "tela": "Contratos > Novo contrato (/painel/contratos/lista/novo)",
+ "testes": [
+  {
+   "arquivo": "test/legal.contractTimelineAndSubtypes.test.js",
+   "nome": "AUD-015: subtipos de locação (LEASE_RESIDENTIAL/LEASE_COMMERCIAL/LEASE_SEASONAL/PROPERTY_ADMIN) são aceitos e numerados como locação",
+   "status": "pass",
+   "ms": 121.756,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G1: cada subtipo de contrato real (LEASE_RESIDENTIAL/COMMERCIAL/SEASONAL, PROPERTY_ADMIN, SALE_*) é criado via API e tratado como \"lease-like\"/\"sale-like\" corretamente",
+   "status": "pass",
+   "ms": 305.266,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-009",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=bbe07957-d886-4bff-a5bf-11afc4bd1086, contractType=PROPERTY_ADMIN",
+   "quando": "2026-11-11T03:42:23.953Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0025-7cf0c1.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.contractTimelineAndSubtypes.test.js test/marco5.auditGapClosureR1.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-009, CT-013)"
+ },
+ "passos": [
+  {
+   "id": "CT-009",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo PROPERTY_ADMIN pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "PROPERTY_ADMIN",
+    "totalValue": 9000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:23.953Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "bbe07957-d886-4bff-a5bf-11afc4bd1086",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "PROPERTY_ADMIN",
+     "contractNumber": "ADM-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "9000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.947Z",
+     "created_at": "2026-11-11T03:42:23.947Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0025-7cf0c1",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-013",
+   "req": [
+    "M5-A0018-77e34f",
+    "M5-A0019-64e8b2",
+    "M5-A0020-87a024",
+    "M5-A0021-e335f3",
+    "M5-A0022-0656df",
+    "M5-A0023-6eecaf",
+    "M5-A0024-a3b990",
+    "M5-A0025-7cf0c1",
+    "M5-A0026-efe161"
+   ],
+   "modulo": "10-contratos-tipos",
+   "perfil": "A:leitura",
+   "descricao": "Os 9 contratos criados, um por tipo do livro, gravados em DRAFT com numeração por prefixo do tipo (RLS do tenant A)",
+   "sql": "SELECT contract_type, status, contract_number, construction_project_id IS NOT NULL AS com_obra FROM legal.contracts WHERE id IN (:ids) ORDER BY contract_type",
+   "resultado": [
+    {
+     "contract_type": "CONSTRUCTION",
+     "status": "DRAFT",
+     "contract_number": "OBR-2026-0001",
+     "com_obra": true
+    },
+    {
+     "contract_type": "LEASE_COMMERCIAL",
+     "status": "DRAFT",
+     "contract_number": "LOC-2026-0002",
+     "com_obra": false
+    },
+    {
+     "contract_type": "LEASE_RESIDENTIAL",
+     "status": "DRAFT",
+     "contract_number": "LOC-2026-0001",
+     "com_obra": false
+    },
+    {
+     "contract_type": "LEASE_SEASONAL",
+     "status": "DRAFT",
+     "contract_number": "LOC-2026-0003",
+     "com_obra": false
+    },
+    {
+     "contract_type": "PROPERTY_ADMIN",
+     "status": "DRAFT",
+     "contract_number": "ADM-2026-0001",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_CASH",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0001",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_FINANCED",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0002",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_INSTALLMENTS",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0004",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_TRADE",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0003",
+     "com_obra": false
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:23.995Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

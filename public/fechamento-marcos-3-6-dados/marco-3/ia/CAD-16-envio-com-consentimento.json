@@ -1,0 +1,60 @@
+{
+  "capturadoEm": "2026-11-11T12:48:30.487Z",
+  "pedido": {
+    "taskType": "propor_envio_mensagem",
+    "situacao": "opt-in MARKETING no WhatsApp"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "8930cd35-8d79-4ed3-b5a5-e2380102afee",
+        "status": "COMPLETED",
+        "answer": "RASCUNHO — não foi publicado nem enviado; revise antes de usar.\nProposta de envio por WhatsApp para QA-M3CB Cliente 179440130942949724 [1] (regras de contato e consentimento conferidos para a finalidade MARKETING):\nOlá, QA-M3CB Cliente 179440130942949724! Passando para saber se ainda posso ajudar com a sua busca (ainda não conversamos sobre o seu interesse, há 30 dias). Se quiser, envio novas opções.\nNenhuma mensagem foi enviada. Revise e envie você pelo CRM.",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "crm.opportunities",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Oportunidade 8fe3ff25-91e0-4734-8494-777f3ea28d82. Cliente QA-M3CB Cliente 179440130942949724. Etapa NEW. Última interação: nenhuma. Dias sem contato: 30.",
+            "retrievedAt": "2026-11-11T12:48:30.019Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:30.019Z",
+        "proposals": [
+          {
+            "id": "4655cb88-69b3-4fe3-b9d7-5f4dd97eb9db",
+            "kind": "PROPOSTA_ENVIO_MENSAGEM",
+            "status": "PENDING"
+          }
+        ],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": {
+          "tipo": "PROPOSTA_ENVIO_MENSAGEM",
+          "oportunidade": "8fe3ff25-91e0-4734-8494-777f3ea28d82",
+          "canal": "WHATSAPP",
+          "finalidade": "MARKETING",
+          "permitido": true,
+          "motivo": null,
+          "enviada": false,
+          "texto": "Olá, QA-M3CB Cliente 179440130942949724! Passando para saber se ainda posso ajudar com a sua busca (ainda não conversamos sobre o seu interesse, há 30 dias). Se quiser, envio novas opções."
+        },
+        "replayed": false
+      }
+    }
+  }
+}

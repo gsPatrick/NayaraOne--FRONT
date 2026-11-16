@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0108-eed49f",
+ "linhaCaderno": 259,
+ "requisito": "• due_at em timezone correto + responsável + severidade.",
+ "correcao": "src/modules/legal/cases/legalDeadlineDates.js parseDueAt(valor, campo, fuso) com base IANA; fuso = legal.prazos.fuso_horario (legalRules.params.js legalDeadlineZone)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.prazos.test.js",
+   "nome": "M5-A0108/§15: o vencimento só com a data fecha às 23:59 do fuso configurado pela empresa (Manaus = UTC-4), e o texto da tarefa usa esse fuso",
+   "status": "pass",
+   "ms": 224.505,
+   "commitDoTeste": "33b32586",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "Error [AppError]: Chave de configuração desconhecida: \"legal.prazos.fuso_horario\". statusCode: 400, code: 'SETTING_UNKNOWN_KEY', details: { key: 'legal.prazos.fuso_horario' }, isOperational: true }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.132Z"
+}

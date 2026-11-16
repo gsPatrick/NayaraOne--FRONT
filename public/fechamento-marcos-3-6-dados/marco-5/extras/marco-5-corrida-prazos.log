@@ -1,0 +1,214 @@
+# Marco 5 — Corrida de reabertura de prazo crítico no PostgreSQL com duas sessões independentes
+# Log nominal (saída completa da execução, sem cortes)
+#
+# Execução: início 11/11/2026 00:40:23, fim 11/11/2026 00:41:07 (horário de Brasília)
+# Código: API branch m5fix/matriz, commit 980a1eecf347ef35eeedd0c4b22741c3041bade3
+# Node v24.18.0 · postgres (PostgreSQL) 17.11 (Homebrew) · banco descartável criado do zero, role de runtime NOSUPERUSER/NOBYPASSRLS
+# Comando (da raiz da API):  npm run test:m5:corrida-prazos      (aqui com DRILL_PG_PORT=5534 para usar a porta reservada)
+# Arquivos: test/legal.deadlineFinalState.concurrency.test.js (B-primeiro, null-primeiro) e test/legal.deadlineRaceCritical.test.js (8 corridas reabrir x tirar escalonamento, 6 rodadas criar x tirar, positivo)
+# Execução anterior, no commit 05100be4 (antes das correções do fechamento): evidencias/marco-5/corrida/marco-5-corrida-prazos-05100be4.log (mesmo resultado, 12/12).
+#
+# Como ler:
+#  - "sessão 1/2" ou "A/B" = duas transações PostgreSQL em conexões DIFERENTES (o PID do backend de cada uma aparece na linha "backend PID").
+#  - "observador (3ª conexão)" = fotografia, por uma terceira conexão, de pg_stat_activity + pg_blocking_pids + pg_locks enquanto a segunda sessão está em curso:
+#    mostra se ela está esperando lock (wait=Lock/transactionid), QUEM a bloqueia (PID e transação da outra sessão) e o comando em espera (SELECT ... FROM legal.legal_cases ... FOR UPDATE).
+#  - Ordem de commit: linhas "COMMIT (1º commit)" / "ROLLBACK".
+#  - B-primeiro: a sessão 1 reabre com responsável B e segura o lock processo -> prazo; a sessão 2 (reabrir removendo o responsável) fica BLOQUEADA até o commit da 1,
+#    relê o estado já gravado e é recusada com 422 LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED. Estado final: PENDING + CRITICAL + responsável B; audit_log com 2 linhas encadeadas.
+#  - null-primeiro: a sessão 1 (remover o responsável) é recusada na hora (422, ROLLBACK, solta o lock); a sessão 2 (B) então segue sem espera e é a única a commitar.
+#    Mesmo estado final válido nas duas ordens. Em nenhuma ordem sobra prazo CRITICAL pendente sem responsável/escalonamento.
+#
+# Única alteração sobre a saída bruta: o endereço de loopback do cluster descartável foi trocado por "localhost" (regra: nenhum IP em arquivo versionado).
+# ---------------------------------------------------------------------------------------------------------------
+[withDisposableDb] cluster descartável localhost:5534/drill_app pronto (612 migrations, GRANT em 18 schemas) em 34.1 s
+[corrida] +    0 ms | Duas reaberturas simultaneas (B-primeiro) | prazo CRITICAL 41fbee96-56ec-4a16-b815-67d64a0a3970 (DONE) do processo 3266c817-83b4-47e8-9083-7bf19987a5d0; processo sem responsavel proprio; usuario B = 97b9393a-96c2-418a-9d73-c7158b244126
+[corrida] +   19 ms | Duas reaberturas simultaneas (B-primeiro) | sessão 1 = B (reabre com responsavel B): backend PID 99088, transação 4896 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +   20 ms | Duas reaberturas simultaneas (B-primeiro) | sessão 2 = null (reabre removendo o responsavel): backend PID 99091, transação 4897 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +   38 ms | Duas reaberturas simultaneas (B-primeiro) | sessão 1 executou PATCH {"status":"PENDING","responsibleUserId":"97b9393a-96c2-418a-9d73-c7158b244126"} -> OK; transação 1 segue ABERTA (segurando o lock processo -> prazo)
+[corrida] +   38 ms | Duas reaberturas simultaneas (B-primeiro) | sessão 2 disparou PATCH {"status":"PENDING","responsibleUserId":null} enquanto a transação 1 está aberta
+[corrida] +  350 ms | Duas reaberturas simultaneas (B-primeiro) | observador (3ª conexão): sessão 2 = null (reabre removendo o responsavel) PID 99091 state=active wait=Lock/transactionid bloqueada por: sessão 1 = B (reabre com responsavel B) (PID 99088); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4896 = sessão 1 = B (reabre com responsavel B))
+[corrida] +  350 ms | Duas reaberturas simultaneas (B-primeiro) | observador: comando em espera da sessão 2 = null (reabre removendo o responsavel): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '3266c817-83b4-47e8-9083-7bf19987a5d0') FOR UPDATE;
+[corrida] +  351 ms | Duas reaberturas simultaneas (B-primeiro) | sessão 1 COMMIT (1º commit)
+[corrida] +  355 ms | Duas reaberturas simultaneas (B-primeiro) | sessão 2 terminou depois do commit da 1 -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED
+[corrida] +  355 ms | Duas reaberturas simultaneas (B-primeiro) | sessão 2 ROLLBACK (recusada, nada gravado)
+[corrida] +  361 ms | Duas reaberturas simultaneas (B-primeiro) | estado final: status=PENDING criticality=CRITICAL responsavel=97b9393a-96c2-418a-9d73-c7158b244126; audit_log legal.deadline.update = 2 linhas (conclusao + 1 reabertura); before.status da reabertura = DONE
+✔ Duas reaberturas simultaneas (B-primeiro): uma ganha, auditoria encadeada, estado final valido (565.755792ms)
+[corrida] +    0 ms | Duas reaberturas simultaneas (null-primeiro) | prazo CRITICAL a52c25cd-ce37-4b34-9c4b-e21865b765a0 (DONE) do processo 07bb923c-ff7c-46cc-b64f-a7c9f8f49e51; processo sem responsavel proprio; usuario B = e2c9ce98-56d5-4f0c-847f-a74ff0f74b98
+[corrida] +    2 ms | Duas reaberturas simultaneas (null-primeiro) | sessão 1 = null (reabre removendo o responsavel): backend PID 99091, transação 4903 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    3 ms | Duas reaberturas simultaneas (null-primeiro) | sessão 2 = B (reabre com responsavel B): backend PID 99088, transação 4904 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    9 ms | Duas reaberturas simultaneas (null-primeiro) | sessão 1 executou PATCH {"status":"PENDING","responsibleUserId":null} -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED; transação 1 encerrada por ROLLBACK (nada gravado)
+[corrida] +    9 ms | Duas reaberturas simultaneas (null-primeiro) | sessão 2 disparou PATCH {"status":"PENDING","responsibleUserId":"e2c9ce98-56d5-4f0c-847f-a74ff0f74b98"} com a transação 1 já encerrada
+[corrida] +  312 ms | Duas reaberturas simultaneas (null-primeiro) | observador (3ª conexão): sessão 2 = B (reabre com responsavel B) PID 99088 state=idle in transaction wait=Client/ClientRead bloqueada por: ninguém; locks não concedidos: nenhum lock pendente
+[corrida] +  312 ms | Duas reaberturas simultaneas (null-primeiro) | sessão 1 já tinha feito ROLLBACK (recusada)
+[corrida] +  312 ms | Duas reaberturas simultaneas (null-primeiro) | sessão 2 terminou -> OK
+[corrida] +  312 ms | Duas reaberturas simultaneas (null-primeiro) | sessão 2 COMMIT (único commit)
+[corrida] +  316 ms | Duas reaberturas simultaneas (null-primeiro) | estado final: status=PENDING criticality=CRITICAL responsavel=e2c9ce98-56d5-4f0c-847f-a74ff0f74b98; audit_log legal.deadline.update = 2 linhas (conclusao + 1 reabertura); before.status da reabertura = DONE
+✔ Duas reaberturas simultaneas (null-primeiro): uma ganha, auditoria encadeada, estado final valido (363.783667ms)
+[corrida] +    0 ms | Corrida #1 (reabrir primeiro) | prazo CRITICAL 5e0f68af-01d8-492d-8216-5f1324bc786b (DONE), processo 52fb6316-30de-45d9-8d93-a0ded9daa0b7
+[corrida] +    0 ms | Corrida #1 (reabrir primeiro) | sessão A = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99105, transação 4911 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    7 ms | Corrida #1 (reabrir primeiro) | sessão B = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 4912 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +   20 ms | Corrida #1 (reabrir primeiro) | sessão A executou (reabrir o prazo CRITICAL (DONE -> PENDING)) -> OK; transação A segue ABERTA
+[corrida] +   21 ms | Corrida #1 (reabrir primeiro) | sessão B disparou (tirar o escalonamento do processo (escalationUserId = null)) com a transação A aberta
+[corrida] +  295 ms | Corrida #1 (reabrir primeiro) | observador (3ª conexão): sessão B = tirar o escalonamento do processo (escalationUserId = null) PID 99106 state=active wait=Lock/transactionid bloqueada por: sessão A = reabrir o prazo CRITICAL (DONE -> PENDING) (PID 99105); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4911 = sessão A = reabrir o prazo CRITICAL (DONE -> PENDING))
+[corrida] +  295 ms | Corrida #1 (reabrir primeiro) | observador: comando em espera da sessão B = tirar o escalonamento do processo (escalationUserId = null): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '52fb6316-30de-45d9-8d93-a0ded9daa0b7') FOR UPDATE;
+[corrida] +  296 ms | Corrida #1 (reabrir primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  299 ms | Corrida #1 (reabrir primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  299 ms | Corrida #1 (reabrir primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  302 ms | Corrida #1 (reabrir primeiro) | estado final: prazo PENDING/CRITICAL, escalonamento do processo = 160b7f21-2ab6-4291-8216-77d42d12a064
+✔ Corrida #1: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (479.398667ms)
+[corrida] +    0 ms | Corrida #2 (tirar escalonamento primeiro) | prazo CRITICAL 52fd9b8f-8f91-43ed-9fc2-eaf27fe26859 (DONE), processo ffa8b4a6-67dc-45ee-9c62-0206aece0ca5
+[corrida] +    1 ms | Corrida #2 (tirar escalonamento primeiro) | sessão A = tirar o escalonamento do processo (escalationUserId = null): backend PID 99105, transação 4918 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    1 ms | Corrida #2 (tirar escalonamento primeiro) | sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99106, transação 4919 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    9 ms | Corrida #2 (tirar escalonamento primeiro) | sessão A executou (tirar o escalonamento do processo (escalationUserId = null)) -> OK; transação A segue ABERTA
+[corrida] +    9 ms | Corrida #2 (tirar escalonamento primeiro) | sessão B disparou (reabrir o prazo CRITICAL (DONE -> PENDING)) com a transação A aberta
+[corrida] +  262 ms | Corrida #2 (tirar escalonamento primeiro) | observador (3ª conexão): sessão B = reabrir o prazo CRITICAL (DONE -> PENDING) PID 99106 state=active wait=Lock/transactionid bloqueada por: sessão A = tirar o escalonamento do processo (escalationUserId = null) (PID 99105); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4918 = sessão A = tirar o escalonamento do processo (escalationUserId = null))
+[corrida] +  262 ms | Corrida #2 (tirar escalonamento primeiro) | observador: comando em espera da sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = 'ffa8b4a6-67dc-45ee-9c62-0206aece0ca5') FOR UPDATE;
+[corrida] +  263 ms | Corrida #2 (tirar escalonamento primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  266 ms | Corrida #2 (tirar escalonamento primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  266 ms | Corrida #2 (tirar escalonamento primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  272 ms | Corrida #2 (tirar escalonamento primeiro) | estado final: prazo DONE/CRITICAL, escalonamento do processo = nenhum
+✔ Corrida #2: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (320.097708ms)
+[corrida] +    0 ms | Corrida #3 (reabrir primeiro) | prazo CRITICAL 8a7a7b8c-4ff4-400c-a34d-11f30710f155 (DONE), processo 3863e12e-a203-4772-82f3-8d94ede0b06a
+[corrida] +    0 ms | Corrida #3 (reabrir primeiro) | sessão A = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99106, transação 4925 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    0 ms | Corrida #3 (reabrir primeiro) | sessão B = tirar o escalonamento do processo (escalationUserId = null): backend PID 99105, transação 4926 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +   13 ms | Corrida #3 (reabrir primeiro) | sessão A executou (reabrir o prazo CRITICAL (DONE -> PENDING)) -> OK; transação A segue ABERTA
+[corrida] +   14 ms | Corrida #3 (reabrir primeiro) | sessão B disparou (tirar o escalonamento do processo (escalationUserId = null)) com a transação A aberta
+[corrida] +  270 ms | Corrida #3 (reabrir primeiro) | observador (3ª conexão): sessão B = tirar o escalonamento do processo (escalationUserId = null) PID 99105 state=active wait=Lock/transactionid bloqueada por: sessão A = reabrir o prazo CRITICAL (DONE -> PENDING) (PID 99106); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4925 = sessão A = reabrir o prazo CRITICAL (DONE -> PENDING))
+[corrida] +  270 ms | Corrida #3 (reabrir primeiro) | observador: comando em espera da sessão B = tirar o escalonamento do processo (escalationUserId = null): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '3863e12e-a203-4772-82f3-8d94ede0b06a') FOR UPDATE;
+[corrida] +  270 ms | Corrida #3 (reabrir primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  272 ms | Corrida #3 (reabrir primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  272 ms | Corrida #3 (reabrir primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  275 ms | Corrida #3 (reabrir primeiro) | estado final: prazo PENDING/CRITICAL, escalonamento do processo = 160b7f21-2ab6-4291-8216-77d42d12a064
+✔ Corrida #3: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (349.346792ms)
+[corrida] +    0 ms | Corrida #4 (tirar escalonamento primeiro) | prazo CRITICAL 4ebd0ccc-a1ef-4baf-b512-26b8ce33c734 (DONE), processo 9b034a99-f854-4882-bc12-bf1cee5cf4f6
+[corrida] +    0 ms | Corrida #4 (tirar escalonamento primeiro) | sessão A = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 4932 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    0 ms | Corrida #4 (tirar escalonamento primeiro) | sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99105, transação 4933 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    6 ms | Corrida #4 (tirar escalonamento primeiro) | sessão A executou (tirar o escalonamento do processo (escalationUserId = null)) -> OK; transação A segue ABERTA
+[corrida] +    6 ms | Corrida #4 (tirar escalonamento primeiro) | sessão B disparou (reabrir o prazo CRITICAL (DONE -> PENDING)) com a transação A aberta
+[corrida] +  260 ms | Corrida #4 (tirar escalonamento primeiro) | observador (3ª conexão): sessão B = reabrir o prazo CRITICAL (DONE -> PENDING) PID 99105 state=active wait=Lock/transactionid bloqueada por: sessão A = tirar o escalonamento do processo (escalationUserId = null) (PID 99106); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4932 = sessão A = tirar o escalonamento do processo (escalationUserId = null))
+[corrida] +  260 ms | Corrida #4 (tirar escalonamento primeiro) | observador: comando em espera da sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '9b034a99-f854-4882-bc12-bf1cee5cf4f6') FOR UPDATE;
+[corrida] +  261 ms | Corrida #4 (tirar escalonamento primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  264 ms | Corrida #4 (tirar escalonamento primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  264 ms | Corrida #4 (tirar escalonamento primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  265 ms | Corrida #4 (tirar escalonamento primeiro) | estado final: prazo DONE/CRITICAL, escalonamento do processo = nenhum
+✔ Corrida #4: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (295.685625ms)
+[corrida] +    1 ms | Corrida #5 (reabrir primeiro) | prazo CRITICAL b08bfb2f-a2b2-4e45-a79a-8cf582461af6 (DONE), processo 1b7689bd-34a6-4916-ae08-db523ada2f8e
+[corrida] +    1 ms | Corrida #5 (reabrir primeiro) | sessão A = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99105, transação 4939 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    1 ms | Corrida #5 (reabrir primeiro) | sessão B = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 4940 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +   11 ms | Corrida #5 (reabrir primeiro) | sessão A executou (reabrir o prazo CRITICAL (DONE -> PENDING)) -> OK; transação A segue ABERTA
+[corrida] +   11 ms | Corrida #5 (reabrir primeiro) | sessão B disparou (tirar o escalonamento do processo (escalationUserId = null)) com a transação A aberta
+[corrida] +  265 ms | Corrida #5 (reabrir primeiro) | observador (3ª conexão): sessão B = tirar o escalonamento do processo (escalationUserId = null) PID 99106 state=active wait=Lock/transactionid bloqueada por: sessão A = reabrir o prazo CRITICAL (DONE -> PENDING) (PID 99105); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4939 = sessão A = reabrir o prazo CRITICAL (DONE -> PENDING))
+[corrida] +  265 ms | Corrida #5 (reabrir primeiro) | observador: comando em espera da sessão B = tirar o escalonamento do processo (escalationUserId = null): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '1b7689bd-34a6-4916-ae08-db523ada2f8e') FOR UPDATE;
+[corrida] +  266 ms | Corrida #5 (reabrir primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  267 ms | Corrida #5 (reabrir primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  267 ms | Corrida #5 (reabrir primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  270 ms | Corrida #5 (reabrir primeiro) | estado final: prazo PENDING/CRITICAL, escalonamento do processo = 160b7f21-2ab6-4291-8216-77d42d12a064
+✔ Corrida #5: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (296.191791ms)
+[corrida] +    0 ms | Corrida #6 (tirar escalonamento primeiro) | prazo CRITICAL 960d8ddf-6241-42d6-8ff4-a595ce3067e4 (DONE), processo f39d832f-5262-4c6e-bd17-0be5332336b3
+[corrida] +    0 ms | Corrida #6 (tirar escalonamento primeiro) | sessão A = tirar o escalonamento do processo (escalationUserId = null): backend PID 99105, transação 4946 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    0 ms | Corrida #6 (tirar escalonamento primeiro) | sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99106, transação 4947 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    7 ms | Corrida #6 (tirar escalonamento primeiro) | sessão A executou (tirar o escalonamento do processo (escalationUserId = null)) -> OK; transação A segue ABERTA
+[corrida] +    7 ms | Corrida #6 (tirar escalonamento primeiro) | sessão B disparou (reabrir o prazo CRITICAL (DONE -> PENDING)) com a transação A aberta
+[corrida] +  261 ms | Corrida #6 (tirar escalonamento primeiro) | observador (3ª conexão): sessão B = reabrir o prazo CRITICAL (DONE -> PENDING) PID 99106 state=active wait=Lock/transactionid bloqueada por: sessão A = tirar o escalonamento do processo (escalationUserId = null) (PID 99105); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4946 = sessão A = tirar o escalonamento do processo (escalationUserId = null))
+[corrida] +  261 ms | Corrida #6 (tirar escalonamento primeiro) | observador: comando em espera da sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = 'f39d832f-5262-4c6e-bd17-0be5332336b3') FOR UPDATE;
+[corrida] +  261 ms | Corrida #6 (tirar escalonamento primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  264 ms | Corrida #6 (tirar escalonamento primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  264 ms | Corrida #6 (tirar escalonamento primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  266 ms | Corrida #6 (tirar escalonamento primeiro) | estado final: prazo DONE/CRITICAL, escalonamento do processo = nenhum
+✔ Corrida #6: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (290.008541ms)
+[corrida] +    0 ms | Corrida #7 (reabrir primeiro) | prazo CRITICAL a4f25140-9438-4de5-aa57-e5d3a32a6784 (DONE), processo 6dd91d56-de19-4a90-97a4-cc2b37999dfd
+[corrida] +    0 ms | Corrida #7 (reabrir primeiro) | sessão A = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99106, transação 4953 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    0 ms | Corrida #7 (reabrir primeiro) | sessão B = tirar o escalonamento do processo (escalationUserId = null): backend PID 99105, transação 4954 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    9 ms | Corrida #7 (reabrir primeiro) | sessão A executou (reabrir o prazo CRITICAL (DONE -> PENDING)) -> OK; transação A segue ABERTA
+[corrida] +    9 ms | Corrida #7 (reabrir primeiro) | sessão B disparou (tirar o escalonamento do processo (escalationUserId = null)) com a transação A aberta
+[corrida] +  262 ms | Corrida #7 (reabrir primeiro) | observador (3ª conexão): sessão B = tirar o escalonamento do processo (escalationUserId = null) PID 99105 state=active wait=Lock/transactionid bloqueada por: sessão A = reabrir o prazo CRITICAL (DONE -> PENDING) (PID 99106); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4953 = sessão A = reabrir o prazo CRITICAL (DONE -> PENDING))
+[corrida] +  262 ms | Corrida #7 (reabrir primeiro) | observador: comando em espera da sessão B = tirar o escalonamento do processo (escalationUserId = null): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '6dd91d56-de19-4a90-97a4-cc2b37999dfd') FOR UPDATE;
+[corrida] +  262 ms | Corrida #7 (reabrir primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  265 ms | Corrida #7 (reabrir primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  265 ms | Corrida #7 (reabrir primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  268 ms | Corrida #7 (reabrir primeiro) | estado final: prazo PENDING/CRITICAL, escalonamento do processo = 160b7f21-2ab6-4291-8216-77d42d12a064
+✔ Corrida #7: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (293.937917ms)
+[corrida] +    0 ms | Corrida #8 (tirar escalonamento primeiro) | prazo CRITICAL 612100b9-7f37-49ff-a605-096b019f0dc2 (DONE), processo 65079b57-7c45-465d-bcde-1e89ab5c45a3
+[corrida] +    0 ms | Corrida #8 (tirar escalonamento primeiro) | sessão A = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 4960 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    1 ms | Corrida #8 (tirar escalonamento primeiro) | sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): backend PID 99105, transação 4961 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    6 ms | Corrida #8 (tirar escalonamento primeiro) | sessão A executou (tirar o escalonamento do processo (escalationUserId = null)) -> OK; transação A segue ABERTA
+[corrida] +    6 ms | Corrida #8 (tirar escalonamento primeiro) | sessão B disparou (reabrir o prazo CRITICAL (DONE -> PENDING)) com a transação A aberta
+[corrida] +  260 ms | Corrida #8 (tirar escalonamento primeiro) | observador (3ª conexão): sessão B = reabrir o prazo CRITICAL (DONE -> PENDING) PID 99105 state=active wait=Lock/transactionid bloqueada por: sessão A = tirar o escalonamento do processo (escalationUserId = null) (PID 99106); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4960 = sessão A = tirar o escalonamento do processo (escalationUserId = null))
+[corrida] +  260 ms | Corrida #8 (tirar escalonamento primeiro) | observador: comando em espera da sessão B = reabrir o prazo CRITICAL (DONE -> PENDING): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '65079b57-7c45-465d-bcde-1e89ab5c45a3') FOR UPDATE;
+[corrida] +  260 ms | Corrida #8 (tirar escalonamento primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  263 ms | Corrida #8 (tirar escalonamento primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  263 ms | Corrida #8 (tirar escalonamento primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +  266 ms | Corrida #8 (tirar escalonamento primeiro) | estado final: prazo DONE/CRITICAL, escalonamento do processo = nenhum
+✔ Corrida #8: reabrir CRITICAL x tirar escalonamento (duas conexoes) -> um lado recebe 422 e o estado final e valido (300.577125ms)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | processo 155f4f8e-b5bf-42d0-8027-82b2382723f8
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | sessão A = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 4967 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | sessão B = criar prazo CRITICAL novo: backend PID 99105, transação 4968 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    9 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | sessão A executou (tirar o escalonamento do processo (escalationUserId = null)) -> OK; transação A segue ABERTA
+[corrida] +    9 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | sessão B disparou (criar prazo CRITICAL novo) com a transação A aberta
+[corrida] +  263 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | observador (3ª conexão): sessão B = criar prazo CRITICAL novo PID 99105 state=active wait=Lock/transactionid bloqueada por: sessão A = tirar o escalonamento do processo (escalationUserId = null) (PID 99106); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4967 = sessão A = tirar o escalonamento do processo (escalationUserId = null))
+[corrida] +  263 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | observador: comando em espera da sessão B = criar prazo CRITICAL novo: ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '155f4f8e-b5bf-42d0-8027-82b2382723f8') FOR UPDATE;
+[corrida] +  264 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  264 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  264 ms | Criar CRITICAL x tirar escalonamento, rodada 1 (tirar primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | processo 28d0cfd7-0417-4d9e-b4a9-f0187f02092b
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | sessão A = criar prazo CRITICAL novo: backend PID 99105, transação 4974 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    1 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | sessão B = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 4975 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    9 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | sessão A executou (criar prazo CRITICAL novo) -> OK; transação A segue ABERTA
+[corrida] +    9 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | sessão B disparou (tirar o escalonamento do processo (escalationUserId = null)) com a transação A aberta
+[corrida] +  262 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | observador (3ª conexão): sessão B = tirar o escalonamento do processo (escalationUserId = null) PID 99106 state=active wait=Lock/transactionid bloqueada por: sessão A = criar prazo CRITICAL novo (PID 99105); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4974 = sessão A = criar prazo CRITICAL novo)
+[corrida] +  262 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | observador: comando em espera da sessão B = tirar o escalonamento do processo (escalationUserId = null): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '28d0cfd7-0417-4d9e-b4a9-f0187f02092b') FOR UPDATE;
+[corrida] +  263 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  264 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  264 ms | Criar CRITICAL x tirar escalonamento, rodada 2 (criar primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | processo dc4f69ca-82f9-4910-8ebb-006b588e2a05
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | sessão A = tirar o escalonamento do processo (escalationUserId = null): backend PID 99105, transação 4981 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | sessão B = criar prazo CRITICAL novo: backend PID 99106, transação 4982 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    3 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | sessão A executou (tirar o escalonamento do processo (escalationUserId = null)) -> OK; transação A segue ABERTA
+[corrida] +    3 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | sessão B disparou (criar prazo CRITICAL novo) com a transação A aberta
+[corrida] +  257 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | observador (3ª conexão): sessão B = criar prazo CRITICAL novo PID 99106 state=active wait=Lock/transactionid bloqueada por: sessão A = tirar o escalonamento do processo (escalationUserId = null) (PID 99105); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4981 = sessão A = tirar o escalonamento do processo (escalationUserId = null))
+[corrida] +  257 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | observador: comando em espera da sessão B = criar prazo CRITICAL novo: ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = 'dc4f69ca-82f9-4910-8ebb-006b588e2a05') FOR UPDATE;
+[corrida] +  257 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  258 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  258 ms | Criar CRITICAL x tirar escalonamento, rodada 3 (tirar primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | processo 30ea0d00-e653-4d01-9b89-3bac5190fa78
+[corrida] +    1 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | sessão A = criar prazo CRITICAL novo: backend PID 99106, transação 4988 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    1 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | sessão B = tirar o escalonamento do processo (escalationUserId = null): backend PID 99105, transação 4989 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    7 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | sessão A executou (criar prazo CRITICAL novo) -> OK; transação A segue ABERTA
+[corrida] +    7 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | sessão B disparou (tirar o escalonamento do processo (escalationUserId = null)) com a transação A aberta
+[corrida] +  260 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | observador (3ª conexão): sessão B = tirar o escalonamento do processo (escalationUserId = null) PID 99105 state=active wait=Lock/transactionid bloqueada por: sessão A = criar prazo CRITICAL novo (PID 99106); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4988 = sessão A = criar prazo CRITICAL novo)
+[corrida] +  261 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | observador: comando em espera da sessão B = tirar o escalonamento do processo (escalationUserId = null): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '30ea0d00-e653-4d01-9b89-3bac5190fa78') FOR UPDATE;
+[corrida] +  261 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  262 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  262 ms | Criar CRITICAL x tirar escalonamento, rodada 4 (criar primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | processo 9029d294-d0a1-4a1b-88f6-605a1abd31e4
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | sessão A = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 4995 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | sessão B = criar prazo CRITICAL novo: backend PID 99105, transação 4996 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    6 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | sessão A executou (tirar o escalonamento do processo (escalationUserId = null)) -> OK; transação A segue ABERTA
+[corrida] +    6 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | sessão B disparou (criar prazo CRITICAL novo) com a transação A aberta
+[corrida] +  259 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | observador (3ª conexão): sessão B = criar prazo CRITICAL novo PID 99105 state=active wait=Lock/transactionid bloqueada por: sessão A = tirar o escalonamento do processo (escalationUserId = null) (PID 99106); locks não concedidos: transactionid/ShareLock (espera o fim da transação 4995 = sessão A = tirar o escalonamento do processo (escalationUserId = null))
+[corrida] +  259 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | observador: comando em espera da sessão B = criar prazo CRITICAL novo: ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '9029d294-d0a1-4a1b-88f6-605a1abd31e4') FOR UPDATE;
+[corrida] +  260 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  260 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  260 ms | Criar CRITICAL x tirar escalonamento, rodada 5 (tirar primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+[corrida] +    0 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | processo 11edfc1a-bd75-4c2a-a50b-c51d4cc30ea6
+[corrida] +    1 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | sessão A = criar prazo CRITICAL novo: backend PID 99105, transação 5002 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    1 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | sessão B = tirar o escalonamento do processo (escalationUserId = null): backend PID 99106, transação 5003 aberta (BEGIN + SET LOCAL do tenant)
+[corrida] +    5 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | sessão A executou (criar prazo CRITICAL novo) -> OK; transação A segue ABERTA
+[corrida] +    6 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | sessão B disparou (tirar o escalonamento do processo (escalationUserId = null)) com a transação A aberta
+[corrida] +  259 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | observador (3ª conexão): sessão B = tirar o escalonamento do processo (escalationUserId = null) PID 99106 state=active wait=Lock/transactionid bloqueada por: sessão A = criar prazo CRITICAL novo (PID 99105); locks não concedidos: transactionid/ShareLock (espera o fim da transação 5002 = sessão A = criar prazo CRITICAL novo)
+[corrida] +  259 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | observador: comando em espera da sessão B = tirar o escalonamento do processo (escalationUserId = null): ... FROM "legal"."legal_cases" AS "LegalCase" WHERE ("LegalCase"."deleted_at" IS NULL AND "LegalCase"."id" = '11edfc1a-bd75-4c2a-a50b-c51d4cc30ea6') FOR UPDATE;
+[corrida] +  260 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | sessão A COMMIT (1º commit)
+[corrida] +  261 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | sessão B terminou -> RECUSADA HTTP 422 LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED
+[corrida] +  261 ms | Criar CRITICAL x tirar escalonamento, rodada 6 (criar primeiro) | sessão B ROLLBACK (recusada, nada gravado)
+✔ Corrida: criar CRITICAL novo x tirar escalonamento do processo -> um lado recebe 422 e o estado final e valido (1708.440375ms)
+✔ Positivo: sem concorrencia, reabrir CRITICAL com escalonamento mantido e remover escalonamento sem CRITICAL pendente funcionam (28.205792ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6963.06825
+[withDisposableDb] cluster parado e diretório temporário apagado.
+EXIT=0

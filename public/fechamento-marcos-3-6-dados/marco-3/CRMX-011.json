@@ -1,0 +1,93 @@
+{
+  "id": "CRMX-011",
+  "secao": "Livro §2 Princípios",
+  "requisito": "Sem endereço público completo: publicação externa usa localização controlada.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 157,
+      "casos": [
+        "carrinho_publico"
+      ],
+      "descricao": "Link público (sem login): sem observação interna, sem rua/CEP/matrícula, só fotos aprovadas",
+      "metodo": "GET",
+      "rota": "/api/v1/crm/carts/public/[token do link omitido]",
+      "perfil": "sem login (rota pública)",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "cartId": "92e61f8d-0962-45bf-8be9-39c4021b372a",
+          "version": 2,
+          "expiresAt": "2026-11-18T00:16:26.518Z",
+          "properties": [
+            {
+              "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+              "title": "Casa Fictícia mwbdcbsmq7m7",
+              "propertyType": "RESIDENTIAL",
+              "city": "Campinas",
+              "state": "SP",
+              "bedrooms": 3,
+              "parkingSpots": 2,
+              "areaTotalM2": "180.000000",
+              "offer": {
+                "offerType": "RENT",
+                "askingPrice": "4800.00",
+                "acceptsFinancing": null
+              },
+              "photos": []
+            },
+            {
+              "id": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+              "title": "Casa Fictícia mwbdccmim8e1",
+              "propertyType": "RESIDENTIAL",
+              "city": "Campinas",
+              "state": "SP",
+              "bedrooms": 3,
+              "parkingSpots": 2,
+              "areaTotalM2": "180.000000",
+              "offer": {
+                "offerType": "RENT",
+                "askingPrice": "3900.00",
+                "acceptsFinancing": null
+              },
+              "photos": [
+                {
+                  "id": "9de690ff-fd56-4f99-b41d-78680838a3b8",
+                  "position": 1
+                },
+                {
+                  "id": "a6caa639-043b-47e0-8e59-ae86462b3484",
+                  "position": 2
+                },
+                {
+                  "id": "41223659-bdf0-4d18-b95b-8ecb3cfb31d5",
+                  "position": 3
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.561Z"
+    }
+  ],
+  "consultasBanco": []
+}

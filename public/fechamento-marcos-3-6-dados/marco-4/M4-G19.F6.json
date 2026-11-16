@@ -1,0 +1,312 @@
+{
+ "id": "M4-G§19.F6",
+ "secao": "Guia §19 Sprints",
+ "requisito": "Sprint F6: \"Repasses, cauções, comissões.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-RP2 aprovação por outra pessoa, confirmação só com pagamento liquidado e comprovante",
+   "status": "passou",
+   "duracaoMs": 507,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F04-1: devolução e compensação ligadas à origem, contrato e titular, com saldo e trilha",
+   "status": "passou",
+   "duracaoMs": 102,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM2 comissão calculada pelo Motor de Regras grava rule_version_id; nova versão não altera a antiga; banco exige a versão",
+   "status": "passou",
+   "duracaoMs": 193,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T29",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5",
+    "M4-G§19.F6"
+   ],
+   "titulo": "Aprovação do repasse por outra pessoa com MFA recente (conta do titular e centro de custo)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses/f79e16fb-a3db-4320-b9e5-daf743655f93/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 67,
+   "quando": "2026-11-11T01:35:12.613Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "repasse": {
+      "id": "f79e16fb-a3db-4320-b9e5-daf743655f93",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+      "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+      "grossAmount": "1500.00",
+      "deductionsAmount": "150.00",
+      "netAmount": "1350.00",
+      "financialEntryId": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "paidAt": null,
+      "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+      "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc",
+      "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "approvedAt": "2026-11-11T01:35:12.591Z",
+      "confirmedByUserId": null,
+      "paymentEvidenceFileId": null,
+      "paymentSettlementMethod": null,
+      "referenceMonth": "2026-11",
+      "status": "APPROVED",
+      "idempotencyKey": "m4-rep-0871300",
+      "lockVersion": 1,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "created_at": "2026-11-11T01:35:12.406Z",
+      "updated_at": "2026-11-11T01:35:12.591Z",
+      "property_id": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+      "owner_person_id": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+      "contract_id": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "bank_account_id": "c0a1d652-fa63-4251-90a1-56c3baf423c4"
+     },
+     "financialEntry": {
+      "id": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "resultCenterId": null,
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "DEBIT",
+      "nature": "PAYABLE",
+      "amount": "1350.00",
+      "description": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "owner-repasse:f79e16fb-a3db-4320-b9e5-daf743655f93",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": true,
+      "thirdPartyReference": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": "OWNER_REPASSE",
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "updated_at": "2026-11-11T01:35:12.584Z",
+      "created_at": "2026-11-11T01:35:12.584Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T29-b",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§19.F6"
+   ],
+   "titulo": "Comprovante do pagamento do repasse anexado ao lançamento a pagar gerado na aprovação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/ebb468be-c4c6-46a2-a4a1-9c98835a9cd5/settlement-evidence",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "settlementEvidenceFileId": "19fd34ef-8dbb-4263-af27-c388f396a380",
+    "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado."
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 78,
+   "quando": "2026-11-11T01:35:12.716Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": true,
+     "thirdPartyReference": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": "19fd34ef-8dbb-4263-af27-c388f396a380",
+     "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado.",
+     "settlementEvidenceAttachedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "settlementEvidenceAttachedAt": "2026-11-11T01:35:12.678Z",
+     "thirdPartyReleaseType": "OWNER_REPASSE",
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "1350.00",
+     "description": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": "owner-repasse:f79e16fb-a3db-4320-b9e5-daf743655f93",
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:12.584Z",
+     "updated_at": "2026-11-11T01:35:12.678Z",
+     "bank_account_id": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+     "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "result_center_id": null,
+     "contract_id": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T54-2",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§19.F6"
+   ],
+   "titulo": "Pagamento da 1ª parcela da comissão: comprovante anexado antes da aprovação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/f4386c6b-b8c6-4acd-9916-64b5a20324c2/settlement-evidence",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "settlementEvidenceFileId": "00c8b5fe-9de1-4883-a622-ca0229e6e821",
+    "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado."
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 48,
+   "quando": "2026-11-11T01:35:13.663Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f4386c6b-b8c6-4acd-9916-64b5a20324c2",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "492a7514-42a2-40cb-a7a6-3f11864b377b",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": "00c8b5fe-9de1-4883-a622-ca0229e6e821",
+     "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado.",
+     "settlementEvidenceAttachedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "settlementEvidenceAttachedAt": "2026-11-11T01:35:13.639Z",
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "25.00",
+     "description": "Pagamento da 1ª parcela da comissão 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:13.586Z",
+     "updated_at": "2026-11-11T01:35:13.639Z",
+     "bank_account_id": "492a7514-42a2-40cb-a7a6-3f11864b377b",
+     "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

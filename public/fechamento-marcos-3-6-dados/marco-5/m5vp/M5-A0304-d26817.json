@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0304-d26817",
+ "linhaCaderno": 34,
+ "requisito": "JUR-006 | Garantia rastreável | Fiador, seguro, caução e demais garantias têm vigência/status próprios.",
+ "correcao": "src/modules/legal/leasing/guaranteeStateGuards.js assertFinalGuaranteeState (vigência nunca apagada para fiador/seguro/título; ACTIVE não perde dado exigido) chamada em guarantee.service.js updateGuarantee",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.garantias.test.js",
+   "nome": "M5-A0304/JUR-006: PATCH não apaga a vigência nem os dados exigidos de uma garantia ACTIVE; edição legítima continua valendo",
+   "status": "pass",
+   "ms": 219.017,
+   "commitDoTeste": "7806a21e",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Missing expected rejection. generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, operator: 'rejects', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.754Z"
+}

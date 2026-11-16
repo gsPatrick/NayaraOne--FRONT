@@ -1,0 +1,701 @@
+{
+ "id": "M5-A0250-912374",
+ "secao": "P2 > 18. Sprints [tabela: Sprint | Entrega]",
+ "linhaCaderno": 780,
+ "requisito": "J8 | Processos + prazos.",
+ "demandas": "M5-D215",
+ "implementacao": "agregação dos requisitos M5-A0102-1a6313 (linha 244), M5-A0103-9d1f1e (linha 246), M5-A0104-c10a98 (linha 248), M5-A0105-1c9cc6 (linha 250), M5-A0106-ace96c (linha 252), M5-A0107-dce0a2 (linha 257), M5-A0108-eed49f (linha 259), M5-A0109-d70c4e (linha 261), M5-A0110-29f58b (linha 263), M5-A0111-b4013c (linha 265), M5-A0112-210dba (linha 267)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: tem número, órgão, classe, status, partes, valor, risco e responsável (§14)",
+   "status": "pass",
+   "ms": 91.25,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: documento ligado por file_links entra no dossiê automático com hash, nome, data e origem do arquivo; arquivo inexistente é 404 (§14/§16)",
+   "status": "pass",
+   "ms": 42.003,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: movimentação relevante (fase, legal hold, parte, documento, prazo, remarcação, conclusão, dossiê, notificação) aparece na linha do tempo (§14)",
+   "status": "pass",
+   "ms": 93.926,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.versoesRecebivel.test.js",
+   "nome": "JR recebível do processo: estimativa nunca vira lançamento; o valor confirmado com base jurídica (acordo/sentença) vira UM recebível vinculado, e o confirmado não muda depois",
+   "status": "pass",
+   "ms": 256.977,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: valor estimado não vira recebível; valor confirmado fica separado do estimado (§14)",
+   "status": "pass",
+   "ms": 16.725,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-008: criar prazo crítico sem origem verificável é bloqueado (DEADLINE_SOURCE_REQUIRED, Guia §12) e nada é gravado; texto de origem sozinho não basta",
+   "status": "pass",
+   "ms": 87,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazosLivro.test.js",
+   "nome": "JR prazo livro: due_at no fuso de São Paulo — só a data vence às 23:59 de Brasília, hora sem fuso é hora de Brasília, ISO com fuso é respeitado e data inexistente é 400",
+   "status": "pass",
+   "ms": 109.703,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-009: prazo crítico vencido sem conclusão alerta o responsável, abre UMA ocorrência CRITICAL, publica legal.deadline.overdue e escala após 24 h",
+   "status": "pass",
+   "ms": 39.016,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazos.test.js",
+   "nome": "JR prazo: concluir exige evidência ou nota com texto; evidência de outra empresa/inexistente é recusada (§15 \"Conclusão exige evidência/nota\")",
+   "status": "pass",
+   "ms": 39.972,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazos.test.js",
+   "nome": "JR prazo: remarcar sem motivo é 400; com motivo a auditoria preserva o vencimento anterior e a justificativa (§15)",
+   "status": "pass",
+   "ms": 25.604,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-P02",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=f5959797-2ec3-4630-a457-21529e647cfe",
+   "quando": "2026-11-11T03:42:37.163Z"
+  },
+  {
+   "passo": "JR-P08",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=a2e83252-6304-44ea-ade0-d476a23ecb7a",
+   "quando": "2026-11-11T03:42:37.274Z"
+  },
+  {
+   "passo": "JR-P13",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=OPEN, id=f5959797-2ec3-4630-a457-21529e647cfe",
+   "quando": "2026-11-11T03:42:37.346Z"
+  },
+  {
+   "passo": "JR-P13b",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED"
+   },
+   "resumo": "erro LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED: O processo não tem valor CONFIRMADO: estimativa processual não vira recebível.",
+   "quando": "2026-11-11T03:42:37.356Z"
+  },
+  {
+   "passo": "JR-D02",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "resumo": "erro DEADLINE_SOURCE_REQUIRED: Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jur",
+   "quando": "2026-11-11T03:42:37.618Z"
+  },
+  {
+   "passo": "JR-D06",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=70785ddb-efe1-4fd5-aaef-db3b4ff26c6f, criticality=MEDIUM",
+   "quando": "2026-11-11T03:42:37.742Z"
+  },
+  {
+   "passo": "JR-D33",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=f1dd4cb0-3f92-40e4-979a-b59d282a9148, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:38.298Z"
+  },
+  {
+   "passo": "JR-D19",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED",
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED: Concluir um prazo exige uma evidência anexada ou uma nota (com texto) explicando o que foi feito.",
+   "quando": "2026-11-11T03:42:37.932Z"
+  },
+  {
+   "passo": "JR-D15",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CHANGE_REASON_REQUIRED: Mudar o vencimento de um prazo exige informar o motivo da mudança.",
+   "quando": "2026-11-11T03:42:37.898Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0250-912374.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.processos.test.js test/m5fech.juridico.versoesRecebivel.test.js test/m5fech.juridico.adversariais.test.js test/m5fech.juridico.prazosLivro.test.js test/m5fech.juridico.prazos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-P02, JR-P08, JR-P13, JR-P13b, JR-D02, JR-D06, JR-D33, JR-D19, JR-D15)"
+ },
+ "passos": [
+  {
+   "id": "JR-P02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria processo com número, órgão, classe, valor estimado, risco, responsável e escalonamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "caseNumber": "0001234-55.2026.8.26.mwbk",
+    "court": "1ª Vara Cível (fictícia)",
+    "caseClass": "Despejo por falta de pagamento",
+    "estimatedAmount": 18500.75,
+    "riskLevel": "HIGH",
+    "summary": "Processo fictício JR mwbkpjpjaok7",
+    "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+    "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:37.163Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "caseNumber": "0001234-55.2026.8.26.mwbk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": "Processo fictício JR mwbkpjpjaok7",
+     "court": "1ª Vara Cível (fictícia)",
+     "caseClass": "Despejo por falta de pagamento",
+     "riskLevel": "HIGH",
+     "estimatedAmount": "18500.75",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.153Z",
+     "created_at": "2026-11-11T03:42:37.153Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "confirmedAmount": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0102-1a6313",
+    "M5-A0217-4b2e80",
+    "M5-A0173-2531a4",
+    "M5-A0271-64d1b2",
+    "M5-A0106-ace96c",
+    "M5-A0273-a39e38",
+    "M5-A0138-650e64"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envia a petição inicial (arquivo fictício; SHA-256 calculado no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "peticao-mwbkpjpjaok7.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgUGV0acOnw6NvIGluaWNpYWwgZmljdMOtY2lhIG13YmtwanBqYW9rNw==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 45,
+   "quando": "2026-11-11T03:42:37.274Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "a2e83252-6304-44ea-ade0-d476a23ecb7a",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/b654f2d0-eaac-4ae6-a87b-0708fa1779bd-peticao-mwbkpjpjaok7.pdf",
+     "fileName": "peticao-mwbkpjpjaok7.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 49,
+     "checksumSha256": "952b2db5d8b3296a338c053c8a18e26780d725a7a475ccd90050c747214e75fc",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:37.249Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.249Z",
+     "created_at": "2026-11-11T03:42:37.249Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e",
+    "M5-A0113-48df89"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Mudança de fase do processo (movimentação relevante)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "corpoEnviado": {
+    "phase": "DISCOVERY"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:37.346Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "caseNumber": "0001234-55.2026.8.26.mwbk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "summary": "Processo fictício JR mwbkpjpjaok7",
+     "phase": "DISCOVERY",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "lockVersion": 1,
+     "legalHold": false,
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": "1ª Vara Cível (fictícia)",
+     "caseClass": "Despejo por falta de pagamento",
+     "estimatedAmount": "18500.75",
+     "confirmedAmount": null,
+     "riskLevel": "HIGH",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:37.153Z",
+     "updated_at": "2026-11-11T03:42:37.340Z",
+     "deleted_at": null,
+     "escalation_user_id": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "contract_id": null,
+     "property_id": null,
+     "responsible_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b"
+    }
+   },
+   "req": [
+    "M5-A0104-c10a98"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P13b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem valor CONFIRMADO, nada vai ao Financeiro: a estimativa não vira recebível",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "SETTLEMENT",
+    "basisReference": "Acordo fictício",
+    "dueAt": "2030-03-10"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.356Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+     "message": "O processo não tem valor CONFIRMADO: estimativa processual não vira recebível.",
+     "traceId": "ce43c8a0-f2ed-4920-a4bc-0b7a2663d31f"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0106-ace96c"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico sem origem é bloqueado (JUR-TS-008)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.605Z",
+    "criticality": "CRITICAL",
+    "responsibleUserId": null
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.618Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "DEADLINE_SOURCE_REQUIRED",
+     "message": "Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jurídico precisa de uma origem verificável.",
+     "traceId": "60b1eca8-18d9-49d0-8f7b-986dd3966bae"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0107-dce0a2",
+    "M5-A0156-d0fcff",
+    "M5-A0238-193275",
+    "M5-A0258-4d0dd8",
+    "M5-A0206-d4f5e0",
+    "M5-A0218-5853eb"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR pelo maker (legal:create): prazo MEDIUM sem responsável próprio (vale o do processo), só com a data (vence 23:59 de Brasília) e origem por EVENTO real",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Réplica mwbkpk2qm6ml",
+    "dueAt": "2030-01-01",
+    "sourceEventId": "f88dd3ab-4640-40b3-8456-7941ca704408",
+    "sourceEvent": "Juntada de contestação (evento fictício)"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T03:42:37.742Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Réplica mwbkpk2qm6ml",
+     "dueAt": "2030-01-02T02:59:00.000Z",
+     "sourceFileId": null,
+     "sourceEventId": "f88dd3ab-4640-40b3-8456-7941ca704408",
+     "sourceEventType": "OUTBOX_EVENT",
+     "sourceDocument": null,
+     "sourceEvent": "Juntada de contestação (evento fictício)",
+     "responsibleUserId": null,
+     "criticality": "MEDIUM",
+     "status": "PENDING",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updated_at": "2026-11-11T03:42:37.734Z",
+     "created_at": "2026-11-11T03:42:37.731Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "222092e9-2d96-4e8b-8bf7-e88483972d23",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0218-5853eb",
+    "M5-A0108-eed49f"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D33",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Prazo crítico que já nasce vencido, com responsável",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Recurso mwbkpk2qm6ml",
+    "dueAt": "2026-11-09T03:42:38.265Z",
+    "criticality": "CRITICAL",
+    "sourceDocument": "Acórdão fictício",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T03:42:38.298Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f1dd4cb0-3f92-40e4-979a-b59d282a9148",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Recurso mwbkpk2qm6ml",
+     "dueAt": "2026-11-09T03:42:38.265Z",
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": "Acórdão fictício",
+     "sourceEvent": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "criticality": "CRITICAL",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.286Z",
+     "created_at": "2026-11-11T03:42:38.283Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "32107b97-c3a0-4b73-97b5-189e09a5f28f",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0110-29f58b",
+    "M5-A0157-aeca75",
+    "M5-A0229-87c693",
+    "M5-A0139-b9fb17"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D19",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CONCLUIR sem evidência nem nota é recusado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "status": "DONE"
+   },
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED"
+   },
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:37.932Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED",
+     "message": "Concluir um prazo exige uma evidência anexada ou uma nota (com texto) explicando o que foi feito.",
+     "traceId": "c7479bc5-ed78-4582-9d26-06ebab997bf3"
+    }
+   },
+   "req": [
+    "M5-A0111-b4013c",
+    "M5-A0146-95ccfc"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REMARCAR sem justificativa é recusado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "dueAt": "2026-12-01T03:42:37.884Z"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:37.898Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+     "message": "Mudar o vencimento de um prazo exige informar o motivo da mudança.",
+     "traceId": "1bfdd3c5-f42d-4925-9eab-01b134e5ceb6"
+    }
+   },
+   "req": [
+    "M5-A0112-210dba"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

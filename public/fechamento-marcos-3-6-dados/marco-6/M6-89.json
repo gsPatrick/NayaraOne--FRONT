@@ -1,0 +1,262 @@
+{
+  "id": "M6-89",
+  "requisito": "DoD: margem/economia por regras.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §13 Definition of Done; Guia do Marcelo (Obras) §16",
+  "implementacao": "marginRules.service.js (REG-OBR-001) + scanner de hard-code no CI",
+  "telaParaReteste": "Painel → /painel/obras/configuracoes: margem, economia e comissão",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-61/item 4: margem mínima é avaliada via Motor de Regras genérico com o código REG-OBR-001",
+      "resultado": "passou",
+      "duracaoMs": 358,
+      "executadoEm": "2026-11-11T00:12:10.573Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "TAREFA 2: economyPct e commissionPct são salvos e recuperados em createMarginRule/getActiveMarginRule",
+      "resultado": "passou",
+      "duracaoMs": 165,
+      "executadoEm": "2026-11-11T00:12:12.288Z"
+    },
+    {
+      "arquivo": "test/construction.hardcodeScanner.test.js",
+      "nome": "M6-96: o módulo de Obras atual passa no scanner de hard-code (exit 0)",
+      "resultado": "passou",
+      "duracaoMs": 120,
+      "executadoEm": "2026-11-11T00:13:20.659Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H002",
+      "H006",
+      "H007",
+      "H008"
+    ],
+    "resumo": [
+      "H002 POST /api/v1/construction/margin-rules → 201",
+      "H006 POST /api/v1/construction/budgets/0cedb126-1472-4079-a0dc-e95121341173/approve → 422 BUDGET_APPROVAL_BLOCKED_BY_MARGIN_RULE",
+      "H007 POST /api/v1/construction/margin-rules → 201",
+      "H008 GET /api/v1/construction/margin-rules/versions → 200"
+    ],
+    "dataHora": "2026-11-11T00:11:59.071Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H002",
+      "requisitos": [
+        "M6-23",
+        "M6-89"
+      ],
+      "cenario": "Publicar margem mínima de 30% com modo BLOQUEIO (regra versionada REG-OBR-001)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/margin-rules",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "minMarginPct": 30,
+        "enforcementMode": "BLOCK",
+        "economyPct": 5,
+        "commissionPct": 2,
+        "description": "Captura M6 — bloqueio"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 533,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "6036bf93-9220-423c-9a02-6a56e77af162",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "minMarginPct": 30,
+          "description": "Captura M6 — bloqueio",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "enforcementMode": "BLOCK",
+          "isActive": true,
+          "ruleCode": "REG-OBR-001"
+        }
+      },
+      "dataHora": "2026-11-11T00:11:59.071Z"
+    },
+    {
+      "id": "H006",
+      "requisitos": [
+        "M6-23",
+        "M6-89"
+      ],
+      "cenario": "NEGATIVO: aprovar orçamento com margem projetada abaixo de 30% em modo BLOQUEIO",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/budgets/0cedb126-1472-4079-a0dc-e95121341173/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 422,
+      "codigoErro": "BUDGET_APPROVAL_BLOCKED_BY_MARGIN_RULE",
+      "esperado": "422 BUDGET_APPROVAL_BLOCKED_BY_MARGIN_RULE",
+      "conferiu": true,
+      "duracaoMs": 712,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "BUDGET_APPROVAL_BLOCKED_BY_MARGIN_RULE",
+          "message": "Aprovação bloqueada: a margem projetada (0%) ficaria abaixo da margem mínima configurada (30%).",
+          "traceId": "8dd89e65-09f0-4e8a-b7ec-795057929e0d"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:00.613Z"
+    },
+    {
+      "id": "H007",
+      "requisitos": [
+        "M6-23",
+        "M6-61",
+        "M6-89"
+      ],
+      "cenario": "Publicar nova versão da margem mínima: 10%, modo ALERTA, economia 5%, comissão 2%",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/margin-rules",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "minMarginPct": 10,
+        "enforcementMode": "ALERT",
+        "economyPct": 5,
+        "commissionPct": 2,
+        "description": "Captura M6 — vigente"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 275,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "minMarginPct": 10,
+          "description": "Captura M6 — vigente",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "enforcementMode": "ALERT",
+          "isActive": true,
+          "ruleCode": "REG-OBR-001"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:00.888Z"
+    },
+    {
+      "id": "H008",
+      "requisitos": [
+        "M6-23",
+        "M6-61",
+        "M6-89"
+      ],
+      "cenario": "Histórico de versões da margem mínima (nenhuma versão apagada)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/margin-rules/versions",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 126,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+            "versionNumber": 2,
+            "minMarginPct": 10,
+            "economyPct": 5,
+            "commissionPct": 2,
+            "enforcementMode": "ALERT",
+            "description": "Captura M6 — vigente",
+            "effectiveFrom": "2026-11-11T00:12:00.679Z",
+            "effectiveUntil": null,
+            "isActive": true,
+            "publishedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          {
+            "id": "6036bf93-9220-423c-9a02-6a56e77af162",
+            "versionNumber": 1,
+            "minMarginPct": 30,
+            "economyPct": 5,
+            "commissionPct": 2,
+            "enforcementMode": "BLOCK",
+            "description": "Captura M6 — bloqueio",
+            "effectiveFrom": "2026-11-11T00:11:58.977Z",
+            "effectiveUntil": "2026-11-11T00:12:00.679Z",
+            "isActive": false,
+            "publishedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:01.014Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C011",
+      "requisitos": [
+        "M6-17",
+        "M6-23",
+        "M6-61",
+        "M6-82",
+        "M6-89",
+        "M6-33"
+      ],
+      "descricao": "Baseline congelada + aditivo aprovado; itens do orçamento intactos; versão da regra de margem gravada no orçamento",
+      "sql": "SELECT b.status, b.baseline_amount, b.rule_version_id IS NOT NULL AS com_versao_da_regra, (SELECT sum(planned_amount) FROM construction.budget_lines WHERE budget_id = b.id) AS itens, (SELECT string_agg(status || ':' || budget_impact, ',' ORDER BY status) FROM construction.change_orders WHERE project_id = b.project_id) AS aditivos FROM construction.budgets b WHERE b.id = $1",
+      "resultado": [
+        {
+          "status": "APPROVED",
+          "baseline_amount": "86000.00",
+          "com_versao_da_regra": true,
+          "itens": "80000.00",
+          "aditivos": "APPROVED:6000.00,REJECTED:2500.00"
+        }
+      ],
+      "invariante": "APPROVED, baseline 86.000 = 80.000 dos itens + 6.000 do aditivo aprovado (o rejeitado não entra), regra gravada",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.194Z"
+    },
+    {
+      "id": "C012",
+      "requisitos": [
+        "M6-61",
+        "M6-89",
+        "M6-23"
+      ],
+      "descricao": "Versões da margem mínima (Motor de Regras): a anterior não é apagada; a vigente é a última publicada",
+      "sql": "SELECT min_margin_pct, is_active, created_at FROM construction.margin_rules WHERE company_id = $1 ORDER BY created_at DESC LIMIT 4",
+      "resultado": [
+        {
+          "min_margin_pct": "10.00",
+          "is_active": true,
+          "created_at": "2026-11-11T00:12:00.701Z"
+        },
+        {
+          "min_margin_pct": "30.00",
+          "is_active": false,
+          "created_at": "2026-11-11T00:11:59.042Z"
+        }
+      ],
+      "invariante": "versão 10% ALERTA ativa e a de 30% BLOQUEIO preservada inativa",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.195Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.455Z"
+}

@@ -1,0 +1,609 @@
+{
+ "id": "M5-A0088-cf4120",
+ "secao": "P1 > 11. Vistoria",
+ "linhaCaderno": 206,
+ "requisito": "• Cada ambiente contém itens estruturados: estado, descrição, observação, responsabilidade.",
+ "demandas": "M5-D026",
+ "implementacao": "src/modules/legal/inspections/inspection.service.js:175 addInspectionItem + src/modules/legal/inspections/inspectionItemCodes.js (roomCode/itemCode; derivados de \"Ambiente — item\" ou ambiente padrão legal.inspection_default_room_code=GERAL); description em todo item; condição NEW|GOOD|REGULAR|DAMAGED; migration 20260101009991 (códigos do livro + gatilho de tradução do legado + CHECK; room_code/item_code/description; condição NEW; snapshot_hash; legal.inspection_media)",
+ "tela": "Contratos > Vistorias (/painel/contratos/vistorias, /painel/contratos/vistorias/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.vistoriasLivro.test.js",
+   "nome": "fechamento M5 §11/Guia §9: item tem ambiente (roomCode), código (itemCode), estado NEW|GOOD|REGULAR|DAMAGED, descrição, observação e responsabilidade",
+   "status": "pass",
+   "ms": 19.106,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.inspections.test.js",
+   "nome": "vistoria: item DAMAGED exige damageDescription e estimatedBudget",
+   "status": "pass",
+   "ms": 100.602,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "M5-21: item DAMAGED exige responsibleParty válido",
+   "status": "pass",
+   "ms": 26.465,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L10: item DAMAGED com orçamento negativo, string maliciosa ou NaN é rejeitado na aplicação (não chega ao banco)",
+   "status": "pass",
+   "ms": 79.754,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-08",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+   "quando": "2026-11-11T03:42:31.241Z"
+  },
+  {
+   "passo": "LC-VI-09",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=2e76ac97-3a17-4d1f-8644-82acded4eeeb",
+   "quando": "2026-11-11T03:42:31.253Z"
+  },
+  {
+   "passo": "LC-VI-10",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION"
+   },
+   "resumo": "erro LEGAL_INSPECTION_ITEM_VALIDATION: Item com condição \"DAMAGED\" precisa de \"damageDescription\".",
+   "quando": "2026-11-11T03:42:31.263Z"
+  },
+  {
+   "passo": "LC-VI-11",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION"
+   },
+   "resumo": "erro LEGAL_INSPECTION_ITEM_VALIDATION: Item com condição \"DAMAGED\" precisa de \"responsibleParty\" (um de: TENANT, LANDLORD, SHARED, UNDETERM",
+   "quando": "2026-11-11T03:42:31.273Z"
+  },
+  {
+   "passo": "LC-VI-12",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=d6f0eeb5-4117-4381-97ee-6a663e8717c6",
+   "quando": "2026-11-11T03:42:31.286Z"
+  },
+  {
+   "passo": "LC-VI-13",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=e4ece4bd-42cc-4351-bce5-64867ec65b62",
+   "quando": "2026-11-11T03:42:31.318Z"
+  },
+  {
+   "passo": "LC-VI-14",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=871334b3-6a2f-4a6c-9e5c-7bd46d18ae79",
+   "quando": "2026-11-11T03:42:31.336Z"
+  },
+  {
+   "passo": "LC-VI-48",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION"
+   },
+   "resumo": "erro LEGAL_INSPECTION_ITEM_VALIDATION: \"condition\" deve ser um de: NEW, GOOD, REGULAR, DAMAGED.",
+   "quando": "2026-11-11T03:42:31.345Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0088-cf4120.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado (2ª onda): cada item pertence a um ambiente (room_code) e tem código (item_code), estado, descrição, observação e responsabilidade (LC-VI-49). Sem código informado, o servidor deriva de \"Ambiente — item\"; sem ambiente, usa o parâmetro legal.inspection_default_room_code (padrão GERAL). Teste novo \"item tem ambiente (roomCode)\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.vistoriasLivro.test.js test/legal.inspections.test.js test/marco5.legal.test.js test/adversarial.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-08, LC-VI-09, LC-VI-10, LC-VI-11, LC-VI-12, LC-VI-13, LC-VI-14, LC-VI-48, LC-VI-49)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Item em bom estado com observação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Sala — piso",
+    "condition": "GOOD",
+    "notes": "Piso laminado sem riscos"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:31.241Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "itemName": "Sala — piso",
+     "roomCode": "SALA",
+     "itemCode": "PISO",
+     "description": null,
+     "condition": "GOOD",
+     "notes": "Piso laminado sem riscos",
+     "damageDescription": null,
+     "estimatedBudget": null,
+     "responsibleParty": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.235Z",
+     "created_at": "2026-11-11T03:42:31.235Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0088-cf4120",
+    "M5-A0202-a24762"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Item regular com observação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Cozinha — armário",
+    "condition": "REGULAR",
+    "notes": "Porta com folga"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:31.253Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "2e76ac97-3a17-4d1f-8644-82acded4eeeb",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "itemName": "Cozinha — armário",
+     "roomCode": "COZINHA",
+     "itemCode": "ARMARIO",
+     "description": null,
+     "condition": "REGULAR",
+     "notes": "Porta com folga",
+     "damageDescription": null,
+     "estimatedBudget": null,
+     "responsibleParty": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.250Z",
+     "created_at": "2026-11-11T03:42:31.250Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0088-cf4120"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Item danificado sem descrição do dano é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Banheiro — box",
+    "condition": "DAMAGED",
+    "estimatedBudget": 300,
+    "responsibleParty": "TENANT"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:31.263Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_ITEM_VALIDATION",
+     "message": "Item com condição \"DAMAGED\" precisa de \"damageDescription\".",
+     "traceId": "13fc7558-836c-42ce-8b59-681fc27cdb2d"
+    }
+   },
+   "req": [
+    "M5-A0088-cf4120"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Item danificado sem responsabilidade é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Banheiro — box",
+    "condition": "DAMAGED",
+    "damageDescription": "Vidro trincado",
+    "estimatedBudget": 300
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:31.273Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_ITEM_VALIDATION",
+     "message": "Item com condição \"DAMAGED\" precisa de \"responsibleParty\" (um de: TENANT, LANDLORD, SHARED, UNDETERMINED).",
+     "traceId": "6ecb8cc2-25f5-4521-b0d8-0eb2b352e789"
+    }
+   },
+   "req": [
+    "M5-A0088-cf4120"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Item danificado com descrição, orçamento e responsabilidade",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Banheiro — box",
+    "condition": "DAMAGED",
+    "damageDescription": "Vidro trincado no canto",
+    "estimatedBudget": 300,
+    "responsibleParty": "LANDLORD",
+    "notes": "Já existia antes da locação"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:31.286Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "d6f0eeb5-4117-4381-97ee-6a663e8717c6",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "itemName": "Banheiro — box",
+     "roomCode": "BANHEIRO",
+     "itemCode": "BOX",
+     "description": "Vidro trincado no canto",
+     "condition": "DAMAGED",
+     "notes": "Já existia antes da locação",
+     "damageDescription": "Vidro trincado no canto",
+     "estimatedBudget": "300.00",
+     "responsibleParty": "LANDLORD",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.282Z",
+     "created_at": "2026-11-11T03:42:31.282Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0088-cf4120"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Condição NEW do Guia §9 aceita, com ambiente e código do item informados",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Pintura das paredes",
+    "roomCode": "QUARTO",
+    "itemCode": "PINTURA",
+    "condition": "NEW",
+    "description": "Pintura nova entregue ao locatário",
+    "notes": "Branco gelo",
+    "responsibleParty": "LANDLORD"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 32,
+   "quando": "2026-11-11T03:42:31.318Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "e4ece4bd-42cc-4351-bce5-64867ec65b62",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "itemName": "Pintura das paredes",
+     "roomCode": "QUARTO",
+     "itemCode": "PINTURA",
+     "description": "Pintura nova entregue ao locatário",
+     "condition": "NEW",
+     "notes": "Branco gelo",
+     "damageDescription": null,
+     "estimatedBudget": null,
+     "responsibleParty": "LANDLORD",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.301Z",
+     "created_at": "2026-11-11T03:42:31.301Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0202-a24762",
+    "M5-A0088-cf4120"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Ambiente e código derivados do nome \"Ambiente — item\" quando a chamada não os traz",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Quarto — janela",
+    "condition": "GOOD"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:31.336Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "871334b3-6a2f-4a6c-9e5c-7bd46d18ae79",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "itemName": "Quarto — janela",
+     "roomCode": "QUARTO",
+     "itemCode": "JANELA",
+     "description": null,
+     "condition": "GOOD",
+     "notes": null,
+     "damageDescription": null,
+     "estimatedBudget": null,
+     "responsibleParty": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.332Z",
+     "created_at": "2026-11-11T03:42:31.332Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0202-a24762",
+    "M5-A0088-cf4120"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-48",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Condição fora de NEW/GOOD/REGULAR/DAMAGED é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Quarto — porta",
+    "condition": "OTIMO"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_ITEM_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:31.345Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_ITEM_VALIDATION",
+     "message": "\"condition\" deve ser um de: NEW, GOOD, REGULAR, DAMAGED.",
+     "traceId": "0c2e4ba0-0ea5-4172-88a1-dacb449b933b"
+    }
+   },
+   "req": [
+    "M5-A0202-a24762",
+    "M5-A0088-cf4120"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-VI-49",
+   "req": [
+    "M5-A0088-cf4120",
+    "M5-A0202-a24762"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "perfil": "A:leitura",
+   "descricao": "Itens estruturados por ambiente: room_code, item_code, condição, descrição, observação e responsabilidade",
+   "sql": "SELECT room_code, item_code, item_name, condition, description, notes, responsible_party FROM legal.inspection_items WHERE inspection_id = :i AND deleted_at IS NULL ORDER BY room_code, item_code",
+   "resultado": [
+    {
+     "room_code": "BANHEIRO",
+     "item_code": "BOX",
+     "item_name": "Banheiro — box",
+     "condition": "DAMAGED",
+     "description": "Vidro trincado no canto",
+     "notes": "Já existia antes da locação",
+     "responsible_party": "LANDLORD"
+    },
+    {
+     "room_code": "COZINHA",
+     "item_code": "ARMARIO",
+     "item_name": "Cozinha — armário",
+     "condition": "REGULAR",
+     "description": null,
+     "notes": "Porta com folga",
+     "responsible_party": null
+    },
+    {
+     "room_code": "QUARTO",
+     "item_code": "JANELA",
+     "item_name": "Quarto — janela",
+     "condition": "GOOD",
+     "description": null,
+     "notes": null,
+     "responsible_party": null
+    },
+    {
+     "room_code": "QUARTO",
+     "item_code": "PINTURA",
+     "item_name": "Pintura das paredes",
+     "condition": "NEW",
+     "description": "Pintura nova entregue ao locatário",
+     "notes": "Branco gelo",
+     "responsible_party": "LANDLORD"
+    },
+    {
+     "room_code": "SALA",
+     "item_code": "PISO",
+     "item_name": "Sala — piso",
+     "condition": "GOOD",
+     "description": null,
+     "notes": "Piso laminado sem riscos",
+     "responsible_party": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:31.348Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

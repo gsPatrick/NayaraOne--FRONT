@@ -1,0 +1,377 @@
+{
+ "id": "M5-A0198-b2f16a",
+ "secao": "P2 > 4. Criar versão",
+ "linhaCaderno": 497,
+ "requisito": "async createContractVersion(contractId, draft, ctx) {\n    const contract = await contracts.get(contractId);\n    assertEditableState(contract.status);\n    const rendered = await renderer.render(draft.templateVersionId, draft.data);\n    const hash = sha256(rendered.bytes);\n    return versions.create({\n        contractId,\n        versionNo: await versions.nextNumber(contractId),\n        templateVersionId: draft.templateVersionId,\n        contentHash: hash,\n        fileId: await files.store(rendered.bytes),\n        status: 'DRAFT',\n        createdBy: ctx.userId,\n    });\n}",
+ "demandas": "M5-D003",
+ "implementacao": "src/modules/legal/contracts/application/contractVersions.service.js createContractVersion (EDITABLE_STATES = assertEditableState; status DRAFT; template_version_id; bytes armazenados por src/modules/legal/contracts/application/contractVersionFile.js storeVersionBytes e content_hash = SHA-256 desses bytes)",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.versoesAprovacao.test.js",
+   "nome": "Guia §4: hash do arquivo armazenado — a versão guarda os bytes; arquivo adulterado no armazenamento impede a aprovação",
+   "status": "pass",
+   "ms": 378.917,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.versoesAprovacao.test.js",
+   "nome": "Guia §4 assertEditableState: contrato assinado não recebe versão e o banco recusa reverter/forjar a aprovação da versão",
+   "status": "pass",
+   "ms": 460.92,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.versoesAprovacao.test.js",
+   "nome": "Guia §6: aprovação é da versão — versão nova depois da aprovação nasce DRAFT, não vai para assinatura e exige nova aprovação",
+   "status": "pass",
+   "ms": 3632.958,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-123",
+   "metodo": "POST",
+   "rota": "/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=16c9eb6f-309d-4c40-9c52-3d5221ab57d6, versionNumber=1",
+   "quando": "2026-11-11T03:42:25.064Z"
+  },
+  {
+   "passo": "CT-314",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=527d37c1-f7f3-494e-b3e7-405cf16354ff, versionNumber=2",
+   "quando": "2026-11-11T03:42:26.504Z"
+  },
+  {
+   "passo": "CT-329b",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE"
+   },
+   "resumo": "erro LEGAL_CONTRACT_VERSION_NOT_EDITABLE: Contrato em \"SIGNED\" não recebe nova versão: a alteração de contrato assinado é feita por aditivo.",
+   "quando": "2026-11-11T03:42:27.234Z"
+  },
+  {
+   "passo": "CT-408",
+   "metodo": "POST",
+   "rota": "/contracts/597bb638-1ee4-4add-84ce-1b61c40e9bba/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=65f46e0e-fb3a-4066-8d47-cfec63f3a96d, versionNumber=1",
+   "quando": "2026-11-11T03:42:28.292Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0198-b2f16a.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.versoesAprovacao.test.js \"Guia §4: hash do arquivo armazenado — a versão guarda os bytes; arquivo adulterado no armazenamento impede a aprovação\"; test/m5fech.contratos.versoesAprovacao.test.js \"Guia §4 assertEditableState: contrato assinado não recebe versão e o banco recusa reverter/forjar a aprovação da versão\"; test/m5fech.contratos.versoesAprovacao.test.js \"Guia §6: aprovação é da versão — versão nova depois da aprovação nasce DRAFT, não vai para assinatura e exige nova aprovação\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.versoesAprovacao.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-123, CT-124, CT-314, CT-329b, CT-408, CT-320b)"
+ },
+ "passos": [
+  {
+   "id": "CT-123",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Nova versão pela rota literal do livro (POST /contracts/:id/versions): hash calculado pelo servidor",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/versions",
+   "corpoEnviado": {
+    "content": "Contrato de locação fictício 8543269",
+    "documentFileId": "895dc8f2-1a69-4274-aac8-b8431161599f",
+    "contentHash": "abababababababababababababababababababababababababababababababab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 41,
+   "quando": "2026-11-11T03:42:25.064Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "versionNumber": 1,
+     "documentFileId": "895dc8f2-1a69-4274-aac8-b8431161599f",
+     "content": "Contrato de locação fictício 8543269",
+     "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "contentFileId": "d56640aa-875b-4b77-9332-1c278a72e3fc",
+     "status": "DRAFT",
+     "templateId": null,
+     "templateVersionId": null,
+     "clauseVersionIds": null,
+     "conditionContext": null,
+     "excludedClauses": null,
+     "effectiveFrom": "2026-11-11T03:42:25.050Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:25.051Z",
+     "created_at": "2026-11-11T03:42:25.051Z",
+     "signedDocumentFileId": null,
+     "approvedBy": null,
+     "approvedAt": null
+    }
+   },
+   "req": [
+    "M5-A0209-33bcfa",
+    "M5-A0264-72ee37"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-314",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Conteúdo muda depois da aprovação: a versão 2 nasce DRAFT e a 1 fica SUPERSEDED",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "corpoEnviado": {
+    "content": "Versão 2 após aprovação 1794368546473",
+    "documentFileId": "b9279bfd-5ca9-4e29-a338-7829e6fa4812"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 31,
+   "quando": "2026-11-11T03:42:26.504Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "versionNumber": 2,
+     "documentFileId": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+     "content": "Versão 2 após aprovação 1794368546473",
+     "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+     "contentFileId": "8218f7a5-2153-4722-874d-22faa66484f8",
+     "status": "DRAFT",
+     "templateId": null,
+     "templateVersionId": null,
+     "clauseVersionIds": null,
+     "conditionContext": null,
+     "excludedClauses": null,
+     "effectiveFrom": "2026-11-11T03:42:26.494Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.494Z",
+     "created_at": "2026-11-11T03:42:26.494Z",
+     "signedDocumentFileId": null,
+     "approvedBy": null,
+     "approvedAt": null
+    }
+   },
+   "req": [
+    "M5-A0198-b2f16a",
+    "M5-A0143-9820a9",
+    "M5-A0054-f96f34"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-329b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Guia §4 assertEditableState: contrato assinado não recebe versão nova (alteração por aditivo)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "corpoEnviado": {
+    "content": "Tentativa de reescrever o assinado",
+    "documentFileId": "f0c1314d-0dc8-416b-836f-b8a100f26b71"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:27.234Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE",
+     "message": "Contrato em \"SIGNED\" não recebe nova versão: a alteração de contrato assinado é feita por aditivo.",
+     "traceId": "d9bec599-9088-414e-9690-30469699a894"
+    }
+   },
+   "req": [
+    "M5-A0198-b2f16a",
+    "M5-A0299-827218",
+    "M5-A0253-8388d0"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-408",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão gerada do modelo pelo servidor (cliente manda só as variáveis)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/597bb638-1ee4-4add-84ce-1b61c40e9bba/versions",
+   "corpoEnviado": {
+    "templateId": "4f248d7d-bd75-4dae-943f-dc2f29809c31",
+    "documentFileId": "cb54ce24-d30d-43f4-b817-3fe829ba321d",
+    "variables": {
+     "nome_locatario": "Locatário Fictício"
+    }
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 41,
+   "quando": "2026-11-11T03:42:28.292Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "65f46e0e-fb3a-4066-8d47-cfec63f3a96d",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "597bb638-1ee4-4add-84ce-1b61c40e9bba",
+     "versionNumber": 1,
+     "documentFileId": "cb54ce24-d30d-43f4-b817-3fe829ba321d",
+     "content": "Modelo Locação 8543269m\n\nMulta por atraso\nMulta de 10% sobre o aluguel em atraso (texto fictício). Locatário: Locatário Fictício.",
+     "contentHash": "696a642a2dd0c0edb2ea51ad17a499452949bcdc3cac9d4946a644c01bd46122",
+     "contentFileId": "f3f45dcf-90e9-4dd9-bd40-f9642aa6566e",
+     "status": "DRAFT",
+     "templateId": "4f248d7d-bd75-4dae-943f-dc2f29809c31",
+     "templateVersionId": "67c6a89f-02d8-42fd-9316-331dde139213",
+     "clauseVersionIds": [
+      {
+       "code": "CT-MULTA-8543269m",
+       "versionNumber": 1,
+       "contractClauseId": "478273bf-b8b7-47f1-a537-79e5ee28574c"
+      }
+     ],
+     "conditionContext": {
+      "source": "CONTRACT",
+      "values": {
+       "totalValue": 1800,
+       "contractType": "LEASE_RESIDENTIAL",
+       "hasGuarantor": false,
+       "guaranteeType": "NONE",
+       "propertyPurpose": "RESIDENTIAL"
+      }
+     },
+     "excludedClauses": [],
+     "effectiveFrom": "2026-11-11T03:42:28.284Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:28.284Z",
+     "created_at": "2026-11-11T03:42:28.284Z",
+     "signedDocumentFileId": null,
+     "approvedBy": null,
+     "approvedAt": null
+    }
+   },
+   "req": [
+    "M5-A0064-2c0af0",
+    "M5-A0198-b2f16a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-124",
+   "req": [
+    "M5-A0264-72ee37",
+    "M5-A0165-e8bc3f"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Guia §4: versão nasce DRAFT, com o arquivo armazenado dos bytes e hash = SHA-256 desses bytes (o valor enviado pelo cliente foi ignorado)",
+   "sql": "SELECT v.status, v.content_hash, encode(sha256(convert_to(v.content, 'UTF8')), 'hex') AS recalculado, v.document_file_id IS NOT NULL AS com_arquivo, f.checksum_sha256 AS hash_arquivo_armazenado FROM legal.contract_versions v JOIN people.files f ON f.id = v.content_file_id WHERE v.id = :id",
+   "resultado": [
+    {
+     "status": "DRAFT",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "recalculado": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "com_arquivo": true,
+     "hash_arquivo_armazenado": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.068Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-320b",
+   "req": [
+    "M5-A0072-5023f6",
+    "M5-A0198-b2f16a"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "A versão 3 nasceu DRAFT e a 2 (aprovada) ficou SUPERSEDED: a nova versão exige nova aprovação",
+   "sql": "SELECT array_agg(status ORDER BY version_number) AS versoes FROM legal.contract_versions WHERE contract_id = :id",
+   "resultado": [
+    {
+     "versoes": [
+      "SUPERSEDED",
+      "SUPERSEDED",
+      "DRAFT"
+     ]
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.802Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

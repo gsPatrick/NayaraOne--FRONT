@@ -1,0 +1,150 @@
+{
+  "id": "M6-30",
+  "requisito": "API mínima: POST /construction/projects.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#createProject",
+  "telaParaReteste": "Painel → /painel/obras/lista/novo: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.projectDelay.test.js",
+      "nome": "item 4: createProject publica o evento com o nome exato \"project.created\" (sem prefixo \"construction.\")",
+      "resultado": "passou",
+      "duracaoMs": 62,
+      "executadoEm": "2026-11-11T00:14:23.862Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-3: createProject rejeita budgetAmount \"NaN\"/\"Infinity\"/negativo/absurdamente grande",
+      "resultado": "passou",
+      "duracaoMs": 10,
+      "executadoEm": "2026-11-11T00:12:12.123Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H003",
+      "H009"
+    ],
+    "resumo": [
+      "H003 POST /api/v1/construction/projects → 201",
+      "H009 POST /api/v1/construction/projects → 201"
+    ],
+    "dataHora": "2026-11-11T00:11:59.581Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H003",
+      "requisitos": [
+        "M6-30",
+        "M6-01"
+      ],
+      "cenario": "Criar obra de margem baixa (contrato R$ 10.000,00)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "name": "Obra margem baixa c4fcd6",
+        "budgetAmount": 10000,
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 510,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "5542dd9a-1eb8-48b2-bfa9-9ac0a97b7648",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": null,
+          "unitId": null,
+          "name": "Obra margem baixa c4fcd6",
+          "code": "OBRA-2026-0001",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "10000.00",
+          "costCenterId": null,
+          "startsAt": null,
+          "endsAtPlanned": null,
+          "status": "PLANNED",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:11:59.370Z",
+          "created_at": "2026-11-11T00:11:59.370Z",
+          "actualEndDate": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:11:59.581Z"
+    },
+    {
+      "id": "H009",
+      "requisitos": [
+        "M6-30",
+        "M6-01",
+        "M6-69",
+        "M6-43",
+        "M6-45",
+        "M6-95",
+        "M6-98"
+      ],
+      "cenario": "Criar a obra principal (código gerado automaticamente, status PLANNED)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "name": "Residencial Captura M6 c4fcd6",
+        "budgetAmount": 120000,
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "managerUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "startsAt": "2026-10-01",
+        "endsAtPlanned": "2027-08-31",
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 275,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6",
+          "code": "OBRA-2026-0002",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "120000.00",
+          "costCenterId": null,
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "status": "PLANNED",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:01.264Z",
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "actualEndDate": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:01.289Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.401Z"
+}

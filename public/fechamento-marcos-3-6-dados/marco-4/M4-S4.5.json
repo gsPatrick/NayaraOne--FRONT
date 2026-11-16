@@ -1,0 +1,71 @@
+{
+ "id": "M4-§4.5",
+ "secao": "§4 Plano de contas",
+ "requisito": "\"Categorias não podem ser criadas livremente por usuário comum; precisam de governança.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraExternalAuditMatrixM4Group2.test.js",
+   "nome": "Plano de contas (HTTP real): usuário SEM finance:create recebe 403 ao tentar criar conta contábil",
+   "status": "passou",
+   "duracaoMs": 401,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/nayaraExternalAuditMatrixM4Group2.test.js",
+   "nome": "Plano de contas (HTTP real): usuário COM finance:chartOfAccounts consegue criar conta contábil e ela aparece na listagem",
+   "status": "passou",
+   "duracaoMs": 71,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N01",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.5"
+   ],
+   "titulo": "Usuário comum (maker, sem finance:chartOfAccounts) não cria conta contábil",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/finance/chart-of-accounts",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "code": "M-0871300",
+    "name": "Conta criada pelo maker",
+    "accountType": "EXPENSE"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T01:35:01.191Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "finance:chartOfAccounts"
+     },
+     "traceId": "6217c57e-165e-4737-b33f-7a821d9ed192"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

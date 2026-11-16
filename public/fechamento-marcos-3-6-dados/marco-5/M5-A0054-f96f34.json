@@ -1,0 +1,533 @@
+{
+ "id": "M5-A0054-f96f34",
+ "secao": "P1 > 5. Estado do contrato [tabela: Status | Definição]",
+ "linhaCaderno": 114,
+ "requisito": "APPROVED | Versão homologada.",
+ "demandas": "M5-D002;M5-D004",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js VALID_TRANSITIONS (APPROVED); src/modules/legal/contracts/application/contractVersionApproval.js markVersionApproved/approveLatestVersion/assertApprovedCurrentVersion; src/modules/legal/contracts/application/contractVersionActions.service.js approveContractVersion/sendContractVersionForSignature; migration 20260101009981 (contract_versions.status/approved_by/approved_at, contracts.approved_version_id, gatilho)",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.versoesAprovacao.test.js",
+   "nome": "Guia §6: aprovação é da versão — versão nova depois da aprovação nasce DRAFT, não vai para assinatura e exige nova aprovação",
+   "status": "pass",
+   "ms": 3632.958,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contract-versions/:id/approve aprova só a versão vigente, com legal:approve, auditoria e contract.version.approved",
+   "status": "pass",
+   "ms": 708.768,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-127",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/approve",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "contentHash=f2d7a516a52a412258e579bc5fe7f3817e6b381a",
+   "quando": "2026-11-11T03:42:25.129Z"
+  },
+  {
+   "passo": "CT-316c",
+   "metodo": "POST",
+   "rota": "/contract-versions/527d37c1-f7f3-494e-b3e7-405cf16354ff/approve",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "contentHash=833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5",
+   "quando": "2026-11-11T03:42:26.564Z"
+  },
+  {
+   "passo": "CT-314",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=527d37c1-f7f3-494e-b3e7-405cf16354ff, versionNumber=2",
+   "quando": "2026-11-11T03:42:26.504Z"
+  },
+  {
+   "passo": "CT-316",
+   "metodo": "POST",
+   "rota": "/contract-versions/527d37c1-f7f3-494e-b3e7-405cf16354ff/send-signature",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED"
+   },
+   "resumo": "erro LEGAL_SIGNATURE_VERSION_NOT_APPROVED: Só a versão APROVADA vigente do contrato vai para assinatura: aprove a versão atual (POST /contract-",
+   "quando": "2026-11-11T03:42:26.527Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0054-f96f34.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.versoesAprovacao.test.js \"Guia §6: aprovação é da versão — versão nova depois da aprovação nasce DRAFT, não vai para assinatura e exige nova aprovação\"; test/m5fech.contratos.rotasLivro.test.js \"Guia §14: POST /contract-versions/:id/approve aprova só a versão vigente, com legal:approve, auditoria e contract.version.approved\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.versoesAprovacao.test.js test/m5fech.contratos.rotasLivro.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-127, CT-128, CT-316c, CT-317, CT-314, CT-316, CT-224)"
+ },
+ "passos": [
+  {
+   "id": "CT-127",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checker aprova a versão vigente (POST /contract-versions/:id/approve): contrato APPROVED",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/approve",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 38,
+   "quando": "2026-11-11T03:42:25.129Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contract": {
+      "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "propertyId": null,
+      "opportunityId": null,
+      "contractType": "LEASE_RESIDENTIAL",
+      "constructionProjectId": null,
+      "approvedVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "parentContractId": null,
+      "contractNumber": "LOC-2026-0004",
+      "status": "APPROVED",
+      "totalValue": "1500.00",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 5,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:24.319Z",
+      "updated_at": "2026-11-11T03:42:25.113Z",
+      "deleted_at": null,
+      "property_id": null,
+      "opportunity_id": null,
+      "construction_project_id": null,
+      "versions": [
+       {
+        "id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "versionNumber": 1,
+        "documentFileId": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+        "content": "Contrato de locação fictício 8543269",
+        "signedDocumentFileId": null,
+        "status": "DRAFT",
+        "approvedBy": null,
+        "approvedAt": null,
+        "contentFileId": "d56640aa-875b-4b77-9332-1c278a72e3fc",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:25.050Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "created_at": "2026-11-11T03:42:25.051Z",
+        "updated_at": "2026-11-11T03:42:25.051Z",
+        "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "document_file_id": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "template_id": null,
+        "template": null
+       }
+      ]
+     },
+     "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+    }
+   },
+   "req": [
+    "M5-A0210-2d5273",
+    "M5-A0054-f96f34",
+    "M5-A0142-187a38",
+    "M5-A0323-a65d6f",
+    "M5-A0128-8a8ccd",
+    "M5-A0221-6f9a28"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-316c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Nova aprovação: a versão 2 é aprovada e vira a homologada do contrato",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/contract-versions/527d37c1-f7f3-494e-b3e7-405cf16354ff/approve",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:26.564Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contract": {
+      "id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "propertyId": null,
+      "opportunityId": null,
+      "contractType": "LEASE_RESIDENTIAL",
+      "constructionProjectId": null,
+      "approvedVersionId": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+      "parentContractId": null,
+      "contractNumber": "LOC-2026-0005",
+      "status": "APPROVED",
+      "totalValue": "2000.00",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 4,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:26.008Z",
+      "updated_at": "2026-11-11T03:42:26.558Z",
+      "deleted_at": null,
+      "property_id": null,
+      "opportunity_id": null,
+      "construction_project_id": null,
+      "versions": [
+       {
+        "id": "9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "versionNumber": 1,
+        "documentFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+        "contentHash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+        "content": "Contrato de locação 8543269ctV v1",
+        "signedDocumentFileId": null,
+        "status": "SUPERSEDED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:26.418Z",
+        "contentFileId": "b2a40f80-eb9a-4a91-b17b-50b84fe23628",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:26.307Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "created_at": "2026-11-11T03:42:26.307Z",
+        "updated_at": "2026-11-11T03:42:26.498Z",
+        "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "document_file_id": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+        "template_id": null,
+        "template": null
+       },
+       {
+        "id": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "versionNumber": 2,
+        "documentFileId": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+        "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+        "content": "Versão 2 após aprovação 1794368546473",
+        "signedDocumentFileId": null,
+        "status": "DRAFT",
+        "approvedBy": null,
+        "approvedAt": null,
+        "contentFileId": "8218f7a5-2153-4722-874d-22faa66484f8",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:26.494Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "created_at": "2026-11-11T03:42:26.494Z",
+        "updated_at": "2026-11-11T03:42:26.494Z",
+        "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+        "document_file_id": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+        "template_id": null,
+        "template": null
+       }
+      ]
+     },
+     "contractVersionId": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+     "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088"
+    }
+   },
+   "req": [
+    "M5-A0210-2d5273",
+    "M5-A0323-a65d6f",
+    "M5-A0054-f96f34"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-314",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Conteúdo muda depois da aprovação: a versão 2 nasce DRAFT e a 1 fica SUPERSEDED",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "corpoEnviado": {
+    "content": "Versão 2 após aprovação 1794368546473",
+    "documentFileId": "b9279bfd-5ca9-4e29-a338-7829e6fa4812"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 31,
+   "quando": "2026-11-11T03:42:26.504Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "versionNumber": 2,
+     "documentFileId": "b9279bfd-5ca9-4e29-a338-7829e6fa4812",
+     "content": "Versão 2 após aprovação 1794368546473",
+     "contentHash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+     "contentFileId": "8218f7a5-2153-4722-874d-22faa66484f8",
+     "status": "DRAFT",
+     "templateId": null,
+     "templateVersionId": null,
+     "clauseVersionIds": null,
+     "conditionContext": null,
+     "excludedClauses": null,
+     "effectiveFrom": "2026-11-11T03:42:26.494Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.494Z",
+     "created_at": "2026-11-11T03:42:26.494Z",
+     "signedDocumentFileId": null,
+     "approvedBy": null,
+     "approvedAt": null
+    }
+   },
+   "req": [
+    "M5-A0198-b2f16a",
+    "M5-A0143-9820a9",
+    "M5-A0054-f96f34"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-316",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão 2 (ainda não aprovada) não vai para assinatura",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/527d37c1-f7f3-494e-b3e7-405cf16354ff/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:26.527Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_SIGNATURE_VERSION_NOT_APPROVED",
+     "message": "Só a versão APROVADA vigente do contrato vai para assinatura: aprove a versão atual (POST /contract-versions/:id/approve) antes de enviar.",
+     "traceId": "05a784fb-f077-4c15-a7c9-3dfa004a307f"
+    }
+   },
+   "req": [
+    "M5-A0143-9820a9",
+    "M5-A0054-f96f34",
+    "M5-A0002-dc355e",
+    "M5-A0323-a65d6f"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-128",
+   "req": [
+    "M5-A0142-187a38"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:checker",
+   "descricao": "Aprovação da VERSÃO: versão APPROVED com o aprovador, contrato com approved_version_id e auditorias (versão e contrato) com o aprovador",
+   "sql": "SELECT v.status, v.approved_by, c.approved_version_id = v.id AS homologada, (SELECT count(*)::int FROM audit.audit_log a WHERE a.user_id = v.approved_by AND ((a.entity_id = v.id AND a.action = 'legal.contract_version.approve') OR (a.entity_id = c.id AND a.action = 'legal.contract.status_change' AND a.after_json->>'status' = 'APPROVED'))) AS auditorias FROM legal.contract_versions v JOIN legal.contracts c ON c.id = v.contract_id WHERE v.id = :v",
+   "resultado": [
+    {
+     "status": "APPROVED",
+     "approved_by": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "homologada": true,
+     "auditorias": 2
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.132Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-317",
+   "req": [
+    "M5-A0143-9820a9",
+    "M5-A0054-f96f34",
+    "M5-A0323-a65d6f",
+    "M5-A0002-dc355e"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "Aprovação POR VERSÃO: v1 SUPERSEDED, v2 APPROVED e homologada; dois eventos contract.version.approved (v1 e v2); em assinatura só a v2",
+   "sql": "SELECT (SELECT array_agg(payload_json->>'contractVersionId' ORDER BY created_at) FROM integration.outbox_events WHERE aggregate_id = :id AND event_type = 'contract.version.approved') AS aprovadas, (SELECT array_agg(status ORDER BY version_number) FROM legal.contract_versions WHERE contract_id = :id) AS versoes, (SELECT approved_version_id FROM legal.contracts WHERE id = :id) AS homologada, (SELECT status FROM legal.contracts WHERE id = :id) AS status",
+   "resultado": [
+    {
+     "aprovadas": [
+      "9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+      "527d37c1-f7f3-494e-b3e7-405cf16354ff"
+     ],
+     "versoes": [
+      "SUPERSEDED",
+      "APPROVED"
+     ],
+     "homologada": "527d37c1-f7f3-494e-b3e7-405cf16354ff",
+     "status": "SIGNING"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.664Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-224",
+   "req": [
+    "M5-A0196-8a7471",
+    "M5-A0263-1349d7",
+    "M5-A0051-1355bb",
+    "M5-A0052-d0edf7",
+    "M5-A0053-93822f",
+    "M5-A0054-f96f34",
+    "M5-A0055-965151",
+    "M5-A0056-103e8b",
+    "M5-A0057-c754d9",
+    "M5-A0058-6ae767",
+    "M5-A0059-0f891e",
+    "M5-A0060-eea580"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "perfil": "A:leitura",
+   "descricao": "Trilha auditada do ciclo completo: cada mudança de estado com antes/depois, na ordem do Guia §3",
+   "sql": "SELECT before_json->>'status' AS de, after_json->>'status' AS para FROM audit.audit_log WHERE entity_id = :id AND action IN ('legal.contract.status_change','legal.contract.suspend','legal.contract.reactivate','legal.contract.terminate','legal.contract.close') ORDER BY occurred_at",
+   "resultado": [
+    {
+     "de": "DRAFT",
+     "para": "DOCUMENTS_PENDING"
+    },
+    {
+     "de": "DOCUMENTS_PENDING",
+     "para": "LEGAL_REVIEW"
+    },
+    {
+     "de": "LEGAL_REVIEW",
+     "para": "DRAFT"
+    },
+    {
+     "de": "DRAFT",
+     "para": "LEGAL_REVIEW"
+    },
+    {
+     "de": "LEGAL_REVIEW",
+     "para": "APPROVED"
+    },
+    {
+     "de": "APPROVED",
+     "para": "SIGNING"
+    },
+    {
+     "de": "SIGNING",
+     "para": "SIGNED"
+    },
+    {
+     "de": "SIGNED",
+     "para": "ACTIVE"
+    },
+    {
+     "de": "ACTIVE",
+     "para": "SUSPENDED"
+    },
+    {
+     "de": "SUSPENDED",
+     "para": "ACTIVE"
+    },
+    {
+     "de": "ACTIVE",
+     "para": "TERMINATED"
+    },
+    {
+     "de": "TERMINATED",
+     "para": "CLOSED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.000Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

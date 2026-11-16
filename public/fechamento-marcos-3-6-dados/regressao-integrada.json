@@ -1,0 +1,453 @@
+{
+ "pasta": "/Users/patrick.developer/Desktop/Developer/Projects/Nayara/_suite-integra",
+ "existe": true,
+ "final": true,
+ "inicio": "2026-11-11T06:55:28.000Z",
+ "progresso": [
+  "rodada final em API 41addaa2 / Front c8ccff0 / Maturacao 1173b0c",
+  "- m9_2: exit=0 testes=649 passaram=649 falhas=0, 636 s, fim 11/11 04:06",
+  "- m9_0: exit=0 testes=624 passaram=624 falhas=0, 639 s, fim 11/11 04:06",
+  "- m9_1: exit=0 testes=692 passaram=692 falhas=0, 916 s, fim 11/11 04:10",
+  "- m9_5: exit=0 testes=517 passaram=517 falhas=0, 495 s, fim 11/11 04:14",
+  "- m9_3: exit=0 testes=823 passaram=823 falhas=0, 567 s, fim 11/11 04:15",
+  "- m9_4: exit=0 testes=492 passaram=492 falhas=0, 447 s, fim 11/11 04:18",
+  "- m9_8: exit=0 testes=604 passaram=604 falhas=0, 521 s, fim 11/11 04:23",
+  "- m9_6: exit=0 testes=464 passaram=464 falhas=0, 497 s, fim 11/11 04:23",
+  "- reg_0: exit=0 testes=753 passaram=753 falhas=0, 71 s, fim 11/11 04:25",
+  "- reg_2: exit=0 testes=635 passaram=635 falhas=0, 271 s, fim 11/11 04:27",
+  "fila 2 concluída",
+  "- m9_7: exit=0 testes=467 passaram=467 falhas=0, 589 s, fim 11/11 04:28",
+  "- reg_1: exit=0 testes=663 passaram=663 falhas=0, 158 s, fim 11/11 04:30",
+  "- reg_3: exit=0 testes=503 passaram=503 falhas=0, 388 s, fim 11/11 04:31",
+  "fila 0 concluída",
+  "- reg_4: exit=0 testes=714 passaram=714 falhas=0, 196 s, fim 11/11 04:33",
+  "fila 1 concluída"
+ ],
+ "checkout": {
+  "api": "41addaa2",
+  "front": "c8ccff0"
+ },
+ "lotesEsperados": 14,
+ "lotes": [
+  {
+   "nome": "m9_0",
+   "fila": 0,
+   "arquivos": 123,
+   "inicio": "2026-11-11T06:55:28.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:06:07.000Z",
+   "segundos": 639,
+   "saida": 0,
+   "testes": 624,
+   "passaram": 624,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 589932.172958,
+   "jsonl": {
+    "testes": 624,
+    "passaram": 624,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_1",
+   "fila": 1,
+   "arquivos": 123,
+   "inicio": "2026-11-11T06:55:28.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:10:44.000Z",
+   "segundos": 916,
+   "saida": 0,
+   "testes": 692,
+   "passaram": 692,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 866555.8535,
+   "jsonl": {
+    "testes": 692,
+    "passaram": 692,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_2",
+   "fila": 2,
+   "arquivos": 123,
+   "inicio": "2026-11-11T06:55:28.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:06:04.000Z",
+   "segundos": 636,
+   "saida": 0,
+   "testes": 649,
+   "passaram": 649,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 587211.691625,
+   "jsonl": {
+    "testes": 649,
+    "passaram": 649,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_3",
+   "fila": 0,
+   "arquivos": 123,
+   "inicio": "2026-11-11T07:06:07.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:15:34.000Z",
+   "segundos": 567,
+   "saida": 0,
+   "testes": 823,
+   "passaram": 823,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 520967.614417,
+   "jsonl": {
+    "testes": 823,
+    "passaram": 823,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_4",
+   "fila": 1,
+   "arquivos": 123,
+   "inicio": "2026-11-11T07:10:44.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:18:11.000Z",
+   "segundos": 447,
+   "saida": 0,
+   "testes": 492,
+   "passaram": 492,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 403266.720209,
+   "jsonl": {
+    "testes": 492,
+    "passaram": 492,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_5",
+   "fila": 2,
+   "arquivos": 123,
+   "inicio": "2026-11-11T07:06:04.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:14:19.000Z",
+   "segundos": 495,
+   "saida": 0,
+   "testes": 517,
+   "passaram": 517,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 448100.603792,
+   "jsonl": {
+    "testes": 517,
+    "passaram": 517,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_6",
+   "fila": 0,
+   "arquivos": 122,
+   "inicio": "2026-11-11T07:15:34.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:23:51.000Z",
+   "segundos": 497,
+   "saida": 0,
+   "testes": 464,
+   "passaram": 464,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 456923.562125,
+   "jsonl": {
+    "testes": 464,
+    "passaram": 464,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_7",
+   "fila": 1,
+   "arquivos": 122,
+   "inicio": "2026-11-11T07:18:11.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:28:00.000Z",
+   "segundos": 589,
+   "saida": 0,
+   "testes": 467,
+   "passaram": 467,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 550390.313417,
+   "jsonl": {
+    "testes": 467,
+    "passaram": 467,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "m9_8",
+   "fila": 2,
+   "arquivos": 122,
+   "inicio": "2026-11-11T07:14:19.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:23:00.000Z",
+   "segundos": 521,
+   "saida": 0,
+   "testes": 604,
+   "passaram": 604,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 479503.332,
+   "jsonl": {
+    "testes": 604,
+    "passaram": 604,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "reg_0",
+   "fila": 0,
+   "arquivos": 95,
+   "inicio": "2026-11-11T07:23:51.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:25:02.000Z",
+   "segundos": 71,
+   "saida": 0,
+   "testes": 753,
+   "passaram": 753,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 36306.356833,
+   "jsonl": {
+    "testes": 753,
+    "passaram": 753,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "reg_1",
+   "fila": 1,
+   "arquivos": 94,
+   "inicio": "2026-11-11T07:28:00.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:30:38.000Z",
+   "segundos": 158,
+   "saida": 0,
+   "testes": 663,
+   "passaram": 663,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 137809.712208,
+   "jsonl": {
+    "testes": 663,
+    "passaram": 663,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "reg_2",
+   "fila": 2,
+   "arquivos": 94,
+   "inicio": "2026-11-11T07:23:00.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:27:31.000Z",
+   "segundos": 271,
+   "saida": 0,
+   "testes": 635,
+   "passaram": 635,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 238808.464167,
+   "jsonl": {
+    "testes": 635,
+    "passaram": 635,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "reg_3",
+   "fila": 0,
+   "arquivos": 94,
+   "inicio": "2026-11-11T07:25:02.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:31:30.000Z",
+   "segundos": 388,
+   "saida": 0,
+   "testes": 503,
+   "passaram": 503,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 347173.358792,
+   "jsonl": {
+    "testes": 503,
+    "passaram": 503,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  },
+  {
+   "nome": "reg_4",
+   "fila": 1,
+   "arquivos": 94,
+   "inicio": "2026-11-11T07:30:38.000Z",
+   "situacao": "concluído",
+   "fim": "2026-11-11T07:33:54.000Z",
+   "segundos": 196,
+   "saida": 0,
+   "testes": 714,
+   "passaram": 714,
+   "falharam": 0,
+   "cancelados": 0,
+   "pulados": 0,
+   "todo": 0,
+   "duracaoMs": 176187.02925,
+   "jsonl": {
+    "testes": 714,
+    "passaram": 714,
+    "falharam": 0,
+    "pulados": 0
+   },
+   "falhas": []
+  }
+ ],
+ "total": {
+  "testes": 8600,
+  "passaram": 8600,
+  "falharam": 0,
+  "pulados": 0,
+  "cancelados": 0,
+  "todo": 0,
+  "arquivos": 1575,
+  "saidaNaoZero": []
+ },
+ "falhas": [],
+ "correcoes": [
+  {
+   "branch": "m3fix/crm-carteira",
+   "merge": "sem merge (base da branch integrada)",
+   "commit": "e9073267",
+   "assunto": "Isola Pessoas por empresa também entre empresas do mesmo grupo; gravação barrada pelo RLS vira 403 e não 500",
+   "contido": true
+  },
+  {
+   "branch": "m9fix/email",
+   "merge": "54c2600b",
+   "commit": "e23a20a6",
+   "assunto": "Cofre de segredos obrigatório também na homologação: sem ele o e-mail de campanha falhava em silêncio",
+   "contido": true
+  },
+  {
+   "branch": "m9fix/bi",
+   "merge": "68c7e277",
+   "commit": "73076ea8",
+   "assunto": "Scripts de homologação: a NAY Diretoria é cadastrada com o cadastro do livro (M9-D035: as 8 ferramentas de leitura, escopos só agregados e limites); versão ativa sem as ferramentas ganha a versão seguinte com elas",
+   "contido": true
+  },
+  {
+   "branch": "m3fix/matriz",
+   "merge": "8aa3d75e",
+   "commit": "bcca62fe",
+   "assunto": "Funil do livro: etapas antigas convertidas (migration com auditoria) e aceitas na entrada como a etapa do livro; automação valida a etapa (DI-M3-FUNIL-1)",
+   "contido": true
+  },
+  {
+   "branch": "m6fix/matriz",
+   "merge": "2921a537",
+   "commit": "e21eeb64",
+   "assunto": "Obras: base do custo financeiro realizado vira parâmetro da empresa (CAIXA padrão | COMPETENCIA)",
+   "contido": true
+  },
+  {
+   "branch": "m4fix/matriz",
+   "merge": "680aacfa",
+   "commit": "9d28dad0",
+   "assunto": "Financeiro: parâmetros do Financeiro graváveis pela tela de Configurações, com faixa (§11 e §17)",
+   "contido": true
+  },
+  {
+   "branch": "m5fix/matriz",
+   "merge": "f89c7882",
+   "commit": "980a1eec",
+   "assunto": "Marco 5: m9d840 confere os 12 tipos do caderno e os 3 legados no contrato OpenAPI",
+   "contido": true
+  }
+ ],
+ "frontIntegrado": {
+  "commit": "e43d916",
+  "data": "11/11/2026",
+  "fonte": "execução no checkout integrado do Front (registrada pelo responsável técnico em 11/11/2026)",
+  "log": null,
+  "baterias": [
+   {
+    "nome": "Testes de unidade (npm run test:unit)",
+    "passaram": 185,
+    "total": 185
+   },
+   {
+    "nome": "Testes de acessibilidade",
+    "passaram": 36,
+    "total": 36
+   },
+   {
+    "nome": "Lint (npm run lint)",
+    "resumo": "0 erro em 683 arquivos"
+   }
+  ]
+ }
+}

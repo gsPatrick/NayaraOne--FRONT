@@ -1,0 +1,170 @@
+{
+ "id": "M5-A0254-adf071",
+ "secao": "P2 > 19. O que Marcelo NÃO pode improvisar",
+ "linhaCaderno": 789,
+ "requisito": "❌ Não vincular assinatura ao contrato sem version/hash.",
+ "demandas": "M5-D016;M5-D015",
+ "implementacao": "legal.signatures.contract_version_id e content_hash gravados pelo servidor em toda assinatura (eletrônica e manual); webhook sem hash recusado",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash",
+   "status": "pass",
+   "ms": 555.894,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/legal.signatureProviders.test.js",
+   "nome": "legal webhook: sandbox funciona SEM HMAC, mas só com o hash do documento enviado para assinatura (B1)",
+   "status": "pass",
+   "ms": 263.473,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-02 §8 assinatura manual exige evidence_file_id, signatário parte do contrato e coletor; liga hash da versão e leva a SIGNED",
+   "status": "pass",
+   "ms": 254.847,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-202",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HASH_REQUIRED: Informe o hash do documento assinado (contentHash) no payload do webhook.",
+   "quando": "2026-11-11T03:42:25.430Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0254-adf071.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.rotasLivro.test.js test/legal.signatureProviders.test.js test/m45.cadernoM5Gaps.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-132, CT-202, CT-328)"
+ },
+ "passos": [
+  {
+   "id": "CT-202",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Webhook de laboratório sem o hash do documento assinado é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:25.430Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HASH_REQUIRED",
+     "message": "Informe o hash do documento assinado (contentHash) no payload do webhook.",
+     "traceId": "3f3c7fd7-4e8a-4a7d-880a-8e9faa73176c"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0254-adf071"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-132",
+   "req": [
+    "M5-A0069-ea344f",
+    "M5-A0302-11ebaa",
+    "M5-A0254-adf071"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Cada assinatura liga signatário + contract_version_id + content_hash da versão",
+   "sql": "SELECT id, person_id, contract_version_id, content_hash, status, envelope_id IS NOT NULL AS com_envelope, external_signature_id FROM legal.signatures WHERE contract_version_id = :v ORDER BY created_at",
+   "resultado": [
+    {
+     "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+     "person_id": "831f6109-2e18-4197-84c9-564b89db0076",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-ae7beb6c48f75b88"
+    },
+    {
+     "id": "bde0ac1f-a166-41f5-ac2f-0f569771d38f",
+     "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-902c25d73e267f69"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.323Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-328",
+   "req": [
+    "M5-A0071-4e2ad6",
+    "M5-A0069-ea344f",
+    "M5-A0302-11ebaa"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "Assinaturas manuais com evidence_file_id, coletor, versão e hash; contrato SIGNED",
+   "sql": "SELECT s.signature_method, s.evidence_file_id IS NOT NULL AS com_evidencia, s.collected_by_user_id, s.contract_version_id, s.content_hash, s.status, (SELECT status FROM legal.contracts WHERE id = :id) AS contrato FROM legal.signatures s WHERE s.contract_version_id = :v3 AND s.signature_method = 'MANUAL' ORDER BY s.created_at",
+   "resultado": [
+    {
+     "signature_method": "MANUAL",
+     "com_evidencia": true,
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "status": "SIGNED",
+     "contrato": "SIGNED"
+    },
+    {
+     "signature_method": "MANUAL",
+     "com_evidencia": true,
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "status": "SIGNED",
+     "contrato": "SIGNED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:27.170Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

@@ -1,0 +1,226 @@
+{
+  "id": "M6-93",
+  "requisito": "DoD: concorrência verde.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §13 Definition of Done; Guia do Marcelo (Obras) §16",
+  "implementacao": "FOR UPDATE nas aprovações + lock_version",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/medicoes: aprovação simultânea",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-67: duas aprovações concorrentes do mesmo orçamento — só uma vence, a outra recebe conflito",
+      "resultado": "passou",
+      "duracaoMs": 337,
+      "executadoEm": "2026-11-11T00:12:11.009Z"
+    },
+    {
+      "arquivo": "test/construction.failureDrills.test.js",
+      "nome": "DRILL 3 — duas aprovações concorrentes da MESMA medição: lock pessimista garante só 1 sucesso, sem payable duplicado",
+      "resultado": "passou",
+      "duracaoMs": 515,
+      "executadoEm": "2026-11-11T00:13:20.125Z"
+    },
+    {
+      "arquivo": "test/construction.lockVersion.test.js",
+      "nome": "M6-67: obra — segunda gravação com lock_version velho é recusada (SequelizeOptimisticLockError)",
+      "resultado": "passou",
+      "duracaoMs": 911,
+      "executadoEm": "2026-11-11T00:13:35.283Z"
+    },
+    {
+      "arquivo": "test/construction.delivery.test.js",
+      "nome": "removeProject: concorrente com createBudget — não pode excluir a obra se um orçamento foi criado antes do commit (lock pessimista)",
+      "resultado": "passou",
+      "duracaoMs": 1084,
+      "executadoEm": "2026-11-11T00:12:56.391Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H103",
+      "H102"
+    ],
+    "resumo": [
+      "H103 POST /api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/approve → 200",
+      "H102 POST /api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/approve → 409 STAGE_MEASUREMENT_INVALID_STATUS"
+    ],
+    "dataHora": "2026-11-11T00:12:17.748Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H103",
+      "requisitos": [
+        "M6-67",
+        "M6-93",
+        "M6-55"
+      ],
+      "cenario": "Aprovação concorrente nº 2 da mesma medição",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/approve",
+      "perfil": "Gestor de obras da Empresa A",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200 ou 409",
+      "conferiu": true,
+      "duracaoMs": 71,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "c545d5b4-b823-4bec-88af-c2efc2107883",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "measuredPct": "50.000000",
+          "measuredAt": "2026-11-10",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "PAYABLE",
+          "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "decidedAt": "2026-11-11T00:12:17.698Z",
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:17.405Z",
+          "reviewedAt": "2026-11-11T00:12:17.667Z",
+          "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "reviewNotes": "ok",
+          "approvedAt": "2026-11-11T00:12:17.698Z",
+          "totalAmount": "15000.00",
+          "payableFinancialEntryId": "e64f426b-f818-43c8-9aba-18fff7bd2ea6",
+          "parentMeasurementId": null,
+          "revisionNumber": 1,
+          "costCenterId": null,
+          "idempotencyKey": "med2-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:17.111Z",
+          "updated_at": "2026-11-11T00:12:17.722Z",
+          "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:17.748Z"
+    },
+    {
+      "id": "H102",
+      "requisitos": [
+        "M6-67",
+        "M6-93",
+        "M6-55"
+      ],
+      "cenario": "Aprovação concorrente nº 1 da mesma medição",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/approve",
+      "perfil": "Gestor de obras da Empresa A",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 409,
+      "codigoErro": "STAGE_MEASUREMENT_INVALID_STATUS",
+      "esperado": "200 ou 409",
+      "conferiu": true,
+      "duracaoMs": 75,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "STAGE_MEASUREMENT_INVALID_STATUS",
+          "message": "Só é possível decidir uma medição no estado \"Enviada para revisão, Revisada\" — esta está \"Aprovada\".",
+          "traceId": "26132366-0401-4649-9603-1baf3eaae6d9"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:17.753Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C003",
+      "requisitos": [
+        "M6-67",
+        "M6-93"
+      ],
+      "descricao": "Coluna lock_version (controle otimista) nas tabelas de escrita concorrente de Obras",
+      "sql": "SELECT table_name FROM information_schema.columns WHERE table_schema = 'construction' AND column_name = 'lock_version' ORDER BY 1",
+      "resultado": [
+        {
+          "table_name": "budget_items"
+        },
+        {
+          "table_name": "budget_lines"
+        },
+        {
+          "table_name": "budgets"
+        },
+        {
+          "table_name": "change_orders"
+        },
+        {
+          "table_name": "daily_logs"
+        },
+        {
+          "table_name": "daily_reports"
+        },
+        {
+          "table_name": "loss_records"
+        },
+        {
+          "table_name": "maintenance_cases"
+        },
+        {
+          "table_name": "margin_rules"
+        },
+        {
+          "table_name": "material_requests"
+        },
+        {
+          "table_name": "nonconformities"
+        },
+        {
+          "table_name": "project_stages"
+        },
+        {
+          "table_name": "projects"
+        },
+        {
+          "table_name": "quality_checklist_items"
+        },
+        {
+          "table_name": "warranty_actions"
+        },
+        {
+          "table_name": "warranty_cases"
+        }
+      ],
+      "invariante": "obra, etapa, orçamento, item, aditivo, RDO, NC, perda e garantia com lock_version",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.178Z"
+    },
+    {
+      "id": "C007",
+      "requisitos": [
+        "M6-55",
+        "M6-67",
+        "M6-93",
+        "M6-84"
+      ],
+      "descricao": "Duas aprovações simultâneas da mesma medição (HTTP 200 e 409): uma única conta a pagar",
+      "sql": "SELECT status, (SELECT count(*) FROM finance.financial_entries f WHERE f.idempotency_key = 'measurement.payable:' || $1::text)::int AS contas FROM construction.stage_measurements WHERE id = $1::uuid",
+      "resultado": [
+        {
+          "status": "PAYABLE",
+          "contas": 1
+        }
+      ],
+      "invariante": "uma aprovação 200, a outra 409; 1 conta a pagar",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.185Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.459Z"
+}

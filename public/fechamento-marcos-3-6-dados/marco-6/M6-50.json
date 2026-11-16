@@ -1,0 +1,372 @@
+{
+  "id": "M6-50",
+  "requisito": "Tela: Não conformidades (abrir, listar, fechar).",
+  "secaoDoLivro": "Checklist de escopo §6 (telas inferidas do escopo; o Caderno é de backend)",
+  "implementacao": "NayaraOne--FRONT app/painel/obras/lista/[id]/qualidade/page.js → API createNonconformity/closeNonconformity",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: abrir a tela e executar o fluxo",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "NC fecha normalmente quando after_evidence_file_ids está preenchido e não exige aceite",
+      "resultado": "passou",
+      "duracaoMs": 254,
+      "executadoEm": "2026-11-11T00:14:18.754Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H121",
+      "H127",
+      "H129"
+    ],
+    "resumo": [
+      "H121 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 201",
+      "H127 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 200",
+      "H129 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:22.172Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js",
+      "requisitos": [
+        "M6-98",
+        "M6-43",
+        "M6-44",
+        "M6-45",
+        "M6-46",
+        "M6-48",
+        "M6-49",
+        "M6-50",
+        "M6-51",
+        "M6-52"
+      ],
+      "iniciadoEm": "2026-11-11T00:13:46Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "1. login — <usuário de teste>"
+        },
+        {
+          "ok": true,
+          "passo": "2. criar obra — http://localhost:3106/painel/obras/lista/03829419-92d3-4027-9579-6b39b911662c"
+        },
+        {
+          "ok": true,
+          "passo": "3. criar etapa — Fundação e estrutura"
+        },
+        {
+          "ok": true,
+          "passo": "4. orçamento (linha criada) — R$ 10.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "5. aprovar orçamento"
+        },
+        {
+          "ok": true,
+          "passo": "6. medição registrada — 20% / R$ 2.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "7. medição aprovada (fluxo DRAFT->SUBMITTED->REVIEWED->APPROVED)"
+        },
+        {
+          "ok": true,
+          "passo": "8. diário (RDO) registrado — 8 trabalhadores"
+        },
+        {
+          "ok": true,
+          "passo": "9. não conformidade aberta — Trinca na fundação"
+        },
+        {
+          "ok": true,
+          "passo": "10a. tentativa de entrega da obra — botão de entrega não visível no status atual da obra"
+        },
+        {
+          "ok": true,
+          "passo": "10b. chamado de pós-obra criado"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H121",
+      "requisitos": [
+        "M6-37",
+        "M6-13",
+        "M6-78",
+        "M6-50"
+      ],
+      "cenario": "Abrir NC com severidade, responsável, evidência \"antes\" e aceite exigido (SLA calculado pela severidade)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "severity": "HIGH",
+        "description": "Reboco solto na parede da escada",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeEvidenceFileIds": [
+          "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+        ],
+        "requiresAcceptance": true,
+        "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 443,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "severity": "HIGH",
+          "description": "Reboco solto na parede da escada",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-16T00:12:22.026Z",
+          "status": "OPEN",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [],
+          "requiresAcceptance": true,
+          "causeCode": null,
+          "teamLabel": null,
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:22.026Z",
+          "created_at": "2026-11-11T00:12:22.026Z",
+          "acceptedByUserId": null,
+          "closedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.172Z"
+    },
+    {
+      "id": "H127",
+      "requisitos": [
+        "M6-24",
+        "M6-38",
+        "M6-78",
+        "M6-86",
+        "M6-50",
+        "M6-98"
+      ],
+      "cenario": "Fechar NC com evidência \"depois\" e aceite (publica nonconformity.closed)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+        ],
+        "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 65,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "severity": "HIGH",
+          "description": "Reboco solto na parede da escada",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-16T00:12:22.026Z",
+          "status": "CLOSED",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [
+            "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+          ],
+          "requiresAcceptance": true,
+          "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "closedAt": "2026-11-11T00:12:23.476Z",
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "causeCode": null,
+          "teamLabel": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:22.026Z",
+          "updated_at": "2026-11-11T00:12:23.476Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "accepted_by_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.498Z"
+    },
+    {
+      "id": "H129",
+      "requisitos": [
+        "M6-50",
+        "M6-13"
+      ],
+      "cenario": "Não conformidades da obra",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 18,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "48ef9acb-a9eb-4fea-9095-884ce5f1dcee",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "projectStageId": null,
+            "severity": "LOW",
+            "description": "Respingo",
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "slaDueAt": "2026-12-11T00:12:22.471Z",
+            "status": "OPEN",
+            "beforeEvidenceFileIds": [
+              "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+            ],
+            "afterEvidenceFileIds": [],
+            "requiresAcceptance": false,
+            "acceptedByUserId": null,
+            "closedAt": null,
+            "evidenceReuseFlagged": true,
+            "evidenceReuseReferenceId": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+            "evidenceReuseDetails": {
+              "matchedAt": "2026-11-11T00:12:22.459Z",
+              "overlappingFileIds": [
+                "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+              ]
+            },
+            "causeCode": null,
+            "teamLabel": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:22.471Z",
+            "updated_at": "2026-11-11T00:12:22.471Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "project_stage_id": null,
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "accepted_by_user_id": null
+          },
+          {
+            "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+            "severity": "HIGH",
+            "description": "Reboco solto na parede da escada",
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "slaDueAt": "2026-11-16T00:12:22.026Z",
+            "status": "CLOSED",
+            "beforeEvidenceFileIds": [
+              "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+            ],
+            "afterEvidenceFileIds": [
+              "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+            ],
+            "requiresAcceptance": true,
+            "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "closedAt": "2026-11-11T00:12:23.476Z",
+            "evidenceReuseFlagged": false,
+            "evidenceReuseReferenceId": null,
+            "evidenceReuseDetails": null,
+            "causeCode": null,
+            "teamLabel": null,
+            "lockVersion": 1,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:22.026Z",
+            "updated_at": "2026-11-11T00:12:23.476Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "accepted_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          {
+            "id": "175a58f6-b555-4040-8b41-7b330bdf6e1d",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "severity": "CRITICAL",
+            "description": "Checklist de qualidade reprovado: \"Prumo e nível das sapatas\" — Fissura na sapata S3.",
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "slaDueAt": "2026-11-13T00:12:20.443Z",
+            "status": "OPEN",
+            "beforeEvidenceFileIds": [
+              "cb3bcbef-2239-4ef3-b42d-036c72944b71"
+            ],
+            "afterEvidenceFileIds": [],
+            "requiresAcceptance": false,
+            "acceptedByUserId": null,
+            "closedAt": null,
+            "evidenceReuseFlagged": false,
+            "evidenceReuseReferenceId": null,
+            "evidenceReuseDetails": null,
+            "causeCode": null,
+            "teamLabel": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:20.443Z",
+            "updated_at": "2026-11-11T00:12:20.443Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "accepted_by_user_id": null
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:23.802Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.411Z"
+}

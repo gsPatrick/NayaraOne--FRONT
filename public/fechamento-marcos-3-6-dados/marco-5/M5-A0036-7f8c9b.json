@@ -1,0 +1,459 @@
+{
+ "id": "M5-A0036-7f8c9b",
+ "secao": "P1 > 4. Entidades/tabelas obrigatórias [tabela: Tabela | Finalidade]",
+ "linhaCaderno": 90,
+ "requisito": "legal.clause_versions | Versões homologadas.",
+ "demandas": "M5-D009;M5-D221",
+ "implementacao": "tabela legal.clause_versions (migrations/, model em src/models/), RLS ENABLE+FORCE por company_id",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.clause_versions: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 0.657,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "MT-T07-GET",
+   "metodo": "GET",
+   "rota": "/legal/clauses/MT-8560189/versions",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:40.492Z"
+  },
+  {
+   "passo": "MT-T-ANON",
+   "metodo": "GET",
+   "rota": "/legal/contracts",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "esperado": {
+    "status": 401
+   },
+   "resumo": "erro MISSING_ACCESS_TOKEN: Token de acesso ausente.",
+   "quando": "2026-11-11T03:42:40.635Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0036-7f8c9b.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste de inventário escrito nesta rodada (m5fech.meta.tabelasDoLivro).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.meta.tabelasDoLivro.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos MT-T07-SQL, MT-T07-GET, MT-T-ANON, MT-T-RLSB, MT-T-INV)"
+ },
+ "passos": [
+  {
+   "id": "MT-T07-GET",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rota real que lê a entidade de legal.clause_versions (perfil de gestão da empresa A)",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/legal/clauses/MT-8560189/versions",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:40.492Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "5f84c4dc-1b60-47b9-9546-1885e676c350",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "code": "MT-8560189",
+      "clauseLibraryId": "cc225e99-fde4-457c-bd4d-f5381609e9ad",
+      "title": "Cláusula de inventário",
+      "bodyText": "Texto fictício da cláusula de inventário.",
+      "category": "GENERAL",
+      "versionNumber": 1,
+      "isActive": true,
+      "conditionJson": null,
+      "conditionStatus": null,
+      "conditionApprovedBy": null,
+      "conditionApprovedAt": null,
+      "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "created_at": "2026-11-11T03:42:40.237Z",
+      "legalResponsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "legalResponsible": {
+       "id": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+       "name": "CI maker — tenant A"
+      }
+     }
+    ]
+   },
+   "req": [
+    "M5-A0036-7f8c9b"
+   ],
+   "modulo": "90-meta-tabelas",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "MT-T-ANON",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem login a leitura do módulo é recusada",
+   "perfil": "anonimo",
+   "metodo": "GET",
+   "rota": "/legal/contracts",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 401
+   },
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "ok": true,
+   "ms": 3,
+   "quando": "2026-11-11T03:42:40.635Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "470d2884-37d2-481d-b142-7d62d4bdaa7a"
+    }
+   },
+   "req": [
+    "M5-A0030-d468ae",
+    "M5-A0031-69a4ea",
+    "M5-A0032-0045b7",
+    "M5-A0033-0233b3",
+    "M5-A0034-a144b2",
+    "M5-A0035-4c42f0",
+    "M5-A0036-7f8c9b",
+    "M5-A0037-f9f799",
+    "M5-A0038-6f5422",
+    "M5-A0039-6ce543",
+    "M5-A0040-7ac2ac",
+    "M5-A0041-a18689",
+    "M5-A0042-bd96c7",
+    "M5-A0043-d8731f",
+    "M5-A0044-2df892",
+    "M5-A0045-eb7284",
+    "M5-A0046-1138c0",
+    "M5-A0047-64780b",
+    "M5-A0048-193c7d",
+    "M5-A0049-9aa2d7",
+    "M5-A0050-1f193f"
+   ],
+   "modulo": "90-meta-tabelas",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "MT-T07-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.clause_versions existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.clause_versions' AS tabela_do_livro, to_regclass('legal.clause_versions') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.clause_versions') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.clause_versions",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.482Z",
+   "req": [
+    "M5-A0036-7f8c9b"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "MT-T-RLSB",
+   "req": [
+    "M5-A0030-d468ae",
+    "M5-A0031-69a4ea",
+    "M5-A0032-0045b7",
+    "M5-A0033-0233b3",
+    "M5-A0034-a144b2",
+    "M5-A0035-4c42f0",
+    "M5-A0036-7f8c9b",
+    "M5-A0037-f9f799",
+    "M5-A0038-6f5422",
+    "M5-A0039-6ce543",
+    "M5-A0040-7ac2ac",
+    "M5-A0041-a18689",
+    "M5-A0042-bd96c7",
+    "M5-A0043-d8731f",
+    "M5-A0044-2df892",
+    "M5-A0045-eb7284",
+    "M5-A0046-1138c0",
+    "M5-A0047-64780b",
+    "M5-A0048-193c7d",
+    "M5-A0049-9aa2d7",
+    "M5-A0050-1f193f"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "B:gestor",
+   "descricao": "No contexto da empresa B, o contrato e o processo da empresa A não aparecem nem por SQL direto (RLS)",
+   "sql": "SELECT (SELECT count(*)::int FROM legal.contracts WHERE id = :ct) AS contratos_da_a_visiveis, (SELECT count(*)::int FROM legal.legal_cases WHERE id = :cs) AS processos_da_a_visiveis",
+   "resultado": [
+    {
+     "contratos_da_a_visiveis": 0,
+     "processos_da_a_visiveis": 0
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.644Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "MT-T-INV",
+   "grupos": [],
+   "f": [],
+   "descricao": "Inventário de todas as tabelas do schema legal com RLS ENABLE/FORCE",
+   "sql": "SELECT c.relname AS tabela, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'legal' AND c.relkind IN ('r','v','p') ORDER BY 1",
+   "resultado": [
+    {
+     "tabela": "addenda",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "addendum_signatures",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "case_parties",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "case_receivables",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "clause_library",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "clause_versions",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "contract_number_sequences",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "contract_parties",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "contract_requirements",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "contract_template_clauses",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "contract_templates",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "contract_versions",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "contracts",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "evidence_package_access_log",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "evidence_packages",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "guarantees",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "inspection_items",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "inspection_media",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "inspection_signatures",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "inspections",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "insurance_cases",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "key_deliveries",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "lease_obligations",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "legal_cases",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "legal_deadlines",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "notice_versions",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "notices",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "signature_envelopes",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "signature_provider_routing",
+     "tipo": "r",
+     "rls_enable": false,
+     "rls_force": false
+    },
+    {
+     "tabela": "signatures",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    },
+    {
+     "tabela": "template_versions",
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.646Z",
+   "req": [
+    "M5-A0030-d468ae",
+    "M5-A0031-69a4ea",
+    "M5-A0032-0045b7",
+    "M5-A0033-0233b3",
+    "M5-A0034-a144b2",
+    "M5-A0035-4c42f0",
+    "M5-A0036-7f8c9b",
+    "M5-A0037-f9f799",
+    "M5-A0038-6f5422",
+    "M5-A0039-6ce543",
+    "M5-A0040-7ac2ac",
+    "M5-A0041-a18689",
+    "M5-A0042-bd96c7",
+    "M5-A0043-d8731f",
+    "M5-A0044-2df892",
+    "M5-A0045-eb7284",
+    "M5-A0046-1138c0",
+    "M5-A0047-64780b",
+    "M5-A0048-193c7d",
+    "M5-A0049-9aa2d7",
+    "M5-A0050-1f193f"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

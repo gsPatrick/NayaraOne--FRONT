@@ -1,0 +1,375 @@
+{
+ "id": "M4-§5.7",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.ledger — \"Movimentos realizados append-only.\"",
+ "substitui": "evidencias/marco-4/M4-S5.7.json",
+ "motivo": "Recaptura: a evidência anterior trazia o token assinado da confirmação de nível 3 (impactToken) sem redação; o capturador foi corrigido e a evidência refeita contra o código atual, em banco descartável. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "a3342c49",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T08:20:27.195Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-§5.7 --sufixo r2",
+ "respostasHttp": [
+  {
+   "id": "O07",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.6",
+    "M4-§5.7"
+   ],
+   "titulo": "Recebível liquidado: a linha vira movimento em finance.ledger",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 66,
+    "description": "Movimento a estornar pela rota do ledger 5128289",
+    "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T08:20:24.012Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "1dd48673-5204-42e4-8369-954d54bb164b",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+     "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "66.00",
+     "description": "Movimento a estornar pela rota do ledger 5128289",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updated_at": "2026-11-11T08:20:23.996Z",
+     "created_at": "2026-11-11T08:20:23.996Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O08",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.7",
+    "M4-G§1.3"
+   ],
+   "titulo": "Recebimento integral (MFA recente)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/1dd48673-5204-42e4-8369-954d54bb164b/settle",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-oled-5128289"
+   },
+   "corpoEnviado": {
+    "idempotencyKey": "m4-oled-5128289"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 267,
+   "quando": "2026-11-11T08:20:24.279Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "1dd48673-5204-42e4-8369-954d54bb164b",
+     "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+     "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "66.00",
+     "description": "Movimento a estornar pela rota do ledger 5128289",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": "2026-11-11T08:20:24.044Z",
+     "status": "SETTLED",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+     "created_at": "2026-11-11T08:20:23.996Z",
+     "updated_at": "2026-11-11T08:20:24.044Z",
+     "bank_account_id": null,
+     "cost_center_id": null,
+     "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O10",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.6",
+    "M4-§5.7",
+    "M4-G§8"
+   ],
+   "titulo": "POST /finance/ledger/:id/reverse: estorno controlado do movimento (reversão apontando o original)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/ledger/1dd48673-5204-42e4-8369-954d54bb164b/reverse",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "reason": "Estorno pela rota oficial do ledger (captura do Marco 4).",
+    "confirmation": {
+     "typedCode": "LAN-1DD48673",
+     "justification": "Estorno pela rota oficial do ledger (captura do Marco 4).",
+     "impactToken": "[REDACTED]",
+     "understood": true
+    }
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 49,
+   "quando": "2026-11-11T08:20:24.382Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "1dd48673-5204-42e4-8369-954d54bb164b",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "66.00",
+      "description": "Movimento a estornar pela rota do ledger 5128289",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:24.044Z",
+      "status": "REVERSED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 2,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:20:23.996Z",
+      "updated_at": "2026-11-11T08:20:24.358Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "reversal": {
+      "id": "7ecc4d36-cbb6-4cda-9dfb-f2a5eb747bf1",
+      "isThirdPartyFunds": false,
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "entryType": "DEBIT",
+      "nature": "ADJUSTMENT",
+      "amount": "66.00",
+      "description": null,
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:24.353Z",
+      "status": "SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": "1dd48673-5204-42e4-8369-954d54bb164b",
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "constructionProjectId": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updated_at": "2026-11-11T08:20:24.353Z",
+      "created_at": "2026-11-11T08:20:24.353Z",
+      "originRef": null,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": "nenhum",
+ "consultasBanco": [
+  {
+   "id": "Q04",
+   "linhas": [
+    "M4-§5.7",
+    "M4-§6.2"
+   ],
+   "descricao": "Movimentos do recebível em finance.ledger (CREDIT, um por baixa)",
+   "sql": "select id, financial_entry_id, movement_type, direction, amount, idempotency_key, occurred_at from finance.ledger where financial_entry_id = :id order by occurred_at",
+   "contexto": "RLS do tenant (company ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a)",
+   "resultado": [
+    {
+     "id": "dafc17e4-4634-427d-8bba-a3f5fff11781",
+     "financial_entry_id": "634f7de5-109c-48a5-8e70-5bbab7190346",
+     "movement_type": "PARTIAL_RECEIVABLE",
+     "direction": "CREDIT",
+     "amount": "0.10",
+     "idempotency_key": "baixa-parcial:d1a0d7abd840688cb63f6975a059230ef3106ed62800ed99c6c57d8e6c1a5cc1",
+     "occurred_at": "2026-11-11T08:19:37.750Z"
+    },
+    {
+     "id": "e6f7d6f0-18ce-4254-a6ce-b43f2f4091d6",
+     "financial_entry_id": "634f7de5-109c-48a5-8e70-5bbab7190346",
+     "movement_type": "PARTIAL_RECEIVABLE",
+     "direction": "CREDIT",
+     "amount": "0.20",
+     "idempotency_key": "baixa-parcial:9053bc57cc22ab22b6719ea8075578d921b91c310249d756b4277f69038a669b",
+     "occurred_at": "2026-11-11T08:19:38.824Z"
+    }
+   ],
+   "invariante": "2 movimentos CREDIT",
+   "invarianteOk": true,
+   "quando": "2026-11-11T08:20:26.791Z"
+  }
+ ],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-07 §5 tabelas do caderno: ledger, entry_installments, security_deposits, accounts_chart e closing_periods existem, seguem a RLS e são somente leitura",
+   "status": "passou",
+   "duracaoMs": 38,
+   "commitDoArquivo": "6ea03ed1"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-LG ledger: DELETE direto é sempre recusado",
+   "status": "passou",
+   "duracaoMs": 37,
+   "commitDoArquivo": "e834c687"
+  }
+ ]
+}

@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0082-0bfb1f",
+ "linhaCaderno": 191,
+ "requisito": "• Exigir documentos e garantias válidos.",
+ "correcao": "src/modules/legal/leasing/keyDeliveryGuarantees.js assertDeliveryGuarantees (exigência GUARANTEE não dispensada exige garantia ACTIVE vigente)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.chaves.test.js",
+   "nome": "M5-A0082/§10: exigência de garantia satisfeita só com arquivo não libera as chaves; garantia ACTIVE vigente libera; dispensa formal também",
+   "status": "pass",
+   "ms": 549.016,
+   "commitDoTeste": "633cc5e5",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Missing expected rejection. generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, operator: 'rejects', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.890Z"
+}

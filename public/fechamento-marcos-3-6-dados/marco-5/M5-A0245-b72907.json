@@ -1,0 +1,583 @@
+{
+ "id": "M5-A0245-b72907",
+ "secao": "P2 > 18. Sprints [tabela: Sprint | Entrega]",
+ "linhaCaderno": 775,
+ "requisito": "J3 | Assinatura sandbox.",
+ "demandas": "M5-D215",
+ "implementacao": "agregação dos requisitos M5-A0068-ee300a (linha 157), M5-A0069-ea344f (linha 159), M5-A0070-aa260b (linha 161), M5-A0071-4e2ad6 (linha 163), M5-A0072-5023f6 (linha 165), M5-A0073-185af0 (linha 167), M5-A0200-0787a9 (linha 550), M5-A0201-67738d (linha 561)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/marco9/integracoes/m9d236.arquitetura.test.js",
+   "nome": "assinatura_adapters_reais_cumprem_o_contrato_e_zapsign_esta_registrado",
+   "status": "pass",
+   "ms": 2.743,
+   "commitDoTeste": "64c66f32"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash",
+   "status": "pass",
+   "ms": 555.894,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/legal.signatureProviders.test.js",
+   "nome": "legal webhook: verifyProviderWebhookSignature aceita HMAC válido e rejeita ausente/errado (timing-safe)",
+   "status": "pass",
+   "ms": 0.825,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-02 §8 assinatura manual exige evidence_file_id, signatário parte do contrato e coletor; liga hash da versão e leva a SIGNED",
+   "status": "pass",
+   "ms": 254.847,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-04 §8: conteúdo mudou depois do envio — envelope pendente é cancelado, contrato volta a APPROVED e a versão antiga fica intacta",
+   "status": "pass",
+   "ms": 215.877,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-007: webhook de assinatura duplicado (mesmo id externo) gera uma única atualização, e SIGNED só com todas as assinaturas da versão",
+   "status": "pass",
+   "ms": 558.993,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/marco9/integracoes/m9d236.fluxo.test.js",
+   "nome": "assinatura_webhook_hmac_pelo_framework",
+   "status": "pass",
+   "ms": 919.354,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-202",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HASH_REQUIRED: Informe o hash do documento assinado (contentHash) no payload do webhook.",
+   "quando": "2026-11-11T03:42:25.430Z"
+  },
+  {
+   "passo": "CT-322",
+   "metodo": "POST",
+   "rota": "/legal/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/manual-signatures",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_MANUAL_SIGNATURE_EVIDENCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_MANUAL_SIGNATURE_EVIDENCE_REQUIRED"
+   },
+   "resumo": "erro LEGAL_MANUAL_SIGNATURE_EVIDENCE_REQUIRED: Assinatura manual exige \"personId\" e \"evidenceFileId\" (arquivo da via assinada).",
+   "quando": "2026-11-11T03:42:26.828Z"
+  },
+  {
+   "passo": "CT-315",
+   "metodo": "POST",
+   "rota": "/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814/send-signature",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED"
+   },
+   "resumo": "erro LEGAL_CONTRACT_VERSION_SUPERSEDED: A versão 1 foi substituída pela versão 2: só a versão vigente do contrato pode ser aprovada ou envia",
+   "quando": "2026-11-11T03:42:26.514Z"
+  },
+  {
+   "passo": "CT-131",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/send-signature",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "contentHash=f2d7a516a52a412258e579bc5fe7f3817e6b381a",
+   "quando": "2026-11-11T03:42:25.321Z"
+  },
+  {
+   "passo": "CT-204",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HMAC_INVALID: Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+   "quando": "2026-11-11T03:42:25.449Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0245-b72907.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/marco9/integracoes/m9d236.arquitetura.test.js test/m5fech.contratos.rotasLivro.test.js test/legal.signatureProviders.test.js test/m45.cadernoM5Gaps.test.js test/m5fech.contratos.adversariais.test.js test/marco9/integracoes/m9d236.fluxo.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-536, CT-132, CT-202, CT-322, CT-315, CT-206, CT-131, CT-204)"
+ },
+ "passos": [
+  {
+   "id": "CT-536",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Provedores de assinatura atrás do port SignatureAdapter (createEnvelope/cancelEnvelope/getEnvelope/verifyWebhook)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "adapterRegistry.instantiate(código).capabilities()",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 0,
+   "quando": "2026-11-11T03:42:29.411Z",
+   "corpo": {
+    "result": [
+     {
+      "codigo": "signature-sandbox",
+      "port": true,
+      "capacidades": [
+       "createEnvelope",
+       "getEnvelope",
+       "cancelEnvelope",
+       "downloadSigned",
+       "verifyWebhook"
+      ],
+      "verificadorDeWebhook": true
+     },
+     {
+      "codigo": "signature-alt-sandbox",
+      "port": true,
+      "capacidades": [
+       "createEnvelope",
+       "getEnvelope",
+       "cancelEnvelope",
+       "downloadSigned",
+       "verifyWebhook"
+      ],
+      "verificadorDeWebhook": true
+     },
+     {
+      "codigo": "signature-clicksign",
+      "port": true,
+      "capacidades": [
+       "createEnvelope",
+       "getEnvelope",
+       "cancelEnvelope",
+       "downloadSigned",
+       "verifyWebhook"
+      ],
+      "verificadorDeWebhook": true
+     },
+     {
+      "codigo": "signature-zapsign",
+      "port": true,
+      "capacidades": [
+       "createEnvelope",
+       "getEnvelope",
+       "cancelEnvelope",
+       "downloadSigned",
+       "verifyWebhook"
+      ],
+      "verificadorDeWebhook": true
+     }
+    ]
+   },
+   "req": [
+    "M5-A0068-ee300a",
+    "M5-A0200-0787a9",
+    "M5-A0167-e05f18",
+    "M5-A0266-f06596"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "CT-202",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Webhook de laboratório sem o hash do documento assinado é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_WEBHOOK_HASH_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:25.430Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HASH_REQUIRED",
+     "message": "Informe o hash do documento assinado (contentHash) no payload do webhook.",
+     "traceId": "3f3c7fd7-4e8a-4a7d-880a-8e9faa73176c"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0254-adf071"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-322",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Assinatura manual sem evidence_file_id é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/manual-signatures",
+   "corpoEnviado": {
+    "personId": "831f6109-2e18-4197-84c9-564b89db0076"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_MANUAL_SIGNATURE_EVIDENCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_MANUAL_SIGNATURE_EVIDENCE_REQUIRED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:26.828Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_MANUAL_SIGNATURE_EVIDENCE_REQUIRED",
+     "message": "Assinatura manual exige \"personId\" e \"evidenceFileId\" (arquivo da via assinada).",
+     "traceId": "de8418c8-1450-426f-ab10-1b1a61e39470"
+    }
+   },
+   "req": [
+    "M5-A0071-4e2ad6"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-315",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão substituída não é enviada para assinatura",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_SUPERSEDED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:26.514Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_VERSION_SUPERSEDED",
+     "message": "A versão 1 foi substituída pela versão 2: só a versão vigente do contrato pode ser aprovada ou enviada para assinatura.",
+     "traceId": "99404973-5818-48be-992b-43d3788ee17e"
+    }
+   },
+   "req": [
+    "M5-A0211-e77ac7",
+    "M5-A0072-5023f6"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-131",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envia a versão aprovada para assinatura (POST /contract-versions/:id/send-signature): contrato em SIGNING",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/send-signature",
+   "corpoEnviado": {
+    "signerPersonIds": [
+     "831f6109-2e18-4197-84c9-564b89db0076",
+     "8fec3c7f-398f-41af-a16b-72b40d755010"
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 178,
+   "quando": "2026-11-11T03:42:25.321Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contract": {
+      "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "propertyId": null,
+      "opportunityId": null,
+      "contractType": "LEASE_RESIDENTIAL",
+      "constructionProjectId": null,
+      "approvedVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "parentContractId": null,
+      "contractNumber": "LOC-2026-0004",
+      "status": "SIGNING",
+      "totalValue": "1500.00",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 6,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:24.319Z",
+      "updated_at": "2026-11-11T03:42:25.155Z",
+      "deleted_at": null,
+      "property_id": null,
+      "opportunity_id": null,
+      "construction_project_id": null,
+      "versions": [
+       {
+        "id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "versionNumber": 1,
+        "documentFileId": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+        "content": "Contrato de locação fictício 8543269",
+        "signedDocumentFileId": null,
+        "status": "APPROVED",
+        "approvedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "approvedAt": "2026-11-11T03:42:25.109Z",
+        "contentFileId": "d56640aa-875b-4b77-9332-1c278a72e3fc",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:25.050Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+        "created_at": "2026-11-11T03:42:25.051Z",
+        "updated_at": "2026-11-11T03:42:25.109Z",
+        "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "document_file_id": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "template_id": null,
+        "template": null
+       }
+      ]
+     },
+     "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "signatures": [
+      {
+       "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-ae7beb6c48f75b88",
+       "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:25.223Z",
+       "updated_at": "2026-11-11T03:42:25.276Z",
+       "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+      },
+      {
+       "id": "bde0ac1f-a166-41f5-ac2f-0f569771d38f",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+       "signedAt": null,
+       "status": "PENDING",
+       "externalSignatureId": "sbx-sig-902c25d73e267f69",
+       "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+       "signatureMethod": "ELECTRONIC",
+       "evidenceFileId": null,
+       "collectedByUserId": null,
+       "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+       "signerEmail": null,
+       "evidenceJson": null,
+       "evidenceComplete": false,
+       "evidenceType": null,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:25.229Z",
+       "updated_at": "2026-11-11T03:42:25.290Z",
+       "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+       "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0211-e77ac7",
+    "M5-A0055-965151",
+    "M5-A0143-9820a9",
+    "M5-A0129-794350",
+    "M5-A0222-998a77",
+    "M5-A0200-0787a9",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-204",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Webhook público do provedor sem assinatura válida: 401, igual para signatário existente ou não (sem oráculo)",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "corpoEnviado": {
+    "event": {
+     "name": "sign",
+     "data": {
+      "signer": {
+       "key": "chave-desconhecida"
+      }
+     }
+    }
+   },
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:25.449Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+     "traceId": "3848c42b-4f3f-434c-9936-5e61456a5239"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0201-67738d"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-132",
+   "req": [
+    "M5-A0069-ea344f",
+    "M5-A0302-11ebaa",
+    "M5-A0254-adf071"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Cada assinatura liga signatário + contract_version_id + content_hash da versão",
+   "sql": "SELECT id, person_id, contract_version_id, content_hash, status, envelope_id IS NOT NULL AS com_envelope, external_signature_id FROM legal.signatures WHERE contract_version_id = :v ORDER BY created_at",
+   "resultado": [
+    {
+     "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+     "person_id": "831f6109-2e18-4197-84c9-564b89db0076",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-ae7beb6c48f75b88"
+    },
+    {
+     "id": "bde0ac1f-a166-41f5-ac2f-0f569771d38f",
+     "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-902c25d73e267f69"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.323Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-206",
+   "req": [
+    "M5-A0073-185af0"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "perfil": "A:leitura",
+   "descricao": "Com 1 de 2 assinaturas obrigatórias o contrato continua em SIGNING",
+   "sql": "SELECT status FROM legal.contracts WHERE id = :id",
+   "resultado": [
+    {
+     "status": "SIGNING"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.487Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

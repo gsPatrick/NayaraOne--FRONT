@@ -1,0 +1,67 @@
+{
+ "id": "M5-A0171-80da7b",
+ "linhaCaderno": 389,
+ "requisito": "☐ Obrigações locatícias rastreadas.",
+ "correcao": "legal.lease_obligation_cycles (migration 20260101015602); obligations/obligationCycles.service.js advanceObligation; obligations/leaseObligationOverdue.js; obligations/obligationClosure.js (locacao.encerramento.bloqueia.*)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.obrigacoes.test.js",
+   "nome": "M5-A0171/§12: o vencimento avança pela periodicidade — um ciclo por vencimento, mensal e anual, sem duplicar",
+   "status": "pass",
+   "ms": 333.384,
+   "commitDoTeste": "38897d8d",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.obrigacoes.test.js",
+   "nome": "M5-A0096/M5-A0228: vencimento sem comprovante depois da carência gera alerta, cobrança e lease.obligation.overdue (CYCLE) uma vez; a carência é parâmetro",
+   "status": "pass",
+   "ms": 320.638,
+   "commitDoTeste": "38897d8d",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.obrigacoes.test.js",
+   "nome": "M5-A0270 e \"obrigação crítica\": vencimento sem comprovante segura o encerramento (configurável) e não some; dispensa registrada libera",
+   "status": "pass",
+   "ms": 236.661,
+   "commitDoTeste": "38897d8d",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.obrigacoes.http.test.js",
+   "nome": "M5-A0270/HTTP: dispensar um vencimento exige billing:approve e motivo; o ciclo fica registrado como WAIVED",
+   "status": "pass",
+   "ms": 62.629,
+   "commitDoTeste": "d1147ec5",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "TypeError: Cannot read properties of undefined (reading 'create')"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.objetivo.test.js",
+   "nome": "M5-A0002 (2): histórico completo de garantias (substituída preservada e imutável) e de obrigações (cada vencimento fica registrado)",
+   "status": "pass",
+   "ms": 331.054,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "Missing expected rejection."
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.269Z"
+}

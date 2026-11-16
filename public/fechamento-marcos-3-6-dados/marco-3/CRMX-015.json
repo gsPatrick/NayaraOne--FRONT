@@ -1,0 +1,111 @@
+{
+  "id": "CRMX-015",
+  "secao": "Livro §2 Princípios",
+  "requisito": "Multiempresa: cliente pode ter relação com mais de uma empresa, mas oportunidades/ofertas mantêm escopo correto.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 72,
+      "casos": [
+        "isolamento_imovel"
+      ],
+      "descricao": "Perfil sem nenhuma permissão de Imóveis: 403",
+      "metodo": "GET",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635",
+      "perfil": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "corpoEnviado": "sem corpo",
+      "status": 403,
+      "codigoErro": "PERMISSION_DENIED",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+          "details": {
+            "required": "properties:read"
+          },
+          "traceId": "9b6e9036-654a-457c-8e89-097debc1d0bc"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:24.034Z"
+    },
+    {
+      "seq": 149,
+      "casos": [
+        "isolamento_oportunidade"
+      ],
+      "descricao": "Empresa B pede a oportunidade da empresa A: não existe para ela",
+      "metodo": "GET",
+      "rota": "/api/v1/opportunities/f5ebb76a-a180-4725-9ec7-3736e035e71d",
+      "perfil": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corpoEnviado": "sem corpo",
+      "status": 404,
+      "codigoErro": "OPPORTUNITY_NOT_FOUND",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "OPPORTUNITY_NOT_FOUND",
+          "message": "Oportunidade não encontrada.",
+          "traceId": "5e7bba97-0589-4931-af52-d60cf32ce54a"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.416Z"
+    },
+    {
+      "seq": 150,
+      "casos": [
+        "isolamento_imovel"
+      ],
+      "descricao": "Empresa B pede o imóvel da empresa A: não existe para ela",
+      "metodo": "GET",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635",
+      "perfil": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corpoEnviado": "sem corpo",
+      "status": 404,
+      "codigoErro": "PROPERTY_NOT_FOUND",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PROPERTY_NOT_FOUND",
+          "message": "Imóvel não encontrado.",
+          "traceId": "a3e518f8-9e81-40f3-ab5c-7c68bb73fe7d"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.441Z"
+    },
+    {
+      "seq": 152,
+      "casos": [
+        "isolamento_oportunidade"
+      ],
+      "descricao": "Empresa B não vê a oportunidade da A na listagem",
+      "metodo": "GET",
+      "rota": "/api/v1/opportunities",
+      "perfil": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": []
+      },
+      "dataHora": "2026-11-11T00:16:26.471Z"
+    }
+  ],
+  "consultasBanco": []
+}

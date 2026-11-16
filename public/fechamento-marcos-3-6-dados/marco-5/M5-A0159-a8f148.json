@@ -1,0 +1,340 @@
+{
+ "id": "M5-A0159-a8f148",
+ "secao": "P1 > 20. Testes adversariais [tabela: Teste | Tema | Cenário | Resultado]",
+ "linhaCaderno": 365,
+ "requisito": "JUR-TS-011 | Export sem permissão | Dossiê | Negado.",
+ "demandas": "X45-D074;M5-D040;X45-D007",
+ "implementacao": "src/modules/legal/shared/legal.routes.js export com requirePermission('legal:evidence:export') + RLS + DLP",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JUR-TS-011: exportar dossiê sem a permissão específica legal:evidence:export é negado (403 PERMISSION_DENIED, inclusive só com legal:read) sem registro EXPORTED; outra empresa/inexistente 404; com a permissão a DLP ainda exige finalidade e MFA (classe HIGH)",
+   "status": "pass",
+   "ms": 133.609,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L14: exportar/visualizar dossiê de um caso de outro tenant falha e NÃO deixa rastro na cadeia de custódia do dono",
+   "status": "pass",
+   "ms": 27.94,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E14",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "A:mascarado",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.799Z"
+  },
+  {
+   "passo": "JR-E15",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_EVIDENCE_PACKAGE_NOT_FOUND: Pacote de evidências não encontrado.",
+   "quando": "2026-11-11T03:42:38.806Z"
+  },
+  {
+   "passo": "JR-E16",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "esperado": {
+    "status": 401
+   },
+   "resumo": "erro MISSING_ACCESS_TOKEN: Token de acesso ausente.",
+   "quando": "2026-11-11T03:42:38.810Z"
+  },
+  {
+   "passo": "JR-E20b",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.934Z"
+  },
+  {
+   "passo": "JR-E20",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "perfil": "A:gestor",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "resumo": "erro MFA_STEP_UP_REQUIRED: Confirme o código de verificação para continuar.",
+   "quando": "2026-11-11T03:42:38.928Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0159-a8f148.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Sem a permissão (inclusive só com legal:read) = 403 e nada sai nem entra como EXPORTED.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.rotas.test.js test/adversarial.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E14, JR-E15, JR-E16, JR-E20b, JR-E25, JR-E20)"
+ },
+ "passos": [
+  {
+   "id": "JR-E14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: perfil sem legal:read exporta o dossiê: negado",
+   "perfil": "A:mascarado",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:38.799Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:evidence:export"
+     },
+     "traceId": "fd831be6-e29e-4f64-b72a-5c7ebe8e65b6"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0159-a8f148",
+    "M5-A0147-3b57ed"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: tenant B exporta o dossiê de A: não existe",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.806Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+     "message": "Pacote de evidências não encontrado.",
+     "traceId": "43c9a2bf-6ff2-4588-b803-183f8334b5d8"
+    }
+   },
+   "req": [
+    "M5-A0159-a8f148",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: anônimo exporta o dossiê: negado",
+   "perfil": "anonimo",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 401
+   },
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:38.810Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "af049c53-8338-426e-ac5e-2b0a213a09db"
+    }
+   },
+   "req": [
+    "M5-A0159-a8f148"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E20b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Permissão específica: perfil com legal:read mas sem legal:evidence:export não exporta",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.934Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:evidence:export"
+     },
+     "traceId": "39d8a9eb-9ad4-4677-8eff-f82cc112152d"
+    }
+   },
+   "req": [
+    "M5-A0147-3b57ed",
+    "M5-A0159-a8f148"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E20",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dossiê sem arquivo herda a classe padrão da empresa (HIGH): com a permissão, finalidade e justificativa, falta só o MFA recente (recusa real)",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T03:42:38.928Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Confirme o código de verificação para continuar.",
+     "details": {
+      "blockReason": "MFA",
+      "exportJobId": "b5049d37-c59f-4520-a49f-09b590b7630d"
+     },
+     "traceId": "c05b6a6e-a4fb-4c69-bcaa-88d115a52d0a"
+    }
+   },
+   "req": [
+    "M5-A0147-3b57ed",
+    "M5-A0159-a8f148",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-E25",
+   "req": [
+    "M5-A0117-3055e0",
+    "M5-A0159-a8f148"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "perfil": "A:gestor",
+   "descricao": "Custódia: VIEWED/EXPORTED com usuário e data; as exportações recusadas (sem permissão, DLP, MFA) não geraram EXPORTED; cada acesso tem auditoria",
+   "sql": "SELECT l.evidence_package_id = :pkgNota AS do_dossie_nota, l.action, l.accessed_by_user_id IS NOT NULL AS tem_usuario, l.accessed_at::text AS accessed_at, (SELECT count(*) FROM audit.audit_log a WHERE a.entity_id = l.id AND a.action = 'legal.evidence_package.access') AS auditorias FROM legal.evidence_package_access_log l WHERE l.evidence_package_id IN (:pkg, :pkgNota) ORDER BY l.accessed_at",
+   "resultado": [
+    {
+     "do_dossie_nota": false,
+     "action": "VIEWED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.789+00",
+     "auditorias": "1"
+    },
+    {
+     "do_dossie_nota": true,
+     "action": "EXPORTED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.936+00",
+     "auditorias": "1"
+    },
+    {
+     "do_dossie_nota": true,
+     "action": "EXPORTED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.94+00",
+     "auditorias": "1"
+    },
+    {
+     "do_dossie_nota": false,
+     "action": "EXPORTED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.945+00",
+     "auditorias": "1"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.962Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

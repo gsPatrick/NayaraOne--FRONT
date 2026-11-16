@@ -1,0 +1,631 @@
+{
+ "id": "M4-G§18.1",
+ "secao": "Guia §18 Não improvisar",
+ "requisito": "\"❌ Não usar float para dinheiro.\"",
+ "substitui": "evidencias/marco-4/M4-G18.1.json",
+ "motivo": "Correções DI-M4CC (branch m4fix/conciliacao-comissao): regra AUTO_STRONG parametrizada e fonte confiável (Guia §9, §11, FIN-009), UNIQUE completo do fingerprint e conta da própria empresa (Guia §10, FIN-002), comissão REG-FIN-001 em decimal exato (Guia §11, §18), NAY lendo o read model (Guia §13). Captura em banco descartável no commit indicado; a evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "7982eef4",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T10:38:24.663Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-G§18.1 --sufixo m4cc",
+ "respostasHttp": [
+  {
+   "id": "D02",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-008",
+    "M4-G§18.1"
+   ],
+   "titulo": "0,10 + 0,20 somados no servidor sem erro de ponto flutuante (valor exato 0.30 gravado)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 0.30000000000000004,
+    "description": "soma em ponto flutuante do cliente",
+    "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9"
+   },
+   "esperado": {
+    "status": [
+     201,
+     400
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 447,
+   "quando": "2026-11-11T10:36:05.906Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9236e88e-8862-4d8d-949a-086348d39118",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+     "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "0.30",
+     "description": "soma em ponto flutuante do cliente",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updated_at": "2026-11-11T10:36:05.598Z",
+     "created_at": "2026-11-11T10:36:05.598Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K09a",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§18.1"
+   ],
+   "titulo": "Fato gerador de R$ 0,29 a receber",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "0.29",
+    "description": "Fato gerador K09 3281596",
+    "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 55,
+   "quando": "2026-11-11T10:38:21.311Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "0e522622-5aac-4ba0-8337-78cb5bc1fae2",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+     "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "0.29",
+     "description": "Fato gerador K09 3281596",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updated_at": "2026-11-11T10:38:21.267Z",
+     "created_at": "2026-11-11T10:38:21.267Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K09b",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§18.1",
+    "M4-G§20.8"
+   ],
+   "titulo": "Comissão de 50% sobre R$ 0,29 = R$ 0,15 (decimal exato, um arredondamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+    "sourceEntryId": "0e522622-5aac-4ba0-8337-78cb5bc1fae2",
+    "component": "BROKER",
+    "idempotencyKey": "m4cc-K09-3281596"
+   },
+   "esperado": {
+    "status": 201,
+    "conteudo": "totalAmount = 0.15"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "totalAmount = 0.15",
+    "passou": true
+   },
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 383,
+   "quando": "2026-11-11T10:38:21.694Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "4aa950cd-03c1-4279-b2aa-596af9466ef1",
+      "lockVersion": 0,
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "opportunityId": null,
+      "contractId": null,
+      "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+      "baseAmount": "0.29",
+      "percentage": "50.000000",
+      "totalAmount": "0.15",
+      "ruleVersionId": "0cca643d-344c-41d2-99d7-fc5faf7b7281",
+      "sourceEntryId": "0e522622-5aac-4ba0-8337-78cb5bc1fae2",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4cc-K09-3281596",
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updated_at": "2026-11-11T10:38:21.661Z",
+      "created_at": "2026-11-11T10:38:21.661Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "6983feca-8abb-4c7f-b11d-72eb574f828f",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "4aa950cd-03c1-4279-b2aa-596af9466ef1",
+       "installmentNumber": 1,
+       "amount": "0.15",
+       "dueAt": "2026-11-11T10:38:21.664Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:38:21.665Z",
+       "created_at": "2026-11-11T10:38:21.665Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K10a",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§18.1"
+   ],
+   "titulo": "Fato gerador de R$ 0,01 a receber",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "0.01",
+    "description": "Fato gerador K10 3281596",
+    "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 447,
+   "quando": "2026-11-11T10:38:22.161Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "fdada3c3-634a-4672-b696-898a813861a6",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+     "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "0.01",
+     "description": "Fato gerador K10 3281596",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updated_at": "2026-11-11T10:38:21.989Z",
+     "created_at": "2026-11-11T10:38:21.989Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K10b",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§18.1",
+    "M4-G§20.8"
+   ],
+   "titulo": "Comissão de 50% sobre R$ 0,01 = R$ 0,01 (decimal exato, um arredondamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+    "sourceEntryId": "fdada3c3-634a-4672-b696-898a813861a6",
+    "component": "BROKER",
+    "idempotencyKey": "m4cc-K10-3281596"
+   },
+   "esperado": {
+    "status": 201,
+    "conteudo": "totalAmount = 0.01"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "totalAmount = 0.01",
+    "passou": true
+   },
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 219,
+   "quando": "2026-11-11T10:38:22.380Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "1049d5f3-7392-4956-baf2-ecf7afd48172",
+      "lockVersion": 0,
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "opportunityId": null,
+      "contractId": null,
+      "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+      "baseAmount": "0.01",
+      "percentage": "50.000000",
+      "totalAmount": "0.01",
+      "ruleVersionId": "0cca643d-344c-41d2-99d7-fc5faf7b7281",
+      "sourceEntryId": "fdada3c3-634a-4672-b696-898a813861a6",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4cc-K10-3281596",
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updated_at": "2026-11-11T10:38:22.334Z",
+      "created_at": "2026-11-11T10:38:22.334Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "b8892c35-e0b2-4abc-93d2-705eeeb8c4f3",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "1049d5f3-7392-4956-baf2-ecf7afd48172",
+       "installmentNumber": 1,
+       "amount": "0.01",
+       "dueAt": "2026-11-11T10:38:22.335Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:38:22.336Z",
+       "created_at": "2026-11-11T10:38:22.336Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K11a",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§18.1"
+   ],
+   "titulo": "Fato gerador de R$ 1,13 a receber",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "1.13",
+    "description": "Fato gerador K11 3281596",
+    "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 366,
+   "quando": "2026-11-11T10:38:22.746Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c32c9028-b943-4ccc-be88-a59609659760",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+     "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "16195ace-f450-4e13-996b-1c7a1834ebb9",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "1.13",
+     "description": "Fato gerador K11 3281596",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updated_at": "2026-11-11T10:38:22.411Z",
+     "created_at": "2026-11-11T10:38:22.411Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K11b",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§18.1",
+    "M4-G§20.8"
+   ],
+   "titulo": "Comissão de 50% sobre R$ 1,13 = R$ 0,57 (decimal exato, um arredondamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+    "sourceEntryId": "c32c9028-b943-4ccc-be88-a59609659760",
+    "component": "BROKER",
+    "idempotencyKey": "m4cc-K11-3281596"
+   },
+   "esperado": {
+    "status": 201,
+    "conteudo": "totalAmount = 0.57"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "totalAmount = 0.57",
+    "passou": true
+   },
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 346,
+   "quando": "2026-11-11T10:38:23.094Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "7a70b7fd-fd5f-41c2-bd29-2258c5d0e886",
+      "lockVersion": 0,
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "opportunityId": null,
+      "contractId": null,
+      "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+      "baseAmount": "1.13",
+      "percentage": "50.000000",
+      "totalAmount": "0.57",
+      "ruleVersionId": "0cca643d-344c-41d2-99d7-fc5faf7b7281",
+      "sourceEntryId": "c32c9028-b943-4ccc-be88-a59609659760",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4cc-K11-3281596",
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updated_at": "2026-11-11T10:38:22.881Z",
+      "created_at": "2026-11-11T10:38:22.881Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "d8f1e2f1-4d1f-4fbc-99e0-bdbc42f03879",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "7a70b7fd-fd5f-41c2-bd29-2258c5d0e886",
+       "installmentNumber": 1,
+       "amount": "0.57",
+       "dueAt": "2026-11-11T10:38:22.892Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:38:22.892Z",
+       "created_at": "2026-11-11T10:38:22.892Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": [
+  "K08"
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q07",
+   "linhas": [
+    "M4-FIN-008",
+    "M4-G§18.1"
+   ],
+   "descricao": "Nenhuma coluna de dinheiro em ponto flutuante no schema finance",
+   "sql": "select table_name, column_name, data_type from information_schema.columns where table_schema = 'finance' and data_type in ('real', 'double precision')",
+   "contexto": "RLS do tenant (company 0d559c6b-d0a3-4440-82a9-1de1a27d0e59)",
+   "resultado": [],
+   "invariante": "0 colunas real/double precision",
+   "invarianteOk": true,
+   "quando": "2026-11-11T10:38:23.925Z"
+  }
+ ],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-08 FIN-008: nenhuma coluna de dinheiro do schema finance usa float/real/double — moeda é numeric",
+   "status": "passou",
+   "duracaoMs": 16,
+   "commitDoArquivo": "6ea03ed1"
+  },
+  {
+   "arquivo": "test/m4.precisaoCentavo.test.js",
+   "nome": "M4-FIN-008 regra de centavo: aceita até 2 casas (inclusive zeros à direita e inteiros) e recusa a 3ª casa significativa",
+   "status": "passou",
+   "duracaoMs": 0,
+   "commitDoArquivo": "6f5db841"
+  }
+ ]
+}

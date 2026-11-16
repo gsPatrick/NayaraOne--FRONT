@@ -1,0 +1,218 @@
+{
+ "id": "M4-§17.1",
+ "secao": "§17 Antifraude",
+ "requisito": "Risco \"Pagamento duplicado\" → controle \"Idempotency key + fingerprint + unique constraint\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/finance.entries.test.js",
+   "nome": "FIN-004 idempotência: 2ª tentativa com a mesma chave é bloqueada (não duplica pagamento)",
+   "status": "passou",
+   "duracaoMs": 289,
+   "commitDoArquivo": "f656f46c"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-002: duas execuções CONCORRENTES da mesma payment intent — uma vence, a outra é rejeitada (idempotente, não duplica ledger)",
+   "status": "passou",
+   "duracaoMs": 86,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.settlePartialIdempotency.test.js",
+   "nome": "FIN-004 settle-partial: a MESMA chave com outro valor ou em outro lançamento é 409 IDEMPOTENCY_KEY_REUSED e nada é baixado",
+   "status": "passou",
+   "duracaoMs": 99,
+   "commitDoArquivo": "76cb9777"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "REC-04",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-004",
+    "M4-§17.1"
+   ],
+   "titulo": "Replay da 1ª baixa com a MESMA chave: devolve a baixa original, nenhuma filha nova",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/5514e0b1-b405-40eb-ab42-f7c0137021b2/settle-partial",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-rec-0871300-b1"
+   },
+   "corpoEnviado": {
+    "partialAmount": "0.10",
+    "idempotencyKey": "m4-rec-0871300-b1"
+   },
+   "esperado": {
+    "status": 200,
+    "conteudo": "idempotentReplay = true e mesma baixa da 1ª requisição"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "idempotentReplay = true e mesma baixa da 1ª requisição",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 50,
+   "quando": "2026-11-11T01:35:02.802Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "5514e0b1-b405-40eb-ab42-f7c0137021b2",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "0.30",
+      "description": "ACEITE-M4 recebível fictício de teste (duas baixas) 0871300",
+      "dueAt": "2026-11-10T15:00:00.000Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PARTIALLY_SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 1,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:02.556Z",
+      "updated_at": "2026-11-11T01:35:02.639Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "settlement": {
+      "id": "561e55a0-6026-45ed-bc81-75f22bc63f9f",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "0.10",
+      "description": "Baixa parcial de R$ 0,10 — ACEITE-M4 recebível fictício de teste (duas baixas) 0871300",
+      "dueAt": "2026-11-10T15:00:00.000Z",
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T01:35:02.632Z",
+      "status": "SETTLED",
+      "idempotencyKey": "baixa-parcial:7b97b796f10b4d077227d8b8e3602b2d090a08b78d850797f714fadbb2584da6",
+      "reversalOfEntryId": null,
+      "parentEntryId": "5514e0b1-b405-40eb-ab42-f7c0137021b2",
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 0,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:02.632Z",
+      "updated_at": "2026-11-11T01:35:02.632Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "remainingAmount": "0.20",
+     "classificationPending": null,
+     "idempotentReplay": true
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C13",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.1"
+   ],
+   "titulo": "Cabeçalho de extrato inválido é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/import",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+    "csvText": "a,b\n1,2\n"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_BANK_STATEMENT_IMPORT_INVALID_HEADER"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_BANK_STATEMENT_IMPORT_INVALID_HEADER",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T01:35:11.259Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_BANK_STATEMENT_IMPORT_INVALID_HEADER",
+     "message": "Cabeçalho do CSV inválido — esperado exatamente: externalTransactionId,transactionDate,description,amount.",
+     "traceId": "fb82527e-ddc4-4636-8b9a-2ba16d45dfc2"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

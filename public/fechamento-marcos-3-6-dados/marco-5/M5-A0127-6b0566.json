@@ -1,0 +1,209 @@
+{
+ "id": "M5-A0127-6b0566",
+ "secao": "P1 > 18. Eventos mínimos",
+ "linhaCaderno": 306,
+ "requisito": "• contract.requirement.missing",
+ "demandas": "M5-D150;M5-D042",
+ "implementacao": "src/modules/legal/contracts/application/requirement.service.js:212 contract.requirement.missing ao gerar checklist com pendência",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-07 §18: eventos mínimos com o nome do Caderno — contract.created, contract.requirement.missing, contract.version.approved, contract.sent_for_signature, contract.signed, evidence.package.created",
+   "status": "pass",
+   "ms": 322.789,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-108",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 5 item(ns)",
+   "quando": "2026-11-11T03:42:24.504Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0127-6b0566.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m45.cadernoM5Gaps.test.js test/m5fech.contratos.checklist.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-108, CT-109)"
+ },
+ "passos": [
+  {
+   "id": "CT-108",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Gera o checklist documental do contrato de locação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/requirements/generate",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 92,
+   "quando": "2026-11-11T03:42:24.504Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_PF_PJ_DOCS",
+      "description": "Documentos PF/PJ das partes (locador/locatário).",
+      "requirementType": "PF_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.448Z",
+      "created_at": "2026-11-11T03:42:24.448Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_GUARANTEE",
+      "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+      "requirementType": "GUARANTEE",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.452Z",
+      "created_at": "2026-11-11T03:42:24.452Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_INSPECTION",
+      "description": "Vistoria de entrada do imóvel.",
+      "requirementType": "INSPECTION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.456Z",
+      "created_at": "2026-11-11T03:42:24.456Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_OWNERSHIP",
+      "description": "Comprovação de titularidade do imóvel.",
+      "requirementType": "OWNERSHIP_PROOF",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.461Z",
+      "created_at": "2026-11-11T03:42:24.461Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_OBLIGATIONS",
+      "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+      "requirementType": "OBLIGATIONS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.464Z",
+      "created_at": "2026-11-11T03:42:24.464Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0313-498938",
+    "M5-A0166-103bce",
+    "M5-A0127-6b0566",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-109",
+   "req": [
+    "M5-A0127-6b0566"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Evento contract.requirement.missing com a lista dos códigos pendentes",
+   "sql": "SELECT payload_json->'missingRequirementCodes' AS faltam FROM integration.outbox_events WHERE aggregate_id = :id AND event_type = 'contract.requirement.missing'",
+   "resultado": [
+    {
+     "faltam": [
+      "LEASE_GUARANTEE",
+      "LEASE_INSPECTION",
+      "LEASE_OBLIGATIONS",
+      "LEASE_OWNERSHIP",
+      "LEASE_PF_PJ_DOCS"
+     ]
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:24.506Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

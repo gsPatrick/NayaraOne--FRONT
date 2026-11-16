@@ -1,0 +1,906 @@
+{
+ "id": "M5-A0144-8b5890",
+ "secao": "P1 > 19. Segurança e permissões [tabela: Ação | Controle]",
+ "linhaCaderno": 344,
+ "requisito": "Alterar modelo/cláusula | Governança/versionamento.",
+ "demandas": "M5-D008;M5-D009",
+ "implementacao": "clauses (nova versão, aprovação da regra por outro usuário) + src/modules/legal/contracts/application/templateVersions.service.js (modelo: versão nova, publicação com legal:approve)",
+ "tela": "Contratos > Cláusulas (/painel/contratos/clausulas)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.modelosAditivos.test.js",
+   "nome": "§6/JUR-002: só modelo PUBLICADO gera contrato, publicado não é editado — nova versão é criada; a versão do contrato guarda template_version_id; responsável jurídico no modelo e na cláusula",
+   "status": "pass",
+   "ms": 3641.28,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.clauseLibrary.test.js",
+   "nome": "JUR-002: não é possível criar cláusula com código duplicado — tem que versionar",
+   "status": "pass",
+   "ms": 12.536,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/ciTwoTenantsFinanceLegal.test.js",
+   "nome": "CI dois tenants (Jurídico): condição de cláusula — maker não aprova, checker não aprova a própria, checker aprova a do maker, tenant B não aprova a de A",
+   "status": "pass",
+   "ms": 48.202,
+   "commitDoTeste": "9ef507fb"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-401",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=478273bf-b8b7-47f1-a537-79e5ee28574c, code=CT-MULTA-8543269m, versionNumber=1",
+   "quando": "2026-11-11T03:42:28.112Z"
+  },
+  {
+   "passo": "CT-402",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "perfil": "A:maker",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_CLAUSE_DUPLICATE_CODE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_CLAUSE_DUPLICATE_CODE"
+   },
+   "resumo": "erro LEGAL_CONTRACT_CLAUSE_DUPLICATE_CODE: Já existe uma cláusula com o código \"CT-MULTA-8543269m\". Para alterar o texto, crie uma nova VERSÃO ",
+   "quando": "2026-11-11T03:42:28.121Z"
+  },
+  {
+   "passo": "CT-403",
+   "metodo": "POST",
+   "rota": "/legal/clauses/CT-MULTA-8543269m/versions",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:28.127Z"
+  },
+  {
+   "passo": "CT-407a",
+   "metodo": "POST",
+   "rota": "/contracts/597bb638-1ee4-4add-84ce-1b61c40e9bba/versions",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_TEMPLATE_NOT_PUBLISHED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_TEMPLATE_NOT_PUBLISHED"
+   },
+   "resumo": "erro LEGAL_TEMPLATE_NOT_PUBLISHED: O modelo não tem versão publicada: publique a versão do modelo (POST /legal/contract-templates/:id/p",
+   "quando": "2026-11-11T03:42:28.239Z"
+  },
+  {
+   "passo": "CT-407b",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/publish",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PUBLISHED, id=67c6a89f-02d8-42fd-9316-331dde139213, versionNumber=1",
+   "quando": "2026-11-11T03:42:28.251Z"
+  },
+  {
+   "passo": "CT-411",
+   "metodo": "POST",
+   "rota": "/legal/clauses/CT-MULTA-8543269m/versions",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=8b95daf8-45e9-4b4f-a312-bf9ca805866d, code=CT-MULTA-8543269m, versionNumber=2",
+   "quando": "2026-11-11T03:42:28.327Z"
+  },
+  {
+   "passo": "CT-414",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/clauses/478273bf-b8b7-47f1-a537-79e5ee28574c/upgrade",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:28.361Z"
+  },
+  {
+   "passo": "CT-417c",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/publish",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:28.410Z"
+  },
+  {
+   "passo": "CT-417d",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/publish",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PUBLISHED, id=6c7aa72a-dc48-4d3e-a44c-3b889807db2e, versionNumber=2",
+   "quando": "2026-11-11T03:42:28.425Z"
+  },
+  {
+   "passo": "CT-422",
+   "metodo": "POST",
+   "rota": "/legal/clauses/8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20/approve-condition",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:28.504Z"
+  },
+  {
+   "passo": "CT-423",
+   "metodo": "POST",
+   "rota": "/legal/clauses/8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20/approve-condition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "id=8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20, code=CT-FIANCA-8543269m, versionNumber=1",
+   "quando": "2026-11-11T03:42:28.513Z"
+  },
+  {
+   "passo": "CT-417g",
+   "metodo": "GET",
+   "rota": "/legal/clauses?code=CT-MULTA-8543269m",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 2 item(ns)",
+   "quando": "2026-11-11T03:42:28.464Z"
+  },
+  {
+   "passo": "CT-421",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20, code=CT-FIANCA-8543269m, versionNumber=1",
+   "quando": "2026-11-11T03:42:28.497Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0144-8b5890.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.modelosAditivos.test.js \"§6/JUR-002: só modelo PUBLICADO gera contrato, publicado não é editado — nova versão é criada; a versão do contrato guarda template_version_id; responsável jurídico no modelo e na cláusula\"; test/legal.clauseLibrary.test.js \"JUR-002: não é possível criar cláusula com código duplicado — tem que versionar\"; test/ciTwoTenantsFinanceLegal.test.js \"CI dois tenants (Jurídico): condição de cláusula — maker não aprova, checker não aprova a própria, checker aprova a do maker, tenant B não aprova a de A\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.modelosAditivos.test.js test/legal.clauseLibrary.test.js test/ciTwoTenantsFinanceLegal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-401, CT-402, CT-403, CT-407a, CT-407b, CT-411, CT-414, CT-417c, CT-417d, CT-422, CT-423, CT-417g, CT-421, CT-418)"
+ },
+ "passos": [
+  {
+   "id": "CT-401",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Maker cria a cláusula v1 na biblioteca",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "corpoEnviado": {
+    "code": "CT-MULTA-8543269m",
+    "title": "Multa por atraso",
+    "bodyText": "Multa de 10% sobre o aluguel em atraso (texto fictício). Locatário: {{nome_locatario}}.",
+    "category": "PENALTY"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:28.112Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "478273bf-b8b7-47f1-a537-79e5ee28574c",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "clauseLibraryId": "d4929b6d-7fbe-49aa-b732-a69d46dbc85c",
+     "code": "CT-MULTA-8543269m",
+     "title": "Multa por atraso",
+     "bodyText": "Multa de 10% sobre o aluguel em atraso (texto fictício). Locatário: {{nome_locatario}}.",
+     "category": "PENALTY",
+     "versionNumber": 1,
+     "isActive": true,
+     "conditionJson": null,
+     "conditionStatus": null,
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.108Z",
+     "conditionApprovedBy": null,
+     "conditionApprovedAt": null
+    }
+   },
+   "req": [
+    "M5-A0061-dc1f5a",
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-402",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Mesmo código de cláusula não é recriado: alteração só por nova versão",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "corpoEnviado": {
+    "code": "CT-MULTA-8543269m",
+    "title": "Outra",
+    "bodyText": "x",
+    "category": "PENALTY"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_CLAUSE_DUPLICATE_CODE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_CLAUSE_DUPLICATE_CODE",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:28.121Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_CLAUSE_DUPLICATE_CODE",
+     "message": "Já existe uma cláusula com o código \"CT-MULTA-8543269m\". Para alterar o texto, crie uma nova VERSÃO (createClauseVersion) — cláusulas são append-only.",
+     "traceId": "3bf5b436-a257-4060-af31-d020a55fcd63"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890",
+    "M5-A0061-dc1f5a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-403",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura não altera a biblioteca de cláusulas",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/clauses/CT-MULTA-8543269m/versions",
+   "corpoEnviado": {
+    "bodyText": "tentativa"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:28.127Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "7bf4bb1f-482c-48e1-be2a-41834564c31b"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-407a",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Modelo só em rascunho não gera contrato (gerar não publica o modelo)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/597bb638-1ee4-4add-84ce-1b61c40e9bba/versions",
+   "corpoEnviado": {
+    "templateId": "4f248d7d-bd75-4dae-943f-dc2f29809c31",
+    "documentFileId": "cb54ce24-d30d-43f4-b817-3fe829ba321d"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_TEMPLATE_NOT_PUBLISHED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_TEMPLATE_NOT_PUBLISHED",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:28.239Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_TEMPLATE_NOT_PUBLISHED",
+     "message": "O modelo não tem versão publicada: publique a versão do modelo (POST /legal/contract-templates/:id/publish, alçada jurídica) antes de gerar contrato.",
+     "traceId": "44b07827-d13d-4a65-8825-667baecab861"
+    }
+   },
+   "req": [
+    "M5-A0062-45c618",
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-407b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checker (alçada jurídica) publica a versão 1 do modelo",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/publish",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:28.251Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "67c6a89f-02d8-42fd-9316-331dde139213",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "templateId": "4f248d7d-bd75-4dae-943f-dc2f29809c31",
+     "versionNumber": 1,
+     "status": "PUBLISHED",
+     "legalResponsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "publishedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "publishedAt": "2026-11-11T03:42:28.247Z",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.136Z",
+     "updated_at": "2026-11-11T03:42:28.247Z"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890",
+    "M5-A0062-45c618"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-411",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Alteração jurídica da cláusula vira nova versão (v2); a v1 é preservada",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses/CT-MULTA-8543269m/versions",
+   "corpoEnviado": {
+    "bodyText": "Multa de 2% sobre o aluguel em atraso (texto fictício, nova redação)."
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:28.327Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8b95daf8-45e9-4b4f-a312-bf9ca805866d",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "clauseLibraryId": "d4929b6d-7fbe-49aa-b732-a69d46dbc85c",
+     "code": "CT-MULTA-8543269m",
+     "title": "Multa por atraso",
+     "bodyText": "Multa de 2% sobre o aluguel em atraso (texto fictício, nova redação).",
+     "category": "PENALTY",
+     "versionNumber": 2,
+     "isActive": true,
+     "conditionJson": null,
+     "conditionStatus": null,
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.312Z",
+     "conditionApprovedBy": null,
+     "conditionApprovedAt": null
+    }
+   },
+   "req": [
+    "M5-A0061-dc1f5a",
+    "M5-A0144-8b5890",
+    "M5-A0065-6f0a95"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-414",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Atualizar a cláusula do modelo PUBLICADO cria a versão 2 do modelo (rascunho); a versão 1 não muda",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/clauses/478273bf-b8b7-47f1-a537-79e5ee28574c/upgrade",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:28.361Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "link": {
+      "id": "0f0c88a4-a0b7-4f33-b3a0-f67caf403d52",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractTemplateId": "4f248d7d-bd75-4dae-943f-dc2f29809c31",
+      "contractClauseId": "8b95daf8-45e9-4b4f-a312-bf9ca805866d",
+      "templateVersionId": "6c7aa72a-dc48-4d3e-a44c-3b889807db2e",
+      "sortOrder": 1,
+      "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "created_at": "2026-11-11T03:42:28.355Z",
+      "contract_template_id": "4f248d7d-bd75-4dae-943f-dc2f29809c31",
+      "contract_clause_id": "478273bf-b8b7-47f1-a537-79e5ee28574c"
+     },
+     "from": {
+      "id": "478273bf-b8b7-47f1-a537-79e5ee28574c",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "code": "CT-MULTA-8543269m",
+      "clauseLibraryId": "d4929b6d-7fbe-49aa-b732-a69d46dbc85c",
+      "title": "Multa por atraso",
+      "bodyText": "Multa de 10% sobre o aluguel em atraso (texto fictício). Locatário: {{nome_locatario}}.",
+      "category": "PENALTY",
+      "versionNumber": 1,
+      "isActive": false,
+      "conditionJson": null,
+      "conditionStatus": null,
+      "conditionApprovedBy": null,
+      "conditionApprovedAt": null,
+      "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "created_at": "2026-11-11T03:42:28.108Z"
+     },
+     "to": {
+      "id": "8b95daf8-45e9-4b4f-a312-bf9ca805866d",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "code": "CT-MULTA-8543269m",
+      "clauseLibraryId": "d4929b6d-7fbe-49aa-b732-a69d46dbc85c",
+      "title": "Multa por atraso",
+      "bodyText": "Multa de 2% sobre o aluguel em atraso (texto fictício, nova redação).",
+      "category": "PENALTY",
+      "versionNumber": 2,
+      "isActive": true,
+      "conditionJson": null,
+      "conditionStatus": null,
+      "conditionApprovedBy": null,
+      "conditionApprovedAt": null,
+      "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "created_at": "2026-11-11T03:42:28.312Z"
+     }
+    }
+   },
+   "req": [
+    "M5-A0062-45c618",
+    "M5-A0300-7f0f4a",
+    "M5-A0164-25ae89",
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-417c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Publicar a versão do modelo exige a alçada jurídica (maker recusado)",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/publish",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:28.410Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:approve"
+     },
+     "traceId": "acdc9549-486c-48d0-8aca-807c6add66c5"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890",
+    "M5-A0062-45c618"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-417d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checker publica a versão 2 do modelo; a versão 1 fica SUPERSEDED",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contract-templates/4f248d7d-bd75-4dae-943f-dc2f29809c31/publish",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:28.425Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "6c7aa72a-dc48-4d3e-a44c-3b889807db2e",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "templateId": "4f248d7d-bd75-4dae-943f-dc2f29809c31",
+     "versionNumber": 2,
+     "status": "PUBLISHED",
+     "legalResponsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "publishedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "publishedAt": "2026-11-11T03:42:28.420Z",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.353Z",
+     "updated_at": "2026-11-11T03:42:28.420Z"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890",
+    "M5-A0062-45c618",
+    "M5-A0164-25ae89"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-422",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Maker (sem legal:approve) não aprova a regra",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses/8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20/approve-condition",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:28.504Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:approve"
+     },
+     "traceId": "4d45c174-acc8-489c-bfbc-082f2230fa36"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-423",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checker aprova a regra criada pelo maker (governança)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/clauses/8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20/approve-condition",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:28.513Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "code": "CT-FIANCA-8543269m",
+     "clauseLibraryId": "25e8dc5c-32ff-42cf-8682-641f8f099d5f",
+     "title": "Fiança",
+     "bodyText": "Obrigações do fiador (texto fictício).",
+     "category": "GUARANTEE",
+     "versionNumber": 1,
+     "isActive": true,
+     "conditionJson": {
+      "match": "all",
+      "rules": [
+       {
+        "value": "GUARANTOR",
+        "operator": "eq",
+        "variable": "guaranteeType"
+       }
+      ]
+     },
+     "conditionStatus": "APPROVED",
+     "conditionApprovedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "conditionApprovedAt": "2026-11-11T03:42:28.510Z",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.494Z"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890",
+    "M5-A0063-6cb96a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-417g",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "GET /legal/clauses traz o responsável jurídico de cada cláusula",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/clauses?code=CT-MULTA-8543269m",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:28.464Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "478273bf-b8b7-47f1-a537-79e5ee28574c",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "code": "CT-MULTA-8543269m",
+      "clauseLibraryId": "d4929b6d-7fbe-49aa-b732-a69d46dbc85c",
+      "title": "Multa por atraso",
+      "bodyText": "Multa de 10% sobre o aluguel em atraso (texto fictício). Locatário: {{nome_locatario}}.",
+      "category": "PENALTY",
+      "versionNumber": 1,
+      "isActive": false,
+      "conditionJson": null,
+      "conditionStatus": null,
+      "conditionApprovedBy": null,
+      "conditionApprovedAt": null,
+      "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "created_at": "2026-11-11T03:42:28.108Z",
+      "legalResponsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "legalResponsible": {
+       "id": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+       "name": "CI maker — tenant A"
+      }
+     },
+     {
+      "id": "8b95daf8-45e9-4b4f-a312-bf9ca805866d",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "code": "CT-MULTA-8543269m",
+      "clauseLibraryId": "d4929b6d-7fbe-49aa-b732-a69d46dbc85c",
+      "title": "Multa por atraso",
+      "bodyText": "Multa de 2% sobre o aluguel em atraso (texto fictício, nova redação).",
+      "category": "PENALTY",
+      "versionNumber": 2,
+      "isActive": true,
+      "conditionJson": null,
+      "conditionStatus": null,
+      "conditionApprovedBy": null,
+      "conditionApprovedAt": null,
+      "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "created_at": "2026-11-11T03:42:28.312Z",
+      "legalResponsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+      "legalResponsible": {
+       "id": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+       "name": "CI maker — tenant A"
+      }
+     }
+    ]
+   },
+   "req": [
+    "M5-A0300-7f0f4a",
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-421",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cláusula condicional por regra declarativa nasce pendente de aprovação",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "corpoEnviado": {
+    "code": "CT-FIANCA-8543269m",
+    "title": "Fiança",
+    "bodyText": "Obrigações do fiador (texto fictício).",
+    "category": "GUARANTEE",
+    "condition": {
+     "match": "all",
+     "rules": [
+      {
+       "variable": "guaranteeType",
+       "operator": "eq",
+       "value": "GUARANTOR"
+      }
+     ]
+    }
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:28.497Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "clauseLibraryId": "25e8dc5c-32ff-42cf-8682-641f8f099d5f",
+     "code": "CT-FIANCA-8543269m",
+     "title": "Fiança",
+     "bodyText": "Obrigações do fiador (texto fictício).",
+     "category": "GUARANTEE",
+     "versionNumber": 1,
+     "isActive": true,
+     "conditionJson": {
+      "match": "all",
+      "rules": [
+       {
+        "value": "GUARANTOR",
+        "operator": "eq",
+        "variable": "guaranteeType"
+       }
+      ]
+     },
+     "conditionStatus": "PENDING_APPROVAL",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.494Z",
+     "conditionApprovedBy": null,
+     "conditionApprovedAt": null
+    }
+   },
+   "req": [
+    "M5-A0063-6cb96a",
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-418",
+   "req": [
+    "M5-A0300-7f0f4a",
+    "M5-A0164-25ae89",
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "perfil": "A:leitura",
+   "descricao": "JUR-002: responsável jurídico no modelo e na biblioteca de cláusulas; versões do modelo numeradas com publicador; versões da cláusula ligadas à biblioteca",
+   "sql": "SELECT (SELECT legal_responsible_user_id FROM legal.contract_templates WHERE id = :t) AS resp_modelo, (SELECT array_agg(status || ':' || COALESCE(published_by::text, '-') ORDER BY version_number) FROM legal.template_versions WHERE template_id = :t) AS versoes_modelo, (SELECT legal_responsible_user_id FROM legal.clause_library WHERE code = :code) AS resp_clausula, (SELECT count(DISTINCT clause_library_id)::int FROM legal.clause_versions WHERE code = :code) AS bibliotecas",
+   "resultado": [
+    {
+     "resp_modelo": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "versoes_modelo": [
+      "SUPERSEDED:282ab331-7c81-4ea6-8352-86af89914d44",
+      "PUBLISHED:282ab331-7c81-4ea6-8352-86af89914d44"
+     ],
+     "resp_clausula": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "bibliotecas": 1
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:28.467Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

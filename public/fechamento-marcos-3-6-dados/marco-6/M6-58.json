@@ -1,0 +1,257 @@
+{
+  "id": "M6-58",
+  "requisito": "\"Diário duplicado → idempotência/revisão.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "dailyReports.service.js (chave obra+data+turno, idempotencyKey)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/diario: salvar o mesmo RDO duas vezes",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-58: diário duplicado no mesmo turno bloqueia; turnos diferentes não bloqueiam",
+      "resultado": "passou",
+      "duracaoMs": 230,
+      "executadoEm": "2026-11-11T00:12:37.873Z"
+    },
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-94: idempotencyKey de captura offline evita duplicar RDO ao ressincronizar",
+      "resultado": "passou",
+      "duracaoMs": 30,
+      "executadoEm": "2026-11-11T00:12:38.221Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H051",
+      "H052",
+      "H053"
+    ],
+    "resumo": [
+      "H051 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs → 201",
+      "H052 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-reports → 409 DAILY_REPORT_DUPLICATE",
+      "H053 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:11.378Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H051",
+      "requisitos": [
+        "M6-94",
+        "M6-58",
+        "M6-83"
+      ],
+      "cenario": "Ressincronizar a mesma captura offline (mesma idempotencyKey): devolve o RDO original, sem duplicar",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reportDate": "2026-11-09",
+        "shiftCode": "MANHA",
+        "weather": "Ensolarado",
+        "workforceCount": 9,
+        "servicesPerformed": "Concretagem da sapata S3",
+        "occurrences": "Chuva rápida às 10h",
+        "blockages": "Bomba de concreto atrasou 40 min",
+        "evidenceFileIds": [
+          "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+        ],
+        "idempotencyKey": "rdo-c4fcd6",
+        "workers": [
+          {
+            "personId": "e683ff67-ec97-4add-9404-e21d862d69d5",
+            "role": "Armador",
+            "documentFileIds": [
+              "5f279065-01f6-4610-9100-7e3d01797f98"
+            ]
+          }
+        ],
+        "materials": [
+          {
+            "materialDescription": "Cimento CP-II",
+            "quantity": 12,
+            "unit": "saco"
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 40,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7fdbcbde-77f4-4aa3-8372-c8df19160180",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reportDate": "2026-11-09",
+          "shiftCode": "MANHA",
+          "weather": "Ensolarado",
+          "workforceCount": 9,
+          "servicesPerformed": "Concretagem da sapata S3",
+          "occurrences": "Chuva rápida às 10h",
+          "blockages": "Bomba de concreto atrasou 40 min",
+          "evidenceFileIds": [
+            "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+          ],
+          "reportedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "supersedesId": null,
+          "clientLocalId": null,
+          "idempotencyKey": "rdo-c4fcd6",
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "lockVersion": 0,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:11.317Z",
+          "updated_at": "2026-11-11T00:12:11.317Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reported_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "supersedes_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:11.378Z"
+    },
+    {
+      "id": "H052",
+      "requisitos": [
+        "M6-58",
+        "M6-07",
+        "M6-83"
+      ],
+      "cenario": "NEGATIVO: segundo RDO na mesma obra/data/turno (outra captura)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-reports",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reportDate": "2026-11-09",
+        "shiftCode": "MANHA",
+        "weather": "Ensolarado",
+        "workforceCount": 9,
+        "servicesPerformed": "Concretagem da sapata S3",
+        "occurrences": "Chuva rápida às 10h",
+        "blockages": "Bomba de concreto atrasou 40 min",
+        "evidenceFileIds": [
+          "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+        ],
+        "idempotencyKey": "rdo-dup-c4fcd6",
+        "workers": [],
+        "materials": []
+      },
+      "statusHttp": 409,
+      "codigoErro": "DAILY_REPORT_DUPLICATE",
+      "esperado": "409 DAILY_REPORT_DUPLICATE",
+      "conferiu": true,
+      "duracaoMs": 289,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "DAILY_REPORT_DUPLICATE",
+          "message": "Já existe um RDO para esta obra nesta data e turno.",
+          "traceId": "c15753f1-a31d-43e9-8069-02a8be60a9ba"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:11.667Z"
+    },
+    {
+      "id": "H053",
+      "requisitos": [
+        "M6-58"
+      ],
+      "cenario": "RDO do turno da TARDE no mesmo dia é aceito (chave obra + data + turno)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reportDate": "2026-11-09",
+        "shiftCode": "TARDE",
+        "workforceCount": 7,
+        "servicesPerformed": "Desforma",
+        "evidenceFileIds": [
+          "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+        ],
+        "idempotencyKey": "rdo-t-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 30,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "c79365a2-552e-4dbe-b2b8-ce6a82896de7",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reportDate": "2026-11-09",
+          "shiftCode": "TARDE",
+          "weather": null,
+          "workforceCount": 7,
+          "occurrences": null,
+          "blockages": null,
+          "servicesPerformed": "Desforma",
+          "evidenceFileIds": [
+            "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+          ],
+          "evidenceReuseFlagged": true,
+          "evidenceReuseReferenceId": "7fdbcbde-77f4-4aa3-8372-c8df19160180",
+          "evidenceReuseDetails": {
+            "matchedAt": "2026-11-11T00:12:11.689Z",
+            "overlappingFileIds": [
+              "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+            ]
+          },
+          "reportedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "clientLocalId": null,
+          "idempotencyKey": "rdo-t-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:11.690Z",
+          "created_at": "2026-11-11T00:12:11.690Z",
+          "supersedesId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:11.697Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C009",
+      "requisitos": [
+        "M6-20",
+        "M6-83",
+        "M6-07",
+        "M6-58"
+      ],
+      "descricao": "RDO: original preservado + correção (supersedes_id) e índice único (obra, data, turno)",
+      "sql": "SELECT (SELECT count(*) FROM construction.daily_reports WHERE id = $1)::int AS original, (SELECT count(*) FROM construction.daily_reports WHERE supersedes_id = $1)::int AS correcoes, (SELECT count(*) FROM pg_indexes WHERE schemaname = 'construction' AND tablename = 'daily_reports' AND indexdef ILIKE '%UNIQUE%' AND indexdef ILIKE '%shift_code%')::int AS indice_unico",
+      "resultado": [
+        {
+          "original": 1,
+          "correcoes": 1,
+          "indice_unico": 1
+        }
+      ],
+      "invariante": "original 1, correção 1, índice único presente",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.190Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.424Z"
+}

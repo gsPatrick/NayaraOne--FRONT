@@ -1,0 +1,124 @@
+{
+ "id": "M4-§5.16",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.intercompany_transfers — \"Transferências formais entre empresas.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-18 createIntercompanyTransfer gera exatamente 2 lançamentos, um em cada empresa, com valores batendo",
+   "status": "passou",
+   "duracaoMs": 47,
+   "commitDoArquivo": "fa15be9f"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "IC06",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.16",
+    "M4-G§1.12",
+    "M4-§3.3"
+   ],
+   "titulo": "Pedido formal A -> A2 (Construção/BB) com motivo, documento e contas (MFA recente): PENDING_APPROVAL",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/intercompany-transfers",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "toCompanyId": "213c5901-9715-45c1-95f6-02140a54efd3",
+    "amount": 7500,
+    "reason": "Rateio administrativo da obra 0871300",
+    "evidenceFileId": "ff8c40c3-73e5-429c-91e0-456d26315738",
+    "fromBankAccountId": "3069537d-ce7a-44b3-bfdc-533045eaeff1",
+    "toBankAccountId": "e13a4a4f-0377-44d8-b556-e41035439c5f"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 52,
+   "quando": "2026-11-11T01:35:14.118Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "transfer": {
+      "id": "444500d3-9bb5-45d4-928e-584f576a2523",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "fromCompanyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "toCompanyId": "213c5901-9715-45c1-95f6-02140a54efd3",
+      "amount": "7500.00",
+      "reason": "Rateio administrativo da obra 0871300",
+      "status": "PENDING_APPROVAL",
+      "fromEntryId": null,
+      "toEntryId": null,
+      "evidenceFileId": "ff8c40c3-73e5-429c-91e0-456d26315738",
+      "fromBankAccountId": "3069537d-ce7a-44b3-bfdc-533045eaeff1",
+      "toBankAccountId": "e13a4a4f-0377-44d8-b556-e41035439c5f",
+      "requestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updated_at": "2026-11-11T01:35:14.099Z",
+      "created_at": "2026-11-11T01:35:14.099Z",
+      "approvedByUserId": null,
+      "approvedAt": null,
+      "rejectedByUserId": null,
+      "rejectedAt": null,
+      "rejectionReason": null,
+      "reconciledAt": null,
+      "reconciledByUserId": null
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "IC11",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.16"
+   ],
+   "titulo": "Conciliar de novo: recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/intercompany-transfers/444500d3-9bb5-45d4-928e-584f576a2523/reconcile",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409,
+    "codigo": "FINANCE_INTERCOMPANY_ALREADY_RECONCILED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_INTERCOMPANY_ALREADY_RECONCILED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T01:35:14.234Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_INTERCOMPANY_ALREADY_RECONCILED",
+     "message": "Esta transferência já foi conciliada.",
+     "traceId": "4eeba6b9-7bc2-4b97-8765-351783db89b9"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

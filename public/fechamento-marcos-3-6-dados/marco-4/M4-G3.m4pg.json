@@ -1,0 +1,613 @@
+{
+ "id": "M4-G§3",
+ "secao": "Guia §3 PaymentIntent",
+ "requisito": "PaymentIntent {companyId, financialEntryId, bankAccountId, beneficiarySnapshot, amount, idempotencyKey, snapshotHash, status}",
+ "substitui": "evidencias/marco-4/M4-G3.json",
+ "motivo": "Correção M4PG (verificação independente do Marco 4): beneficiarySnapshot no retrato que gera o snapshotHash; estados do Guia §3 com migration de dados auditada. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "f1f33f82",
+  "branchApi": "m4fix/pagamentos-verificacao",
+  "commitFront": "c574a8a",
+  "quando": "2026-11-11T12:09:43Z",
+  "ambiente": "Postgres 16 descartável (scripts/withDisposableDb.js; migrations do zero, seeds do CI e de dois tenants; RLS real, role de runtime sem bypass), API Express real em processo; ClamAV real na 3310."
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-§21.4/G§3/G§20.5: o retrato aprovado e o hash incluem o favorecido (banco, agência, conta, PIX), congelados no PREPARE",
+   "noCommit": "passou",
+   "duracaoMs": 1964,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error='o favorecido é congelado na preparação, não no envio'"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§3/G§5/L3/L5: estados do Guia (DRAFT -> PENDING_APPROVAL -> APPROVED -> EXECUTING -> CONFIRMED) e evento finance.payment.execution_requested",
+   "noCommit": "passou",
+   "duracaoMs": 2126,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "expected='DRAFT'"
+  },
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-G§18.4: favorecido mudado por fora do serviço (direto no banco) também é recusado na aprovação e no envio, com os campos que mudaram",
+   "noCommit": "passou",
+   "duracaoMs": 2350,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error='Missing expected rejection.'"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C01-1",
+   "titulo": "PREPARE congela o favorecido no retrato/hash",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "85cdd4b7-ac8a-4685-af05-fe0e566e4cc2"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:11.733Z",
+   "resposta": {
+    "id": "e820a4d9-e5ea-4ef1-9012-ab7e748bd452",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "900.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439444272531552",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439444266363933",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "4e10018c-da69-4cfa-8e19-054e1e0e0407"
+    },
+    "snapshotHash": "d009aeed52b696be71b1e81f4376ed6c5c896666d930b2876dfe1ff068ba7ff5",
+    "approval": {
+     "id": "b22827c4-5ec0-428f-ab27-285db8de35db",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 0,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:e820a4d9-e5ea-4ef1-9012-ab7e748bd452"
+   }
+  },
+  {
+   "id": "C01-2",
+   "titulo": "Outra pessoa aprova (risco LOW, 1 aprovação)",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/e820a4d9-e5ea-4ef1-9012-ab7e748bd452/approve",
+   "perfil": "aprova",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:13.475Z",
+   "resposta": {
+    "id": "e820a4d9-e5ea-4ef1-9012-ab7e748bd452",
+    "status": "APPROVED",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "900.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439444272531552",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439444266363933",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "4e10018c-da69-4cfa-8e19-054e1e0e0407"
+    },
+    "snapshotHash": "d009aeed52b696be71b1e81f4376ed6c5c896666d930b2876dfe1ff068ba7ff5",
+    "approval": {
+     "id": "b22827c4-5ec0-428f-ab27-285db8de35db",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 1,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:e820a4d9-e5ea-4ef1-9012-ab7e748bd452"
+   }
+  },
+  {
+   "id": "C01-3",
+   "titulo": "Troca da chave PIX e da conta do favorecido DEPOIS da aprovação",
+   "metodo": "PATCH",
+   "rota": "/finance/bank-accounts/4e10018c-da69-4cfa-8e19-054e1e0e0407",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "pixKey": "[e-mail omitido]",
+    "accountNumber": "NOVA-179439445347523665",
+    "changeEvidence": {
+     "source": "PERSON_STATEMENT",
+     "note": "captura M4PG"
+    }
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:16.170Z",
+   "resposta": {
+    "id": "4e10018c-da69-4cfa-8e19-054e1e0e0407",
+    "status": "PENDING_COOLDOWN"
+   }
+  },
+  {
+   "id": "C01-4",
+   "titulo": "A intenção aprovada foi invalidada (CANCELED, motivo)",
+   "metodo": "GET",
+   "rota": "/finance/payment-intents?financialEntryId=85cdd4b7-ac8a-4685-af05-fe0e566e4cc2",
+   "perfil": "prepara",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:18.298Z",
+   "resposta": [
+    {
+     "id": "e820a4d9-e5ea-4ef1-9012-ab7e748bd452",
+     "status": "CANCELED",
+     "submissionPhase": "NOT_STARTED",
+     "amount": "900.00",
+     "installmentNumber": 1,
+     "beneficiarySnapshot": {
+      "name": "captura m4pg 179439444272531552",
+      "branch": "0001",
+      "pixKey": "••••••",
+      "account": "CAP-179439444266363933",
+      "bankCode": "••••••",
+      "personId": null,
+      "bankAccountId": "4e10018c-da69-4cfa-8e19-054e1e0e0407"
+     },
+     "snapshotHash": "d009aeed52b696be71b1e81f4376ed6c5c896666d930b2876dfe1ff068ba7ff5",
+     "approval": {
+      "id": "b22827c4-5ec0-428f-ab27-285db8de35db",
+      "status": "STALE",
+      "riskLevel": "LOW",
+      "riskSource": "PARAMETERS",
+      "ruleVersionId": null,
+      "requiredApprovals": 1,
+      "approvedCount": 1,
+      "approvers": [
+       {
+        "approverUserId": "977f75b7-1853-4171-8021-eb8d1efb817e",
+        "decision": "APPROVED",
+        "decidedAt": "2026-11-11T10:54:11.840Z",
+        "stepOrder": 1
+       }
+      ]
+     },
+     "cancelReason": "Favorecido alterado (accountNumber, pixKey) na conta de destino depois da preparação: a intenção de pagamento e as aprovações anteriores foram invalidadas (Caderno §9). Prepare uma nova intenção, que congela o favorecido atual, e peça a aprovação de novo.",
+     "idempotencyKey": "payment-intent:e820a4d9-e5ea-4ef1-9012-ab7e748bd452"
+    }
+   ]
+  },
+  {
+   "id": "C01-5",
+   "titulo": "Envio ao banco recusado mesmo vencido o resfriamento",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/e820a4d9-e5ea-4ef1-9012-ab7e748bd452/submit-to-bank",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "paymentMethod": "PIX"
+   },
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_APPROVED",
+   "quando": "2026-11-11T10:54:18.800Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_NOT_APPROVED",
+     "message": "Só é possível submeter ao banco uma intenção APPROVED (atual: \"CANCELED\")."
+    }
+   }
+  },
+  {
+   "id": "C01-6",
+   "titulo": "Alerta aberto (§17 Favorecido alterado)",
+   "metodo": "GET",
+   "rota": "/finance/anomaly-cases",
+   "perfil": "prepara",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:19.505Z",
+   "resposta": [
+    {
+     "id": "20b55ceb-9fb4-4a68-b991-7eb0f8d190fb",
+     "status": "OPEN",
+     "riskLevel": "HIGH",
+     "relatedEntityType": "BankAccount",
+     "reason": "Dados do favorecido (accountNumber, pixKey) alterados com 1 intenção(ões) de pagamento e 0 aprovação(ões) ainda não enviadas ao banco: todas foram invalidadas. Confirme a troca com o favorecido por um canal independente antes de pagar.",
+     "caseType": "BENEFICIARY_CHANGED_AFTER_APPROVAL"
+    }
+   ]
+  },
+  {
+   "id": "C08-1",
+   "titulo": "PREPARE",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "afb569f3-d510-44ec-83f0-955a54547e2a"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:40.809Z",
+   "resposta": {
+    "id": "af5152b2-4b48-470b-8030-7d91d8ba3447",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "300.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447976435687",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447950386082",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "272fb646-e8d7-435d-b0be-67391e766b09"
+    },
+    "snapshotHash": "0f04fb2eec763c1ee132fd3df880979216d60ba7df6cdfb4d3b39e42ba7aff9d",
+    "approval": {
+     "id": "2d135e15-7e8d-4cc0-825e-b42c03b845e5",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 0,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:af5152b2-4b48-470b-8030-7d91d8ba3447"
+   }
+  },
+  {
+   "id": "C08-2",
+   "titulo": "Aprovação",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/af5152b2-4b48-470b-8030-7d91d8ba3447/approve",
+   "perfil": "aprova",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:41.770Z",
+   "resposta": {
+    "id": "af5152b2-4b48-470b-8030-7d91d8ba3447",
+    "status": "APPROVED",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "300.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447976435687",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447950386082",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "272fb646-e8d7-435d-b0be-67391e766b09"
+    },
+    "snapshotHash": "0f04fb2eec763c1ee132fd3df880979216d60ba7df6cdfb4d3b39e42ba7aff9d",
+    "approval": {
+     "id": "2d135e15-7e8d-4cc0-825e-b42c03b845e5",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 1,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:af5152b2-4b48-470b-8030-7d91d8ba3447"
+   }
+  },
+  {
+   "id": "C08-3",
+   "titulo": "Envio ao banco (sandbox): EXECUTING/SUBMITTED e evento finance.payment.execution_requested",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/af5152b2-4b48-470b-8030-7d91d8ba3447/submit-to-bank",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "paymentMethod": "PIX"
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:43.337Z",
+   "resposta": {
+    "id": "af5152b2-4b48-470b-8030-7d91d8ba3447",
+    "status": "EXECUTING",
+    "submissionPhase": "SUBMITTED",
+    "amount": "300.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447976435687",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447950386082",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "272fb646-e8d7-435d-b0be-67391e766b09"
+    },
+    "snapshotHash": "0f04fb2eec763c1ee132fd3df880979216d60ba7df6cdfb4d3b39e42ba7aff9d",
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:af5152b2-4b48-470b-8030-7d91d8ba3447"
+   }
+  },
+  {
+   "id": "C08-4",
+   "titulo": "Banco confirma R$ 299,99 para o aprovado de R$ 300,00: não confirma e abre anomaly_case",
+   "camada": "serviço (mesma transação do teste)",
+   "quando": "2026-11-11T10:54:43.496Z",
+   "dados": {
+    "intentStatus": "EXECUTING",
+    "submissionPhase": "SUBMITTED",
+    "anomalias": [
+     {
+      "caseType": "BANK_AMOUNT_MISMATCH",
+      "riskLevel": "CRITICAL",
+      "status": "OPEN"
+     }
+    ],
+    "eventos": [
+     "finance.payment.prepared",
+     "finance.payment.approved",
+     "finance.payment.execution_requested"
+    ]
+   }
+  }
+ ],
+ "sondasDoVerificador": {
+  "V2-P1": {
+   "arquivo": "scratchpad/v2own/probe/verif2.probe.test.js (sonda do verificador 2, sem alteração)",
+   "naBase41addaa2_relatorioDoVerificador": {
+    "accountStatusBefore": "ACTIVE",
+    "intentStatusAfterPixChange": "APPROVED",
+    "submitAccepted": true,
+    "beneficiaryPixKeyEnviado": "pix-ATACANTE-…@v2.dev",
+    "beneficiaryAccountEnviado": "ATK-…"
+   },
+   "noCommit": {
+    "accountStatusBefore": "ACTIVE",
+    "intentStatusAfterPixChange": "CANCELED",
+    "submitAccepted": false,
+    "submitError": "FINANCE_PAYMENT_INTENT_NOT_APPROVED"
+   }
+  }
+ },
+ "sanitizacao": [
+  "Sem token de acesso, sem token de impacto da confirmação de nível 3 (só \"enviada\"), sem segredo TOTP, sem senha e sem string de conexão.",
+  "Usuários fictícios m4-<perfil>-<sufixo>@nayaraone.dev numa empresa isolada criada no banco descartável; MFA recente por linhas no banco descartável (nunca pelo endpoint de MFA)."
+ ],
+ "migracaoDeDadosIdaEVolta": {
+  "migration": "20260101011400-m4pg-pagamento-estados-aprovacao-estorno-reabertura.js",
+  "quando": "2026-11-11T09:40:12.912Z",
+  "passos": [
+   {
+    "passo": "1 down inicial",
+    "colunasNovasPresentes": []
+   },
+   {
+    "passo": "2 linhas nos estados antigos",
+    "linhas": [
+     {
+      "id": "649d83a6-87b8-4ba9-9ec2-e7e7f996e6de",
+      "antes": "PENDING",
+      "externo": null
+     },
+     {
+      "id": "6ba84fd8-d11e-4d76-85e7-119b5cfea980",
+      "antes": "APPROVED",
+      "externo": null
+     },
+     {
+      "id": "06411775-e586-42e3-a25b-b748d43b17c8",
+      "antes": "SUBMITTING",
+      "externo": "UNCERTAIN"
+     },
+     {
+      "id": "cef774f7-989e-4585-bb7d-e34f75c6a0ee",
+      "antes": "SUBMITTING",
+      "externo": "QUEUED"
+     },
+     {
+      "id": "910b174a-8521-4186-bedd-f3aea5b1c873",
+      "antes": "SUBMITTED",
+      "externo": "PENDING_EXTERNAL"
+     },
+     {
+      "id": "ad2cec66-d0b6-4af9-bea5-70dac040298a",
+      "antes": "EXECUTED",
+      "externo": "CONFIRMED"
+     },
+     {
+      "id": "ea1b6b72-b1be-4bf9-8549-0040a7f35e86",
+      "antes": "FAILED",
+      "externo": "REJECTED"
+     },
+     {
+      "id": "40a7bc61-f312-4c41-953f-872b82b68c09",
+      "antes": "CANCELLED",
+      "externo": null
+     }
+    ]
+   },
+   {
+    "passo": "3 up",
+    "depois": [
+     {
+      "antes": "PENDING",
+      "externo": null,
+      "status": "PENDING_APPROVAL",
+      "fase": "NOT_STARTED",
+      "amount": "123.45"
+     },
+     {
+      "antes": "APPROVED",
+      "externo": null,
+      "status": "APPROVED",
+      "fase": "NOT_STARTED",
+      "amount": "123.45"
+     },
+     {
+      "antes": "SUBMITTING",
+      "externo": "UNCERTAIN",
+      "status": "EXECUTING",
+      "fase": "UNCERTAIN",
+      "amount": "123.45"
+     },
+     {
+      "antes": "SUBMITTING",
+      "externo": "QUEUED",
+      "status": "EXECUTING",
+      "fase": "SUBMITTING",
+      "amount": "123.45"
+     },
+     {
+      "antes": "SUBMITTED",
+      "externo": "PENDING_EXTERNAL",
+      "status": "EXECUTING",
+      "fase": "SUBMITTED",
+      "amount": "123.45"
+     },
+     {
+      "antes": "EXECUTED",
+      "externo": "CONFIRMED",
+      "status": "CONFIRMED",
+      "fase": "NOT_STARTED",
+      "amount": "123.45"
+     },
+     {
+      "antes": "FAILED",
+      "externo": "REJECTED",
+      "status": "FAILED",
+      "fase": "NOT_STARTED",
+      "amount": "123.45"
+     },
+     {
+      "antes": "CANCELLED",
+      "externo": null,
+      "status": "CANCELED",
+      "fase": "NOT_STARTED",
+      "amount": "123.45"
+     }
+    ],
+    "linhasDeAuditoria": 6,
+    "auditoria": [
+     {
+      "antes": {
+       "status": "PENDING",
+       "submissionPhase": "NOT_STARTED"
+      },
+      "depois": {
+       "status": "PENDING_APPROVAL",
+       "submissionPhase": "NOT_STARTED"
+      }
+     },
+     {
+      "antes": {
+       "status": "SUBMITTING",
+       "submissionPhase": "NOT_STARTED"
+      },
+      "depois": {
+       "status": "EXECUTING",
+       "submissionPhase": "UNCERTAIN"
+      }
+     },
+     {
+      "antes": {
+       "status": "SUBMITTING",
+       "submissionPhase": "NOT_STARTED"
+      },
+      "depois": {
+       "status": "EXECUTING",
+       "submissionPhase": "SUBMITTING"
+      }
+     },
+     {
+      "antes": {
+       "status": "SUBMITTED",
+       "submissionPhase": "NOT_STARTED"
+      },
+      "depois": {
+       "status": "EXECUTING",
+       "submissionPhase": "SUBMITTED"
+      }
+     },
+     {
+      "antes": {
+       "status": "EXECUTED",
+       "submissionPhase": "NOT_STARTED"
+      },
+      "depois": {
+       "status": "CONFIRMED",
+       "submissionPhase": "NOT_STARTED"
+      }
+     },
+     {
+      "antes": {
+       "status": "CANCELLED",
+       "submissionPhase": "NOT_STARTED"
+      },
+      "depois": {
+       "status": "CANCELED",
+       "submissionPhase": "NOT_STARTED"
+      }
+     }
+    ],
+    "indice": "CREATE UNIQUE INDEX payment_intents_one_open_per_entry ON finance.payment_intents USING btree (financial_entry_id) WHERE ((status)::text = ANY ((ARRAY['DRAFT'::character varying, 'PENDING_APPROVAL'::character varying, 'APPROVED'::character varying, 'EXECUTING'::character varying])::text[]))",
+    "totalDeIntencoesAntesEDepois": [
+     8,
+     8
+    ]
+   },
+   {
+    "passo": "4 down",
+    "depois": [
+     {
+      "original": "PENDING",
+      "voltou": "PENDING"
+     },
+     {
+      "original": "APPROVED",
+      "voltou": "APPROVED"
+     },
+     {
+      "original": "SUBMITTING",
+      "voltou": "SUBMITTING"
+     },
+     {
+      "original": "SUBMITTING",
+      "voltou": "SUBMITTING"
+     },
+     {
+      "original": "SUBMITTED",
+      "voltou": "SUBMITTED"
+     },
+     {
+      "original": "EXECUTED",
+      "voltou": "EXECUTED"
+     },
+     {
+      "original": "FAILED",
+      "voltou": "FAILED"
+     },
+     {
+      "original": "CANCELLED",
+      "voltou": "CANCELLED"
+     }
+    ],
+    "todasVoltaram": true,
+    "linhasDeAuditoriaDaVolta": 6
+   },
+   {
+    "passo": "5 up de novo",
+    "estados": [
+     "APPROVED/NOT_STARTED",
+     "CANCELED/NOT_STARTED",
+     "CONFIRMED/NOT_STARTED",
+     "EXECUTING/SUBMITTED",
+     "EXECUTING/SUBMITTING",
+     "EXECUTING/UNCERTAIN",
+     "FAILED/NOT_STARTED",
+     "PENDING_APPROVAL/NOT_STARTED"
+    ]
+   }
+  ]
+ }
+}

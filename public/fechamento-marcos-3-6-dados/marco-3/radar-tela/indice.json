@@ -1,0 +1,96 @@
+{
+ "pastaDeOrigem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela",
+ "arquivos": [
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/00-resumo.json",
+   "bytes": 1453,
+   "sha256": "b7afb4a5d4b95f092afb03f4ebef1778a115c592cdb4613312dcbd0b37a6f8a9",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/00-resumo.json",
+   "mascarado": true
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/01-formulario-quatro-categorias.png",
+   "bytes": 237396,
+   "sha256": "703e987ed2af217b78193b07922c6f0abe5a05b11b19e7ca1b6b773caff45b24",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/01-formulario-quatro-categorias.png",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/02-post-radar-enviado.json",
+   "bytes": 1014,
+   "sha256": "f8c97b2935cfd64c9eba0951ab339ff16f07709c7b5c5584aa3db11f9f54d4f9",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/02-post-radar-enviado.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/02-post-radar-resposta.json",
+   "bytes": 5484,
+   "sha256": "6f245814bb8387bdc75ad6c740e01f703b8d523ff111368935ad91cc68cc78a3",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/02-post-radar-resposta.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/03-detalhe-matches-score.png",
+   "bytes": 236642,
+   "sha256": "cfffb4e34263e5adf9beb36f4b38dd5c141cb1e64d073128a6dfc8c3f9d2c53e",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/03-detalhe-matches-score.png",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/04-explain-medio.json",
+   "bytes": 2055,
+   "sha256": "dd7d52fe1728f6bcc5330962ef0096f3fa7006341739ad2749cdbc65337988dd",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/04-explain-medio.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/04-explicacao-medio.png",
+   "bytes": 219467,
+   "sha256": "15fa40b4bc15d2b81ab9a1270407a7d3b8108283c2cbde55c5c820f3275ea97b",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/04-explicacao-medio.png",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/04-explicacao-na-tela-medio.json",
+   "bytes": 1646,
+   "sha256": "9ce3f6b4706ab1b8ddd81a738856b38565994a67ac76ca87f9927c194ad65add",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/04-explicacao-na-tela-medio.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/05-explain-excluido-e-caro.json",
+   "bytes": 3600,
+   "sha256": "59733d3f0f0ca3f162cb5b014094d5fb0890779bcc5c7b30ce9a3770370f5d3f",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/05-explain-excluido-e-caro.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/06-detalhe-apos-edicao.png",
+   "bytes": 236644,
+   "sha256": "2d7fa564a22362ecae74a04b608f06ca5b9c5ef5a4262003bd846b9ac3dbd713",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/06-detalhe-apos-edicao.png",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/06-patch-radar-enviado.json",
+   "bytes": 938,
+   "sha256": "38feb2b3fb21cb5ac1489405244e4c7b44b831dc4928f4c668a47aa129b774b4",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/06-patch-radar-enviado.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/unit-base-c8ccff0.txt",
+   "bytes": 993,
+   "sha256": "9ea4f1b3109b9afc46a0b8298b6c3061659a247f3eff200213b91ddcf6dfb5fb",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/unit-base-c8ccff0.txt",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/radar-tela/unit-branch-8178c77.txt",
+   "bytes": 1424,
+   "sha256": "f82631ae3d0698cddd0059993c0fa193b8571c439b4089b519e83655356c793e",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/radar-tela/unit-branch-8178c77.txt",
+   "mascarado": false
+  }
+ ]
+}

@@ -1,0 +1,1001 @@
+{
+  "id": "M3-14",
+  "secao": "Matriz contratual",
+  "requisito": "Radar determinístico que exige todos os critérios obrigatórios.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 160,
+      "casos": [
+        "radar_criar",
+        "jornada_e2e"
+      ],
+      "descricao": "Cria radar com obrigatórios, preferências ponderadas, flexível e exclusão",
+      "metodo": "POST",
+      "rota": "/api/v1/radar",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+        "criteriaJson": {
+          "required": {
+            "city": "Campinas",
+            "offerType": "SALE",
+            "maxPrice": 1000000
+          },
+          "preferences": [
+            {
+              "code": "NEIGHBORHOOD",
+              "value": "Cambuí",
+              "weight": 2
+            },
+            {
+              "code": "MIN_BEDROOMS",
+              "value": 3,
+              "weight": 1
+            },
+            {
+              "code": "MIN_PARKING",
+              "value": 2,
+              "weight": 1
+            }
+          ],
+          "flexible": [
+            {
+              "code": "MAX_DISTANCE_KM",
+              "lat": -22.9056,
+              "lng": -47.0608,
+              "value": 5,
+              "weight": 1
+            }
+          ],
+          "exclusions": [
+            {
+              "code": "PROPERTY_TYPE",
+              "value": "LAND"
+            }
+          ]
+        }
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "_resumo": "corpo de 26539 caracteres; início mostrado",
+        "inicio": "{\"success\":true,\"data\":{\"id\":\"e8f32f2c-a4d5-4945-909e-d94e429ebeea\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"personId\":\"92e15d2b-0859-4eb9-898e-6d8ef7517fd5\",\"opportunityId\":null,\"criteriaJson\":{\"flexible\":[{\"lat\":-22.9056,\"lng\":-47.0608,\"code\":\"MAX_DISTANCE_KM\",\"value\":5,\"weight\":1}],\"required\":{\"city\":\"Campinas\",\"maxPrice\":1000000,\"offerType\":\"SALE\"},\"exclusions\":[{\"code\":\"PROPERTY_TYPE\",\"value\":\"LAND\"}],\"preferences\":[{\"code\":\"NEIGHBORHOOD\",\"value\":\"Cambuí\",\"weight\":2},{\"code\":\"MIN_BEDROOMS\",\"value\":3,\"weight\":1},{\"code\":\"MIN_PARKING\",\"value\":2,\"weight\":1}]},\"status\":\"ACTIVE\",\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updated_at\":\"2026-11-11T00:16:26.613Z\",\"created_at\":\"2026-11-11T00:16:26.613Z\",\"deletedBy\":null,\"deleted_at\":null,\"matches\":[{\"id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbdcbsmq7m7\",\"internalCode\":\"M3-mwbdcbsmq7m7\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"registryNumber\":\"MAT-mwbdcbsmq7m7\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":null,\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"DRAFT\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"f2e9e1ae-708a-4863-9cde-78481f85baa5\",\"mergedIntoId\":null,\"publishedAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:22.994Z\",\"updated_at\":\"2026-11-11T00:16:22.994Z\",\"deleted_at\":null,\"address_id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"offers\":[{\"id\":\"d4eef318-1bfb-496a-9031-395197337f89\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"offerType\":\"SALE\",\"askingPrice\":\"912000.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":true,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":3,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.617Z\",\"updated_at\":\"2026-11-11T00:16:23.855Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"}],\"address\":{\"id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"zipCode\":\"13010-000\",\"street\":\"Rua Sigilosa mwbdcbsmq7m7\",\"number\":\"100\",\"complement\":null,\"neighborhood\":\"Cambuí\",\"city\":\"Campinas\",\"state\":\"SP\",\"created_at\":\"2026-11-11T00:16:22.992Z\",\"updated_at\":\"2026-11-11T00:16:22.992Z\"},\"radarMatch\":{\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"matched\":true,\"matchedCount\":9,\"totalCriteria\":9,\"score\":1,\"requiredScore\":1,\"reasons\":[\"NEIGHBORHOOD\",\"MIN_BEDROOMS\",\"MIN_PARKING\",\"MAX_DISTANCE_KM\"],\"criteria\":{\"city\":{\"category\":\"REQUIRED\",\"matched\":true},\"activeOffer\":{\"category\":\"REQUIRED\",\"matched\":true},\"offerType\":{\"category\":\"REQUIRED\",\"matched\":true},\"priceRange\":{\"category\":\"REQUIRED\",\"matched\":true},\"preference:NEIGHBORHOOD\":{\"category\":\"PREFERENCE\",\"code\":\"NEIGHBORHOOD\",\"weight\":2,\"matched\":true},\"preference:MIN_BEDROOMS\":{\"category\":\"PREFERENCE\",\"code\":\"MIN_BEDROOMS\",\"weight\":1,\"matched\":true},\"preference:MIN_PARKING\":{\"category\":\"PREFERENCE\",\"code\":\"MIN_PARKING\",\"weight\":1,\"matched\":true},\"flexible:MAX_DISTANCE_KM\":{\"category\":\"FLEXIBLE\",\"code\":\"MAX_DISTANCE_KM\",\"weight\":1,\"matched\":true,\"distanceKm\":0},\"exclusion:PROPERTY_TYPE:LAND\":{\"category\":\"EXCLUSION\",\"code\":\"PROPERTY_TYPE\",\"matched\":true}}}},{\"id\":\"bf1a187a-85e9-4b29-b375-0f841717a9fe\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbd656vhbtq\",\"internalCode\":\"M3-mwbd656vhbtq\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"3b52224e-f652-4f1b-b24d-ca742c781f22\",\"registryNumber\":\"MAT-mwbd656vhbtq\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":\"Casa térrea mwbd6kk6x4n0\",\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"DRAFT\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"3d9d6ab2-c64e-420f-947f-adc1529d3532\",\"mergedIntoId\":null,\"publishedAt\":null,\"lockVersion\":1,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:11:34.485Z\",\"updated_at\":\"2026-11-11T00:11:54.630Z\",\"deleted_at\":null,\"address_id\":\"3b52224e-f652-4f1b-b24d-ca742c7"
+      },
+      "dataHora": "2026-11-11T00:16:26.599Z"
+    },
+    {
+      "seq": 161,
+      "casos": [
+        "radar_criar"
+      ],
+      "descricao": "Radar pelo caminho do livro (POST /crm/radars)",
+      "metodo": "POST",
+      "rota": "/api/v1/crm/radars",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+        "criteriaJson": {
+          "city": "Campinas",
+          "offerType": "RENT"
+        }
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "_resumo": "corpo de 24509 caracteres; início mostrado",
+        "inicio": "{\"success\":true,\"data\":{\"id\":\"0d6b4e7a-00c2-48b2-bf52-09fd172a11c1\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"personId\":\"92e15d2b-0859-4eb9-898e-6d8ef7517fd5\",\"opportunityId\":null,\"criteriaJson\":{\"city\":\"Campinas\",\"offerType\":\"RENT\"},\"status\":\"ACTIVE\",\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updated_at\":\"2026-11-11T00:16:26.634Z\",\"created_at\":\"2026-11-11T00:16:26.634Z\",\"deletedBy\":null,\"deleted_at\":null,\"matches\":[{\"id\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbdccmim8e1\",\"internalCode\":\"M3-mwbdccmim8e1\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"116ddaba-2b71-4fa8-818f-7bc51b6d0c83\",\"registryNumber\":\"MAT-mwbdccmim8e1\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":null,\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"PUBLISHED\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"ee099b49-fbc1-41b7-ad33-80e2d8f0de67\",\"mergedIntoId\":null,\"publishedAt\":\"2026-11-11T00:16:24.952Z\",\"lockVersion\":1,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:24.055Z\",\"updated_at\":\"2026-11-11T00:16:24.971Z\",\"deleted_at\":null,\"address_id\":\"116ddaba-2b71-4fa8-818f-7bc51b6d0c83\",\"offers\":[{\"id\":\"504e941b-1f51-4a40-b834-ddc9f8f36d5c\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\",\"offerType\":\"RENT\",\"askingPrice\":\"3900.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":null,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:24.113Z\",\"updated_at\":\"2026-11-11T00:16:24.113Z\",\"deleted_at\":null,\"property_id\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\"}],\"address\":{\"id\":\"116ddaba-2b71-4fa8-818f-7bc51b6d0c83\",\"zipCode\":\"13010-000\",\"street\":\"Rua Sigilosa mwbdccmim8e1\",\"number\":\"100\",\"complement\":null,\"neighborhood\":\"Cambuí\",\"city\":\"Campinas\",\"state\":\"SP\",\"created_at\":\"2026-11-11T00:16:24.053Z\",\"updated_at\":\"2026-11-11T00:16:24.053Z\"},\"radarMatch\":{\"propertyId\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\",\"matched\":true,\"matchedCount\":3,\"totalCriteria\":3,\"score\":1,\"requiredScore\":1,\"reasons\":[],\"criteria\":{\"city\":{\"category\":\"REQUIRED\",\"matched\":true},\"activeOffer\":{\"category\":\"REQUIRED\",\"matched\":true},\"offerType\":{\"category\":\"REQUIRED\",\"matched\":true}}}},{\"id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbdcbsmq7m7\",\"internalCode\":\"M3-mwbdcbsmq7m7\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"registryNumber\":\"MAT-mwbdcbsmq7m7\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":null,\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"DRAFT\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"f2e9e1ae-708a-4863-9cde-78481f85baa5\",\"mergedIntoId\":null,\"publishedAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:22.994Z\",\"updated_at\":\"2026-11-11T00:16:22.994Z\",\"deleted_at\":null,\"address_id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"offers\":[{\"id\":\"b9bd6b43-d4e6-4732-9523-596d76e3f374\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"offerType\":\"RENT\",\"askingPrice\":\"4800.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":null,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.500Z\",\"updated_at\":\"2026-11-11T00:16:23.500Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"}],\"address\":{\"id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"zipCode\":\"13010-000\",\"street\":\"Rua Sigilosa mwbdcbsmq7m7\",\"number\":\"100\",\"complement\":null,\"neighborhood\":\"Cambuí\",\"city\":\"Campinas\",\"state\":\"SP\",\"created_at\":\"2026-11-11T00:16:22.992Z\",\"updated_at\":\"2026-11-11T00:16:22.992Z\"},\"radarM"
+      },
+      "dataHora": "2026-11-11T00:16:26.625Z"
+    },
+    {
+      "seq": 162,
+      "casos": [
+        "radar_criar"
+      ],
+      "descricao": "Critério fora da lista é recusado",
+      "metodo": "POST",
+      "rota": "/api/v1/radar",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+        "criteriaJson": {
+          "city": "Campinas",
+          "preferences": [
+            {
+              "code": "VISTA_PARA_O_MAR",
+              "value": true
+            }
+          ]
+        }
+      },
+      "status": 422,
+      "codigoErro": "RADAR_CRITERIA_INVALID",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "RADAR_CRITERIA_INVALID",
+          "message": "O critério preferences[0] tem código \"VISTA_PARA_O_MAR\" fora da lista aceita (NEIGHBORHOOD, MIN_BEDROOMS, MIN_SUITES, MIN_PARKING).",
+          "details": {
+            "field": "preferences[0].code"
+          },
+          "traceId": "835944b0-0174-4767-a50c-595f050423d9"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.643Z"
+    },
+    {
+      "seq": 163,
+      "casos": [
+        "radar_matches",
+        "jornada_e2e"
+      ],
+      "descricao": "Imóveis compatíveis, ordenados por score, com critérios atendidos e falhos",
+      "metodo": "GET",
+      "rota": "/api/v1/radar/e8f32f2c-a4d5-4945-909e-d94e429ebeea/matches",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "title": "Casa Fictícia mwbdcbsmq7m7",
+            "internalCode": "M3-mwbdcbsmq7m7",
+            "propertyType": "RESIDENTIAL",
+            "addressId": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+            "registryNumber": "MAT-mwbdcbsmq7m7",
+            "registryOffice": "1º Cartório Fictício",
+            "latitude": "-22.9056000",
+            "longitude": "-47.0608000",
+            "addressLine": null,
+            "city": "Campinas",
+            "state": "SP",
+            "zipCode": null,
+            "areaTotalM2": "180.000000",
+            "description": null,
+            "bedrooms": 3,
+            "parkingSpots": 2,
+            "attributesJson": null,
+            "publicationStatus": "DRAFT",
+            "availabilityStatus": "AVAILABLE",
+            "publicAddressPolicy": "SO_BAIRRO",
+            "addressVisibility": "RESTRICTED",
+            "descriptionPublic": null,
+            "publicId": "f2e9e1ae-708a-4863-9cde-78481f85baa5",
+            "mergedIntoId": null,
+            "publishedAt": null,
+            "lockVersion": 0,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:16:22.994Z",
+            "updated_at": "2026-11-11T00:16:22.994Z",
+            "deleted_at": null,
+            "address_id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+            "offers": [
+              {
+                "id": "d4eef318-1bfb-496a-9031-395197337f89",
+                "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+                "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+                "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+                "offerType": "SALE",
+                "askingPrice": "912000.00",
+                "confidentialMinPrice": null,
+                "acceptsFinancing": true,
+                "acceptsTrade": null,
+                "status": "ACTIVE",
+                "startsAt": null,
+                "endsAt": null,
+                "lockVersion": 3,
+                "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "deletedBy": null,
+                "created_at": "2026-11-11T00:16:23.617Z",
+                "updated_at": "2026-11-11T00:16:23.855Z",
+                "deleted_at": null,
+                "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+              }
+            ],
+            "address": {
+              "id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+              "zipCode": "13010-000",
+              "street": "Rua Sigilosa mwbdcbsmq7m7",
+              "number": "100",
+              "complement": null,
+              "neighborhood": "Cambuí",
+              "city": "Campinas",
+              "state": "SP",
+              "created_at": "2026-11-11T00:16:22.992Z",
+              "updated_at": "2026-11-11T00:16:22.992Z"
+            },
+            "radarMatch": {
+              "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+              "matched": true,
+              "matchedCount": 9,
+              "totalCriteria": 9,
+              "score": 1,
+              "requiredScore": 1,
+              "reasons": [
+                "NEIGHBORHOOD",
+                "MIN_BEDROOMS",
+                "MIN_PARKING",
+                "MAX_DISTANCE_KM"
+              ],
+              "criteria": {
+                "city": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "activeOffer": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "offerType": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "priceRange": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "preference:NEIGHBORHOOD": {
+                  "category": "PREFERENCE",
+                  "code": "NEIGHBORHOOD",
+                  "weight": 2,
+                  "matched": true
+                },
+                "preference:MIN_BEDROOMS": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_BEDROOMS",
+                  "weight": 1,
+                  "matched": true
+                },
+                "preference:MIN_PARKING": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_PARKING",
+                  "weight": 1,
+                  "matched": true
+                },
+                "flexible:MAX_DISTANCE_KM": {
+                  "category": "FLEXIBLE",
+                  "code": "MAX_DISTANCE_KM",
+                  "weight": 1,
+                  "matched": true,
+                  "distanceKm": 0
+                },
+                "exclusion:PROPERTY_TYPE:LAND": {
+                  "category": "EXCLUSION",
+                  "code": "PROPERTY_TYPE",
+                  "matched": true
+                }
+              }
+            }
+          },
+          {
+            "id": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "title": "Casa Fictícia mwbd656vhbtq",
+            "internalCode": "M3-mwbd656vhbtq",
+            "propertyType": "RESIDENTIAL",
+            "addressId": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+            "registryNumber": "MAT-mwbd656vhbtq",
+            "registryOffice": "1º Cartório Fictício",
+            "latitude": "-22.9056000",
+            "longitude": "-47.0608000",
+            "addressLine": null,
+            "city": "Campinas",
+            "state": "SP",
+            "zipCode": null,
+            "areaTotalM2": "180.000000",
+            "description": "Casa térrea mwbd6kk6x4n0",
+            "bedrooms": 3,
+            "parkingSpots": 2,
+            "attributesJson": null,
+            "publicationStatus": "DRAFT",
+            "availabilityStatus": "AVAILABLE",
+            "publicAddressPolicy": "SO_BAIRRO",
+            "addressVisibility": "RESTRICTED",
+            "descriptionPublic": null,
+            "publicId": "3d9d6ab2-c64e-420f-947f-adc1529d3532",
+            "mergedIntoId": null,
+            "publishedAt": null,
+            "lockVersion": 1,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:11:34.485Z",
+            "updated_at": "2026-11-11T00:11:54.630Z",
+            "deleted_at": null,
+            "address_id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+            "offers": [
+              {
+                "id": "dd0f3b2d-75e4-4f02-adb6-674ae1decf28",
+                "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+                "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+                "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+                "offerType": "SALE",
+                "askingPrice": "912000.00",
+                "confidentialMinPrice": null,
+                "acceptsFinancing": true,
+                "acceptsTrade": null,
+                "status": "ACTIVE",
+                "startsAt": null,
+                "endsAt": null,
+                "lockVersion": 3,
+                "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "deletedBy": null,
+                "created_at": "2026-11-11T00:11:36.535Z",
+                "updated_at": "2026-11-11T00:11:37.104Z",
+                "deleted_at": null,
+                "property_id": "bf1a187a-85e9-4b29-b375-0f841717a9fe"
+              }
+            ],
+            "address": {
+              "id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+              "zipCode": "13010-000",
+              "street": "Rua Sigilosa mwbd656vhbtq",
+              "number": "100",
+              "complement": null,
+              "neighborhood": "Cambuí",
+              "city": "Campinas",
+              "state": "SP",
+              "created_at": "2026-11-11T00:11:34.484Z",
+              "updated_at": "2026-11-11T00:11:34.484Z"
+            },
+            "radarMatch": {
+              "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+              "matched": true,
+              "matchedCount": 9,
+              "totalCriteria": 9,
+              "score": 1,
+              "requiredScore": 1,
+              "reasons": [
+                "NEIGHBORHOOD",
+                "MIN_BEDROOMS",
+                "MIN_PARKING",
+                "MAX_DISTANCE_KM"
+              ],
+              "criteria": {
+                "city": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "activeOffer": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "offerType": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "priceRange": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "preference:NEIGHBORHOOD": {
+                  "category": "PREFERENCE",
+                  "code": "NEIGHBORHOOD",
+                  "weight": 2,
+                  "matched": true
+                },
+                "preference:MIN_BEDROOMS": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_BEDROOMS",
+                  "weight": 1,
+                  "matched": true
+                },
+                "preference:MIN_PARKING": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_PARKING",
+                  "weight": 1,
+                  "matched": true
+                },
+                "flexible:MAX_DISTANCE_KM": {
+                  "category": "FLEXIBLE",
+                  "code": "MAX_DISTANCE_KM",
+                  "weight": 1,
+                  "matched": true,
+                  "distanceKm": 0
+                },
+                "exclusion:PROPERTY_TYPE:LAND": {
+                  "category": "EXCLUSION",
+                  "code": "PROPERTY_TYPE",
+                  "matched": true
+                }
+              }
+            }
+          },
+          {
+            "id": "d16f183d-4c31-459a-a341-282a30ea71ff",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "title": "Casa Fictícia mwbd3nabhv5l",
+            "internalCode": "M3-mwbd3nabhv5l",
+            "propertyType": "RESIDENTIAL",
+            "addressId": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+            "registryNumber": "MAT-mwbd3nabhv5l",
+            "registryOffice": "1º Cartório Fictício",
+            "latitude": "-22.9056000",
+            "longitude": "-47.0608000",
+            "addressLine": null,
+            "city": "Campinas",
+            "state": "SP",
+            "zipCode": null,
+            "areaTotalM2": "180.000000",
+            "description": "Casa térrea mwbd4x190e1t",
+            "bedrooms": 3,
+            "parkingSpots": 2,
+            "attributesJson": null,
+            "publicationStatus": "DRAFT",
+            "availabilityStatus": "AVAILABLE",
+            "publicAddressPolicy": "SO_BAIRRO",
+            "addressVisibility": "RESTRICTED",
+            "descriptionPublic": null,
+            "publicId": "78ac1973-8248-4c02-8e2c-0ac365f7dd0b",
+            "mergedIntoId": null,
+            "publishedAt": null,
+            "lockVersion": 1,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:09:38.281Z",
+            "updated_at": "2026-11-11T00:10:38.344Z",
+            "deleted_at": null,
+            "address_id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+            "offers": [
+              {
+                "id": "697c2293-0e60-4baf-a718-03167cf33dca",
+                "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+                "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+                "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+                "offerType": "SALE",
+                "askingPrice": "911000.00",
+                "confidentialMinPrice": null,
+                "acceptsFinancing": true,
+                "acceptsTrade": null,
+                "status": "ACTIVE",
+                "startsAt": null,
+                "endsAt": null,
+                "lockVersion": 3,
+                "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "deletedBy": null,
+                "created_at": "2026-11-11T00:09:51.133Z",
+                "updated_at": "2026-11-11T00:09:55.310Z",
+                "deleted_at": null,
+                "property_id": "d16f183d-4c31-459a-a341-282a30ea71ff"
+              }
+            ],
+            "address": {
+              "id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+              "zipCode": "13010-000",
+              "street": "Rua Sigilosa mwbd3nabhv5l",
+              "number": "100",
+              "complement": null,
+              "neighborhood": "Cambuí",
+              "city": "Campinas",
+              "state": "SP",
+              "created_at": "2026-11-11T00:09:38.277Z",
+              "updated_at": "2026-11-11T00:09:38.277Z"
+            },
+            "radarMatch": {
+              "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+              "matched": true,
+              "matchedCount": 9,
+              "totalCriteria": 9,
+              "score": 1,
+              "requiredScore": 1,
+              "reasons": [
+                "NEIGHBORHOOD",
+                "MIN_BEDROOMS",
+                "MIN_PARKING",
+                "MAX_DISTANCE_KM"
+              ],
+              "criteria": {
+                "city": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "activeOffer": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "offerType": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "priceRange": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "preference:NEIGHBORHOOD": {
+                  "category": "PREFERENCE",
+                  "code": "NEIGHBORHOOD",
+                  "weight": 2,
+                  "matched": true
+                },
+                "preference:MIN_BEDROOMS": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_BEDROOMS",
+                  "weight": 1,
+                  "matched": true
+                },
+                "preference:MIN_PARKING": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_PARKING",
+                  "weight": 1,
+                  "matched": true
+                },
+                "flexible:MAX_DISTANCE_KM": {
+                  "category": "FLEXIBLE",
+                  "code": "MAX_DISTANCE_KM",
+                  "weight": 1,
+                  "matched": true,
+                  "distanceKm": 0
+                },
+                "exclusion:PROPERTY_TYPE:LAND": {
+                  "category": "EXCLUSION",
+                  "code": "PROPERTY_TYPE",
+                  "matched": true
+                }
+              }
+            }
+          }
+        ],
+        "_resumo": "lista com 9 itens; 3 primeiros mostrados"
+      },
+      "dataHora": "2026-11-11T00:16:26.658Z"
+    },
+    {
+      "seq": 164,
+      "casos": [
+        "radar_matches"
+      ],
+      "descricao": "Mesma consulta pelo caminho do livro (GET /crm/radars/:id/matches)",
+      "metodo": "GET",
+      "rota": "/api/v1/crm/radars/e8f32f2c-a4d5-4945-909e-d94e429ebeea/matches",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "title": "Casa Fictícia mwbdcbsmq7m7",
+            "internalCode": "M3-mwbdcbsmq7m7",
+            "propertyType": "RESIDENTIAL",
+            "addressId": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+            "registryNumber": "MAT-mwbdcbsmq7m7",
+            "registryOffice": "1º Cartório Fictício",
+            "latitude": "-22.9056000",
+            "longitude": "-47.0608000",
+            "addressLine": null,
+            "city": "Campinas",
+            "state": "SP",
+            "zipCode": null,
+            "areaTotalM2": "180.000000",
+            "description": null,
+            "bedrooms": 3,
+            "parkingSpots": 2,
+            "attributesJson": null,
+            "publicationStatus": "DRAFT",
+            "availabilityStatus": "AVAILABLE",
+            "publicAddressPolicy": "SO_BAIRRO",
+            "addressVisibility": "RESTRICTED",
+            "descriptionPublic": null,
+            "publicId": "f2e9e1ae-708a-4863-9cde-78481f85baa5",
+            "mergedIntoId": null,
+            "publishedAt": null,
+            "lockVersion": 0,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:16:22.994Z",
+            "updated_at": "2026-11-11T00:16:22.994Z",
+            "deleted_at": null,
+            "address_id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+            "offers": [
+              {
+                "id": "d4eef318-1bfb-496a-9031-395197337f89",
+                "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+                "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+                "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+                "offerType": "SALE",
+                "askingPrice": "912000.00",
+                "confidentialMinPrice": null,
+                "acceptsFinancing": true,
+                "acceptsTrade": null,
+                "status": "ACTIVE",
+                "startsAt": null,
+                "endsAt": null,
+                "lockVersion": 3,
+                "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "deletedBy": null,
+                "created_at": "2026-11-11T00:16:23.617Z",
+                "updated_at": "2026-11-11T00:16:23.855Z",
+                "deleted_at": null,
+                "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+              }
+            ],
+            "address": {
+              "id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+              "zipCode": "13010-000",
+              "street": "Rua Sigilosa mwbdcbsmq7m7",
+              "number": "100",
+              "complement": null,
+              "neighborhood": "Cambuí",
+              "city": "Campinas",
+              "state": "SP",
+              "created_at": "2026-11-11T00:16:22.992Z",
+              "updated_at": "2026-11-11T00:16:22.992Z"
+            },
+            "radarMatch": {
+              "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+              "matched": true,
+              "matchedCount": 9,
+              "totalCriteria": 9,
+              "score": 1,
+              "requiredScore": 1,
+              "reasons": [
+                "NEIGHBORHOOD",
+                "MIN_BEDROOMS",
+                "MIN_PARKING",
+                "MAX_DISTANCE_KM"
+              ],
+              "criteria": {
+                "city": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "activeOffer": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "offerType": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "priceRange": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "preference:NEIGHBORHOOD": {
+                  "category": "PREFERENCE",
+                  "code": "NEIGHBORHOOD",
+                  "weight": 2,
+                  "matched": true
+                },
+                "preference:MIN_BEDROOMS": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_BEDROOMS",
+                  "weight": 1,
+                  "matched": true
+                },
+                "preference:MIN_PARKING": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_PARKING",
+                  "weight": 1,
+                  "matched": true
+                },
+                "flexible:MAX_DISTANCE_KM": {
+                  "category": "FLEXIBLE",
+                  "code": "MAX_DISTANCE_KM",
+                  "weight": 1,
+                  "matched": true,
+                  "distanceKm": 0
+                },
+                "exclusion:PROPERTY_TYPE:LAND": {
+                  "category": "EXCLUSION",
+                  "code": "PROPERTY_TYPE",
+                  "matched": true
+                }
+              }
+            }
+          },
+          {
+            "id": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "title": "Casa Fictícia mwbd656vhbtq",
+            "internalCode": "M3-mwbd656vhbtq",
+            "propertyType": "RESIDENTIAL",
+            "addressId": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+            "registryNumber": "MAT-mwbd656vhbtq",
+            "registryOffice": "1º Cartório Fictício",
+            "latitude": "-22.9056000",
+            "longitude": "-47.0608000",
+            "addressLine": null,
+            "city": "Campinas",
+            "state": "SP",
+            "zipCode": null,
+            "areaTotalM2": "180.000000",
+            "description": "Casa térrea mwbd6kk6x4n0",
+            "bedrooms": 3,
+            "parkingSpots": 2,
+            "attributesJson": null,
+            "publicationStatus": "DRAFT",
+            "availabilityStatus": "AVAILABLE",
+            "publicAddressPolicy": "SO_BAIRRO",
+            "addressVisibility": "RESTRICTED",
+            "descriptionPublic": null,
+            "publicId": "3d9d6ab2-c64e-420f-947f-adc1529d3532",
+            "mergedIntoId": null,
+            "publishedAt": null,
+            "lockVersion": 1,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:11:34.485Z",
+            "updated_at": "2026-11-11T00:11:54.630Z",
+            "deleted_at": null,
+            "address_id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+            "offers": [
+              {
+                "id": "dd0f3b2d-75e4-4f02-adb6-674ae1decf28",
+                "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+                "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+                "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+                "offerType": "SALE",
+                "askingPrice": "912000.00",
+                "confidentialMinPrice": null,
+                "acceptsFinancing": true,
+                "acceptsTrade": null,
+                "status": "ACTIVE",
+                "startsAt": null,
+                "endsAt": null,
+                "lockVersion": 3,
+                "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "deletedBy": null,
+                "created_at": "2026-11-11T00:11:36.535Z",
+                "updated_at": "2026-11-11T00:11:37.104Z",
+                "deleted_at": null,
+                "property_id": "bf1a187a-85e9-4b29-b375-0f841717a9fe"
+              }
+            ],
+            "address": {
+              "id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+              "zipCode": "13010-000",
+              "street": "Rua Sigilosa mwbd656vhbtq",
+              "number": "100",
+              "complement": null,
+              "neighborhood": "Cambuí",
+              "city": "Campinas",
+              "state": "SP",
+              "created_at": "2026-11-11T00:11:34.484Z",
+              "updated_at": "2026-11-11T00:11:34.484Z"
+            },
+            "radarMatch": {
+              "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+              "matched": true,
+              "matchedCount": 9,
+              "totalCriteria": 9,
+              "score": 1,
+              "requiredScore": 1,
+              "reasons": [
+                "NEIGHBORHOOD",
+                "MIN_BEDROOMS",
+                "MIN_PARKING",
+                "MAX_DISTANCE_KM"
+              ],
+              "criteria": {
+                "city": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "activeOffer": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "offerType": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "priceRange": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "preference:NEIGHBORHOOD": {
+                  "category": "PREFERENCE",
+                  "code": "NEIGHBORHOOD",
+                  "weight": 2,
+                  "matched": true
+                },
+                "preference:MIN_BEDROOMS": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_BEDROOMS",
+                  "weight": 1,
+                  "matched": true
+                },
+                "preference:MIN_PARKING": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_PARKING",
+                  "weight": 1,
+                  "matched": true
+                },
+                "flexible:MAX_DISTANCE_KM": {
+                  "category": "FLEXIBLE",
+                  "code": "MAX_DISTANCE_KM",
+                  "weight": 1,
+                  "matched": true,
+                  "distanceKm": 0
+                },
+                "exclusion:PROPERTY_TYPE:LAND": {
+                  "category": "EXCLUSION",
+                  "code": "PROPERTY_TYPE",
+                  "matched": true
+                }
+              }
+            }
+          },
+          {
+            "id": "d16f183d-4c31-459a-a341-282a30ea71ff",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "title": "Casa Fictícia mwbd3nabhv5l",
+            "internalCode": "M3-mwbd3nabhv5l",
+            "propertyType": "RESIDENTIAL",
+            "addressId": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+            "registryNumber": "MAT-mwbd3nabhv5l",
+            "registryOffice": "1º Cartório Fictício",
+            "latitude": "-22.9056000",
+            "longitude": "-47.0608000",
+            "addressLine": null,
+            "city": "Campinas",
+            "state": "SP",
+            "zipCode": null,
+            "areaTotalM2": "180.000000",
+            "description": "Casa térrea mwbd4x190e1t",
+            "bedrooms": 3,
+            "parkingSpots": 2,
+            "attributesJson": null,
+            "publicationStatus": "DRAFT",
+            "availabilityStatus": "AVAILABLE",
+            "publicAddressPolicy": "SO_BAIRRO",
+            "addressVisibility": "RESTRICTED",
+            "descriptionPublic": null,
+            "publicId": "78ac1973-8248-4c02-8e2c-0ac365f7dd0b",
+            "mergedIntoId": null,
+            "publishedAt": null,
+            "lockVersion": 1,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:09:38.281Z",
+            "updated_at": "2026-11-11T00:10:38.344Z",
+            "deleted_at": null,
+            "address_id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+            "offers": [
+              {
+                "id": "697c2293-0e60-4baf-a718-03167cf33dca",
+                "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+                "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+                "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+                "offerType": "SALE",
+                "askingPrice": "911000.00",
+                "confidentialMinPrice": null,
+                "acceptsFinancing": true,
+                "acceptsTrade": null,
+                "status": "ACTIVE",
+                "startsAt": null,
+                "endsAt": null,
+                "lockVersion": 3,
+                "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+                "deletedBy": null,
+                "created_at": "2026-11-11T00:09:51.133Z",
+                "updated_at": "2026-11-11T00:09:55.310Z",
+                "deleted_at": null,
+                "property_id": "d16f183d-4c31-459a-a341-282a30ea71ff"
+              }
+            ],
+            "address": {
+              "id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+              "zipCode": "13010-000",
+              "street": "Rua Sigilosa mwbd3nabhv5l",
+              "number": "100",
+              "complement": null,
+              "neighborhood": "Cambuí",
+              "city": "Campinas",
+              "state": "SP",
+              "created_at": "2026-11-11T00:09:38.277Z",
+              "updated_at": "2026-11-11T00:09:38.277Z"
+            },
+            "radarMatch": {
+              "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+              "matched": true,
+              "matchedCount": 9,
+              "totalCriteria": 9,
+              "score": 1,
+              "requiredScore": 1,
+              "reasons": [
+                "NEIGHBORHOOD",
+                "MIN_BEDROOMS",
+                "MIN_PARKING",
+                "MAX_DISTANCE_KM"
+              ],
+              "criteria": {
+                "city": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "activeOffer": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "offerType": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "priceRange": {
+                  "category": "REQUIRED",
+                  "matched": true
+                },
+                "preference:NEIGHBORHOOD": {
+                  "category": "PREFERENCE",
+                  "code": "NEIGHBORHOOD",
+                  "weight": 2,
+                  "matched": true
+                },
+                "preference:MIN_BEDROOMS": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_BEDROOMS",
+                  "weight": 1,
+                  "matched": true
+                },
+                "preference:MIN_PARKING": {
+                  "category": "PREFERENCE",
+                  "code": "MIN_PARKING",
+                  "weight": 1,
+                  "matched": true
+                },
+                "flexible:MAX_DISTANCE_KM": {
+                  "category": "FLEXIBLE",
+                  "code": "MAX_DISTANCE_KM",
+                  "weight": 1,
+                  "matched": true,
+                  "distanceKm": 0
+                },
+                "exclusion:PROPERTY_TYPE:LAND": {
+                  "category": "EXCLUSION",
+                  "code": "PROPERTY_TYPE",
+                  "matched": true
+                }
+              }
+            }
+          }
+        ],
+        "_resumo": "lista com 9 itens; 3 primeiros mostrados"
+      },
+      "dataHora": "2026-11-11T00:16:26.672Z"
+    }
+  ],
+  "consultasBanco": []
+}

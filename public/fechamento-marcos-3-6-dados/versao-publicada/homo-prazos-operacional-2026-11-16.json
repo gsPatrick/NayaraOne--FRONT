@@ -1,0 +1,149 @@
+{
+  "quando": "2026-11-16T20:57:34.172Z",
+  "base": "https://homologacao-nayaraone--api.hpztyd.easypanel.host/api/v1",
+  "empresa": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+  "perfis": {
+    "admin": "33477648-c752-4bed-83cb-a04114224f4d",
+    "leitura": "3c09969d-1831-4b81-90d0-2e99db273583"
+  },
+  "passos": [
+    {
+      "nome": "criar processo fictício",
+      "http": 201,
+      "erro": null
+    },
+    {
+      "nome": "enviar a intimação fictícia (origem do prazo)",
+      "http": 201,
+      "erro": null
+    },
+    {
+      "nome": "recusa: prazo sem origem",
+      "http": 400,
+      "erro": "DEADLINE_SOURCE_REQUIRED"
+    },
+    {
+      "nome": "CRIAR prazo (vence em 10 dias, responsável = administrador)",
+      "http": 201,
+      "erro": null
+    },
+    {
+      "nome": "ATRIBUIR ao perfil somente leitura",
+      "http": 200,
+      "erro": null
+    },
+    {
+      "nome": "recusa: remarcar sem motivo",
+      "http": 400,
+      "erro": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+    },
+    {
+      "nome": "REMARCAR para 15 dias, com motivo",
+      "http": 200,
+      "erro": null
+    },
+    {
+      "nome": "recusa: perfil somente leitura tenta concluir",
+      "http": 403,
+      "erro": "PERMISSION_DENIED"
+    },
+    {
+      "nome": "recusa: concluir sem nota nem arquivo",
+      "http": 422,
+      "erro": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED"
+    },
+    {
+      "nome": "CONCLUIR com nota (administrador, que tem aprovação jurídica)",
+      "http": 200,
+      "erro": null
+    }
+  ],
+  "conferencias": [
+    {
+      "descricao": "prazo sem origem (arquivo ou evento) é recusado",
+      "ok": true,
+      "evidencia": "HTTP 400 DEADLINE_SOURCE_REQUIRED"
+    },
+    {
+      "descricao": "prazo criado, aberto, com origem e responsável",
+      "ok": true,
+      "evidencia": "status PENDING, vence 2026-11-27T02:59:00.000Z, criticidade HIGH, tarefa 2f096cc5-8eb4-4c3c-939b-a7b76ae4f2d4"
+    },
+    {
+      "descricao": "responsável trocado",
+      "ok": true,
+      "evidencia": "HTTP 200, responsável 3c09969d-1831-4b81-90d0-2e99db273583"
+    },
+    {
+      "descricao": "remarcar sem motivo é recusado",
+      "ok": true,
+      "evidencia": "HTTP 400 LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+    },
+    {
+      "descricao": "vencimento remarcado",
+      "ok": true,
+      "evidencia": "HTTP 200, vence 2026-12-02T02:59:00.000Z"
+    },
+    {
+      "descricao": "perfil sem permissão de alteração não conclui (403)",
+      "ok": true,
+      "evidencia": "HTTP 403 PERMISSION_DENIED"
+    },
+    {
+      "descricao": "concluir exige prova (nota ou arquivo)",
+      "ok": true,
+      "evidencia": "HTTP 422 LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED"
+    },
+    {
+      "descricao": "prazo concluído",
+      "ok": true,
+      "evidencia": "HTTP 200, status DONE"
+    },
+    {
+      "descricao": "leitura final: concluído, responsável e vencimento remarcado",
+      "ok": true,
+      "evidencia": "status DONE, responsável 3c09969d-1831-4b81-90d0-2e99db273583, vence 2026-12-02T02:59:00.000Z"
+    },
+    {
+      "descricao": "auditoria do prazo: criação, atribuição, remarcação e conclusão",
+      "ok": true,
+      "evidencia": "4 eventos: legal.deadline.update, legal.deadline.create"
+    }
+  ],
+  "ids": {
+    "processo": "e484060e-81f9-436e-bb02-f3cd8c6d1c05",
+    "arquivoOrigem": "5f4220fa-fd21-4e2b-a869-cf5f221bc6d2",
+    "prazo": "0b343888-bca4-49a6-a8aa-816db1adb62c"
+  },
+  "auditoria": [
+    {
+      "acao": "legal.deadline.update",
+      "quando": "2026-11-16T20:57:36.365Z",
+      "por": "33477648-c752-4bed-83cb-a04114224f4d",
+      "motivo": "Prazo 0b343888-bca4-49a6-a8aa-816db1adb62c atualizado."
+    },
+    {
+      "acao": "legal.deadline.update",
+      "quando": "2026-11-16T20:57:35.866Z",
+      "por": "33477648-c752-4bed-83cb-a04114224f4d",
+      "motivo": "ACEITE-M5 prorrogação deferida (fictícia)"
+    },
+    {
+      "acao": "legal.deadline.update",
+      "quando": "2026-11-16T20:57:35.549Z",
+      "por": "33477648-c752-4bed-83cb-a04114224f4d",
+      "motivo": "Responsável do prazo 0b343888-bca4-49a6-a8aa-816db1adb62c alterado de 33477648-c752-4bed-83cb-a04114224f4d para 3c09969d-1831-4b81-90d0-2e99db273583: ACEITE-M5 reatribuição de teste"
+    },
+    {
+      "acao": "legal.deadline.create",
+      "quando": "2026-11-16T20:57:35.359Z",
+      "por": "33477648-c752-4bed-83cb-a04114224f4d",
+      "motivo": "Prazo \"ACEITE-M5 prazo fictício: manifestação sobre a intimação\" criado para o processo e484060e-81f9-436e-bb02-f3cd8c6d1c05 (tarefa 2f096cc5-8eb4-4c3c-939b-a7b76ae4f2d4)."
+    }
+  ],
+  "caminhoNaTela": "Contratos > Processos (/painel/contratos/processos/e484060e-81f9-436e-bb02-f3cd8c6d1c05) → cartão \"Prazos\": Novo prazo, Reatribuir, Remarcar, Concluir (pela tela, concluir com nota; arquivo de evidência pela API).",
+  "resultado": {
+    "ok": 10,
+    "falharam": 0
+  }
+}

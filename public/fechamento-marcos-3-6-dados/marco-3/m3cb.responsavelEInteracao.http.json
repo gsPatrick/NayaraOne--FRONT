@@ -1,0 +1,109 @@
+{
+ "arquivo": "test/m3cb.responsavelEInteracao.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-11T12:50:15.580Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:15.629Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:15.659Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/opportunities/43156a70-34e5-49f9-bd65-7fc19c2deb36",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "OPPORTUNITY_REASSIGN_FORBIDDEN"
+  },
+  {
+   "em": "2026-11-11T12:50:15.709Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/opportunities/43156a70-34e5-49f9-bd65-7fc19c2deb36",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:15.945Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:15.989Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:16.041Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/opportunities/b7922b67-41c6-47dd-a1fa-b1476c2229bb",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "OPPORTUNITY_REASSIGN_REASON_REQUIRED"
+  },
+  {
+   "em": "2026-11-11T12:50:16.071Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/opportunities/b7922b67-41c6-47dd-a1fa-b1476c2229bb",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "OPPORTUNITY_REASSIGN_INVALID_OWNER"
+  },
+  {
+   "em": "2026-11-11T12:50:16.116Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/opportunities/b7922b67-41c6-47dd-a1fa-b1476c2229bb",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:16.313Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:16.341Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:16.406Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:16.518Z",
+   "metodo": "DELETE",
+   "caminho": "/api/v1/messages/2f281187-5ea4-46fe-a5e0-db2eaabdbe0f",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND"
+  }
+ ]
+}

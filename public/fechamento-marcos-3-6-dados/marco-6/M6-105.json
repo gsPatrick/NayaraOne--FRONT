@@ -1,0 +1,304 @@
+{
+  "id": "M6-105",
+  "requisito": "Decisão: um único evento de fechamento de chamado (sem duplicidade).",
+  "secaoDoLivro": "Motor de Eventos §4 (maintenance.case.closed) × Construção §11 (warranty.case.closed)",
+  "implementacao": "constructionEvents.service.js: só warranty.case.closed (comentário de convenção no topo)",
+  "telaParaReteste": "Painel → /painel/obras/pos-obra/<id>: fechar chamado",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: fechar o chamado (status=CLOSED) não lança erro (evento warranty.case.closed disparado)",
+      "resultado": "passou",
+      "duracaoMs": 85,
+      "executadoEm": "2026-11-11T00:14:43.143Z"
+    },
+    {
+      "arquivo": "test/construction.minimumEvents.test.js",
+      "nome": "M6-69..M6-80: a jornada da obra grava na Outbox os 15 eventos mínimos do Caderno, com o nome exato",
+      "resultado": "passou",
+      "duracaoMs": 1392,
+      "executadoEm": "2026-11-11T00:13:57.177Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H155",
+      "H181"
+    ],
+    "resumo": [
+      "H155 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 200",
+      "H181 PATCH /api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406 → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:27.161Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H155",
+      "requisitos": [
+        "M6-26",
+        "M6-80",
+        "M6-52",
+        "M6-98",
+        "M6-105"
+      ],
+      "cenario": "Fechar o chamado com causa raiz e fotos antes/depois (publica warranty.case.closed)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED",
+        "rootCauseCode": "WORKMANSHIP",
+        "afterMediaFileIds": [
+          "003b5fa6-1d7f-4ae0-b61c-0e596bbeb842"
+        ]
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 162,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "CLOSED",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "afterMediaFileIds": [
+            "003b5fa6-1d7f-4ae0-b61c-0e596bbeb842"
+          ],
+          "laborCost": "650.00",
+          "materialCost": "210.00",
+          "rootCauseCode": "WORKMANSHIP",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "lockVersion": 2,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "updated_at": "2026-11-11T00:12:27.156Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.161Z"
+    },
+    {
+      "id": "H181",
+      "requisitos": [
+        "M6-26",
+        "M6-80",
+        "M6-105"
+      ],
+      "cenario": "Fechar o chamado crítico (SLA zera o escalonamento)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED",
+        "rootCauseCode": "DESIGN_FLAW",
+        "afterMediaFileIds": [
+          "bc6b661a-cb83-4555-b1e5-7f0d753b69e9"
+        ]
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 39,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Trinca estrutural na viga da garagem",
+          "status": "CLOSED",
+          "warrantyDeadlineAt": null,
+          "category": "STRUCTURAL",
+          "severity": "CRITICAL",
+          "slaDueAt": "2026-11-10T21:12:28.126Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "f827978c-a8b7-45b3-bee9-dd069444adb6"
+          ],
+          "afterMediaFileIds": [
+            "bc6b661a-cb83-4555-b1e5-7f0d753b69e9"
+          ],
+          "laborCost": null,
+          "materialCost": null,
+          "rootCauseCode": "DESIGN_FLAW",
+          "resolutionType": "REIMBURSEMENT",
+          "resolutionAmount": "5000.00",
+          "resolutionStatus": "APPROVED",
+          "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "resolutionFinancialEntryId": "d9a98017-a66d-4cb7-ab31-64ce07e07308",
+          "lockVersion": 5,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:27.884Z",
+          "updated_at": "2026-11-11T00:12:29.120Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:29.131Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C004",
+      "requisitos": [
+        "M6-69",
+        "M6-70",
+        "M6-71",
+        "M6-72",
+        "M6-73",
+        "M6-74",
+        "M6-75",
+        "M6-76",
+        "M6-77",
+        "M6-78",
+        "M6-79",
+        "M6-80",
+        "M6-105",
+        "M6-106"
+      ],
+      "descricao": "Eventos mínimos do Caderno §11 gravados na Outbox pela jornada (nome exato, um por agregado e chave de idempotência)",
+      "sql": "SELECT event_type, count(*)::int AS eventos, count(DISTINCT idempotency_key)::int AS chaves FROM integration.outbox_events WHERE event_type = ANY($1) AND (aggregate_id = ANY($2::uuid[]) OR payload_json->>'projectId' = ANY($3) OR payload_json->>'id' = ANY($3)) GROUP BY 1 ORDER BY 1",
+      "resultado": [
+        {
+          "event_type": "material.received",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "material.requested",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "measurement.approved",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "measurement.submitted",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.closed",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.opened",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "project.budget.approved",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.daily_log.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.delay.detected",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.delivered",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.stage.completed",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.started",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "warranty.case.closed",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "warranty.case.opened",
+          "eventos": 2,
+          "chaves": 2
+        }
+      ],
+      "invariante": "os 15 nomes presentes; eventos = chaves (nenhum evento duplicado)",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.180Z"
+    },
+    {
+      "id": "C005",
+      "requisitos": [
+        "M6-105",
+        "M6-106"
+      ],
+      "descricao": "Nomes canônicos: nenhum construction.stage.completed nem maintenance.case.closed duplicando os eventos do livro",
+      "sql": "SELECT count(*)::int AS n FROM integration.outbox_events WHERE event_type IN ('construction.stage.completed','maintenance.case.closed','construction.maintenance_case.closed')",
+      "resultado": [
+        {
+          "n": 0
+        }
+      ],
+      "invariante": "zero eventos com os nomes alternativos",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.181Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.464Z"
+}

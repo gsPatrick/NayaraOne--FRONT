@@ -1,0 +1,617 @@
+{
+  "id": "M6-103",
+  "requisito": "Decisão de engenharia documentada do schema físico das tabelas sem especificação campo a campo.",
+  "secaoDoLivro": "Catálogo físico TAB-0700/0701 (lacuna da fonte para as demais tabelas)",
+  "implementacao": "src/features/construction/README.md (mapeamento livro → tabela física)",
+  "telaParaReteste": "Sem tela: documentação do schema (evidência em dados = consulta às tabelas)",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.e2e.test.js",
+      "nome": "M6-98: jornada E2E completa — orçamento→material→diário→medição→pagamento→qualidade→entrega→pós-obra",
+      "resultado": "passou",
+      "duracaoMs": 2338,
+      "executadoEm": "2026-11-11T00:13:05.012Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H034",
+      "H042",
+      "H059",
+      "H104",
+      "H171"
+    ],
+    "resumo": [
+      "H034 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budgets → 200",
+      "H042 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages → 200",
+      "H059 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-reports → 200",
+      "H104 GET /api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/measurements → 200",
+      "H171 GET /api/v1/construction/maintenance-cases?projectId=acb529ee-9a5a-4513-9d58-1764116cd61f → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:09.292Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H034",
+      "requisitos": [
+        "M6-04",
+        "M6-17",
+        "M6-46",
+        "M6-103"
+      ],
+      "cenario": "Consultar orçamentos da obra (baseline após aditivo)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budgets",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 147,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "b7894679-6a90-481b-a529-b239ae8647f3",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "status": "APPROVED",
+            "totalAmount": "86000.00",
+            "baselineAmount": "86000.00",
+            "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+            "approvedAt": "2026-11-11T00:12:03.407Z",
+            "approvedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "lockVersion": 2,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:01.803Z",
+            "updated_at": "2026-11-11T00:12:08.691Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "rule_version_id": "207a5205-6fd0-40c3-a2a5-59df350f9100"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:09.292Z"
+    },
+    {
+      "id": "H042",
+      "requisitos": [
+        "M6-02",
+        "M6-44",
+        "M6-103"
+      ],
+      "cenario": "Cronograma: etapas da obra",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 17,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Fundação",
+            "stageCode": "FUN-c4fcd6",
+            "plannedCost": "45000.00",
+            "sequence": 1,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.312Z",
+            "updated_at": "2026-11-11T00:12:09.312Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          },
+          {
+            "id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Alvenaria",
+            "stageCode": "ALV-c4fcd6",
+            "plannedCost": "35000.00",
+            "sequence": 2,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.358Z",
+            "updated_at": "2026-11-11T00:12:09.358Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          },
+          {
+            "id": "e16ccea5-a649-4817-8ca2-b9a797854c1e",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Cobertura",
+            "stageCode": "COB-c4fcd6",
+            "plannedCost": "6000.00",
+            "sequence": 3,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.377Z",
+            "updated_at": "2026-11-11T00:12:09.377Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:09.933Z"
+    },
+    {
+      "id": "H059",
+      "requisitos": [
+        "M6-48",
+        "M6-103"
+      ],
+      "cenario": "Lista de RDOs da obra (só a versão vigente de cada um)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-reports",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 81,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "c79365a2-552e-4dbe-b2b8-ce6a82896de7",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "reportDate": "2026-11-09",
+            "shiftCode": "TARDE",
+            "weather": null,
+            "workforceCount": 7,
+            "servicesPerformed": "Desforma",
+            "occurrences": null,
+            "blockages": null,
+            "evidenceFileIds": [
+              "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+            ],
+            "reportedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "supersedesId": null,
+            "clientLocalId": null,
+            "idempotencyKey": "rdo-t-c4fcd6",
+            "evidenceReuseFlagged": true,
+            "evidenceReuseReferenceId": "7fdbcbde-77f4-4aa3-8372-c8df19160180",
+            "evidenceReuseDetails": {
+              "matchedAt": "2026-11-11T00:12:11.689Z",
+              "overlappingFileIds": [
+                "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+              ]
+            },
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:11.690Z",
+            "updated_at": "2026-11-11T00:12:11.690Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "reported_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "supersedes_id": null
+          },
+          {
+            "id": "96bc16ee-7d4f-4449-8fcb-5cc8d79db6b9",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "reportDate": "2026-11-09",
+            "shiftCode": "MANHA",
+            "weather": "Ensolarado",
+            "workforceCount": 10,
+            "servicesPerformed": "Concretagem da sapata S3",
+            "occurrences": "Correção: faltou um armador na contagem",
+            "blockages": "Bomba de concreto atrasou 40 min",
+            "evidenceFileIds": [
+              "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+            ],
+            "reportedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "supersedesId": "7fdbcbde-77f4-4aa3-8372-c8df19160180",
+            "clientLocalId": null,
+            "idempotencyKey": null,
+            "evidenceReuseFlagged": false,
+            "evidenceReuseReferenceId": null,
+            "evidenceReuseDetails": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:11.723Z",
+            "updated_at": "2026-11-11T00:12:11.723Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "reported_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "supersedes_id": "7fdbcbde-77f4-4aa3-8372-c8df19160180"
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "pageSize": 50,
+          "total": 2
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.011Z"
+    },
+    {
+      "id": "H104",
+      "requisitos": [
+        "M6-49",
+        "M6-10",
+        "M6-103",
+        "M6-106"
+      ],
+      "cenario": "Medições da etapa (só a versão vigente)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/measurements",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 146,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "measuredPct": "100.000000",
+            "measuredAt": "2026-11-09",
+            "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "notes": null,
+            "status": "PAYABLE",
+            "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "decidedAt": "2026-11-11T00:12:16.623Z",
+            "rejectionReason": null,
+            "submittedAt": "2026-11-11T00:12:15.995Z",
+            "reviewedAt": "2026-11-11T00:12:16.190Z",
+            "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "reviewNotes": "Conferido em campo pelo fiscal",
+            "approvedAt": "2026-11-11T00:12:16.623Z",
+            "totalAmount": "41200.00",
+            "payableFinancialEntryId": "c6c73a47-c908-452c-a3db-8d8338177778",
+            "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+            "revisionNumber": 2,
+            "costCenterId": null,
+            "idempotencyKey": null,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "created_at": "2026-11-11T00:12:15.900Z",
+            "updated_at": "2026-11-11T00:12:16.897Z",
+            "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "approved_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "reviewed_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "payable_financial_entry_id": "c6c73a47-c908-452c-a3db-8d8338177778",
+            "parent_measurement_id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:17.899Z"
+    },
+    {
+      "id": "H171",
+      "requisitos": [
+        "M6-52",
+        "M6-100",
+        "M6-103"
+      ],
+      "cenario": "Lista de chamados de pós-obra (paginada)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/maintenance-cases?projectId=acb529ee-9a5a-4513-9d58-1764116cd61f",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 45,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "openedByPersonId": null,
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "description": "Trinca estrutural na viga da garagem",
+            "status": "OPEN",
+            "warrantyDeadlineAt": null,
+            "category": "STRUCTURAL",
+            "severity": "CRITICAL",
+            "slaDueAt": "2026-11-10T21:12:28.126Z",
+            "escalationLevel": "OVERDUE",
+            "beforeMediaFileIds": [
+              "f827978c-a8b7-45b3-bee9-dd069444adb6"
+            ],
+            "afterMediaFileIds": [],
+            "laborCost": null,
+            "materialCost": null,
+            "rootCauseCode": null,
+            "resolutionType": "REIMBURSEMENT",
+            "resolutionAmount": "5000.00",
+            "resolutionStatus": "APPROVED",
+            "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "resolutionFinancialEntryId": "d9a98017-a66d-4cb7-ab31-64ce07e07308",
+            "lockVersion": 3,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:27.884Z",
+            "updated_at": "2026-11-11T00:12:28.208Z",
+            "deleted_at": null,
+            "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "opened_by_person_id": null,
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          {
+            "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "openedByPersonId": null,
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "description": "Infiltração na laje do banheiro social",
+            "status": "CLOSED",
+            "warrantyDeadlineAt": null,
+            "category": "WATERPROOFING",
+            "severity": "HIGH",
+            "slaDueAt": "2026-11-16T00:12:26.351Z",
+            "escalationLevel": "NONE",
+            "beforeMediaFileIds": [
+              "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+            ],
+            "afterMediaFileIds": [
+              "12207804-959e-4b64-93d7-76f8e2d78a6d"
+            ],
+            "laborCost": "650.00",
+            "materialCost": "210.00",
+            "rootCauseCode": "WORKMANSHIP",
+            "resolutionType": "DISCOUNT",
+            "resolutionAmount": "400.00",
+            "resolutionStatus": "APPROVED",
+            "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "resolutionFinancialEntryId": "35367e4d-dc95-4938-96cc-2e2b5d99a1c4",
+            "lockVersion": 4,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:26.358Z",
+            "updated_at": "2026-11-11T00:12:27.789Z",
+            "deleted_at": null,
+            "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "opened_by_person_id": null,
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "pageSize": 50,
+          "total": 2
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.383Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.463Z"
+}

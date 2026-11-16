@@ -1,0 +1,225 @@
+{
+ "id": "M5-A0204-fc6bab",
+ "secao": "P2 > 10. Comparação entrada x saída",
+ "linhaCaderno": 603,
+ "requisito": "before: pair.entry.conditionCode, after: pair.exit.conditionCode, changed: pair.entry.conditionCode !== pair.exit.conditionCode, mediaRefs: [...pair.entry.mediaFileIds, ...pair.exit.mediaFileIds], })); } // NAY pode resumir diferenças; responsabilidade/cobrança precisa de validação humana.",
+ "demandas": "M5-D029",
+ "implementacao": "src/modules/legal/inspections/comparison.service.js buildComparedItems (before, after, changed, mediaRefs de entrada+saída, requiresHumanValidation) usado por src/modules/legal/inspections/inspection.service.js:274 compareInspections; rota GET /api/v1/legal/inspections/compare",
+ "tela": "Contratos > Vistorias (/painel/contratos/vistorias, /painel/contratos/vistorias/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.vistorias.test.js",
+   "nome": "fechamento M5 Guia §10: comparação entrada x saída traz before/after/changed/mediaRefs por item, não cria cobrança e exige validação humana",
+   "status": "pass",
+   "ms": 45.674,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-39",
+   "metodo": "GET",
+   "rota": "/legal/inspections/compare?entryInspectionId=dd23f80f-6f30-42d8-ba5a-801592ca9fce&exitInspectionId=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 7 campo(s)",
+   "quando": "2026-11-11T03:42:31.683Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0204-fc6bab.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Corrigido: a comparação não trazia antes/depois/mudou/mídias por item. Agora cada item tem before, after, changed e mediaRefs (fotos/vídeos da entrada e da saída) e requiresHumanValidation; nenhuma cobrança nasce da diferença (LC-VI-42). Teste novo m5fech.locacao.vistorias \"comparação entrada x saída\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.vistorias.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-39, LC-VI-42)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-39",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Compara entrada x saída por ambiente + código do item: antes/depois, mudou?, mídias e validação humana",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/inspections/compare?entryInspectionId=dd23f80f-6f30-42d8-ba5a-801592ca9fce&exitInspectionId=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:31.683Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "entryInspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "exitInspectionId": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+     "divergences": [
+      {
+       "itemName": "Sala — piso",
+       "roomCode": "SALA",
+       "itemCode": "PISO",
+       "entryCondition": "GOOD",
+       "exitCondition": "DAMAGED",
+       "reason": "CONDITION_CHANGED"
+      },
+      {
+       "itemName": "Banheiro — box",
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "entryCondition": "DAMAGED",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      },
+      {
+       "itemName": "Pintura das paredes",
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "entryCondition": "NEW",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      },
+      {
+       "itemName": "Quarto — janela",
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "entryCondition": "GOOD",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      }
+     ],
+     "onlyInEntry": [
+      {
+       "itemName": "Banheiro — box",
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "entryCondition": "DAMAGED"
+      },
+      {
+       "itemName": "Pintura das paredes",
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "entryCondition": "NEW"
+      },
+      {
+       "itemName": "Quarto — janela",
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "entryCondition": "GOOD"
+      }
+     ],
+     "onlyInExit": [],
+     "items": [
+      {
+       "roomCode": "SALA",
+       "itemCode": "PISO",
+       "itemName": "Sala — piso",
+       "entryItemId": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+       "exitItemId": "5d4b04f7-3608-4f3b-80dd-39ea8d353563",
+       "before": "GOOD",
+       "after": "DAMAGED",
+       "changed": true,
+       "mediaRefs": [
+        "df88c2c0-3015-4b9f-a0ba-70f61b0482e8"
+       ],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "COZINHA",
+       "itemCode": "ARMARIO",
+       "itemName": "Cozinha — armário",
+       "entryItemId": "2e76ac97-3a17-4d1f-8644-82acded4eeeb",
+       "exitItemId": "526a1474-3159-45fd-b09d-d25655d5689b",
+       "before": "REGULAR",
+       "after": "REGULAR",
+       "changed": false,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "itemName": "Banheiro — box",
+       "entryItemId": "d6f0eeb5-4117-4381-97ee-6a663e8717c6",
+       "exitItemId": null,
+       "before": "DAMAGED",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "itemName": "Pintura das paredes",
+       "entryItemId": "e4ece4bd-42cc-4351-bce5-64867ec65b62",
+       "exitItemId": null,
+       "before": "NEW",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "itemName": "Quarto — janela",
+       "entryItemId": "871334b3-6a2f-4a6c-9e5c-7bd46d18ae79",
+       "exitItemId": null,
+       "before": "GOOD",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      }
+     ],
+     "requiresHumanValidation": true
+    }
+   },
+   "req": [
+    "M5-A0092-c94934",
+    "M5-A0170-eac51d",
+    "M5-A0203-c813f9",
+    "M5-A0204-fc6bab"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-VI-42",
+   "req": [
+    "M5-A0261-d6fe86",
+    "M5-A0092-c94934",
+    "M5-A0204-fc6bab"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "perfil": "A:gestor",
+   "descricao": "Nenhuma cobrança nasce sozinha da diferença: zero lançamentos financeiros no contrato (humano valida)",
+   "sql": "SELECT count(*)::int AS lancamentos FROM finance.financial_entries WHERE contract_id = :c",
+   "resultado": [
+    {
+     "lancamentos": 0
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:31.728Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

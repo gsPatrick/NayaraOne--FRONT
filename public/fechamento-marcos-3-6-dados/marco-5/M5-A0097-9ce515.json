@@ -1,0 +1,394 @@
+{
+ "id": "M5-A0097-9ce515",
+ "secao": "P1 > 12. Obrigações da locação",
+ "linhaCaderno": 228,
+ "requisito": "• Valores pagos pela imobiliária para reembolso viram lançamento financeiro vinculado.",
+ "demandas": "M5-D351;M5-D352",
+ "implementacao": "src/features/billing/utilities.service.js:319 recordUtilityPayment — pago por parte diferente da responsável: finance.financial_entries RECEIVABLE com contract_id + finance.utility_reimbursements.financial_entry_id",
+ "tela": "Contratos > Locação (/painel/contratos/locacao)",
+ "testes": [
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: reembolso é criado quando a imobiliária paga utilidade da responsabilidade da outra parte",
+   "status": "pass",
+   "ms": 43.42,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.cobranca.test.js",
+   "nome": "fechamento M5 §12: pendência não some quando o contrato tenta encerrar — closeout bloqueado mantém obrigação, tarefa de titularidade e reembolso com o lançamento",
+   "status": "pass",
+   "ms": 102.176,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-OB-30",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/8b7f8c3d-5e34-4483-a2bb-9c0b71dca383/payments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:34.241Z"
+  },
+  {
+   "passo": "LC-OB-31",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:34.273Z"
+  },
+  {
+   "passo": "LC-OB-32",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "UTILITY_PAYMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_PAYMENT_VALIDATION"
+   },
+   "resumo": "erro UTILITY_PAYMENT_VALIDATION: \"amount\" deve ser um número positivo.",
+   "quando": "2026-11-11T03:42:34.282Z"
+  },
+  {
+   "passo": "LC-OB-43",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "UTILITY_PAYMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_PAYMENT_VALIDATION"
+   },
+   "resumo": "erro UTILITY_PAYMENT_VALIDATION: \"paidByParty\" deve ser quem pagou (ex.: COMPANY, TENANT, LANDLORD), até 16 letras.",
+   "quando": "2026-11-11T03:42:34.353Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0097-9ce515.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/billing.test.js test/m5fech.locacao.cobranca.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-OB-30, LC-OB-31, LC-OB-32, LC-OB-33, LC-OB-38, LC-OB-43, LC-OB-39)"
+ },
+ "passos": [
+  {
+   "id": "LC-OB-30",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Condomínio pago pelo próprio responsável (locatário): sem reembolso",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/8b7f8c3d-5e34-4483-a2bb-9c0b71dca383/payments",
+   "corpoEnviado": {
+    "amount": 640.5,
+    "paidByParty": "TENANT"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:34.241Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "reimbursement": null,
+     "financialEntry": null
+    }
+   },
+   "req": [
+    "M5-A0339-b9d073",
+    "M5-A0097-9ce515",
+    "M5-A0345-019723"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-31",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "IPTU do locador pago pela imobiliária: reembolso a receber + lançamento financeiro",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "corpoEnviado": {
+    "amount": 1234.56,
+    "paidByParty": "COMPANY"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 32,
+   "quando": "2026-11-11T03:42:34.273Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "reimbursement": {
+      "id": "a3c6d739-d178-4445-a112-6bfeeb49e1c7",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "a16635ff-ba1f-47c0-b21c-fba8394df2e2",
+      "paidByParty": "COMPANY",
+      "owedByParty": "LANDLORD",
+      "amount": "1234.56",
+      "financialEntryId": "3c391765-b410-4ca7-9f83-3b2b0f6078d3",
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:34.265Z",
+      "created_at": "2026-11-11T03:42:34.265Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "financialEntry": {
+      "id": "3c391765-b410-4ca7-9f83-3b2b0f6078d3",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "d2a9583e-c038-4f49-8aef-e5309ba78fe1",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "1234.56",
+      "description": "Reembolso de IPTU pago por uma das partes, a cobrar de o locador.",
+      "dueAt": "2026-11-11T03:42:34.253Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "utility_reimbursement:a16635ff-ba1f-47c0-b21c-fba8394df2e2:1794368554253",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:34.259Z",
+      "created_at": "2026-11-11T03:42:34.259Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0270-5f73bd",
+    "M5-A0327-22b135",
+    "M5-A0097-9ce515",
+    "M5-A0339-b9d073",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0345-019723"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-32",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pagamento com valor zero é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "corpoEnviado": {
+    "amount": 0,
+    "paidByParty": "COMPANY"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_PAYMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "UTILITY_PAYMENT_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:34.282Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "UTILITY_PAYMENT_VALIDATION",
+     "message": "\"amount\" deve ser um número positivo.",
+     "traceId": "74eae397-3e7a-4469-8d53-374830012569"
+    }
+   },
+   "req": [
+    "M5-A0097-9ce515"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-38",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "SPU paga pela imobiliária enviada 2 vezes com a mesma Idempotency-Key (HTTP real, perfil A:gestor): a 2ª devolve a resposta original sem novo reembolso",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "POST /billing/utility-obligations/:id/payments x2 com o cabeçalho Idempotency-Key",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 48,
+   "quando": "2026-11-11T03:42:34.333Z",
+   "corpo": {
+    "result": {
+     "primeira": {
+      "status": 201,
+      "replay": null,
+      "reembolso": "75d6c197-3db6-4d63-be6c-578aa3c1860b"
+     },
+     "segunda": {
+      "status": 201,
+      "replay": "true",
+      "reembolso": "75d6c197-3db6-4d63-be6c-578aa3c1860b"
+     }
+    }
+   },
+   "req": [
+    "M5-A0097-9ce515",
+    "M5-A0339-b9d073",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-OB-43",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: \"quem pagou\" com mais de 16 caracteres é 400, não 500",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "corpoEnviado": {
+    "amount": 10,
+    "paidByParty": "IMOBILIARIA_DO_JO"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_PAYMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "UTILITY_PAYMENT_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:34.353Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "UTILITY_PAYMENT_VALIDATION",
+     "message": "\"paidByParty\" deve ser quem pagou (ex.: COMPANY, TENANT, LANDLORD), até 16 letras.",
+     "traceId": "30b69c1d-7e54-412e-96e3-2b398e23befc"
+    }
+   },
+   "req": [
+    "M5-A0097-9ce515",
+    "M5-A0339-b9d073",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-OB-33",
+   "req": [
+    "M5-A0097-9ce515",
+    "M5-A0339-b9d073"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "perfil": "A:gestor",
+   "descricao": "Reembolso PENDING ligado a um lançamento RECEIVABLE do mesmo contrato e valor",
+   "sql": "SELECT r.status, r.paid_by_party, r.owed_by_party, r.amount, f.nature, f.entry_type, f.amount AS valor_lancamento, f.contract_id FROM finance.utility_reimbursements r JOIN finance.financial_entries f ON f.id = r.financial_entry_id WHERE r.id = :id",
+   "resultado": [
+    {
+     "status": "PENDING",
+     "paid_by_party": "COMPANY",
+     "owed_by_party": "LANDLORD",
+     "amount": "1234.56",
+     "nature": "RECEIVABLE",
+     "entry_type": "CREDIT",
+     "valor_lancamento": "1234.56",
+     "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:34.284Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-OB-39",
+   "req": [
+    "M5-A0097-9ce515",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "perfil": "A:gestor",
+   "descricao": "Um único reembolso e um único recebível para o pagamento repetido com a mesma chave",
+   "sql": "SELECT count(*)::int AS reembolsos, count(DISTINCT financial_entry_id)::int AS recebiveis FROM finance.utility_reimbursements WHERE utility_obligation_id = :o",
+   "resultado": [
+    {
+     "reembolsos": 1,
+     "recebiveis": 1
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:34.335Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

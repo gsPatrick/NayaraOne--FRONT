@@ -1,0 +1,378 @@
+{
+ "id": "M4-§12.2",
+ "secao": "§12 Repasses",
+ "requisito": "\"owner_repass calcula valor devido ao proprietário por contrato/regra.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.acceptance.test.js",
+   "nome": "M4-15/contrato §12 createOwnerRepasse calcula líquido = min(bruto, teto elegível) - deduções, nunca editável diretamente",
+   "status": "passou",
+   "duracaoMs": 98,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/m45.ownerRepasseEligible.test.js",
+   "nome": "M45-F4 caminho feliz: lista -> cria repasse válido -> aprovado por outra pessoa -> saldo consumido sai da lista",
+   "status": "passou",
+   "duracaoMs": 89,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T21",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.2"
+   ],
+   "titulo": "Fontes elegíveis do imóvel: o aluguel recebido aparece com o valor disponível",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/owner-repasses/eligible-sources?propertyId=f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T01:35:12.345Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "39b64069-e468-4f3c-b0db-691437ba5e18",
+      "description": "Aluguel do contrato 0871300",
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T01:35:12.290Z",
+      "amount": 1500,
+      "alreadyAllocatedAmount": 0,
+      "availableAmount": 1500
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T22",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.2"
+   ],
+   "titulo": "Fontes elegíveis sem imóvel: recusado",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/owner-repasses/eligible-sources",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_OWNER_REPASSE_VALIDATION"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_OWNER_REPASSE_VALIDATION",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T01:35:12.353Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_OWNER_REPASSE_VALIDATION",
+     "message": "Escolha o imóvel para listar os recebimentos elegíveis ao repasse.",
+     "traceId": "04ae8c8c-576b-4e33-904d-16efdbfcbf4e"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T25",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.2",
+    "M4-§5.14",
+    "M4-§12.4"
+   ],
+   "titulo": "Repasse criado: bruto R$ 1.500,00, taxa de administração R$ 150,00 com motivo e documento, líquido R$ 1.350,00",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+    "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+    "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+    "sourceEntryIds": [
+     "39b64069-e468-4f3c-b0db-691437ba5e18"
+    ],
+    "referenceMonth": "2026-11",
+    "idempotencyKey": "m4-rep-0871300",
+    "grossAmount": 1500,
+    "deductionsAmount": 150,
+    "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+    "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 62,
+   "quando": "2026-11-11T01:35:12.445Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f79e16fb-a3db-4320-b9e5-daf743655f93",
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+     "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+     "grossAmount": "1500.00",
+     "deductionsAmount": "150.00",
+     "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+     "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc",
+     "netAmount": "1350.00",
+     "referenceMonth": "2026-11",
+     "status": "PENDING",
+     "idempotencyKey": "m4-rep-0871300",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:12.406Z",
+     "created_at": "2026-11-11T01:35:12.406Z",
+     "financialEntryId": null,
+     "paidAt": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "confirmedByUserId": null,
+     "paymentEvidenceFileId": null,
+     "paymentSettlementMethod": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "HML-repasses",
+   "descricao": "Leitura de repasses na homologação",
+   "metodo": "GET",
+   "rota": "/finance/owner-repasses",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:07.210Z",
+   "duracaoMs": 147,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "total": 33,
+    "porStatus": {
+     "PENDING": 33
+    },
+    "amostra": [
+     {
+      "id": "c677e86e-bf26-43c9-b6d8-82967bd72830",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "propertyId": "3b15c106-2621-44ca-a9b0-43580334dcec",
+      "ownerPersonId": "3fe860f8-7056-44a6-972a-ac7787d7e7e8",
+      "contractId": null,
+      "bankAccountId": null,
+      "grossAmount": "500.00",
+      "deductionsAmount": "50.00",
+      "netAmount": "450.00",
+      "financialEntryId": null,
+      "paidAt": null,
+      "deductionsReason": "Taxa de administração contratual",
+      "deductionsDocumentFileId": null,
+      "approvedByUserId": null,
+      "approvedAt": null,
+      "confirmedByUserId": null,
+      "paymentEvidenceFileId": null,
+      "paymentSettlementMethod": null,
+      "referenceMonth": "2026-09",
+      "status": "PENDING",
+      "idempotencyKey": "repasse-http-179251468328832973",
+      "lockVersion": 0,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-20T16:44:46.452Z",
+      "updated_at": "2026-10-20T16:44:46.452Z",
+      "property_id": "3b15c106-2621-44ca-a9b0-43580334dcec",
+      "owner_person_id": "3fe860f8-7056-44a6-972a-ac7787d7e7e8",
+      "contract_id": null,
+      "bank_account_id": null
+     },
+     {
+      "id": "4c6ff0af-bd02-4c4f-9750-71b0d118e31a",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "propertyId": "abfd9463-3e52-439f-a5f3-dc5cb2cf4641",
+      "ownerPersonId": "8e143a66-d073-4f9b-b8b2-8c16e9bdcb75",
+      "contractId": null,
+      "bankAccountId": null,
+      "grossAmount": "500.00",
+      "deductionsAmount": "50.00",
+      "netAmount": "450.00",
+      "financialEntryId": null,
+      "paidAt": null,
+      "deductionsReason": "Taxa de administração contratual",
+      "deductionsDocumentFileId": null,
+      "approvedByUserId": null,
+      "approvedAt": null,
+      "confirmedByUserId": null,
+      "paymentEvidenceFileId": null,
+      "paymentSettlementMethod": null,
+      "referenceMonth": "2026-09",
+      "status": "PENDING",
+      "idempotencyKey": "repasse-http-179251325596324641",
+      "lockVersion": 0,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-20T16:21:00.593Z",
+      "updated_at": "2026-10-20T16:21:00.593Z",
+      "property_id": "abfd9463-3e52-439f-a5f3-dc5cb2cf4641",
+      "owner_person_id": "8e143a66-d073-4f9b-b8b2-8c16e9bdcb75",
+      "contract_id": null,
+      "bank_account_id": null
+     },
+     {
+      "id": "4bc0340f-fae8-4bf9-b323-3908d01a4af8",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "propertyId": "70eb3ad0-f05d-46bc-8c85-1f362c8fc3b6",
+      "ownerPersonId": "c676ff4f-62fb-4123-bfb2-49ef75c99d0f",
+      "contractId": null,
+      "bankAccountId": null,
+      "grossAmount": "2500.00",
+      "deductionsAmount": "100.00",
+      "netAmount": "2400.00",
+      "financialEntryId": null,
+      "paidAt": null,
+      "deductionsReason": "QA-M4-12 taxa de administração",
+      "deductionsDocumentFileId": null,
+      "approvedByUserId": null,
+      "approvedAt": null,
+      "confirmedByUserId": null,
+      "paymentEvidenceFileId": null,
+      "paymentSettlementMethod": null,
+      "referenceMonth": "2026-11",
+      "status": "PENDING",
+      "idempotencyKey": "repasse-c676ff4f-62fb-4123-bfb2-49ef75c99d0f-70eb3ad0-f05d-46bc-8c85-1f362c8fc3b6-sem-2026-11",
+      "lockVersion": 0,
+      "createdBy": "5b4e1b22-01a6-4e2a-8e9b-55a0f19bfc91",
+      "updatedBy": "5b4e1b22-01a6-4e2a-8e9b-55a0f19bfc91",
+      "created_at": "2026-10-20T14:36:09.886Z",
+      "updated_at": "2026-10-20T14:36:09.886Z",
+      "property_id": "70eb3ad0-f05d-46bc-8c85-1f362c8fc3b6",
+      "owner_person_id": "c676ff4f-62fb-4123-bfb2-49ef75c99d0f",
+      "contract_id": null,
+      "bank_account_id": null
+     }
+    ]
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:07.210Z"
+  },
+  {
+   "id": "HML-repasses-trilha",
+   "descricao": "Trilha de auditoria de repasses",
+   "metodo": "GET",
+   "rota": "/audit-log?entityId=c677e86e-bf26-43c9-b6d8-82967bd72830",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:07.367Z",
+   "duracaoMs": 156,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "7a180b16-b492-4dde-9e70-bdfa266a18e3",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "userId": "33477648-c752-4bed-83cb-a04114224f4d",
+      "action": "finance.owner_repasse.create",
+      "entityType": "OwnerRepass",
+      "entityId": "c677e86e-bf26-43c9-b6d8-82967bd72830",
+      "beforeJson": null,
+      "afterJson": {
+       "id": "c677e86e-bf26-43c9-b6d8-82967bd72830",
+       "paidAt": null,
+       "status": "PENDING",
+       "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+       "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+       "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+       "netAmount": "450.00",
+       "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+       "approvedAt": null,
+       "contractId": null,
+       "created_at": "2026-10-20T16:44:46.452Z",
+       "propertyId": "3b15c106-2621-44ca-a9b0-43580334dcec",
+       "updated_at": "2026-10-20T16:44:46.452Z",
+       "composition": [
+        {
+         "description": "M4-comp aluguel 179251468328832973",
+         "eligibleAmount": 500,
+         "financialEntryId": "8be94937-65eb-47d4-b1ea-903b09ac48a9"
+        }
+       ],
+       "grossAmount": "500.00",
+       "lockVersion": 0,
+       "bankAccountId": null,
+       "ownerPersonId": "3fe860f8-7056-44a6-972a-ac7787d7e7e8",
+       "eligibleAmount": 500,
+       "idempotencyKey": "repasse-http-179251468328832973",
+       "referenceMonth": "2026-09",
+       "approvedByUserId": null,
+       "deductionsAmount": "50.00",
+       "deductionsReason": "Taxa de administração contratual",
+       "financialEntryId": null,
+       "formalAdjustment": null,
+       "confirmedByUserId": null,
+       "paymentEvidenceFileId": null,
+       "paymentSettlementMethod": null,
+       "deductionsDocumentFileId": null
+      },
+      "reason": "Repasse de 450 (bruto 500 - deduções 50) registrado — teto elegível 500 de 1 recebimento(s).",
+      "occurredAt": "2026-10-20T16:44:47.328Z",
+      "sessionId": null,
+      "ipAddress": null,
+      "correlationId": null,
+      "ruleVersionId": null,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-20T16:44:47.329Z",
+      "updated_at": "2026-10-20T16:44:47.329Z",
+      "user_id": "33477648-c752-4bed-83cb-a04114224f4d"
+     }
+    ]
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:07.367Z"
+  }
+ ],
+ "consultasBanco": []
+}

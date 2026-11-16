@@ -1,0 +1,215 @@
+{
+ "id": "M4-G§9",
+ "secao": "Guia §9 Conciliação",
+ "requisito": "scoreMatch 0.45/0.30/0.15/0.10; múltiplos fortes = AMBIGUOUS, nunca auto",
+ "substitui": "evidencias/marco-4/M4-G9.json",
+ "motivo": "Correções DI-M4CC (branch m4fix/conciliacao-comissao): regra AUTO_STRONG parametrizada e fonte confiável (Guia §9, §11, FIN-009), UNIQUE completo do fingerprint e conta da própria empresa (Guia §10, FIN-002), comissão REG-FIN-001 em decimal exato (Guia §11, §18), NAY lendo o read model (Guia §13). Captura em banco descartável no commit indicado; a evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "7982eef4",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T10:38:24.663Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-G§9 --sufixo m4cc",
+ "respostasHttp": [
+  {
+   "id": "C21",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.2",
+    "M4-G§9"
+   ],
+   "titulo": "Sugestão FORTE: referência + contraparte (conta) + janela, score 0.90 (pesos 0.45/0.30/0.15/0.10)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/bank-transactions/390d59cd-6db9-4720-ba82-93a91633cad5/reconciliation-suggestions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 462,
+   "quando": "2026-11-11T10:37:03.223Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "bankTransactionId": "390d59cd-6db9-4720-ba82-93a91633cad5",
+     "finalClass": "STRONG",
+     "candidates": [
+      {
+       "financialEntryId": "3726ebbb-3cf9-46bb-a90f-8335262b4beb",
+       "score": 1,
+       "criteria": {
+        "amountMatch": true,
+        "referenceMatch": true,
+        "byExternalId": false,
+        "counterpartyMatch": true,
+        "dateMatch": true
+       },
+       "class": "STRONG",
+       "reasons": [
+        "Valor igual",
+        "Referência do lançamento citada no extrato",
+        "Mesma conta bancária",
+        "Data dentro da janela de tolerância"
+       ]
+      }
+     ],
+     "policy": {
+      "autoScoreMin": 0.9,
+      "suggestionScoreMin": 0.45,
+      "dateWindowDays": 3,
+      "ambiguityGap": 0.05,
+      "autoStrong": false
+     },
+     "source": "FILE_IMPORT",
+     "sourceTrusted": true
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K01",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§9"
+   ],
+   "titulo": "Regra AUTO_STRONG vigente da empresa (parâmetros, DEC-006/DI-M4CC-3)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/reconciliation/policy",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200,
+    "conteudo": "autoScoreMin 0,90; suggestionScoreMin 0,45; dateWindowDays 3; ambiguityGap 0,05; autoStrong falso"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "autoScoreMin 0,90; suggestionScoreMin 0,45; dateWindowDays 3; ambiguityGap 0,05; autoStrong falso",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 669,
+   "quando": "2026-11-11T10:38:19.920Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "autoScoreMin": 0.9,
+     "suggestionScoreMin": 0.45,
+     "dateWindowDays": 3,
+     "ambiguityGap": 0.05,
+     "autoStrong": false
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K04",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-009",
+    "M4-§11.1",
+    "M4-G§9"
+   ],
+   "titulo": "EXATO de linha digitada: não concilia sozinho (fonte não confiável)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/30274457-66cd-4c85-ab74-4896cad5ac19/auto-reconcile",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200,
+    "conteudo": "finalClass EXACT, autoReconciled false, autoBlockedReason UNTRUSTED_SOURCE"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "finalClass EXACT, autoReconciled false, autoBlockedReason UNTRUSTED_SOURCE",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 380,
+   "quando": "2026-11-11T10:38:20.790Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "bankTransactionId": "30274457-66cd-4c85-ab74-4896cad5ac19",
+     "finalClass": "EXACT",
+     "candidates": [
+      {
+       "financialEntryId": "e400d754-5386-403a-b209-42895ef70413",
+       "score": 1,
+       "criteria": {
+        "amountMatch": true,
+        "referenceMatch": true,
+        "byExternalId": true,
+        "counterpartyMatch": true,
+        "dateMatch": true
+       },
+       "class": "EXACT",
+       "reasons": [
+        "Valor igual",
+        "ID externo do extrato igual ao do lançamento",
+        "Mesma conta bancária",
+        "Data dentro da janela de tolerância"
+       ]
+      }
+     ],
+     "policy": {
+      "autoScoreMin": 0.9,
+      "suggestionScoreMin": 0.45,
+      "dateWindowDays": 3,
+      "ambiguityGap": 0.05,
+      "autoStrong": false
+     },
+     "source": "MANUAL",
+     "sourceTrusted": false,
+     "autoReconciled": false,
+     "autoBlockedReason": "UNTRUSTED_SOURCE"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": "nenhum",
+ "consultasBanco": [],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "contrato §11 scoreMatch aplica os pesos EXATOS do contrato (0.45/0.30/0.15/0.10)",
+   "status": "passou",
+   "duracaoMs": 92,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "contrato §11 suggestReconciliationMatches classifica AMBÍGUO quando há múltiplos candidatos fortes empatados, e nunca auto concilia nesse caso",
+   "status": "passou",
+   "duracaoMs": 30,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ]
+}

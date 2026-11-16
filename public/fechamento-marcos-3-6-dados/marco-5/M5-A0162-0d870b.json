@@ -1,0 +1,229 @@
+{
+ "id": "M5-A0162-0d870b",
+ "secao": "P1 > 20. Testes adversariais [tabela: Teste | Tema | Cenário | Resultado]",
+ "linhaCaderno": 368,
+ "requisito": "JUR-TS-014 | Aditivo | Tenta sobrescrever contrato | Bloqueado.",
+ "demandas": "X45-D074;M5-D005;M5-D019",
+ "implementacao": "src/modules/legal/contracts/application/contractAmendments.service.js:55 createAmendment só grava legal.contract_amendments (não toca contrato nem versão); trigger append-only das versões",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-014: aditivo não sobrescreve o contrato — cabeçalho, versões e hash intactos; versão não tem rota de edição e o banco recusa UPDATE",
+   "status": "pass",
+   "ms": 464.636,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "M5-25: aditivos têm numeração sequencial por contrato e histórico nunca é editado",
+   "status": "pass",
+   "ms": 180.939,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L02: aditivo para contrato de OUTRA empresa é impossível (o contrato simplesmente não existe para o atacante)",
+   "status": "pass",
+   "ms": 44.886,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-522",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+   "quando": "2026-11-11T03:42:29.220Z"
+  },
+  {
+   "passo": "CT-529",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro LEGAL_CONTRACT_NOT_FOUND: Contrato não encontrado.",
+   "quando": "2026-11-11T03:42:29.368Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0162-0d870b.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo: test/m5fech.contratos.adversariais.test.js \"JUR-TS-014: aditivo não sobrescreve o contrato — cabeçalho, versões e hash intactos; versão não tem rota de edição e o banco recusa UPDATE\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.adversariais.test.js test/marco5.legal.test.js test/adversarial.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-522, CT-523, CT-529)"
+ },
+ "passos": [
+  {
+   "id": "CT-522",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Aditivo ao contrato assinado com motivo, alterações, cláusulas alteradas e vigência (1º aditivo)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "corpoEnviado": {
+    "reason": "Reajuste fictício do aluguel",
+    "changes": [
+     {
+      "field": "totalValue",
+      "oldValue": 2000,
+      "newValue": 2100
+     },
+     {
+      "field": "content",
+      "newValue": "tentativa de reescrever o texto do contrato"
+     }
+    ],
+    "changedClauses": [
+     {
+      "code": "MULTA",
+      "change": "Multa de 2%"
+     }
+    ],
+    "effectiveFrom": "2026-12-01",
+    "effectiveUntil": "2027-11-30"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 48,
+   "quando": "2026-11-11T03:42:29.220Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "amendmentNumber": 1,
+     "reason": "Reajuste fictício do aluguel",
+     "changesJson": [
+      {
+       "field": "totalValue",
+       "newValue": 2100,
+       "oldValue": 2000
+      },
+      {
+       "field": "content",
+       "newValue": "tentativa de reescrever o texto do contrato",
+       "oldValue": null
+      }
+     ],
+     "changedClauses": [
+      {
+       "code": "MULTA",
+       "change": "Multa de 2%",
+       "contractClauseId": null
+      }
+     ],
+     "baseContractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "effectiveFrom": "2026-12-01",
+     "effectiveUntil": "2027-11-30",
+     "documentFileId": null,
+     "status": "DRAFT",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:29.185Z"
+    }
+   },
+   "req": [
+    "M5-A0098-ef5e55",
+    "M5-A0099-ae310b",
+    "M5-A0162-0d870b",
+    "M5-A0027-72d604"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-529",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não cria aditivo no contrato de A",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "corpoEnviado": {
+    "reason": "x",
+    "changes": [
+     {
+      "field": "totalValue",
+      "newValue": 1
+     }
+    ]
+   },
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "LEGAL_CONTRACT_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:29.368Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_NOT_FOUND",
+     "message": "Contrato não encontrado.",
+     "traceId": "ba71cf66-6479-43c9-b230-0871bb423522"
+    }
+   },
+   "req": [
+    "M5-A0162-0d870b",
+    "M5-A0161-7c8ef5"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-523",
+   "req": [
+    "M5-A0162-0d870b",
+    "M5-A0299-827218"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "A:leitura",
+   "descricao": "JUR-TS-014: o aditivo não sobrescreve o contrato — valor, status e versões/hash intactos",
+   "sql": "SELECT c.total_value::text AS valor, c.status, (SELECT array_agg(content_hash ORDER BY version_number) FROM legal.contract_versions WHERE contract_id = c.id) AS hashes FROM legal.contracts c WHERE c.id = :id",
+   "resultado": [
+    {
+     "valor": "2000.00",
+     "status": "SIGNED",
+     "hashes": [
+      "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+      "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+      "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee"
+     ]
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.222Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

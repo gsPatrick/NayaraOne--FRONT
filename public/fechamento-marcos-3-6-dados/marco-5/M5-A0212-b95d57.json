@@ -1,0 +1,198 @@
+{
+ "id": "M5-A0212-b95d57",
+ "secao": "P2 > 14. APIs mínimas [tabela: Endpoint | Função]",
+ "linhaCaderno": 684,
+ "requisito": "POST /webhooks/signature/:provider | Webhook.",
+ "demandas": "M5-D015;X45-D014;M5-D047",
+ "implementacao": "src/modules/legal/signatures/signatureWebhook.route.js (POST /api/v1/webhooks/signature/:provider, registrada em src/routes/index.js antes da rota única): com ?channel= vai à rota única do framework (assinatura do corpo bruto + caixa de entrada idempotente); Clicksign sem canal vai ao webhook público com HMAC",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.webhookLiteral.test.js",
+   "nome": "Guia §14: POST /webhooks/signature/:provider valida a assinatura do corpo e é idempotente (mesmo id externo = uma atualização)",
+   "status": "pass",
+   "ms": 669.561,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.modelosAditivos.test.js",
+   "nome": "Guia §14: POST /webhooks/signature/:provider — Clicksign pelo webhook público validado; fornecedor com canal vai à rota única; desconhecido 404",
+   "status": "pass",
+   "ms": 24.424,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-538",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/clicksign",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HMAC_INVALID: Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+   "quando": "2026-11-11T03:42:29.417Z"
+  },
+  {
+   "passo": "CT-538b",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/sandbox?channel=canal-inexistente",
+   "perfil": "anonimo",
+   "status": 404,
+   "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL",
+   "esperado": {
+    "status": 404,
+    "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL"
+   },
+   "resumo": "erro INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL: Canal de webhook desconhecido.",
+   "quando": "2026-11-11T03:42:29.424Z"
+  },
+  {
+   "passo": "CT-538c",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/inventado",
+   "perfil": "anonimo",
+   "status": 404,
+   "codigo": "LEGAL_SIGNATURE_WEBHOOK_PROVIDER_UNKNOWN",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_SIGNATURE_WEBHOOK_PROVIDER_UNKNOWN"
+   },
+   "resumo": "erro LEGAL_SIGNATURE_WEBHOOK_PROVIDER_UNKNOWN: Fornecedor de assinatura desconhecido para o webhook.",
+   "quando": "2026-11-11T03:42:29.428Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0212-b95d57.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.webhookLiteral.test.js \"Guia §14: POST /webhooks/signature/:provider valida a assinatura do corpo e é idempotente (mesmo id externo = uma atualização)\"; test/m5fech.contratos.modelosAditivos.test.js \"Guia §14: POST /webhooks/signature/:provider — Clicksign pelo webhook público validado; fornecedor com canal vai à rota única; desconhecido 404\". Fornecedores que só falam pelo framework (sandbox, ZapSign) precisam do canal da empresa (?channel= ou x-webhook-channel); sem ele: 404 LEGAL_SIGNATURE_WEBHOOK_CHANNEL_REQUIRED.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.webhookLiteral.test.js test/m5fech.contratos.modelosAditivos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-538, CT-538b, CT-538c)"
+ },
+ "passos": [
+  {
+   "id": "CT-538",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rota literal do livro POST /webhooks/signature/clicksign: webhook público validado (sem assinatura válida, 401)",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/clicksign",
+   "corpoEnviado": {
+    "event": {
+     "name": "sign",
+     "data": {
+      "signer": {
+       "key": "chave-desconhecida"
+      }
+     }
+    }
+   },
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:29.417Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+     "traceId": "172a7178-3fc3-49cd-98ac-487ba82b228d"
+    }
+   },
+   "req": [
+    "M5-A0212-b95d57",
+    "M5-A0070-aa260b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-538b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rota literal com canal vai à rota única do framework (canal inexistente recusado antes de ler o corpo)",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/sandbox?channel=canal-inexistente",
+   "corpoEnviado": {
+    "id": "x"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL"
+   },
+   "status": 404,
+   "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:29.424Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL",
+     "message": "Canal de webhook desconhecido.",
+     "traceId": "ac975f12-3f88-4182-b02b-dbd4b26d4789"
+    }
+   },
+   "req": [
+    "M5-A0212-b95d57",
+    "M5-A0201-67738d"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-538c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fornecedor de assinatura desconhecido na rota literal",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/inventado",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_SIGNATURE_WEBHOOK_PROVIDER_UNKNOWN"
+   },
+   "status": 404,
+   "codigo": "LEGAL_SIGNATURE_WEBHOOK_PROVIDER_UNKNOWN",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:29.428Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_SIGNATURE_WEBHOOK_PROVIDER_UNKNOWN",
+     "message": "Fornecedor de assinatura desconhecido para o webhook.",
+     "traceId": "3b074d03-0e04-4dd4-9694-52181f0e4dcf"
+    }
+   },
+   "req": [
+    "M5-A0212-b95d57"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

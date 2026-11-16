@@ -1,0 +1,53 @@
+{
+  "capturadoEm": "2026-11-11T12:48:29.925Z",
+  "pedido": {
+    "taskType": "propor_envio_mensagem",
+    "situacao": "contato WhatsApp sem opt-in MARKETING"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "9f11f2f2-5e75-4f4f-b547-96d60795378f",
+        "status": "COMPLETED",
+        "answer": "Não preparei o envio [1]: o cliente não autorizou contato por WhatsApp para a finalidade MARKETING (ou pediu para não ser contatado). Nenhuma mensagem foi enviada. A NAY não envia mensagem sem as regras de contato e o consentimento do cliente.",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "crm.opportunities",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Oportunidade 8fe3ff25-91e0-4734-8494-777f3ea28d82. Cliente QA-M3CB Cliente 179440130942949724. Etapa NEW. Última interação: nenhuma. Dias sem contato: 30.",
+            "retrievedAt": "2026-11-11T12:48:29.746Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:29.746Z",
+        "proposals": [],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": {
+          "tipo": "PROPOSTA_ENVIO_MENSAGEM",
+          "oportunidade": "8fe3ff25-91e0-4734-8494-777f3ea28d82",
+          "canal": "WHATSAPP",
+          "finalidade": "MARKETING",
+          "permitido": false,
+          "motivo": "o cliente não autorizou contato por WhatsApp para a finalidade MARKETING (ou pediu para não ser contatado)",
+          "enviada": false
+        },
+        "replayed": false
+      }
+    }
+  }
+}

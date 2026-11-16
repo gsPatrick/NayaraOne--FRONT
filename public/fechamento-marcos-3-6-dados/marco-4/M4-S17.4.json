@@ -1,0 +1,141 @@
+{
+ "id": "M4-§17.4",
+ "secao": "§17 Antifraude",
+ "requisito": "Risco \"Mesmo usuário prepara/aprova/executa\" → controle \"Segregação conforme risco\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/finance.entries.test.js",
+   "nome": "maker-checker: quem solicitou a aprovação não pode decidir a própria solicitação",
+   "status": "passou",
+   "duracaoMs": 69,
+   "commitDoArquivo": "f656f46c"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.closing.test.js",
+   "nome": "F02-C6a: quem registrou uma conferência não aprova o fechamento",
+   "status": "passou",
+   "duracaoMs": 70,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P03",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.4"
+   ],
+   "titulo": "Maker (sem finance:approve) não decide a própria solicitação",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/0d6dd44b-b766-4de5-8474-0e9058c302bc/decide",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T01:35:06.778Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "finance:approve"
+     },
+     "traceId": "feeffecc-34ec-44c9-98de-6596b1f32f05"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P09",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-012",
+    "M4-§17.4"
+   ],
+   "titulo": "Autoaprovação: quem pediu não aprova (segregação de funções)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/5682bc63-c273-408d-a943-1a891228e4f0/decide",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "esperado": {
+    "status": 403
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "FINANCE_APPROVAL_SELF_APPROVAL_FORBIDDEN",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T01:35:07.113Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_APPROVAL_SELF_APPROVAL_FORBIDDEN",
+     "message": "Quem solicitou a aprovação não pode aprovar a própria solicitação (segregação de funções — maker-checker).",
+     "traceId": "2e19a445-5094-4539-83d8-2531ed8802da"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P24",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.4",
+    "M4-§8.5"
+   ],
+   "titulo": "Quem preparou a intenção não a aprova",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/da58d0e3-b0ed-431d-9ebc-20e84c111029/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "FINANCE_PAYMENT_INTENT_SELF_APPROVAL_FORBIDDEN",
+   "ok": true,
+   "ms": 35,
+   "quando": "2026-11-11T01:35:07.523Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_SELF_APPROVAL_FORBIDDEN",
+     "message": "Quem criou a intenção de pagamento não pode aprová-la (segregação de funções — maker-checker).",
+     "traceId": "3ac4ebf5-75d5-4536-82c7-37a00346d84e"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

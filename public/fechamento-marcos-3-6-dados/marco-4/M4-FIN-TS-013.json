@@ -1,0 +1,317 @@
+{
+ "id": "M4-FIN-TS-013",
+ "secao": "§20 Testes adversariais",
+ "requisito": "FIN-TS-013: Conta nova — pagamento alto imediato: controle extra.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-013 cooling period de conta nova continua bloqueando pagamento imediato, com o limiar vindo do Motor de Regras",
+   "status": "passou",
+   "duracaoMs": 14,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.acceptance.test.js",
+   "nome": "M4-11 conta bancária nova fica em cooldown, bloqueia pagamento, e libera após o prazo",
+   "status": "passou",
+   "duracaoMs": 22,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P71",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-013"
+   ],
+   "titulo": "Pagamento alto na conta nova",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 25000,
+    "description": "Pagamento alto na conta nova 0871300",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "bankAccountId": "90cce0ab-b192-4c05-bf7d-71b3ac31de61",
+    "dueAt": "2026-11-13T01:35:10.211Z"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 109,
+   "quando": "2026-11-11T01:35:10.320Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+     "requiresManualReview": true,
+     "lockVersion": 1,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "90cce0ab-b192-4c05-bf7d-71b3ac31de61",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "25000.00",
+     "description": "Pagamento alto na conta nova 0871300",
+     "dueAt": "2026-11-13T01:35:10.211Z",
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:10.235Z",
+     "created_at": "2026-11-11T01:35:10.225Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": "Primeiro pagamento desta conta bancária já no valor de 25000.00 (limite FIN-005 para conta sem histórico: 10000.00).",
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P72",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-013"
+   ],
+   "titulo": "Intenção do pagamento na conta nova",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc"
+   },
+   "esperado": {
+    "status": [
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T01:35:10.354Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "reconciliationAttempts": 0,
+     "id": "9dc18925-4caa-457c-8dcf-2d92f70bb2af",
+     "idempotencyKey": "payment-intent:9dc18925-4caa-457c-8dcf-2d92f70bb2af",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+     "snapshotJson": {
+      "dueAt": "2026-11-13T01:35:10.211Z",
+      "amount": "25000.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento alto na conta nova 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "90cce0ab-b192-4c05-bf7d-71b3ac31de61",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "a97b725fd05fc2cfd0e5fd02e8578a96294e224b50164e0eb6db6ad7b2947adf",
+     "status": "PENDING",
+     "approvalRequestId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:10.333Z",
+     "created_at": "2026-11-11T01:35:10.333Z",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciledAt": null,
+     "reconciledEntryId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P73",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-013"
+   ],
+   "titulo": "Aprovação da intenção na conta nova",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/9dc18925-4caa-457c-8dcf-2d92f70bb2af/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": [
+     200,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 66,
+   "quando": "2026-11-11T01:35:10.420Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "id": "9dc18925-4caa-457c-8dcf-2d92f70bb2af",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+     "snapshotJson": {
+      "dueAt": "2026-11-13T01:35:10.211Z",
+      "amount": "25000.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento alto na conta nova 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "90cce0ab-b192-4c05-bf7d-71b3ac31de61",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "a97b725fd05fc2cfd0e5fd02e8578a96294e224b50164e0eb6db6ad7b2947adf",
+     "status": "APPROVED",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "idempotencyKey": "payment-intent:9dc18925-4caa-457c-8dcf-2d92f70bb2af",
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvalRequestId": null,
+     "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "approvedAt": "2026-11-11T01:35:10.375Z",
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciliationAttempts": 0,
+     "reconciledAt": null,
+     "reconciledEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "created_at": "2026-11-11T01:35:10.333Z",
+     "updated_at": "2026-11-11T01:35:10.375Z",
+     "financial_entry_id": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+     "approval_request_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P74",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.3",
+    "M4-FIN-TS-013"
+   ],
+   "titulo": "Envio imediato ao banco pela conta nova: bloqueado pelo resfriamento (controle extra)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/9dc18925-4caa-457c-8dcf-2d92f70bb2af/submit-to-bank",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "paymentMethod": "PIX"
+   },
+   "esperado": {
+    "status": 409
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_ENTRY_REQUIRES_MANUAL_REVIEW",
+   "ok": true,
+   "ms": 61,
+   "quando": "2026-11-11T01:35:10.488Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_ENTRY_REQUIRES_MANUAL_REVIEW",
+     "message": "Este pagamento está retido para revisão manual (antifraude): ele só vai ao banco depois de liberado por um revisor.",
+     "traceId": "e319da11-634a-443d-8d12-fd054b79d387"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

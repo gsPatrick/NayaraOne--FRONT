@@ -1,0 +1,161 @@
+{
+ "id": "M4-G§19.F8",
+ "secao": "Guia §19 Sprints",
+ "requisito": "Sprint F8: \"Antifraude + health report + NAY read-only.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-21 pagamento 3x acima da média histórica da conta é flagado, notifica o financeiro e trava a liquidação",
+   "status": "passou",
+   "duracaoMs": 176,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "M4-20b: getWeeklyHealthReport cobre os indicadores que faltavam (30/60 dias, conciliação pendente, comissão provisionada, repasse pendente, anomalia aberta)",
+   "status": "passou",
+   "duracaoMs": 163,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/finance.nay.test.js",
+   "nome": "NAY-FIN-04: não executa nada — lançamentos, intenções, fechamentos, extratos, conciliações, aprovações e contas bancárias idênticos depois de chamar a NAY; só ai_runs cresce",
+   "status": "passou",
+   "duracaoMs": 307,
+   "commitDoArquivo": "390b60db"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H05",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§19.F8"
+   ],
+   "titulo": "Tenant B: relatório próprio, sem números do tenant A",
+   "perfil": "B:leitura",
+   "metodo": "GET",
+   "rota": "/finance/reports/weekly-health",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 29,
+   "quando": "2026-11-11T01:35:16.199Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "generatedAt": "2026-11-11T01:35:16.176Z",
+     "windowEndsAt": "2026-11-18T03:00:00.000Z",
+     "payablePending": {
+      "count": 0,
+      "total": 0
+     },
+     "receivablePending": {
+      "count": 0,
+      "total": 0
+     },
+     "projectedNetBalance": 0,
+     "overdue": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      },
+      "total": 0
+     },
+     "dueNextSevenDays": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     "dueNext30Days": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     "dueNext60Days": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     "thirdPartyFunds": {
+      "count": 0,
+      "total": 0,
+      "basis": "PENDING",
+      "label": "Dinheiro de terceiros em aberto (previsto)",
+      "description": "Soma dos lançamentos de dinheiro de terceiro (cauções etc.) ainda pendentes. Não é o que já está retido em caixa."
+     },
+     "delinquencyRatio": 0,
+     "pendingReconciliations": {
+      "count": 1,
+      "total": 12.34
+     },
+     "provisionedCommissions": {
+      "count": 0,
+      "total": 0
+     },
+     "pendingOwnerRepasses": {
+      "count": 0,
+      "total": 0
+     },
+     "openHighRiskAnomalies": 0,
+     "managementAlerts": {
+      "recurringManualReconciliation": {
+       "label": "Conciliação manual recorrente",
+       "openCases": 0,
+       "latestReason": "Nenhum alerta aberto.",
+       "latestCaseId": null
+      }
+     },
+     "freeCash": {
+      "grossBankBalance": 12.34,
+      "thirdPartyHeld": 0,
+      "thirdPartyHeldBasis": "SETTLED",
+      "thirdPartyHeldLabel": "Dinheiro de terceiros retido em caixa (realizado)",
+      "thirdPartyHeldDescription": "Dinheiro de terceiro já recebido e ainda não devolvido; é o que sai do saldo bancário para chegar ao caixa livre. Difere do total em aberto, que é previsto.",
+      "value": 12.34
+     },
+     "marginBySector": [],
+     "breathingNeed": {
+      "value": -12.34,
+      "excludesFreeCashBalance": false
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

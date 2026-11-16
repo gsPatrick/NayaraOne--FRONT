@@ -1,0 +1,149 @@
+{
+ "id": "M4-FIN-006",
+ "secao": "§2 Princípios",
+ "requisito": "FIN-006 Dinheiro de terceiros: \"não confundidos com receita própria.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-16 dinheiro de terceiro exige referência e nunca entra na soma de receita própria",
+   "status": "passou",
+   "duracaoMs": 24,
+   "commitDoArquivo": "fa15be9f"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "M4-20c: freeCash soma o extrato bancário real e exclui dinheiro de terceiro retido; marginBySector agrupa por centro de resultado",
+   "status": "passou",
+   "duracaoMs": 145,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T06",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-006",
+    "M4-G§16.5",
+    "M4-§21.7"
+   ],
+   "titulo": "Lançamentos de dinheiro de terceiros listados à parte (isThirdPartyFunds)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/entries?isThirdPartyFunds=true",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T01:35:12.206Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "a09d6155-4634-4591-b3f1-3bfbd215d490",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+      "costCenterId": null,
+      "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": true,
+      "thirdPartyReference": "Caução contrato LOC-0871300",
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": "7d2b1d94-518e-4e06-8ab0-2cb47a2b1759",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "3000.00",
+      "description": "Caução do contrato 0871300",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T01:35:12.139Z",
+      "status": "SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 1,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:12.109Z",
+      "updated_at": "2026-11-11T01:35:12.139Z",
+      "bank_account_id": "8932ee54-7849-45db-b410-0d058c045b95",
+      "cost_center_id": null,
+      "result_center_id": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contract_id": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q17",
+   "linhas": [
+    "M4-FIN-006",
+    "M4-§13.2"
+   ],
+   "descricao": "Caução marcada como dinheiro de terceiros e separada da receita própria",
+   "sql": "select is_third_party_funds, nature, status, count(*)::int as qtd, sum(amount) as total from finance.financial_entries where is_third_party_funds = true group by 1, 2, 3 order by 1, 2, 3",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "is_third_party_funds": true,
+     "nature": "PAYABLE",
+     "status": "PENDING",
+     "qtd": 1,
+     "total": "1000.00"
+    },
+    {
+     "is_third_party_funds": true,
+     "nature": "PAYABLE",
+     "status": "SETTLED",
+     "qtd": 1,
+     "total": "1350.00"
+    },
+    {
+     "is_third_party_funds": true,
+     "nature": "RECEIVABLE",
+     "status": "SETTLED",
+     "qtd": 1,
+     "total": "3000.00"
+    }
+   ],
+   "invariante": "lançamentos de terceiros existem e são listados à parte",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.739Z"
+  }
+ ]
+}

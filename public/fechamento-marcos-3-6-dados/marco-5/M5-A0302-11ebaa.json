@@ -1,0 +1,173 @@
+{
+ "id": "M5-A0302-11ebaa",
+ "secao": "P1 > 2. Princípios constitucionais [tabela: Código | Princípio | Regra]",
+ "linhaCaderno": 30,
+ "requisito": "JUR-004 | Assinatura da versão exata | Assinatura aponta para contract_version_id/hash.",
+ "demandas": "M5-D016;M5-D015;M5-D018",
+ "implementacao": "src/modules/legal/signatures/framework/signature.request.js:50 requestEnvelope (Signature com contract_version_id + content_hash); src/modules/legal/signatures/signature.service.js:124 hash divergente recusado; tabela legal.signatures",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash",
+   "status": "pass",
+   "ms": 555.894,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-002: assinatura que aponta hash diferente da versão é rejeitada e o contrato continua em SIGNING",
+   "status": "pass",
+   "ms": 3594.335,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-02 §8 assinatura manual exige evidence_file_id, signatário parte do contrato e coletor; liga hash da versão e leva a SIGNED",
+   "status": "pass",
+   "ms": 254.847,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-201",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH"
+   },
+   "resumo": "erro LEGAL_SIGNATURE_HASH_MISMATCH: O hash do documento assinado não corresponde ao hash da versão do contrato enviada para assinatura.",
+   "quando": "2026-11-11T03:42:25.422Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0302-11ebaa.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.rotasLivro.test.js test/m5fech.contratos.adversariais.test.js test/m45.cadernoM5Gaps.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-132, CT-201, CT-328)"
+ },
+ "passos": [
+  {
+   "id": "CT-201",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-002: webhook com hash diferente do da versão é rejeitado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "abababababababababababababababababababababababababababababababab"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH"
+   },
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:25.422Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_SIGNATURE_HASH_MISMATCH",
+     "message": "O hash do documento assinado não corresponde ao hash da versão do contrato enviada para assinatura.",
+     "traceId": "ab6b9db4-0822-4941-9b2a-a26d421de10f"
+    }
+   },
+   "req": [
+    "M5-A0150-1427b1",
+    "M5-A0233-5d1840",
+    "M5-A0302-11ebaa"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-132",
+   "req": [
+    "M5-A0069-ea344f",
+    "M5-A0302-11ebaa",
+    "M5-A0254-adf071"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Cada assinatura liga signatário + contract_version_id + content_hash da versão",
+   "sql": "SELECT id, person_id, contract_version_id, content_hash, status, envelope_id IS NOT NULL AS com_envelope, external_signature_id FROM legal.signatures WHERE contract_version_id = :v ORDER BY created_at",
+   "resultado": [
+    {
+     "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+     "person_id": "831f6109-2e18-4197-84c9-564b89db0076",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-ae7beb6c48f75b88"
+    },
+    {
+     "id": "bde0ac1f-a166-41f5-ac2f-0f569771d38f",
+     "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-902c25d73e267f69"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.323Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-328",
+   "req": [
+    "M5-A0071-4e2ad6",
+    "M5-A0069-ea344f",
+    "M5-A0302-11ebaa"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "Assinaturas manuais com evidence_file_id, coletor, versão e hash; contrato SIGNED",
+   "sql": "SELECT s.signature_method, s.evidence_file_id IS NOT NULL AS com_evidencia, s.collected_by_user_id, s.contract_version_id, s.content_hash, s.status, (SELECT status FROM legal.contracts WHERE id = :id) AS contrato FROM legal.signatures s WHERE s.contract_version_id = :v3 AND s.signature_method = 'MANUAL' ORDER BY s.created_at",
+   "resultado": [
+    {
+     "signature_method": "MANUAL",
+     "com_evidencia": true,
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "status": "SIGNED",
+     "contrato": "SIGNED"
+    },
+    {
+     "signature_method": "MANUAL",
+     "com_evidencia": true,
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "status": "SIGNED",
+     "contrato": "SIGNED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:27.170Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

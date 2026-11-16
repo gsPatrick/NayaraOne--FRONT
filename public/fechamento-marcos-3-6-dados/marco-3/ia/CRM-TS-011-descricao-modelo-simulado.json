@@ -1,0 +1,69 @@
+{
+  "capturadoEm": "2026-11-11T12:48:58.732Z",
+  "pedido": {
+    "taskType": "rascunhar_descricao_imovel",
+    "modeloSimuladoDevolve": "Casa com 3 quartos em Curitiba [1]. São 250 m² de área construída [1]. Tem piscina e churrasqueira [1]."
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "eaca2b03-b106-4976-ab0b-5ce64edd7f35",
+        "status": "COMPLETED",
+        "answer": "RASCUNHO — não foi publicado nem enviado; revise antes de usar.\nCasa com 3 quartos em Curitiba [1].\nA guarda da descrição tirou o que afirmava algo fora dos fatos públicos aprovados do imóvel (metragem, quantidade, valor, característica, localização ou benefício).",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "properties",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Fatos públicos aprovados do imóvel IMV-78AA0738E6 : tipo: residential. finalidade: venda. cidade: Curitiba. área total: 120 m². quartos: 3. preço: R$ 750.000,00.",
+            "retrievedAt": "2026-11-11T12:48:58.490Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:58.490Z",
+        "proposals": [],
+        "cost": {
+          "amount": "0.000760",
+          "currency": "BRL"
+        },
+        "routingPath": "SMALL_MODEL",
+        "structured": {
+          "rascunho": true,
+          "tipo": "DESCRICAO_IMOVEL",
+          "imovel": "aaf834df-4ca1-427d-af87-178a72864297",
+          "codigoPublico": "IMV-78AA0738E6",
+          "fonte": "FATOS_PUBLICOS_APROVADOS",
+          "redigidoPor": "MODELO",
+          "guardaDescricao": {
+            "aprovada": false,
+            "violacoes": [
+              {
+                "tipo": "METRAGEM_INVENTADA",
+                "trecho": "250 m²"
+              },
+              {
+                "tipo": "CARACTERISTICA_AUSENTE",
+                "trecho": "piscina"
+              },
+              {
+                "tipo": "CARACTERISTICA_AUSENTE",
+                "trecho": "churrasqueira"
+              }
+            ]
+          }
+        },
+        "replayed": false
+      }
+    }
+  }
+}

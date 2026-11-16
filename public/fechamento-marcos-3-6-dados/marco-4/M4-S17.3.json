@@ -1,0 +1,127 @@
+{
+ "id": "M4-§17.3",
+ "secao": "§17 Antifraude",
+ "requisito": "Risco \"Conta nova + pagamento imediato\" → controle \"Cooling period/extra approval configurável\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.acceptance.test.js",
+   "nome": "M4-11 conta bancária nova fica em cooldown, bloqueia pagamento, e libera após o prazo",
+   "status": "passou",
+   "duracaoMs": 22,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-013 cooling period de conta nova continua bloqueando pagamento imediato, com o limiar vindo do Motor de Regras",
+   "status": "passou",
+   "duracaoMs": 14,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.parametrosFinanceiro.test.js",
+   "nome": "M4-§17.7 parâmetros: as demais chaves do Financeiro (antifraude e AUTO_STRONG) gravam pelo mesmo caminho e respeitam a faixa",
+   "status": "passou",
+   "duracaoMs": 181,
+   "commitDoArquivo": "9d28dad0"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P70",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.3",
+    "M4-§5.4"
+   ],
+   "titulo": "Conta bancária NOVA nasce em resfriamento (PENDING_COOLDOWN)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-accounts",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankCode": "237",
+    "agency": "0001",
+    "accountNumber": "NOVA-0871300",
+    "pixKey": "[e-mail omitido]"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 62,
+   "quando": "2026-11-11T01:35:10.211Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "90cce0ab-b192-4c05-bf7d-71b3ac31de61",
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "ownerPersonId": null,
+     "bankCode": "••••••",
+     "agency": "0001",
+     "accountNumber": "****1300",
+     "pixKey": "••••••",
+     "openingBalance": "0.00",
+     "status": "PENDING_COOLDOWN",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:10.156Z",
+     "created_at": "2026-11-11T01:35:10.156Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P74",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.3",
+    "M4-FIN-TS-013"
+   ],
+   "titulo": "Envio imediato ao banco pela conta nova: bloqueado pelo resfriamento (controle extra)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/9dc18925-4caa-457c-8dcf-2d92f70bb2af/submit-to-bank",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "paymentMethod": "PIX"
+   },
+   "esperado": {
+    "status": 409
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_ENTRY_REQUIRES_MANUAL_REVIEW",
+   "ok": true,
+   "ms": 61,
+   "quando": "2026-11-11T01:35:10.488Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_ENTRY_REQUIRES_MANUAL_REVIEW",
+     "message": "Este pagamento está retido para revisão manual (antifraude): ele só vai ao banco depois de liberado por um revisor.",
+     "traceId": "e319da11-634a-443d-8d12-fd054b79d387"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

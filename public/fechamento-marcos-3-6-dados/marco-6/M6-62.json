@@ -1,0 +1,112 @@
+{
+  "id": "M6-62",
+  "requisito": "\"Fechar NC sem evidência → bloquear.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "nonconformities.service.js#closeNonconformity + evidenceFiles.js",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: Fechar NC sem foto",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "M6-62: fechar não conformidade sem after_evidence_file_ids bloqueia",
+      "resultado": "passou",
+      "duracaoMs": 401,
+      "executadoEm": "2026-11-11T00:14:18.094Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-62/M6-109: fechar NC com evidência \"depois\" inexistente é recusado e a NC continua aberta",
+      "resultado": "passou",
+      "duracaoMs": 216,
+      "executadoEm": "2026-11-11T00:13:09.831Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H123",
+      "H124"
+    ],
+    "resumo": [
+      "H123 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 422 NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "H124 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND"
+    ],
+    "dataHora": "2026-11-11T00:12:22.905Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H123",
+      "requisitos": [
+        "M6-24",
+        "M6-38",
+        "M6-62",
+        "M6-86"
+      ],
+      "cenario": "NEGATIVO: fechar NC sem evidência \"depois\"",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": []
+      },
+      "statusHttp": 422,
+      "codigoErro": "NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "esperado": "422 NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "conferiu": true,
+      "duracaoMs": 417,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+          "message": "Não é possível fechar a NC sem evidência \"depois\" (\"afterEvidenceFileIds\" vazio).",
+          "traceId": "a5a3b7f8-bf23-4a6c-96ef-c1fe1eec68aa"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.905Z"
+    },
+    {
+      "id": "H124",
+      "requisitos": [
+        "M6-24",
+        "M6-62",
+        "M6-110"
+      ],
+      "cenario": "NEGATIVO: fechar NC com evidência \"depois\" inexistente",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "88888888-8888-4888-8888-888888888888"
+        ]
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 37,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"afterEvidenceFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "afterEvidenceFileIds",
+            "missingFileIds": [
+              "88888888-8888-4888-8888-888888888888"
+            ]
+          },
+          "traceId": "7a8f9b17-34e5-4cee-bc12-243364067f48"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.942Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.430Z"
+}

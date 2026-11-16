@@ -1,0 +1,1862 @@
+{
+ "id": "M5-A0304-d26817",
+ "secao": "P1 > 2. Princípios constitucionais [tabela: Código | Princípio | Regra]",
+ "linhaCaderno": 34,
+ "requisito": "JUR-006 | Garantia rastreável | Fiador, seguro, caução e demais garantias têm vigência/status próprios.",
+ "demandas": "M5-D020;M5-D021",
+ "implementacao": "src/modules/legal/leasing/guarantee.service.js:46 createGuarantee (status ACTIVE/RELEASED/CANCELLED validado, startsAt/endsAt por garantia, vigência obrigatória para GUARANTOR/INSURANCE/CAPITALIZATION_TITLE); src/modules/legal/leasing/guarantee.service.js:134 updateGuarantee; rota POST /api/v1/legal/contracts/:contractId/guarantees; tabela legal.guarantees",
+ "tela": "Contratos > Garantias (/painel/contratos/garantias, /painel/contratos/garantias/novo)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.garantias.test.js",
+   "nome": "fechamento M5 §9/JUR-006: cada garantia tem vigência e status próprios; fiador, seguro e título exigem fim de vigência",
+   "status": "pass",
+   "ms": 48.898,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.acceptance.test.js",
+   "nome": "M5-17/M5-18 createGuarantee exige guarantorPersonId para GUARANTOR, persiste valor/vigência",
+   "status": "pass",
+   "ms": 134.472,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.guaranteeExpiry.test.js",
+   "nome": "JUR-TS-005: garantia dentro da janela de antecedência dispara lease.guarantee.expiring",
+   "status": "pass",
+   "ms": 183.87,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-GA-02",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDITY_REQUIRED: O campo \"endsAt\" (vigência) é obrigatório para garantia do tipo \"GUARANTOR\" (Caderno, seção 9).",
+   "quando": "2026-11-11T03:42:29.931Z"
+  },
+  {
+   "passo": "LC-GA-03",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+   "quando": "2026-11-11T03:42:30.139Z"
+  },
+  {
+   "passo": "LC-GA-04",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDITY_REQUIRED: O campo \"endsAt\" (vigência) é obrigatório para garantia do tipo \"INSURANCE\" (Caderno, seção 9).",
+   "quando": "2026-11-11T03:42:30.148Z"
+  },
+  {
+   "passo": "LC-GA-05",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=dd873b2c-91f7-4691-afa3-5ef7e7498529",
+   "quando": "2026-11-11T03:42:30.247Z"
+  },
+  {
+   "passo": "LC-GA-12",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDATION: \"guaranteeType\" deve ser um de: GUARANTOR, INSURANCE, SECURITY_DEPOSIT, CAPITALIZATION, OTHER.",
+   "quando": "2026-11-11T03:42:30.749Z"
+  },
+  {
+   "passo": "LC-GA-13",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDATION: \"endsAt\" não pode ser anterior a \"startsAt\".",
+   "quando": "2026-11-11T03:42:30.758Z"
+  },
+  {
+   "passo": "LC-GA-15",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDATION: \"status\" deve ser um de: PENDING, ACTIVE, RELEASED, CANCELLED.",
+   "quando": "2026-11-11T03:42:30.774Z"
+  },
+  {
+   "passo": "LC-GA-18",
+   "metodo": "GET",
+   "rota": "/legal/guarantees?contractId=a8ee67a9-f684-499a-abf4-4ebd82714aab",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 8 item(ns)",
+   "quando": "2026-11-11T03:42:30.797Z"
+  },
+  {
+   "passo": "LC-GA-19",
+   "metodo": "PATCH",
+   "rota": "/legal/guarantees/ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=RELEASED, id=ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+   "quando": "2026-11-11T03:42:30.813Z"
+  },
+  {
+   "passo": "LC-GA-32",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=2d6d04e1-b0fa-4eec-84f3-cb266e1090fa",
+   "quando": "2026-11-11T03:42:29.995Z"
+  },
+  {
+   "passo": "LC-GA-P2",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=354d417e-e631-4d1b-b2eb-5d1facda27ab",
+   "quando": "2026-11-11T03:42:30.031Z"
+  },
+  {
+   "passo": "LC-GA-P3",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=f15e9382-df6d-46a5-9333-b2e7b299ea7e",
+   "quando": "2026-11-11T03:42:30.078Z"
+  },
+  {
+   "passo": "LC-GA-P4",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=9f0ab3a0-5795-4aa0-be84-8566f1ea9d56",
+   "quando": "2026-11-11T03:42:30.198Z"
+  },
+  {
+   "passo": "LC-GA-07",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=71871a5d-7943-4bce-bd72-74804bdcc59a",
+   "quando": "2026-11-11T03:42:30.395Z"
+  },
+  {
+   "passo": "LC-GA-P6",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=04f3bfc2-130b-45e2-92dc-e913620e9a35",
+   "quando": "2026-11-11T03:42:30.454Z"
+  },
+  {
+   "passo": "LC-GA-08",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=effbdfa6-bced-4558-bc95-9dc238b4668b",
+   "quando": "2026-11-11T03:42:30.506Z"
+  },
+  {
+   "passo": "LC-GA-39",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+   "quando": "2026-11-11T03:42:30.621Z"
+  },
+  {
+   "passo": "LC-GA-14",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDATION: \"value\" deve ser um número positivo.",
+   "quando": "2026-11-11T03:42:30.765Z"
+  },
+  {
+   "passo": "LC-GA-P7",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=e6f0775b-419a-4ede-a49f-b0ca176b3563",
+   "quando": "2026-11-11T03:42:30.847Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0304-d26817.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo m5fech.locacao.garantias \"cada garantia tem vigência e status próprios\": liberar uma garantia não muda as outras; fim de vigência anterior ao início e status fora da lista são recusados. Os dados POR TIPO do §9 estão divergentes nas linhas de cada tipo.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.garantias.test.js test/marco5.acceptance.test.js test/legal.guaranteeExpiry.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-GA-02, LC-GA-03, LC-GA-04, LC-GA-05, LC-GA-12, LC-GA-13, LC-GA-15, LC-GA-18, LC-GA-19, LC-GA-21, LC-GA-32, LC-GA-P2, LC-GA-P3, LC-GA-P4, LC-GA-07, LC-GA-P6, LC-GA-08, LC-GA-39, LC-GA-14, LC-GA-P7)"
+ },
+ "passos": [
+  {
+   "id": "LC-GA-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fiador sem fim de vigência é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "GUARANTOR",
+    "guarantorPersonId": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884",
+    "startsAt": "2026-01-01"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:29.931Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+     "message": "O campo \"endsAt\" (vigência) é obrigatório para garantia do tipo \"GUARANTOR\" (Caderno, seção 9).",
+     "traceId": "cd8f825f-f125-464f-b8f4-31a8988d1358"
+    }
+   },
+   "req": [
+    "M5-A0074-471be7",
+    "M5-A0304-d26817",
+    "M5-A0267-ce66c5"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fiador com pessoa, documentos, vigência e termo de aceite: ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "GUARANTOR",
+    "guarantorPersonId": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884",
+    "startsAt": "2026-01-01",
+    "endsAt": "2028-12-31",
+    "documentFileIds": [
+     "354d417e-e631-4d1b-b2eb-5d1facda27ab"
+    ],
+    "acceptanceFileId": "f15e9382-df6d-46a5-9333-b2e7b299ea7e",
+    "acceptedAt": "2026-01-02"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 61,
+   "quando": "2026-11-11T03:42:30.139Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "GUARANTOR",
+     "guarantorPersonId": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884",
+     "value": null,
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": "2028-12-31",
+     "documentFileIds": [
+      "354d417e-e631-4d1b-b2eb-5d1facda27ab"
+     ],
+     "acceptanceFileId": "f15e9382-df6d-46a5-9333-b2e7b299ea7e",
+     "acceptedAt": "2026-01-02T00:00:00.000Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.109Z",
+     "created_at": "2026-11-11T03:42:30.109Z",
+     "additionalGuarantorPersonIds": null,
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0074-471be7",
+    "M5-A0304-d26817",
+    "M5-A0213-3cfd1e",
+    "M5-A0168-e76ea6",
+    "M5-A0267-ce66c5"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Seguro-fiança sem fim de vigência é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "INSURANCE",
+    "value": 30000,
+    "startsAt": "2026-01-01"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:30.148Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+     "message": "O campo \"endsAt\" (vigência) é obrigatório para garantia do tipo \"INSURANCE\" (Caderno, seção 9).",
+     "traceId": "164dbec6-cd22-4f64-a60c-0764d94c5226"
+    }
+   },
+   "req": [
+    "M5-A0317-07bf3b",
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Seguro-fiança com seguradora, apólice (arquivo), vigência, 2 parcelas e renovação: gravado e ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "INSURANCE",
+    "value": 30000,
+    "startsAt": "2026-01-01",
+    "endsAt": "2027-01-01",
+    "providerName": "Seguradora Fictícia",
+    "policyNumber": "AP-8549432",
+    "policyFileId": "9f0ab3a0-5795-4aa0-be84-8566f1ea9d56",
+    "annualPremium": 2400,
+    "premiumInstallments": [
+     {
+      "number": 1,
+      "dueDate": "2026-02-01",
+      "amount": 1200
+     },
+     {
+      "number": 2,
+      "dueDate": "2026-08-01",
+      "amount": 1200
+     }
+    ],
+    "renewalDueAt": "2026-12-01",
+    "autoRenew": true
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 48,
+   "quando": "2026-11-11T03:42:30.247Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "dd873b2c-91f7-4691-afa3-5ef7e7498529",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "INSURANCE",
+     "guarantorPersonId": null,
+     "value": "30000.00",
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": "2027-01-01",
+     "policyFileId": "9f0ab3a0-5795-4aa0-be84-8566f1ea9d56",
+     "providerName": "Seguradora Fictícia",
+     "policyNumber": "AP-8549432",
+     "annualPremium": "2400.00",
+     "premiumInstallments": [
+      {
+       "amount": 1200,
+       "number": 1,
+       "paidAt": null,
+       "status": "PENDING",
+       "dueDate": "2026-02-01"
+      },
+      {
+       "amount": 1200,
+       "number": 2,
+       "paidAt": null,
+       "status": "PENDING",
+       "dueDate": "2026-08-01"
+      }
+     ],
+     "renewalDueAt": "2026-12-01",
+     "autoRenew": true,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.216Z",
+     "created_at": "2026-11-11T03:42:30.216Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0317-07bf3b",
+    "M5-A0304-d26817",
+    "M5-A0213-3cfd1e"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tipo de garantia inventado é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "CHEQUE_CAUCAO",
+    "value": 10
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:30.749Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDATION",
+     "message": "\"guaranteeType\" deve ser um de: GUARANTOR, INSURANCE, SECURITY_DEPOSIT, CAPITALIZATION, OTHER.",
+     "traceId": "9072a6ad-dec4-49fc-a0a9-4415d10d7639"
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fim da vigência anterior ao início é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "INSURANCE",
+    "value": 100,
+    "startsAt": "2027-01-01",
+    "endsAt": "2026-01-01"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:30.758Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDATION",
+     "message": "\"endsAt\" não pode ser anterior a \"startsAt\".",
+     "traceId": "ded0e819-d61f-4846-9726-b4c5e11fd7eb"
+    }
+   },
+   "req": [
+    "M5-A0304-d26817",
+    "M5-A0267-ce66c5",
+    "M5-A0168-e76ea6"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Status fora da lista é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "SECURITY_DEPOSIT",
+    "value": 10,
+    "status": "Ativa"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:30.774Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDATION",
+     "message": "\"status\" deve ser um de: PENDING, ACTIVE, RELEASED, CANCELLED.",
+     "traceId": "424b8e1b-d77b-484a-9516-9f27d779d095"
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cada garantia do contrato tem status e vigência próprios",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/guarantees?contractId=a8ee67a9-f684-499a-abf4-4ebd82714aab",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:30.797Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "OTHER",
+      "guarantorPersonId": null,
+      "value": "1000.00",
+      "status": "ACTIVE",
+      "startsAt": "2026-01-01",
+      "endsAt": null,
+      "lockVersion": 0,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": null,
+      "acceptanceFileId": null,
+      "acceptedAt": null,
+      "providerName": null,
+      "policyNumber": null,
+      "policyFileId": null,
+      "premiumInstallments": null,
+      "annualPremium": null,
+      "renewalDueAt": null,
+      "autoRenew": null,
+      "financeEntryId": null,
+      "holderPersonId": null,
+      "certificateNumber": null,
+      "certificateFileId": null,
+      "redemptionAmount": null,
+      "homologatedFlowCode": "CARTA_FIANCA",
+      "flowData": {
+       "banco": "Banco Fictício",
+       "numeroCarta": "CF-8549432"
+      },
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:30.596Z",
+      "updated_at": "2026-11-11T03:42:30.596Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": null
+     },
+     {
+      "id": "c8065662-14b8-46bb-9c45-4ccf7eacc903",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "CAPITALIZATION",
+      "guarantorPersonId": null,
+      "value": "10000.00",
+      "status": "PENDING",
+      "startsAt": null,
+      "endsAt": "2027-01-01",
+      "lockVersion": 0,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": null,
+      "acceptanceFileId": null,
+      "acceptedAt": null,
+      "providerName": null,
+      "policyNumber": null,
+      "policyFileId": null,
+      "premiumInstallments": null,
+      "annualPremium": null,
+      "renewalDueAt": null,
+      "autoRenew": null,
+      "financeEntryId": null,
+      "holderPersonId": null,
+      "certificateNumber": null,
+      "certificateFileId": null,
+      "redemptionAmount": null,
+      "homologatedFlowCode": null,
+      "flowData": null,
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:30.514Z",
+      "updated_at": "2026-11-11T03:42:30.514Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": null
+     },
+     {
+      "id": "effbdfa6-bced-4558-bc95-9dc238b4668b",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "CAPITALIZATION",
+      "guarantorPersonId": null,
+      "value": "10000.00",
+      "status": "ACTIVE",
+      "startsAt": "2026-01-01",
+      "endsAt": "2027-01-01",
+      "lockVersion": 0,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": null,
+      "acceptanceFileId": null,
+      "acceptedAt": null,
+      "providerName": "Capitalizadora Fictícia",
+      "policyNumber": null,
+      "policyFileId": null,
+      "premiumInstallments": null,
+      "annualPremium": null,
+      "renewalDueAt": null,
+      "autoRenew": null,
+      "financeEntryId": null,
+      "holderPersonId": null,
+      "certificateNumber": "TC-8549432",
+      "certificateFileId": "04f3bfc2-130b-45e2-92dc-e913620e9a35",
+      "redemptionAmount": null,
+      "homologatedFlowCode": null,
+      "flowData": null,
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:30.476Z",
+      "updated_at": "2026-11-11T03:42:30.476Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": null
+     },
+     {
+      "id": "71871a5d-7943-4bce-bd72-74804bdcc59a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "SECURITY_DEPOSIT",
+      "guarantorPersonId": null,
+      "value": "7500.00",
+      "status": "ACTIVE",
+      "startsAt": "2026-01-01",
+      "endsAt": null,
+      "lockVersion": 0,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": null,
+      "acceptanceFileId": null,
+      "acceptedAt": null,
+      "providerName": null,
+      "policyNumber": null,
+      "policyFileId": null,
+      "premiumInstallments": null,
+      "annualPremium": null,
+      "renewalDueAt": null,
+      "autoRenew": null,
+      "financeEntryId": "ee04939c-3eab-47c4-afc3-a77888dfa25f",
+      "holderPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+      "certificateNumber": null,
+      "certificateFileId": null,
+      "redemptionAmount": null,
+      "homologatedFlowCode": null,
+      "flowData": null,
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:30.362Z",
+      "updated_at": "2026-11-11T03:42:30.362Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": null
+     },
+     {
+      "id": "1ca3d6fb-8f60-410b-959a-ef8653b5294d",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "SECURITY_DEPOSIT",
+      "guarantorPersonId": null,
+      "value": "7500.00",
+      "status": "PENDING",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 0,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": null,
+      "acceptanceFileId": null,
+      "acceptedAt": null,
+      "providerName": null,
+      "policyNumber": null,
+      "policyFileId": null,
+      "premiumInstallments": null,
+      "annualPremium": null,
+      "renewalDueAt": null,
+      "autoRenew": null,
+      "financeEntryId": null,
+      "holderPersonId": null,
+      "certificateNumber": null,
+      "certificateFileId": null,
+      "redemptionAmount": null,
+      "homologatedFlowCode": null,
+      "flowData": null,
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:30.308Z",
+      "updated_at": "2026-11-11T03:42:30.308Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": null
+     },
+     {
+      "id": "dd873b2c-91f7-4691-afa3-5ef7e7498529",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "INSURANCE",
+      "guarantorPersonId": null,
+      "value": "30000.00",
+      "status": "ACTIVE",
+      "startsAt": "2026-01-01",
+      "endsAt": "2027-01-01",
+      "lockVersion": 0,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": null,
+      "acceptanceFileId": null,
+      "acceptedAt": null,
+      "providerName": "Seguradora Fictícia",
+      "policyNumber": "AP-8549432",
+      "policyFileId": "9f0ab3a0-5795-4aa0-be84-8566f1ea9d56",
+      "premiumInstallments": [
+       {
+        "amount": 1200,
+        "number": 1,
+        "paidAt": null,
+        "status": "PENDING",
+        "dueDate": "2026-02-01"
+       },
+       {
+        "amount": 1200,
+        "number": 2,
+        "paidAt": null,
+        "status": "PENDING",
+        "dueDate": "2026-08-01"
+       }
+      ],
+      "annualPremium": "2400.00",
+      "renewalDueAt": "2026-12-01",
+      "autoRenew": true,
+      "financeEntryId": null,
+      "holderPersonId": null,
+      "certificateNumber": null,
+      "certificateFileId": null,
+      "redemptionAmount": null,
+      "homologatedFlowCode": null,
+      "flowData": null,
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:30.216Z",
+      "updated_at": "2026-11-11T03:42:30.216Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": null
+     },
+     {
+      "id": "7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "GUARANTOR",
+      "guarantorPersonId": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884",
+      "value": null,
+      "status": "ACTIVE",
+      "startsAt": "2026-01-01",
+      "endsAt": "2028-12-31",
+      "lockVersion": 0,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": [
+       "354d417e-e631-4d1b-b2eb-5d1facda27ab"
+      ],
+      "acceptanceFileId": "f15e9382-df6d-46a5-9333-b2e7b299ea7e",
+      "acceptedAt": "2026-01-02T00:00:00.000Z",
+      "providerName": null,
+      "policyNumber": null,
+      "policyFileId": null,
+      "premiumInstallments": null,
+      "annualPremium": null,
+      "renewalDueAt": null,
+      "autoRenew": null,
+      "financeEntryId": null,
+      "holderPersonId": null,
+      "certificateNumber": null,
+      "certificateFileId": null,
+      "redemptionAmount": null,
+      "homologatedFlowCode": null,
+      "flowData": null,
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:30.109Z",
+      "updated_at": "2026-11-11T03:42:30.109Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884"
+     },
+     {
+      "id": "2d6d04e1-b0fa-4eec-84f3-cb266e1090fa",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guaranteeType": "GUARANTOR",
+      "guarantorPersonId": "d80f57db-9de7-4dc4-993a-1284d08614b9",
+      "value": null,
+      "status": "PENDING",
+      "startsAt": "2026-01-01",
+      "endsAt": "2028-12-31",
+      "lockVersion": 1,
+      "additionalGuarantorPersonIds": null,
+      "documentFileIds": null,
+      "acceptanceFileId": null,
+      "acceptedAt": null,
+      "providerName": null,
+      "policyNumber": null,
+      "policyFileId": null,
+      "premiumInstallments": null,
+      "annualPremium": null,
+      "renewalDueAt": null,
+      "autoRenew": null,
+      "financeEntryId": null,
+      "holderPersonId": null,
+      "certificateNumber": null,
+      "certificateFileId": null,
+      "redemptionAmount": null,
+      "homologatedFlowCode": null,
+      "flowData": null,
+      "notes": null,
+      "replacedByGuaranteeId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:29.956Z",
+      "updated_at": "2026-11-11T03:42:30.729Z",
+      "deleted_at": null,
+      "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+      "guarantor_person_id": "d80f57db-9de7-4dc4-993a-1284d08614b9"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0304-d26817",
+    "M5-A0168-e76ea6",
+    "M5-A0267-ce66c5"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-19",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Liberação de uma garantia muda só o status dela",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/guarantees/ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+   "corpoEnviado": {
+    "status": "RELEASED"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:30.813Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "OTHER",
+     "guarantorPersonId": null,
+     "value": "1000.00",
+     "status": "RELEASED",
+     "startsAt": "2026-01-01",
+     "endsAt": null,
+     "lockVersion": 1,
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": "CARTA_FIANCA",
+     "flowData": {
+      "banco": "Banco Fictício",
+      "numeroCarta": "CF-8549432"
+     },
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:30.596Z",
+     "updated_at": "2026-11-11T03:42:30.807Z",
+     "deleted_at": null,
+     "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guarantor_person_id": null
+    }
+   },
+   "req": [
+    "M5-A0304-d26817",
+    "M5-A0163-9b1694"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-32",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fiador sem documentos e sem aceite nasce PENDING (não vale como garantia ativa)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "GUARANTOR",
+    "guarantorPersonId": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884",
+    "startsAt": "2026-01-01",
+    "endsAt": "2028-12-31"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 50,
+   "quando": "2026-11-11T03:42:29.995Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "2d6d04e1-b0fa-4eec-84f3-cb266e1090fa",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "GUARANTOR",
+     "guarantorPersonId": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884",
+     "value": null,
+     "status": "PENDING",
+     "startsAt": "2026-01-01",
+     "endsAt": "2028-12-31",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:29.956Z",
+     "created_at": "2026-11-11T03:42:29.956Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0074-471be7",
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-P2",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: documentos do fiador (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "documentos-do-fiador.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "ZG9jdW1lbnRvcyBkbyBmaWFkb3IgODU0OTQzMg==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:30.031Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "354d417e-e631-4d1b-b2eb-5d1facda27ab",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/944b70b1-fff7-4783-8394-9c445cc819fa-documentos-do-fiador.pdf",
+     "fileName": "documentos-do-fiador.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 28,
+     "checksumSha256": "9868d0cbb87a724b1a5c75497798b6c312e6cd8f8260d7380f34032ff7ce3384",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:30.009Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.010Z",
+     "created_at": "2026-11-11T03:42:30.010Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-P3",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: termo de aceite do fiador (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "termo-de-aceite-do-fiador.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "dGVybW8gZGUgYWNlaXRlIGRvIGZpYWRvciA4NTQ5NDMy",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 47,
+   "quando": "2026-11-11T03:42:30.078Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "f15e9382-df6d-46a5-9333-b2e7b299ea7e",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/20968f58-65bc-4ac7-8728-6fc1a28dcf2c-termo-de-aceite-do-fiador.pdf",
+     "fileName": "termo-de-aceite-do-fiador.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 33,
+     "checksumSha256": "784ec71c8fb65086ab934fc7ace50765a991e4aac0e3b06c78c4c76a0a5eaeea",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:30.045Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.045Z",
+     "created_at": "2026-11-11T03:42:30.045Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-P4",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: apolice do seguro (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "apolice-do-seguro.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "YXBvbGljZSBkbyBzZWd1cm8gODU0OTQzMg==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 40,
+   "quando": "2026-11-11T03:42:30.198Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "9f0ab3a0-5795-4aa0-be84-8566f1ea9d56",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/86b4d528-1a31-463f-8d34-a39a663d4e30-apolice-do-seguro.pdf",
+     "fileName": "apolice-do-seguro.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 25,
+     "checksumSha256": "9185756eac874eca540485de9416df3d5a73d19c44a0f3e5ea7730fa2a86c7c8",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:30.173Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.173Z",
+     "created_at": "2026-11-11T03:42:30.173Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Caução pelo apelido antigo DEPOSIT ligada ao recebimento do Financeiro: gravada como SECURITY_DEPOSIT, ACTIVE, titular do lançamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "DEPOSIT",
+    "value": 7500,
+    "startsAt": "2026-01-01",
+    "financeEntryId": "ee04939c-3eab-47c4-afc3-a77888dfa25f"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T03:42:30.395Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "71871a5d-7943-4bce-bd72-74804bdcc59a",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "SECURITY_DEPOSIT",
+     "guarantorPersonId": null,
+     "value": "7500.00",
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": null,
+     "financeEntryId": "ee04939c-3eab-47c4-afc3-a77888dfa25f",
+     "holderPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.362Z",
+     "created_at": "2026-11-11T03:42:30.362Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0318-3e6287",
+    "M5-A0304-d26817",
+    "M5-A0261-d6fe86",
+    "M5-A0163-9b1694"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-P6",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: certificado do titulo (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "certificado-do-titulo.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "Y2VydGlmaWNhZG8gZG8gdGl0dWxvIDg1NDk0MzI=",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 43,
+   "quando": "2026-11-11T03:42:30.454Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "04f3bfc2-130b-45e2-92dc-e913620e9a35",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/c0f5e157-759e-4354-9089-ff03db230056-certificado-do-titulo.pdf",
+     "fileName": "certificado-do-titulo.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 29,
+     "checksumSha256": "c00aadc03006ce5c915415933abeaa1110d8615acd3cae538d508aa668d084e4",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:30.430Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.431Z",
+     "created_at": "2026-11-11T03:42:30.431Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Título com o código do livro CAPITALIZATION, certificado, provider e vigência: ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "CAPITALIZATION",
+    "value": 10000,
+    "startsAt": "2026-01-01",
+    "endsAt": "2027-01-01",
+    "providerName": "Capitalizadora Fictícia",
+    "certificateNumber": "TC-8549432",
+    "certificateFileId": "04f3bfc2-130b-45e2-92dc-e913620e9a35"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 50,
+   "quando": "2026-11-11T03:42:30.506Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "effbdfa6-bced-4558-bc95-9dc238b4668b",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "CAPITALIZATION",
+     "guarantorPersonId": null,
+     "value": "10000.00",
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": "2027-01-01",
+     "certificateFileId": "04f3bfc2-130b-45e2-92dc-e913620e9a35",
+     "providerName": "Capitalizadora Fictícia",
+     "certificateNumber": "TC-8549432",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.476Z",
+     "created_at": "2026-11-11T03:42:30.476Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0077-365a20",
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-39",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Outra garantia pelo fluxo homologado com os campos exigidos: ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "OTHER",
+    "homologatedFlowCode": "CARTA_FIANCA",
+    "flowData": {
+     "banco": "Banco Fictício",
+     "numeroCarta": "CF-8549432"
+    },
+    "value": 1000,
+    "startsAt": "2026-01-01"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T03:42:30.621Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "OTHER",
+     "guarantorPersonId": null,
+     "value": "1000.00",
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": null,
+     "homologatedFlowCode": "CARTA_FIANCA",
+     "flowData": {
+      "banco": "Banco Fictício",
+      "numeroCarta": "CF-8549432"
+     },
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.596Z",
+     "created_at": "2026-11-11T03:42:30.596Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0319-4269fc",
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Valor zero é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "SECURITY_DEPOSIT",
+    "value": 0
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:30.765Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDATION",
+     "message": "\"value\" deve ser um número positivo.",
+     "traceId": "0ca46e10-dbd3-459a-8c45-096cf3bd22a2"
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-P7",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: apolice renovada (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "apolice-renovada.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "YXBvbGljZSByZW5vdmFkYSA4NTQ5NDMy",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T03:42:30.847Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "e6f0775b-419a-4ede-a49f-b0ca176b3563",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/d07c4cc6-0539-4e62-84be-f19d936ee956-apolice-renovada.pdf",
+     "fileName": "apolice-renovada.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 24,
+     "checksumSha256": "a7337f8c3550ef1a7729055f05201ee60c9919f9e7821cabdda1baf397028bc9",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:30.826Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.826Z",
+     "created_at": "2026-11-11T03:42:30.826Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-GA-21",
+   "req": [
+    "M5-A0320-0f6afb",
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "perfil": "A:leitura",
+   "descricao": "Garantia substituída continua no banco com tipo, valor, apólice e vigência originais e aponta para a nova",
+   "sql": "SELECT id, guarantee_type, value, status, starts_at, ends_at, policy_number, replaced_by_guarantee_id, deleted_at FROM legal.guarantees WHERE contract_id = :c ORDER BY created_at",
+   "resultado": [
+    {
+     "id": "2d6d04e1-b0fa-4eec-84f3-cb266e1090fa",
+     "guarantee_type": "GUARANTOR",
+     "value": null,
+     "status": "PENDING",
+     "starts_at": "2026-01-01",
+     "ends_at": "2028-12-31",
+     "policy_number": null,
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    },
+    {
+     "id": "7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+     "guarantee_type": "GUARANTOR",
+     "value": null,
+     "status": "ACTIVE",
+     "starts_at": "2026-01-01",
+     "ends_at": "2028-12-31",
+     "policy_number": null,
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    },
+    {
+     "id": "dd873b2c-91f7-4691-afa3-5ef7e7498529",
+     "guarantee_type": "INSURANCE",
+     "value": "30000.00",
+     "status": "RELEASED",
+     "starts_at": "2026-01-01",
+     "ends_at": "2027-01-01",
+     "policy_number": "AP-8549432",
+     "replaced_by_guarantee_id": "758502db-5354-4edd-8b40-3dca19749925",
+     "deleted_at": null
+    },
+    {
+     "id": "1ca3d6fb-8f60-410b-959a-ef8653b5294d",
+     "guarantee_type": "SECURITY_DEPOSIT",
+     "value": "7500.00",
+     "status": "PENDING",
+     "starts_at": null,
+     "ends_at": null,
+     "policy_number": null,
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    },
+    {
+     "id": "71871a5d-7943-4bce-bd72-74804bdcc59a",
+     "guarantee_type": "SECURITY_DEPOSIT",
+     "value": "7500.00",
+     "status": "ACTIVE",
+     "starts_at": "2026-01-01",
+     "ends_at": null,
+     "policy_number": null,
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    },
+    {
+     "id": "effbdfa6-bced-4558-bc95-9dc238b4668b",
+     "guarantee_type": "CAPITALIZATION",
+     "value": "10000.00",
+     "status": "ACTIVE",
+     "starts_at": "2026-01-01",
+     "ends_at": "2027-01-01",
+     "policy_number": null,
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    },
+    {
+     "id": "c8065662-14b8-46bb-9c45-4ccf7eacc903",
+     "guarantee_type": "CAPITALIZATION",
+     "value": "10000.00",
+     "status": "PENDING",
+     "starts_at": null,
+     "ends_at": "2027-01-01",
+     "policy_number": null,
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    },
+    {
+     "id": "ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+     "guarantee_type": "OTHER",
+     "value": "1000.00",
+     "status": "RELEASED",
+     "starts_at": "2026-01-01",
+     "ends_at": null,
+     "policy_number": null,
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    },
+    {
+     "id": "758502db-5354-4edd-8b40-3dca19749925",
+     "guarantee_type": "INSURANCE",
+     "value": "32000.00",
+     "status": "ACTIVE",
+     "starts_at": "2027-01-01",
+     "ends_at": "2028-01-01",
+     "policy_number": "AP2-8549432",
+     "replaced_by_guarantee_id": null,
+     "deleted_at": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:30.897Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

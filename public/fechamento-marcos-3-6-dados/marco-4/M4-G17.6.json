@@ -1,0 +1,227 @@
+{
+ "id": "M4-G§17.6",
+ "secao": "Guia §17 CI/CD",
+ "requisito": "Etapa \"concurrency_tests\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/adversarial.finance.test.js",
+   "nome": "ADV-F21 baixas parciais CONCORRENTES não conseguem sacar mais que o total do lançamento",
+   "status": "passou",
+   "duracaoMs": 615,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "B3: duas criações SIMULTÂNEAS de intenção para o mesmo lançamento — a 2ª espera o lock; o índice único barra a duplicata",
+   "status": "passou",
+   "duracaoMs": 1551,
+   "commitDoArquivo": "7dd7af78"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: os 17 estágios do Guia §17 com os nomes literais e na ordem do livro no estagios.json e no workflow",
+   "status": "passou",
+   "duracaoMs": 17,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: cada estágio tem comando e os testes exigidos existem de fato nos arquivos do estágio",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: estágio de banco recusa rodar fora do banco descartável",
+   "status": "passou",
+   "duracaoMs": 100,
+   "commitDoArquivo": "3e3d2e05"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "I03-1",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.13",
+    "M4-G§17.6"
+   ],
+   "titulo": "Cinco criações SIMULTÂNEAS com a mesma chave (requisição 1/5): um efeito só",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 333,
+    "description": "Concorrência 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "idempotencyKey": "m4-par-0871300"
+   },
+   "esperado": {
+    "status": [
+     200,
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_DUPLICATE_PAYMENT",
+   "ok": true,
+   "ms": 173,
+   "quando": "2026-11-11T01:35:04.976Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_DUPLICATE_PAYMENT",
+     "message": "Já existe um lançamento com esta mesma chave de idempotência — pagamento/recebimento duplicado bloqueado.",
+     "traceId": "6941379c-4c89-4dbb-9006-4320902f6091"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "I03-2",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.13",
+    "M4-G§17.6"
+   ],
+   "titulo": "Cinco criações SIMULTÂNEAS com a mesma chave (requisição 2/5): um efeito só",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 333,
+    "description": "Concorrência 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "idempotencyKey": "m4-par-0871300"
+   },
+   "esperado": {
+    "status": [
+     200,
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_DUPLICATE_PAYMENT",
+   "ok": true,
+   "ms": 179,
+   "quando": "2026-11-11T01:35:04.982Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_DUPLICATE_PAYMENT",
+     "message": "Já existe um lançamento com esta mesma chave de idempotência — pagamento/recebimento duplicado bloqueado.",
+     "traceId": "e553b34b-bde5-49ab-aac6-48d25b8e93e5"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "I03-3",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.13",
+    "M4-G§17.6"
+   ],
+   "titulo": "Cinco criações SIMULTÂNEAS com a mesma chave (requisição 3/5): um efeito só",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 333,
+    "description": "Concorrência 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "idempotencyKey": "m4-par-0871300"
+   },
+   "esperado": {
+    "status": [
+     200,
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 253,
+   "quando": "2026-11-11T01:35:05.056Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "d219f31f-9faa-4c86-ab82-253f7d8e7481",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "333.00",
+     "description": "Concorrência 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": "m4-par-0871300",
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:04.923Z",
+     "created_at": "2026-11-11T01:35:04.923Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

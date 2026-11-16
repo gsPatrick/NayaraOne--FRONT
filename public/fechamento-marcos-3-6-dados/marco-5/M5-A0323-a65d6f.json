@@ -1,0 +1,72 @@
+{
+  "id": "M5-A0323-a65d6f",
+  "capturadoEm": "2026-11-11T10:27:20.379Z",
+  "passos": [
+    {
+      "id": "CT5-01",
+      "req": [
+        "M5-A0323-a65d6f"
+      ],
+      "titulo": "legal:approve sem contracts.version.approve não aprova a versão (Guia §6)",
+      "perfil": "A:recorte",
+      "metodo": "POST",
+      "rota": "/contract-versions/d7163296-2eec-4260-8b1c-845edaad6ff8/approve",
+      "corpoEnviado": {},
+      "status": 403,
+      "codigo": "PERMISSION_DENIED",
+      "esperado": {
+        "status": 403,
+        "codigo": "PERMISSION_DENIED"
+      },
+      "ok": true,
+      "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+      "quando": "2026-11-11T10:26:36.612Z"
+    },
+    {
+      "id": "CT5-02",
+      "req": [
+        "M5-A0323-a65d6f"
+      ],
+      "titulo": "Transição para APPROVED também exige contracts.version.approve",
+      "perfil": "A:recorte",
+      "metodo": "POST",
+      "rota": "/legal/contracts/61d4dcf8-4fe5-41ef-a274-05dc6ad413cf/transition",
+      "corpoEnviado": {
+        "targetStatus": "APPROVED"
+      },
+      "status": 403,
+      "codigo": "PERMISSION_DENIED",
+      "esperado": {
+        "status": 403,
+        "codigo": "PERMISSION_DENIED"
+      },
+      "ok": true,
+      "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+      "quando": "2026-11-11T10:26:36.616Z"
+    },
+    {
+      "id": "CT5-03",
+      "req": [
+        "M5-A0323-a65d6f",
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Perfil com contracts.version.approve aprova a versão vigente",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/contract-versions/d7163296-2eec-4260-8b1c-845edaad6ff8/approve",
+      "corpoEnviado": {},
+      "status": 200,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 200
+      },
+      "ok": true,
+      "resumo": "contractVersionId=d7163296-2eec-4260-8b1c-845edaad6ff8, contentHash=134b1860a670098d8aa5fa41d9784a697a13e65bbce1e7bb5a611678d316",
+      "quando": "2026-11-11T10:26:37.163Z"
+    }
+  ],
+  "consultasBanco": []
+}

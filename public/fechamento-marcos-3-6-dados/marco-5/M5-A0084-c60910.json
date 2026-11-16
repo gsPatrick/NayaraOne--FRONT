@@ -1,0 +1,596 @@
+{
+ "id": "M5-A0084-c60910",
+ "secao": "P1 > 10. Entrega de chaves",
+ "linhaCaderno": 195,
+ "requisito": "• Fotos obrigatórias quando política exigir.",
+ "demandas": "M5-D024",
+ "implementacao": "src/modules/legal/leasing/key-delivery.service.js:32 resolveKeyDeliveryPhotoPolicy (política do servidor) + src/modules/legal/leasing/keyDeliveryPhotos.js assertPhotosAreRealImages (cada foto é imagem enviada pela empresa)",
+ "tela": "Contratos > Entrega de chaves (/painel/contratos/entrega-chaves, /painel/contratos/entrega-chaves/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.chaves.test.js",
+   "nome": "fechamento M5 §10: foto inventada ou arquivo que não é imagem não conta como foto obrigatória; imagem enviada libera o imóvel usado",
+   "status": "pass",
+   "ms": 320.906,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery exige fotos quando a política do servidor exige (imóvel usado)",
+   "status": "pass",
+   "ms": 205.122,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "entrega de chaves: imóvel usado exige fotos pela política do servidor (cliente não consegue desligar)",
+   "status": "pass",
+   "ms": 122.701,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "entrega de chaves: política do servidor por tipo",
+   "status": "pass",
+   "ms": 0.211,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-CH-18",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_SERVER_POLICY",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_SERVER_POLICY"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_SERVER_POLICY: Política de fotos e termo de entrega são definidos pelo servidor — não envie: photosRequired.",
+   "quando": "2026-11-11T03:42:33.115Z"
+  },
+  {
+   "passo": "LC-CH-27",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=99665bc7-76c7-40c4-a720-c1a85aeec85f",
+   "quando": "2026-11-11T03:42:33.348Z"
+  },
+  {
+   "passo": "LC-CH-28",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED: Não é possível liberar as chaves: a política exige fotos obrigatórias e nenhuma foi informada (\"phot",
+   "quando": "2026-11-11T03:42:33.370Z"
+  },
+  {
+   "passo": "LC-CH-29",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_PHOTO_INVALID",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_PHOTO_INVALID"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_PHOTO_INVALID: Cada foto da entrega precisa ser uma imagem enviada ao sistema por esta empresa.",
+   "quando": "2026-11-11T03:42:33.387Z"
+  },
+  {
+   "passo": "LC-CH-30",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=30ef1bd6-57ba-4bc6-8cdf-9229945c3f82",
+   "quando": "2026-11-11T03:42:33.426Z"
+  },
+  {
+   "passo": "LC-CH-31",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=RELEASED, id=99665bc7-76c7-40c4-a720-c1a85aeec85f",
+   "quando": "2026-11-11T03:42:33.472Z"
+  },
+  {
+   "passo": "LC-CH-23",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=RELEASED, id=9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+   "quando": "2026-11-11T03:42:33.282Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0084-c60910.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Defeito corrigido: com a política exigindo fotos, qualquer id inventado em photosFileIds liberava as chaves. Agora cada id precisa ser um arquivo de imagem enviado pela empresa (400 LEGAL_KEY_DELIVERY_PHOTO_INVALID — LC-CH-29); teste novo m5fech.locacao.chaves \"foto inventada ou arquivo que não é imagem\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.chaves.test.js test/legal.keyDeliveries.test.js test/legal.frente5.rules.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-CH-18, LC-CH-27, LC-CH-28, LC-CH-29, LC-CH-30, LC-CH-31, LC-CH-25, LC-CH-23)"
+ },
+ "passos": [
+  {
+   "id": "LC-CH-18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cliente não pode desligar a política de fotos",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+    "photosRequired": false
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_SERVER_POLICY"
+   },
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_SERVER_POLICY",
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:33.115Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_SERVER_POLICY",
+     "message": "Política de fotos e termo de entrega são definidos pelo servidor — não envie: photosRequired.",
+     "traceId": "7a3ad756-9d5d-4796-bb62-2145c247f716"
+    }
+   },
+   "req": [
+    "M5-A0084-c60910"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-27",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Entrega de imóvel usado (termo específico)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries",
+   "corpoEnviado": {
+    "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+    "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termType": "USED_PROPERTY_DELIVERY"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:33.348Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "99665bc7-76c7-40c4-a720-c1a85aeec85f",
+     "photosRequired": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": null,
+     "deliveredAt": null,
+     "status": "PENDING",
+     "notes": null,
+     "termType": "USED_PROPERTY_DELIVERY",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:33.344Z",
+     "created_at": "2026-11-11T03:42:33.344Z",
+     "keysCount": null,
+     "keysIdentification": null,
+     "photosFileIds": null,
+     "termSignedAt": null,
+     "termSignedByPersonId": null,
+     "termEvidenceFileId": null,
+     "termEvidenceSha256": null,
+     "termSignatureMethod": null,
+     "termText": null,
+     "termVersion": null,
+     "termHash": null,
+     "photoPolicy": null,
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0084-c60910"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-28",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Imóvel usado sem fotos: a política do servidor exige fotos e bloqueia",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED",
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:33.370Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED",
+     "message": "Não é possível liberar as chaves: a política exige fotos obrigatórias e nenhuma foi informada (\"photosFileIds\").",
+     "traceId": "bfab85eb-a811-4c23-a627-6672b0d82c17"
+    }
+   },
+   "req": [
+    "M5-A0084-c60910",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-29",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Imóvel usado com id de foto inventado (arquivo inexistente) é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+    "photosFileIds": [
+     "11111111-1111-4111-8111-111111111111"
+    ]
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_PHOTO_INVALID"
+   },
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_PHOTO_INVALID",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:33.387Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_PHOTO_INVALID",
+     "message": "Cada foto da entrega precisa ser uma imagem enviada ao sistema por esta empresa.",
+     "traceId": "807c2637-0616-49f6-9586-d64e1c123735"
+    }
+   },
+   "req": [
+    "M5-A0084-c60910"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-30",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Foto do imóvel usado (imagem fictícia)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "sala.png",
+    "mimeType": "image/png",
+    "contentBase64": "UE5HIGZpY3TDrWNpbyBhZGQyYTEwMy1iODQ5LTRhMzctYjg2NS02ZWUzMjY5YzlkNTU=",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 39,
+   "quando": "2026-11-11T03:42:33.426Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "30ef1bd6-57ba-4bc6-8cdf-9229945c3f82",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/e7c408e9-ba3e-4c2d-b8fc-47532d324f57-sala.png",
+     "fileName": "sala.png",
+     "mimeType": "image/png",
+     "sizeBytes": 50,
+     "checksumSha256": "6ec29791ee8c5ee83253c7a327b4a8eaf60654bfebc4e5a4049b67452715236e",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:33.402Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:33.402Z",
+     "created_at": "2026-11-11T03:42:33.402Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0084-c60910"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-31",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Imóvel usado com foto real enviada: entrega liberada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+    "photosFileIds": [
+     "30ef1bd6-57ba-4bc6-8cdf-9229945c3f82"
+    ]
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 45,
+   "quando": "2026-11-11T03:42:33.472Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "99665bc7-76c7-40c4-a720-c1a85aeec85f",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:33.461Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 3,
+     "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+     "photosRequired": true,
+     "photosFileIds": [
+      "30ef1bd6-57ba-4bc6-8cdf-9229945c3f82"
+     ],
+     "termType": "USED_PROPERTY_DELIVERY",
+     "termSignedAt": "2026-11-11T03:42:33.456Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "termEvidenceSha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE IMÓVEL USADO E CHAVES\n\nContrato: LOC-2026-0011 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 3 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta principal e 1 controle do portão\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos obrigatórias: por se tratar de entrega de imóvel usado, o estado do imóvel é registrado em fotos anexadas a este termo.\nO imóvel é entregue usado, no estado descrito na vistoria acima, que faz parte deste termo.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "7ac32bfbe39176ede377d225302619b7297363489e3b6ea30ce82bd57d7e5e21",
+     "photoPolicy": "REQUIRED_USED_PROPERTY",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:33.344Z",
+     "updated_at": "2026-11-11T03:42:33.461Z",
+     "deleted_at": null,
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0084-c60910"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-23",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Com contrato SIGNED, vistoria de entrada assinada pelas duas partes, garantia vigente, quantidade/identificação e termo assinado: chaves entregues",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:33.282Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:33.273Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 3,
+     "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+     "photosRequired": false,
+     "photosFileIds": null,
+     "termType": null,
+     "termSignedAt": "2026-11-11T03:42:33.270Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "termEvidenceSha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE CHAVES\n\nContrato: LOC-2026-0011 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 3 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta principal e 1 controle do portão\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos não obrigatórias nesta entrega: o estado do imóvel já está registrado na vistoria de entrada assinada pelo locador e pelo locatário.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "da8df6e2b75492cf06008258719f23535f5778962d635126425de8afb5a326c3",
+     "photoPolicy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:32.004Z",
+     "updated_at": "2026-11-11T03:42:33.274Z",
+     "deleted_at": null,
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0226-43d13b",
+    "M5-A0136-e672e2",
+    "M5-A0079-456494",
+    "M5-A0080-157e61",
+    "M5-A0081-9fbe36",
+    "M5-A0082-0bfb1f",
+    "M5-A0083-ed53e0",
+    "M5-A0084-c60910",
+    "M5-A0085-d2ec3a",
+    "M5-A0086-fda035",
+    "M5-A0145-146a2f",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-CH-25",
+   "req": [
+    "M5-A0083-ed53e0",
+    "M5-A0085-d2ec3a",
+    "M5-A0084-c60910"
+   ],
+   "modulo": "22-locacao-chaves",
+   "perfil": "A:leitura",
+   "descricao": "Entrega gravada: quantidade, identificação, quem assinou o termo, quando, hash do termo e política de fotos do servidor",
+   "sql": "SELECT id, status, keys_count, keys_identification, term_signed_by_person_id, term_signed_at, term_version, term_hash, term_evidence_file_id, term_evidence_sha256, term_signature_method, photo_policy, photos_required, delivered_at FROM legal.key_deliveries WHERE id = :id",
+   "resultado": [
+    {
+     "id": "9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+     "status": "RELEASED",
+     "keys_count": 3,
+     "keys_identification": "2 chaves da porta principal e 1 controle do portão",
+     "term_signed_by_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "term_signed_at": {},
+     "term_version": "KD-TERM-v3",
+     "term_hash": "da8df6e2b75492cf06008258719f23535f5778962d635126425de8afb5a326c3",
+     "term_evidence_file_id": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "term_evidence_sha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "term_signature_method": "MANUAL_EVIDENCE",
+     "photo_policy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "photos_required": false,
+     "delivered_at": {}
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:33.331Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

@@ -1,0 +1,305 @@
+{
+ "id": "M5-A0314-222d75",
+ "secao": "P1 > 7. Checklist documental [tabela: Fluxo | Exemplos de requirements]",
+ "linhaCaderno": 145,
+ "requisito": "Venda financiada | Documentos comprador/vendedor, matrícula, certidões, financiamento, dados de pagamento.",
+ "demandas": "M5-D012",
+ "implementacao": "src/modules/legal/contracts/application/requirement.service.js:86 REQUIREMENT_TEMPLATES_BY_CONTRACT_TYPE.SALE_FINANCED",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "§7 Venda financiada: documentos de comprador e vendedor, matrícula, certidões, financiamento e dados de pagamento",
+   "status": "pass",
+   "ms": 62.543,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-504",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=fd6dc383-e9c6-4982-b7ac-64d30111202f, contractType=SALE_FINANCED",
+   "quando": "2026-11-11T03:42:28.853Z"
+  },
+  {
+   "passo": "CT-505",
+   "metodo": "POST",
+   "rota": "/legal/contracts/fd6dc383-e9c6-4982-b7ac-64d30111202f/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 6 item(ns)",
+   "quando": "2026-11-11T03:42:28.939Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0314-222d75.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo: test/m5fech.contratos.checklist.test.js \"§7 Venda financiada: documentos de comprador e vendedor, matrícula, certidões, financiamento e dados de pagamento\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.checklist.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-504, CT-505, CT-506)"
+ },
+ "passos": [
+  {
+   "id": "CT-504",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: contrato SALE_FINANCED para o checklist",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_FINANCED",
+    "totalValue": 1000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:28.853Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_FINANCED",
+     "contractNumber": "VEN-2026-0005",
+     "status": "DRAFT",
+     "totalValue": "1000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:28.848Z",
+     "created_at": "2026-11-11T03:42:28.848Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0314-222d75"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-505",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checklist de venda financiada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/fd6dc383-e9c6-4982-b7ac-64d30111202f/requirements/generate",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 86,
+   "quando": "2026-11-11T03:42:28.939Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "ba86755f-4fc9-4fd1-b965-35aeadce430a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+      "requirementCode": "SALE_FIN_BUYER_DOCS",
+      "description": "Documentos do comprador.",
+      "requirementType": "BUYER_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.864Z",
+      "created_at": "2026-11-11T03:42:28.864Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "32134e0d-01fc-49df-b0b3-af82185a065b",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+      "requirementCode": "SALE_FIN_SELLER_DOCS",
+      "description": "Documentos do vendedor.",
+      "requirementType": "SELLER_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.867Z",
+      "created_at": "2026-11-11T03:42:28.867Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "643a89cc-1280-44d8-a238-dae5316be8c7",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+      "requirementCode": "SALE_FIN_REGISTRATION",
+      "description": "Matrícula do imóvel.",
+      "requirementType": "PROPERTY_REGISTRATION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.870Z",
+      "created_at": "2026-11-11T03:42:28.870Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "c125f22f-b8a6-4f4d-8a90-66cdaef6c434",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+      "requirementCode": "SALE_FIN_CERTIFICATES",
+      "description": "Certidões (negativas, ônus etc.).",
+      "requirementType": "CERTIFICATES",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.872Z",
+      "created_at": "2026-11-11T03:42:28.872Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "f65067c8-2680-460e-bb00-c60a65ae05a9",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+      "requirementCode": "SALE_FIN_FINANCING",
+      "description": "Documentação de financiamento.",
+      "requirementType": "FINANCING",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.876Z",
+      "created_at": "2026-11-11T03:42:28.876Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "2693c847-9180-48d8-b4ca-a30dd1fad11b",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+      "requirementCode": "SALE_FIN_PAYMENT_DATA",
+      "description": "Dados de pagamento.",
+      "requirementType": "PAYMENT_DATA",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.880Z",
+      "created_at": "2026-11-11T03:42:28.880Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0314-222d75"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-506",
+   "req": [
+    "M5-A0314-222d75"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "A:leitura",
+   "descricao": "Venda financiada: comprador, vendedor, matrícula, certidões, financiamento, dados de pagamento",
+   "sql": "SELECT requirement_code, requirement_type, status FROM legal.contract_requirements WHERE contract_id = :id ORDER BY created_at, requirement_code",
+   "resultado": [
+    {
+     "requirement_code": "SALE_FIN_BUYER_DOCS",
+     "requirement_type": "BUYER_DOCUMENT",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "SALE_FIN_SELLER_DOCS",
+     "requirement_type": "SELLER_DOCUMENT",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "SALE_FIN_REGISTRATION",
+     "requirement_type": "PROPERTY_REGISTRATION",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "SALE_FIN_CERTIFICATES",
+     "requirement_type": "CERTIFICATES",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "SALE_FIN_FINANCING",
+     "requirement_type": "FINANCING",
+     "status": "PENDING"
+    },
+    {
+     "requirement_code": "SALE_FIN_PAYMENT_DATA",
+     "requirement_type": "PAYMENT_DATA",
+     "status": "PENDING"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:28.941Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

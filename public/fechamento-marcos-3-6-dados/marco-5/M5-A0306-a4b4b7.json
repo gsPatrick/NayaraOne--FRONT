@@ -1,0 +1,1147 @@
+{
+ "id": "M5-A0306-a4b4b7",
+ "secao": "P1 > 2. Princípios constitucionais [tabela: Código | Princípio | Regra]",
+ "linhaCaderno": 39,
+ "requisito": "JUR-009 | Prazo tem responsável | Todo prazo jurídico crítico tem origem, responsável e escalonamento.",
+ "demandas": "M5-D035;M5-D037;M5-D036",
+ "implementacao": "src/modules/legal/cases/deadline.service.js createLegalDeadline (origem obrigatória; CRITICAL exige responsável efetivo e escalonamento via src/modules/legal/cases/legalDeadlineAccountability.js); src/modules/legal/cases/legalDeadlineInvariants.js assertFinalDeadlineState (reabertura/edição)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.prazos.test.js",
+   "nome": "JR prazo: crítico exige origem, responsável efetivo e escalonamento (JUR-009); reabrir crítico concluído reavalia a regra",
+   "status": "pass",
+   "ms": 46.941,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-008: criar prazo crítico sem origem verificável é bloqueado (DEADLINE_SOURCE_REQUIRED, Guia §12) e nada é gravado; texto de origem sozinho não basta",
+   "status": "pass",
+   "ms": 87,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.deadlineReopenCritical.test.js",
+   "nome": "Contorno: tirar escalonamento/responsavel com o CRITICAL concluido e reabrir -> reabertura recusada (422), prazo continua DONE",
+   "status": "pass",
+   "ms": 177.219,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.deadlineFinalState.http.test.js",
+   "nome": "HTTP cenario 1: reabrir CRITICAL retirando o unico responsavel -> 422 e estado preservado (incl. auditoria)",
+   "status": "pass",
+   "ms": 520.471,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-D02",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "resumo": "erro DEADLINE_SOURCE_REQUIRED: Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jur",
+   "quando": "2026-11-11T03:42:37.618Z"
+  },
+  {
+   "passo": "JR-D04",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=832465e8-2280-4049-bcd2-8ecb455ba2e8, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:37.660Z"
+  },
+  {
+   "passo": "JR-D10",
+   "metodo": "POST",
+   "rota": "/legal/cases/34a837fe-e0e7-42e3-b882-71804ddd8b7e/deadlines",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED",
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED: Prazo crítico exige um destino de escalonamento: defina o usuário de escalonamento no processo.",
+   "quando": "2026-11-11T03:42:37.833Z"
+  },
+  {
+   "passo": "JR-D30",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PENDING, id=832465e8-2280-4049-bcd2-8ecb455ba2e8, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:38.084Z"
+  },
+  {
+   "passo": "JR-D31d",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/5cd31853-ebd9-4596-9ab3-51fa89060807",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED",
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED: Prazo crítico exige um responsável efetivo: informe o responsável do prazo ou defina o responsável d",
+   "quando": "2026-11-11T03:42:38.156Z"
+  },
+  {
+   "passo": "JR-D31e",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/5cd31853-ebd9-4596-9ab3-51fa89060807",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PENDING, id=5cd31853-ebd9-4596-9ab3-51fa89060807, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:38.174Z"
+  },
+  {
+   "passo": "JR-D01",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=632a809b-fcfe-4173-9852-e69456dfa385",
+   "quando": "2026-11-11T03:42:37.565Z"
+  },
+  {
+   "passo": "JR-D08",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=34a837fe-e0e7-42e3-b882-71804ddd8b7e",
+   "quando": "2026-11-11T03:42:37.765Z"
+  },
+  {
+   "passo": "JR-D09",
+   "metodo": "POST",
+   "rota": "/legal/cases/34a837fe-e0e7-42e3-b882-71804ddd8b7e/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_RESPONSIBLE_REQUIRED: Um prazo que já nasce vencido precisa de um responsável definido, para que alguém seja notificado de",
+   "quando": "2026-11-11T03:42:37.793Z"
+  },
+  {
+   "passo": "JR-D09b",
+   "metodo": "POST",
+   "rota": "/legal/cases/34a837fe-e0e7-42e3-b882-71804ddd8b7e/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_RESPONSIBLE_REQUIRED: Todo prazo precisa de um responsável: informe o responsável do prazo ou defina o responsável do proc",
+   "quando": "2026-11-11T03:42:37.812Z"
+  },
+  {
+   "passo": "JR-D12",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PENDING, id=70785ddb-efe1-4fd5-aaef-db3b4ff26c6f, criticality=MEDIUM",
+   "quando": "2026-11-11T03:42:37.865Z"
+  },
+  {
+   "passo": "JR-D29",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.065Z"
+  },
+  {
+   "passo": "JR-D31a",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=824f1992-e7b5-4111-bac1-ed3bcf897ee8",
+   "quando": "2026-11-11T03:42:38.097Z"
+  },
+  {
+   "passo": "JR-D31b",
+   "metodo": "POST",
+   "rota": "/legal/cases/824f1992-e7b5-4111-bac1-ed3bcf897ee8/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=5cd31853-ebd9-4596-9ab3-51fa89060807, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:38.125Z"
+  },
+  {
+   "passo": "JR-D31c",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/5cd31853-ebd9-4596-9ab3-51fa89060807",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=DONE, id=5cd31853-ebd9-4596-9ab3-51fa89060807, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:38.145Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0306-a4b4b7.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.prazos.test.js test/m5fech.juridico.adversariais.test.js test/legal.deadlineReopenCritical.test.js test/legal.deadlineFinalState.http.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-D02, JR-D04, JR-D10, JR-D30, JR-D31d, JR-D31e, JR-D35, JR-D01, JR-D08, JR-D09, JR-D09b, JR-D12, JR-D29, JR-D31a, JR-D31b, JR-D31c, JR-D11)"
+ },
+ "passos": [
+  {
+   "id": "JR-D02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico sem origem é bloqueado (JUR-TS-008)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.605Z",
+    "criticality": "CRITICAL",
+    "responsibleUserId": null
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.618Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "DEADLINE_SOURCE_REQUIRED",
+     "message": "Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jurídico precisa de uma origem verificável.",
+     "traceId": "60b1eca8-18d9-49d0-8f7b-986dd3966bae"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0107-dce0a2",
+    "M5-A0156-d0fcff",
+    "M5-A0238-193275",
+    "M5-A0258-4d0dd8",
+    "M5-A0206-d4f5e0",
+    "M5-A0218-5853eb"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico com origem e responsável (gestor, legal:create)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação mwbkpk2qm6ml",
+    "dueAt": "2026-11-26T03:42:37.632Z",
+    "criticality": "CRITICAL",
+    "sourceDocument": "Intimação fictícia DJe 03/11/2026",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T03:42:37.660Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "832465e8-2280-4049-bcd2-8ecb455ba2e8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Contestação mwbkpk2qm6ml",
+     "dueAt": "2026-11-26T03:42:37.632Z",
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": "Intimação fictícia DJe 03/11/2026",
+     "sourceEvent": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "criticality": "CRITICAL",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.654Z",
+     "created_at": "2026-11-11T03:42:37.648Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "6144eadf-c7e1-476c-9104-3401112bec77",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0108-eed49f",
+    "M5-A0306-a4b4b7",
+    "M5-A0218-5853eb",
+    "M5-A0173-2531a4",
+    "M5-A0271-64d1b2",
+    "M5-A0229-87c693",
+    "M5-A0139-b9fb17",
+    "M5-A0273-a39e38"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Crítico em processo sem escalonamento: recusado (JUR-009)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/34a837fe-e0e7-42e3-b882-71804ddd8b7e/deadlines",
+   "corpoEnviado": {
+    "description": "x",
+    "dueAt": "2026-11-16T03:42:37.813Z",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+    "criticality": "CRITICAL",
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED"
+   },
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED",
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:37.833Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CRITICAL_ESCALATION_REQUIRED",
+     "message": "Prazo crítico exige um destino de escalonamento: defina o usuário de escalonamento no processo.",
+     "traceId": "a72aef6b-e66e-4954-a204-d39089e94942"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D30",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REABRIR crítico concluído (gestor, legal:update): processo com responsável e escalonamento, ciclo de alerta reiniciado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "status": "PENDING"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:38.084Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "832465e8-2280-4049-bcd2-8ecb455ba2e8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "sourceDocument": "Intimação fictícia DJe 03/11/2026",
+     "sourceEvent": null,
+     "description": "Contestação mwbkpk2qm6ml",
+     "dueAt": "2026-12-01T03:42:37.898Z",
+     "status": "PENDING",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "conclusionEvidenceFileId": "d9d37334-2157-4463-838c-8c55a87e5465",
+     "conclusionNote": "Contestação protocolada.",
+     "criticality": "CRITICAL",
+     "occurrenceTaskId": null,
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "taskId": "6144eadf-c7e1-476c-9104-3401112bec77",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:37.648Z",
+     "updated_at": "2026-11-11T03:42:38.075Z",
+     "deleted_at": null,
+     "legal_case_id": "632a809b-fcfe-4173-9852-e69456dfa385"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D31d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REABRIR crítico retirando o único responsável efetivo: recusado e estado preservado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/5cd31853-ebd9-4596-9ab3-51fa89060807",
+   "corpoEnviado": {
+    "status": "PENDING",
+    "responsibleUserId": null
+   },
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED"
+   },
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:38.156Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CRITICAL_RESPONSIBLE_REQUIRED",
+     "message": "Prazo crítico exige um responsável efetivo: informe o responsável do prazo ou defina o responsável do processo.",
+     "traceId": "55ec4529-ffbd-4703-a4ac-796374e82bf8"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D31e",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REABRIR o mesmo crítico mantendo o responsável: aceito",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/5cd31853-ebd9-4596-9ab3-51fa89060807",
+   "corpoEnviado": {
+    "status": "PENDING"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:38.174Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "5cd31853-ebd9-4596-9ab3-51fa89060807",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "824f1992-e7b5-4111-bac1-ed3bcf897ee8",
+     "sourceDocument": "Sentença fictícia",
+     "sourceEvent": null,
+     "description": "Embargos mwbkpk2qm6ml",
+     "dueAt": "2026-11-21T03:42:38.098Z",
+     "status": "PENDING",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": "Embargos opostos.",
+     "criticality": "CRITICAL",
+     "occurrenceTaskId": null,
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "taskId": "8a7d6d04-6fd8-415c-ae46-fd867bc45e53",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:38.115Z",
+     "updated_at": "2026-11-11T03:42:38.166Z",
+     "deleted_at": null,
+     "legal_case_id": "824f1992-e7b5-4111-bac1-ed3bcf897ee8"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D35",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Job de novo 25 h depois sem conclusão: escala para o usuário de escalonamento",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "processDeadlinesInTransaction(tx, agora + 25h)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:38.328Z",
+   "corpo": {
+    "result": {
+     "deadlinesChecked": 3,
+     "alerted": 0,
+     "escalated": 1
+    }
+   },
+   "req": [
+    "M5-A0109-d70c4e",
+    "M5-A0157-aeca75"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-D01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: processo com responsável e escalonamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "caseNumber": "PZ-mwbkpk2qm6ml",
+    "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+    "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 27,
+   "quando": "2026-11-11T03:42:37.565Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "caseNumber": "PZ-mwbkpk2qm6ml",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.552Z",
+     "created_at": "2026-11-11T03:42:37.552Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: processo sem responsável e sem escalonamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "CONSULTATIVE"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:37.765Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "34a837fe-e0e7-42e3-b882-71804ddd8b7e",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": null,
+     "escalationUserId": null,
+     "caseNumber": null,
+     "caseType": "CONSULTATIVE",
+     "status": "OPEN",
+     "phase": null,
+     "summary": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.758Z",
+     "created_at": "2026-11-11T03:42:37.758Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Prazo vencido sem responsável (processo sem responsável): recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/34a837fe-e0e7-42e3-b882-71804ddd8b7e/deadlines",
+   "corpoEnviado": {
+    "description": "x",
+    "dueAt": "2026-11-10T03:42:37.765Z",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T03:42:37.793Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED",
+     "message": "Um prazo que já nasce vencido precisa de um responsável definido, para que alguém seja notificado de verdade.",
+     "traceId": "d500a417-56c7-408b-b479-af88e30a144f"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7",
+    "M5-A0108-eed49f"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D09b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Prazo futuro sem responsável próprio em processo sem responsável: recusado (todo prazo tem responsável)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/34a837fe-e0e7-42e3-b882-71804ddd8b7e/deadlines",
+   "corpoEnviado": {
+    "description": "x",
+    "dueAt": "2026-11-20T03:42:37.793Z",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:37.812Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_RESPONSIBLE_REQUIRED",
+     "message": "Todo prazo precisa de um responsável: informe o responsável do prazo ou defina o responsável do processo.",
+     "traceId": "43b920c6-50c1-48ef-9c3a-f23ec2c0ade3"
+    }
+   },
+   "req": [
+    "M5-A0108-eed49f",
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "ATRIBUIR responsável ao prazo (gestor, legal:update)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+   "corpoEnviado": {
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+    "changeReason": "Distribuição ao advogado"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:37.865Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "sourceDocument": null,
+     "sourceEvent": "Juntada de contestação (evento fictício)",
+     "description": "Réplica mwbkpk2qm6ml",
+     "dueAt": "2030-01-02T02:59:00.000Z",
+     "status": "PENDING",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "criticality": "MEDIUM",
+     "occurrenceTaskId": null,
+     "sourceFileId": null,
+     "sourceEventId": "f88dd3ab-4640-40b3-8456-7941ca704408",
+     "sourceEventType": "OUTBOX_EVENT",
+     "taskId": "222092e9-2d96-4e8b-8bf7-e88483972d23",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:37.731Z",
+     "updated_at": "2026-11-11T03:42:37.854Z",
+     "deleted_at": null,
+     "legal_case_id": "632a809b-fcfe-4173-9852-e69456dfa385"
+    }
+   },
+   "req": [
+    "M5-A0108-eed49f",
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D29",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REABRIR pelo checker (sem legal:update): recusado",
+   "perfil": "A:checker",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "status": "PENDING"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.065Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "5ed020c5-599e-415e-ac55-3010a8e74308"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D31a",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: processo só com escalonamento (sem responsável próprio)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:38.097Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "824f1992-e7b5-4111-bac1-ed3bcf897ee8",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": null,
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "caseNumber": null,
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.091Z",
+     "created_at": "2026-11-11T03:42:38.091Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D31b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: prazo crítico com responsável próprio nesse processo",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/824f1992-e7b5-4111-bac1-ed3bcf897ee8/deadlines",
+   "corpoEnviado": {
+    "description": "Embargos mwbkpk2qm6ml",
+    "dueAt": "2026-11-21T03:42:38.098Z",
+    "criticality": "CRITICAL",
+    "sourceDocument": "Sentença fictícia",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 27,
+   "quando": "2026-11-11T03:42:38.125Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "5cd31853-ebd9-4596-9ab3-51fa89060807",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "824f1992-e7b5-4111-bac1-ed3bcf897ee8",
+     "description": "Embargos mwbkpk2qm6ml",
+     "dueAt": "2026-11-21T03:42:38.098Z",
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": "Sentença fictícia",
+     "sourceEvent": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "criticality": "CRITICAL",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.119Z",
+     "created_at": "2026-11-11T03:42:38.115Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "8a7d6d04-6fd8-415c-ae46-fd867bc45e53",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D31c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: conclui o prazo crítico com nota",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/5cd31853-ebd9-4596-9ab3-51fa89060807",
+   "corpoEnviado": {
+    "status": "DONE",
+    "conclusionNote": "Embargos opostos."
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:38.145Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "5cd31853-ebd9-4596-9ab3-51fa89060807",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "824f1992-e7b5-4111-bac1-ed3bcf897ee8",
+     "sourceDocument": "Sentença fictícia",
+     "sourceEvent": null,
+     "description": "Embargos mwbkpk2qm6ml",
+     "dueAt": "2026-11-21T03:42:38.098Z",
+     "status": "DONE",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": "Embargos opostos.",
+     "criticality": "CRITICAL",
+     "occurrenceTaskId": null,
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "taskId": "8a7d6d04-6fd8-415c-ae46-fd867bc45e53",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:38.115Z",
+     "updated_at": "2026-11-11T03:42:38.135Z",
+     "deleted_at": null,
+     "legal_case_id": "824f1992-e7b5-4111-bac1-ed3bcf897ee8"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7",
+    "M5-A0111-b4013c"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-D11",
+   "req": [
+    "M5-A0107-dce0a2",
+    "M5-A0108-eed49f",
+    "M5-A0306-a4b4b7"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:leitura",
+   "descricao": "Prazos gravados: origem verificável (arquivo ou evento), due_at no fuso de São Paulo (\"2030-01-01\" = 23:59 de Brasília), criticidade, responsável e a TAREFA do responsável (Guia §12)",
+   "sql": "SELECT d.description, d.source_file_id IS NOT NULL AS origem_arquivo, d.source_event_type, d.source_document, d.due_at::text AS due_at_utc, to_char(d.due_at AT TIME ZONE 'America/Sao_Paulo', 'YYYY-MM-DD HH24:MI') AS due_at_sao_paulo, d.criticality, d.responsible_user_id IS NOT NULL AS tem_responsavel_proprio, d.status, t.related_entity_type AS tarefa_tipo, t.status AS tarefa_status, t.priority AS tarefa_prioridade, t.assigned_to_user_id = COALESCE(d.responsible_user_id, c.responsible_user_id) AS tarefa_do_responsavel, t.due_at = d.due_at AS tarefa_mesmo_vencimento FROM legal.legal_deadlines d JOIN legal.legal_cases c ON c.id = d.legal_case_id LEFT JOIN core.tasks t ON t.id = d.task_id WHERE d.legal_case_id = :id ORDER BY d.created_at",
+   "resultado": [
+    {
+     "description": "Contestação mwbkpk2qm6ml",
+     "origem_arquivo": true,
+     "source_event_type": null,
+     "source_document": "Intimação fictícia DJe 03/11/2026",
+     "due_at_utc": "2026-11-26 03:42:37.632+00",
+     "due_at_sao_paulo": "2026-11-26 00:42",
+     "criticality": "CRITICAL",
+     "tem_responsavel_proprio": true,
+     "status": "PENDING",
+     "tarefa_tipo": "LEGAL_DEADLINE",
+     "tarefa_status": "OPEN",
+     "tarefa_prioridade": "CRITICAL",
+     "tarefa_do_responsavel": true,
+     "tarefa_mesmo_vencimento": true
+    },
+    {
+     "description": "Réplica mwbkpk2qm6ml",
+     "origem_arquivo": false,
+     "source_event_type": "OUTBOX_EVENT",
+     "source_document": null,
+     "due_at_utc": "2030-01-02 02:59:00+00",
+     "due_at_sao_paulo": "2030-01-01 23:59",
+     "criticality": "MEDIUM",
+     "tem_responsavel_proprio": false,
+     "status": "PENDING",
+     "tarefa_tipo": "LEGAL_DEADLINE",
+     "tarefa_status": "OPEN",
+     "tarefa_prioridade": "MEDIUM",
+     "tarefa_do_responsavel": true,
+     "tarefa_mesmo_vencimento": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.842Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

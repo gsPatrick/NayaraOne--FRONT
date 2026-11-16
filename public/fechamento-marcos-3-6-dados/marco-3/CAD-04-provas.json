@@ -1,0 +1,20 @@
+{
+ "linha": "CAD-04",
+ "marco": 3,
+ "provas": [
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/people.cadastroDedupMerge.http.chamadas.json",
+   "bytes": 32495,
+   "sha256": "8bb11b9182dc41f7c57c7cf5324561abdd1f03d15cdc5bb72c5c44d987c84e88",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3pe/people.cadastroDedupMerge.http.chamadas.json",
+   "mascarado": true
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/people.vinculo.http.chamadas.json",
+   "bytes": 57134,
+   "sha256": "f1c35a328cb81d4e7b54564c0650d13fdd36843ab8fa1467bc90abc130cbbac2",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3pe/people.vinculo.http.chamadas.json",
+   "mascarado": true
+  }
+ ]
+}

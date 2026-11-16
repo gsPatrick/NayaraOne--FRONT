@@ -1,0 +1,504 @@
+{
+ "id": "M4-G§4",
+ "secao": "Guia §4 Preparar pagamento",
+ "requisito": "preparePayment: getForUpdate, assertCompany, assertPayable, assertAmountWithinOpenBalance, snapshotHash, regra de aprovação",
+ "substitui": "evidencias/marco-4/M4-G4.json",
+ "motivo": "Correção M4PG (verificação independente do Marco 4): assertPayable, assertAmountWithinOpenBalance (parcela/valor; PARTIALLY_SETTLED pagável pelo saldo) e REG-FIN-002 + createFromRule. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "f1f33f82",
+  "branchApi": "m4fix/pagamentos-verificacao",
+  "commitFront": "c574a8a",
+  "quando": "2026-11-11T12:09:43Z",
+  "ambiente": "Postgres 16 descartável (scripts/withDisposableDb.js; migrations do zero, seeds do CI e de dois tenants; RLS real, role de runtime sem bypass), API Express real em processo; ClamAV real na 3310."
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§4 assertPayable (V2-P3): intenção de PAGAMENTO sobre lançamento A RECEBER é recusada",
+   "noCommit": "passou",
+   "duracaoMs": 1117,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error='Missing expected rejection.'"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-§8.1/§8.2/§8.3/G§4: PREPARE escolhe valor/parcela até o saldo; lançamento PARTIALLY_SETTLED é pagável pelo saldo",
+   "noCommit": "passou",
+   "duracaoMs": 4639,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "expected='PENDING_APPROVAL'"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6: as faixas são parâmetros da empresa e a versão publicada da REG-FIN-002 decide risco e aprovadores quando define",
+   "noCommit": "passou",
+   "duracaoMs": 8268,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error='Chave de configuração desconhecida: \"pagamentos.faixa.baixo_ate\".'"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+   "noCommit": "passou",
+   "duracaoMs": 16268,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "expected='CRITICAL'"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C02-1",
+   "titulo": "assertPayable: intenção de pagamento sobre lançamento A RECEBER",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "a3fd304e-2804-43cf-8854-aaa37cf9b759"
+   },
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE",
+   "quando": "2026-11-11T10:54:20.321Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE",
+     "message": "Intenção de pagamento só vale para lançamento a pagar (este é a receber): dinheiro não sai para quem deve à empresa."
+    }
+   }
+  },
+  {
+   "id": "C04-1",
+   "titulo": "Valor acima do saldo em aberto é recusado",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+    "amount": "140.00"
+   },
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_AMOUNT_EXCEEDS_BALANCE",
+   "quando": "2026-11-11T10:54:24.021Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_AMOUNT_EXCEEDS_BALANCE",
+     "message": "O valor escolhido (R$ 14000.00) passa do saldo em aberto do lançamento (R$ 10000.00).",
+     "details": {
+      "amount": "14000.00",
+      "openBalance": "10000.00"
+     }
+    }
+   }
+  },
+  {
+   "id": "C04-2",
+   "titulo": "PREPARE escolhe a parcela de R$ 40,00",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+    "amount": "40.00"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:26.150Z",
+   "resposta": {
+    "id": "51317759-21d4-43d1-a36a-54cceb4c13a4",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "40.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 17943944625644947",
+     "branch": null,
+     "pixKey": null,
+     "account": null,
+     "bankCode": null,
+     "personId": null,
+     "bankAccountId": null
+    },
+    "snapshotHash": "9d3370a1e9883ed3a4abb4f345a3a18a8ecacf367a0e14630d7e253aec01ba8a",
+    "approval": {
+     "id": "6882e702-c74a-4b50-b47e-1e8ac8eda7c9",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 0,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:51317759-21d4-43d1-a36a-54cceb4c13a4"
+   }
+  },
+  {
+   "id": "C04-3",
+   "titulo": "Aprovação",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/51317759-21d4-43d1-a36a-54cceb4c13a4/approve",
+   "perfil": "aprova",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:26.614Z",
+   "resposta": {
+    "id": "51317759-21d4-43d1-a36a-54cceb4c13a4",
+    "status": "APPROVED",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "40.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 17943944625644947",
+     "branch": null,
+     "pixKey": null,
+     "account": null,
+     "bankCode": null,
+     "personId": null,
+     "bankAccountId": null
+    },
+    "snapshotHash": "9d3370a1e9883ed3a4abb4f345a3a18a8ecacf367a0e14630d7e253aec01ba8a",
+    "approval": {
+     "id": "6882e702-c74a-4b50-b47e-1e8ac8eda7c9",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 1,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:51317759-21d4-43d1-a36a-54cceb4c13a4"
+   }
+  },
+  {
+   "id": "C04-4",
+   "titulo": "Execução (baixa manual com comprovante): lançamento fica PARTIALLY_SETTLED",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/51317759-21d4-43d1-a36a-54cceb4c13a4/execute",
+   "perfil": "prepara",
+   "corpoEnviado": {},
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:27.990Z",
+   "resposta": {
+    "intent": {
+     "statusMessage": null,
+     "id": "51317759-21d4-43d1-a36a-54cceb4c13a4",
+     "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+     "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+     "financialEntryId": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+     "snapshotJson": {
+      "dueAt": null,
+      "amount": "40.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+      "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "beneficiary": {
+       "name": "captura m4pg 17943944625644947",
+       "branch": null,
+       "pixKey": null,
+       "account": null,
+       "bankCode": null,
+       "personId": null,
+       "bankAccountId": null
+      },
+      "description": "captura m4pg 17943944625644947",
+      "entryAmount": "100.00",
+      "costCenterId": "46aa860c-55fe-4b4f-9e87-9aec3352a3c9",
+      "bankAccountId": null,
+      "resultCenterId": null,
+      "snapshotVersion": 2,
+      "chartOfAccountId": null,
+      "financialEntryId": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+      "installmentNumber": 1,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "9d3370a1e9883ed3a4abb4f345a3a18a8ecacf367a0e14630d7e253aec01ba8a",
+     "status": "CONFIRMED",
+     "submissionPhase": "NOT_STARTED",
+     "amount": "40.00",
+     "installmentNumber": 1,
+     "bankAccountId": null,
+     "beneficiarySnapshot": {
+      "name": "captura m4pg 17943944625644947",
+      "branch": null,
+      "pixKey": null,
+      "account": null,
+      "bankCode": null,
+      "personId": null,
+      "bankAccountId": null
+     },
+     "paymentMethod": null,
+     "idempotencyKey": "payment-intent:51317759-21d4-43d1-a36a-54cceb4c13a4",
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvalRequestId": "6882e702-c74a-4b50-b47e-1e8ac8eda7c9",
+     "approvedByUserId": "977f75b7-1853-4171-8021-eb8d1efb817e",
+     "approvedAt": "2026-11-11T10:54:26.339Z",
+     "executedAt": "2026-11-11T10:54:27.325Z",
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciliationAttempts": 0,
+     "reconciledAt": null,
+     "reconciledEntryId": null,
+     "createdBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "updatedBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "created_at": "2026-11-11T10:54:24.852Z",
+     "updated_at": "2026-11-11T10:54:27.325Z",
+     "financial_entry_id": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+     "approval_request_id": "6882e702-c74a-4b50-b47e-1e8ac8eda7c9"
+    },
+    "entry": {
+     "id": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+     "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+     "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+     "bankAccountId": null,
+     "costCenterId": "46aa860c-55fe-4b4f-9e87-9aec3352a3c9",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": "9ccb0cf9-dde0-49b6-b8e9-b82a97a0e6d3",
+     "settlementReason": "Baixa manual de teste — pagamento feito fora da integração bancária, comprovante anexado.",
+     "settlementEvidenceAttachedBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "settlementEvidenceAttachedAt": "2026-11-11T10:54:23.349Z",
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "100.00",
+     "description": "captura m4pg 17943944625644947",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PARTIALLY_SETTLED",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 2,
+     "createdBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "updatedBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "created_at": "2026-11-11T10:54:22.575Z",
+     "updated_at": "2026-11-11T10:54:27.162Z",
+     "bank_account_id": null,
+     "cost_center_id": "46aa860c-55fe-4b4f-9e87-9aec3352a3c9",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   }
+  },
+  {
+   "id": "C04-5",
+   "titulo": "FIN-TS-002: repetir a execução devolve o resultado existente (replay)",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/51317759-21d4-43d1-a36a-54cceb4c13a4/execute",
+   "perfil": "prepara",
+   "corpoEnviado": {},
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:28.806Z",
+   "resposta": {
+    "replayed": true,
+    "intent": {
+     "statusMessage": null,
+     "id": "51317759-21d4-43d1-a36a-54cceb4c13a4",
+     "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+     "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+     "financialEntryId": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+     "snapshotJson": {
+      "dueAt": null,
+      "amount": "40.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+      "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "beneficiary": {
+       "name": "captura m4pg 17943944625644947",
+       "branch": null,
+       "pixKey": null,
+       "account": null,
+       "bankCode": null,
+       "personId": null,
+       "bankAccountId": null
+      },
+      "description": "captura m4pg 17943944625644947",
+      "entryAmount": "100.00",
+      "costCenterId": "46aa860c-55fe-4b4f-9e87-9aec3352a3c9",
+      "bankAccountId": null,
+      "resultCenterId": null,
+      "snapshotVersion": 2,
+      "chartOfAccountId": null,
+      "financialEntryId": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+      "installmentNumber": 1,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "9d3370a1e9883ed3a4abb4f345a3a18a8ecacf367a0e14630d7e253aec01ba8a",
+     "status": "CONFIRMED",
+     "submissionPhase": "NOT_STARTED",
+     "amount": "40.00",
+     "installmentNumber": 1,
+     "bankAccountId": null,
+     "beneficiarySnapshot": {
+      "name": "captura m4pg 17943944625644947",
+      "branch": null,
+      "pixKey": null,
+      "account": null,
+      "bankCode": null,
+      "personId": null,
+      "bankAccountId": null
+     },
+     "paymentMethod": null,
+     "idempotencyKey": "payment-intent:51317759-21d4-43d1-a36a-54cceb4c13a4",
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvalRequestId": "6882e702-c74a-4b50-b47e-1e8ac8eda7c9",
+     "approvedByUserId": "977f75b7-1853-4171-8021-eb8d1efb817e",
+     "approvedAt": "2026-11-11T10:54:26.339Z",
+     "executedAt": "2026-11-11T10:54:27.325Z",
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciliationAttempts": 0,
+     "reconciledAt": null,
+     "reconciledEntryId": null,
+     "createdBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "updatedBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "created_at": "2026-11-11T10:54:24.852Z",
+     "updated_at": "2026-11-11T10:54:27.325Z",
+     "financial_entry_id": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+     "approval_request_id": "6882e702-c74a-4b50-b47e-1e8ac8eda7c9"
+    },
+    "entry": {
+     "id": "c6a43a0e-72e0-4058-a3b9-bd7add29504e",
+     "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+     "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+     "bankAccountId": null,
+     "costCenterId": "46aa860c-55fe-4b4f-9e87-9aec3352a3c9",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": "9ccb0cf9-dde0-49b6-b8e9-b82a97a0e6d3",
+     "settlementReason": "Baixa manual de teste — pagamento feito fora da integração bancária, comprovante anexado.",
+     "settlementEvidenceAttachedBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "settlementEvidenceAttachedAt": "2026-11-11T10:54:23.349Z",
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "100.00",
+     "description": "captura m4pg 17943944625644947",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PARTIALLY_SETTLED",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 2,
+     "createdBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "updatedBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "created_at": "2026-11-11T10:54:22.575Z",
+     "updated_at": "2026-11-11T10:54:27.162Z",
+     "bank_account_id": null,
+     "cost_center_id": "46aa860c-55fe-4b4f-9e87-9aec3352a3c9",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   }
+  },
+  {
+   "id": "C04-6",
+   "titulo": "Segunda intenção sobre o lançamento PARTIALLY_SETTLED paga o saldo (R$ 60,00, parcela 2)",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "c6a43a0e-72e0-4058-a3b9-bd7add29504e"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:30.035Z",
+   "resposta": {
+    "id": "04da19d2-98d0-4f30-be14-f2f63f327ebc",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "60.00",
+    "installmentNumber": 2,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 17943944625644947",
+     "branch": null,
+     "pixKey": null,
+     "account": null,
+     "bankCode": null,
+     "personId": null,
+     "bankAccountId": null
+    },
+    "snapshotHash": "c8f22e3d0ff1209692ab9a1840c1ec675f11250c55fd0c50364821975a49f223",
+    "approval": {
+     "id": "786d69ec-2d84-4903-91a4-b7cef0832240",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 0,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:04da19d2-98d0-4f30-be14-f2f63f327ebc"
+   }
+  }
+ ],
+ "sondasDoVerificador": {
+  "V2-P3": {
+   "arquivo": "scratchpad/v2own/probe/verif2.probe.test.js (sonda do verificador 2, sem alteração)",
+   "naBase41addaa2_relatorioDoVerificador": {
+    "intentCreatedForReceivable": "PENDING",
+    "approved": "APPROVED",
+    "submitAccepted": "SUBMITTING"
+   },
+   "noCommit": {
+    "intentError": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE"
+   }
+  }
+ },
+ "sanitizacao": [
+  "Sem token de acesso, sem token de impacto da confirmação de nível 3 (só \"enviada\"), sem segredo TOTP, sem senha e sem string de conexão.",
+  "Usuários fictícios m4-<perfil>-<sufixo>@nayaraone.dev numa empresa isolada criada no banco descartável; MFA recente por linhas no banco descartável (nunca pelo endpoint de MFA)."
+ ]
+}

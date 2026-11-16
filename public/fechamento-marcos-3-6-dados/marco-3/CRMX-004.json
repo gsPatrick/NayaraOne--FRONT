@@ -1,0 +1,173 @@
+{
+  "id": "CRMX-004",
+  "secao": "Livro §2 Princípios",
+  "requisito": "Oferta separada: preço, modalidade e disponibilidade pertencem à oferta.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 58,
+      "casos": [
+        "ofertas_venda_locacao",
+        "oferta_financiamento"
+      ],
+      "descricao": "Oferta de VENDA no imóvel, aceita financiamento",
+      "metodo": "POST",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "offerType": "SALE",
+        "askingPrice": 950000,
+        "acceptsFinancing": true,
+        "confidentialMinPrice": 900000
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "350abdaa-a138-42b6-9a1a-e74a9217c929",
+          "lockVersion": 0,
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+          "offerType": "SALE",
+          "askingPrice": "950000.00",
+          "confidentialMinPrice": "900000.00",
+          "acceptsFinancing": true,
+          "acceptsTrade": null,
+          "status": "ACTIVE",
+          "startsAt": null,
+          "endsAt": null,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updated_at": "2026-11-11T00:16:23.333Z",
+          "created_at": "2026-11-11T00:16:23.333Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:16:23.321Z"
+    },
+    {
+      "seq": 59,
+      "casos": [
+        "ofertas_venda_locacao"
+      ],
+      "descricao": "Oferta de LOCAÇÃO no MESMO imóvel",
+      "metodo": "POST",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "offerType": "RENT",
+        "askingPrice": 4800
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "b9bd6b43-d4e6-4732-9523-596d76e3f374",
+          "lockVersion": 0,
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+          "offerType": "RENT",
+          "askingPrice": "4800.00",
+          "confidentialMinPrice": null,
+          "acceptsFinancing": null,
+          "acceptsTrade": null,
+          "status": "ACTIVE",
+          "startsAt": null,
+          "endsAt": null,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updated_at": "2026-11-11T00:16:23.500Z",
+          "created_at": "2026-11-11T00:16:23.500Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:16:23.449Z"
+    },
+    {
+      "seq": 60,
+      "casos": [
+        "ofertas_venda_locacao",
+        "oferta_financiamento"
+      ],
+      "descricao": "Um imóvel, duas ofertas ativas (venda e locação)",
+      "metodo": "GET",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "b9bd6b43-d4e6-4732-9523-596d76e3f374",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+            "offerType": "RENT",
+            "askingPrice": "4800.00",
+            "confidentialMinPrice": null,
+            "acceptsFinancing": null,
+            "acceptsTrade": null,
+            "status": "ACTIVE",
+            "startsAt": null,
+            "endsAt": null,
+            "lockVersion": 0,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:16:23.500Z",
+            "updated_at": "2026-11-11T00:16:23.500Z",
+            "deleted_at": null,
+            "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+          },
+          {
+            "id": "350abdaa-a138-42b6-9a1a-e74a9217c929",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+            "offerType": "SALE",
+            "askingPrice": "950000.00",
+            "confidentialMinPrice": "900000.00",
+            "acceptsFinancing": true,
+            "acceptsTrade": null,
+            "status": "ACTIVE",
+            "startsAt": null,
+            "endsAt": null,
+            "lockVersion": 0,
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:16:23.333Z",
+            "updated_at": "2026-11-11T00:16:23.333Z",
+            "deleted_at": null,
+            "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:16:23.594Z"
+    }
+  ],
+  "consultasBanco": []
+}

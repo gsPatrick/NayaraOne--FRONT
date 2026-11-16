@@ -1,0 +1,178 @@
+{
+ "id": "M4-§21.15",
+ "secao": "§21 Definition of Done",
+ "requisito": "\"Pentest sem crítica/alta no fluxo financeiro.\"",
+ "substitui": "evidencias/marco-4/M4-S21.15.json",
+ "motivo": "Correções DI-M4CC (branch m4fix/conciliacao-comissao): regra AUTO_STRONG parametrizada e fonte confiável (Guia §9, §11, FIN-009), UNIQUE completo do fingerprint e conta da própria empresa (Guia §10, FIN-002), comissão REG-FIN-001 em decimal exato (Guia §11, §18), NAY lendo o read model (Guia §13). Captura em banco descartável no commit indicado; a evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "7982eef4",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T10:38:24.663Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-§21.15 --sufixo m4cc",
+ "respostasHttp": [
+  {
+   "id": "A03",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.15",
+    "M4-G§20.13"
+   ],
+   "titulo": "IDOR: tenant B tenta aprovar a intenção de pagamento do tenant A",
+   "perfil": "B:checker",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/7870da9a-74b4-4224-9e16-656d8b66bac6/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": [
+     403,
+     404
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
+   "ok": true,
+   "ms": 240,
+   "quando": "2026-11-11T10:38:14.928Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
+     "message": "Intenção de pagamento não encontrada.",
+     "traceId": "585ce4c1-8352-4ebe-8fcc-9c682f95655c"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "A04",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.15"
+   ],
+   "titulo": "IDOR: tenant B tenta baixar o recebível do tenant A",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/5f108416-ae89-4c2a-b8bf-2e2ad0c73f4d/settle-partial",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-idor-3281596"
+   },
+   "corpoEnviado": {
+    "partialAmount": "1.00",
+    "idempotencyKey": "m4-idor-3281596"
+   },
+   "esperado": {
+    "status": [
+     403,
+     404
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "MFA_REQUIRED_NOT_ENABLED",
+   "ok": true,
+   "ms": 145,
+   "quando": "2026-11-11T10:38:15.101Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_REQUIRED_NOT_ENABLED",
+     "message": "Esta ação exige MFA habilitado. Configure o MFA em \"/users/me/mfa/setup\" antes de continuar.",
+     "traceId": "c9dbf3c7-91f0-4c01-8145-4c74c6391242"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K07",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§10",
+    "M4-§21.15",
+    "M4-G§20.13"
+   ],
+   "titulo": "Empresa B tenta gravar linha de extrato na conta bancária da empresa A: 404, nada gravado (achado crítico do pentest corrigido)",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "55b31d7a-8d3d-4363-a1a1-972031a20192",
+    "amount": "-1.23",
+    "transactionDate": "2026-11-11",
+    "description": "Tentativa de B"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+   "ok": true,
+   "ms": 51,
+   "quando": "2026-11-11T10:38:21.201Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+     "message": "Conta bancária não encontrada.",
+     "traceId": "7c4a8868-011e-4dad-a14d-43e51c308c3d"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": "nenhum",
+ "consultasBanco": [],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-PAY-01 pular a aprovação: submeter ao banco uma intenção ainda PENDING é recusado",
+   "status": "passou",
+   "duracaoMs": 2352,
+   "commitDoArquivo": "8ca398b6"
+  },
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-PAY-02 reaproveitar a aprovação de OUTRO lançamento numa intenção é recusado",
+   "status": "passou",
+   "duracaoMs": 80,
+   "commitDoArquivo": "8ca398b6"
+  },
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-IDOR-04 outra empresa real com finance:read não lê lançamento de A pela rota (404)",
+   "status": "passou",
+   "duracaoMs": 122,
+   "commitDoArquivo": "8ca398b6"
+  },
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-RBAC-01 perfil da própria empresa SEM a permissão de leitura é barrado (403) no dossiê, no relatório de vistoria e no lançamento",
+   "status": "passou",
+   "duracaoMs": 20,
+   "commitDoArquivo": "8ca398b6"
+  }
+ ]
+}

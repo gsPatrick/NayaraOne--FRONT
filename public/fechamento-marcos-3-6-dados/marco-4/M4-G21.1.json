@@ -1,0 +1,56 @@
+{
+ "id": "M4-G§21.1",
+ "secao": "Guia §21 Autochecagem",
+ "requisito": "\"Marcelo consegue fazer sozinho? SIM.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.httpRoutes.test.js",
+   "nome": "Marco 4 ponta a ponta via HTTP real: plano de contas -> centros -> lançamento -> listagem -> orçamento -> relatório",
+   "status": "passou",
+   "duracaoMs": 553,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "A05",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§21.1"
+   ],
+   "titulo": "Erro de validação explica em português o que falta (sem decidir regra por quem implementa)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_ENTRY_VALIDATION",
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T01:35:19.152Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_ENTRY_VALIDATION",
+     "message": "Os campos \"groupId\", \"companyId\", \"entryType\", \"nature\" e \"amount\" são obrigatórios.",
+     "traceId": "8c1d875a-3961-42a6-884c-932175cbd08f"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

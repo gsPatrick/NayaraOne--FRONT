@@ -1,0 +1,196 @@
+{
+ "id": "M5-A0181-6aaf05",
+ "secao": "P2 > 1. Ordem exata de implementação",
+ "linhaCaderno": 417,
+ "requisito": "2. contracts + contract_parties + contract_versions.",
+ "demandas": "M5-D001;M5-D003;M5-D007;M5-D220",
+ "implementacao": "agregação dos requisitos M5-A0030-d468ae (linha 84), M5-A0031-69a4ea (linha 85), M5-A0032-0045b7 (linha 86), M5-A0299-827218 (linha 23)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.contracts: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 24.551,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.contract_versions: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 1.084,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.contract_parties: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 0.652,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.versoesAprovacao.test.js",
+   "nome": "JUR-001: a partir de APPROVED valor, vigência, imóvel e número não são reescritos — a correção é por aditivo",
+   "status": "pass",
+   "ms": 524.511,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-214",
+   "metodo": "PATCH",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/correct",
+   "perfil": "A:gestor",
+   "status": 403,
+   "codigo": "MFA_REQUIRED_NOT_ENABLED",
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_REQUIRED_NOT_ENABLED"
+   },
+   "resumo": "erro MFA_REQUIRED_NOT_ENABLED: Esta ação exige MFA habilitado. Configure o MFA em \"/users/me/mfa/setup\" antes de continuar.",
+   "quando": "2026-11-11T03:42:25.686Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0181-6aaf05.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.meta.tabelasDoLivro.test.js test/m5fech.contratos.versoesAprovacao.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos MT-T01-SQL, MT-T02-SQL, MT-T03-SQL, CT-214)"
+ },
+ "passos": [
+  {
+   "id": "CT-214",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Correção de dados do contrato ativo exige MFA recente (recusa real sem MFA)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/correct",
+   "corpoEnviado": {
+    "reason": "tentativa",
+    "totalValue": 9999
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_REQUIRED_NOT_ENABLED"
+   },
+   "status": 403,
+   "codigo": "MFA_REQUIRED_NOT_ENABLED",
+   "ok": true,
+   "ms": 30,
+   "quando": "2026-11-11T03:42:25.686Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_REQUIRED_NOT_ENABLED",
+     "message": "Esta ação exige MFA habilitado. Configure o MFA em \"/users/me/mfa/setup\" antes de continuar.",
+     "traceId": "a7dd5ebb-3207-49bb-96eb-396de9c7edd0"
+    }
+   },
+   "req": [
+    "M5-A0299-827218"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "MT-T01-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.contracts existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.contracts' AS tabela_do_livro, to_regclass('legal.contracts') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.contracts') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.contracts",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.257Z",
+   "req": [
+    "M5-A0030-d468ae"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "MT-T02-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.contract_versions existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.contract_versions' AS tabela_do_livro, to_regclass('legal.contract_versions') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.contract_versions') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.contract_versions",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.399Z",
+   "req": [
+    "M5-A0031-69a4ea"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "MT-T03-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.contract_parties existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.contract_parties' AS tabela_do_livro, to_regclass('legal.contract_parties') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.contract_parties') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.contract_parties",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.421Z",
+   "req": [
+    "M5-A0032-0045b7"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

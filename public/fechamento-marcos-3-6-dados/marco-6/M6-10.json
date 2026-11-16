@@ -1,0 +1,845 @@
+{
+  "id": "M6-10",
+  "requisito": "Tabela measurements. \"Medição segue DRAFT → SUBMITTED → REVIEWED → APPROVED → PAYABLE\" (§2).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.stage_measurements (src/models/StageMeasurement.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/medicoes: medição: Enviar → Revisar → Aprovar",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-10 máquina de estados: DRAFT -> SUBMITTED -> REVIEWED -> APPROVED -> PAYABLE",
+      "resultado": "passou",
+      "duracaoMs": 1084,
+      "executadoEm": "2026-11-11T00:13:49.717Z"
+    },
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-10 transições inválidas são recusadas (não dá pra decidir uma medição em DRAFT)",
+      "resultado": "passou",
+      "duracaoMs": 44,
+      "executadoEm": "2026-11-11T00:13:49.759Z"
+    },
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-10/auditoria: aprovar uma medição SUBMITTED (sem passar por REVIEWED) é recusado pelo backend",
+      "resultado": "passou",
+      "duracaoMs": 235,
+      "executadoEm": "2026-11-11T00:13:49.996Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H086",
+      "H087",
+      "H088",
+      "H089",
+      "H090",
+      "H092",
+      "H093",
+      "H095",
+      "H100",
+      "H101",
+      "H104"
+    ],
+    "resumo": [
+      "H086 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements → 201",
+      "H087 POST /api/v1/construction/measurements/a0c65b14-66c6-4c12-95ab-b370aa3260ef/approve → 409 STAGE_MEASUREMENT_INVALID_STATUS",
+      "H088 POST /api/v1/construction/measurements/a0c65b14-66c6-4c12-95ab-b370aa3260ef/submit → 200",
+      "H089 POST /api/v1/construction/measurements/a0c65b14-66c6-4c12-95ab-b370aa3260ef/revise → 201",
+      "H090 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/submit → 200",
+      "H092 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve → 409 STAGE_MEASUREMENT_REVIEW_REQUIRED",
+      "H093 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/review → 200",
+      "H095 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve → 200",
+      "H100 POST /api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/submit → 200",
+      "H101 POST /api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/review → 200",
+      "H104 GET /api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/measurements → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:15.109Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H086",
+      "requisitos": [
+        "M6-35",
+        "M6-10",
+        "M6-11",
+        "M6-49"
+      ],
+      "cenario": "Criar medição da Fundação (DRAFT) com itens",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+        "measuredPct": 100,
+        "measuredAt": "2026-11-09",
+        "idempotencyKey": "med-c4fcd6",
+        "items": [
+          {
+            "description": "Sapatas S1 a S8",
+            "quantity": 8,
+            "unitPrice": 4500
+          },
+          {
+            "description": "Vigas baldrame",
+            "quantity": 1,
+            "unitPrice": 6000
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 172,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "DRAFT",
+          "revisionNumber": 1,
+          "totalAmount": "42000.00",
+          "costCenterId": null,
+          "idempotencyKey": "med-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:15.103Z",
+          "created_at": "2026-11-11T00:12:15.011Z",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": null,
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:15.109Z"
+    },
+    {
+      "id": "H087",
+      "requisitos": [
+        "M6-10",
+        "M6-21"
+      ],
+      "cenario": "NEGATIVO: aprovar medição ainda em DRAFT",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/a0c65b14-66c6-4c12-95ab-b370aa3260ef/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 409,
+      "codigoErro": "STAGE_MEASUREMENT_INVALID_STATUS",
+      "esperado": "409 STAGE_MEASUREMENT_INVALID_STATUS",
+      "conferiu": true,
+      "duracaoMs": 61,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "STAGE_MEASUREMENT_INVALID_STATUS",
+          "message": "Só é possível decidir uma medição no estado \"Enviada para revisão, Revisada\" — esta está \"Rascunho\".",
+          "traceId": "5aea2202-1f87-4287-8829-1053113b90ae"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:15.170Z"
+    },
+    {
+      "id": "H088",
+      "requisitos": [
+        "M6-10",
+        "M6-21",
+        "M6-75"
+      ],
+      "cenario": "Enviar medição (DRAFT → SUBMITTED, publica measurement.submitted)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/a0c65b14-66c6-4c12-95ab-b370aa3260ef/submit",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 302,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "SUBMITTED",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:15.414Z",
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "totalAmount": "42000.00",
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": null,
+          "revisionNumber": 1,
+          "costCenterId": null,
+          "idempotencyKey": "med-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:15.011Z",
+          "updated_at": "2026-11-11T00:12:15.414Z",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": null,
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:15.472Z"
+    },
+    {
+      "id": "H089",
+      "requisitos": [
+        "M6-21",
+        "M6-10"
+      ],
+      "cenario": "Alterar depois de SUBMITTED: cria revisão nova (quantidade corrigida), a original não é sobrescrita",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/a0c65b14-66c6-4c12-95ab-b370aa3260ef/revise",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "items": [
+          {
+            "description": "Sapatas S1 a S8",
+            "quantity": 8,
+            "unitPrice": 4400
+          },
+          {
+            "description": "Vigas baldrame",
+            "quantity": 1,
+            "unitPrice": 6000
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 500,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "DRAFT",
+          "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "revisionNumber": 2,
+          "totalAmount": "41200.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:15.962Z",
+          "created_at": "2026-11-11T00:12:15.900Z",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": null,
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "payableFinancialEntryId": null,
+          "costCenterId": null,
+          "idempotencyKey": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:15.972Z"
+    },
+    {
+      "id": "H090",
+      "requisitos": [
+        "M6-10",
+        "M6-21"
+      ],
+      "cenario": "Enviar a revisão (a original fica SUPERSEDED, com o valor original preservado)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/submit",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 32,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "SUBMITTED",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:15.995Z",
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "totalAmount": "41200.00",
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "revisionNumber": 2,
+          "costCenterId": null,
+          "idempotencyKey": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:15.900Z",
+          "updated_at": "2026-11-11T00:12:15.995Z",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": null,
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.004Z"
+    },
+    {
+      "id": "H092",
+      "requisitos": [
+        "M6-10"
+      ],
+      "cenario": "NEGATIVO: aprovar SUBMITTED sem passar pela revisão técnica",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 409,
+      "codigoErro": "STAGE_MEASUREMENT_REVIEW_REQUIRED",
+      "esperado": "409 STAGE_MEASUREMENT_REVIEW_REQUIRED",
+      "conferiu": true,
+      "duracaoMs": 18,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "STAGE_MEASUREMENT_REVIEW_REQUIRED",
+          "message": "Só é possível aprovar uma medição que já foi revisada (\"Revisada\") — esta ainda está \"Enviada para revisão\". Revise antes de aprovar.",
+          "traceId": "baa1b725-2120-4abd-a341-4467592d0413"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.167Z"
+    },
+    {
+      "id": "H093",
+      "requisitos": [
+        "M6-10"
+      ],
+      "cenario": "Revisar medição (SUBMITTED → REVIEWED)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/review",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "notes": "Conferido em campo pelo fiscal"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 32,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "REVIEWED",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:15.995Z",
+          "reviewedAt": "2026-11-11T00:12:16.190Z",
+          "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "reviewNotes": "Conferido em campo pelo fiscal",
+          "approvedAt": null,
+          "totalAmount": "41200.00",
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "revisionNumber": 2,
+          "costCenterId": null,
+          "idempotencyKey": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:15.900Z",
+          "updated_at": "2026-11-11T00:12:16.190Z",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": null,
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.199Z"
+    },
+    {
+      "id": "H095",
+      "requisitos": [
+        "M6-36",
+        "M6-10",
+        "M6-21",
+        "M6-76",
+        "M6-72",
+        "M6-85",
+        "M6-97",
+        "M6-49",
+        "M6-98",
+        "M6-106"
+      ],
+      "cenario": "Aprovar medição: conta a pagar real no Financeiro (com obra e centro de custo), status PAYABLE, etapa concluída",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 682,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "PAYABLE",
+          "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "decidedAt": "2026-11-11T00:12:16.623Z",
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:15.995Z",
+          "reviewedAt": "2026-11-11T00:12:16.190Z",
+          "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "reviewNotes": "Conferido em campo pelo fiscal",
+          "approvedAt": "2026-11-11T00:12:16.623Z",
+          "totalAmount": "41200.00",
+          "payableFinancialEntryId": "c6c73a47-c908-452c-a3db-8d8338177778",
+          "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "revisionNumber": 2,
+          "costCenterId": null,
+          "idempotencyKey": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:15.900Z",
+          "updated_at": "2026-11-11T00:12:16.897Z",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.922Z"
+    },
+    {
+      "id": "H100",
+      "requisitos": [
+        "M6-10"
+      ],
+      "cenario": "Enviar",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/submit",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 202,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "c545d5b4-b823-4bec-88af-c2efc2107883",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "measuredPct": "50.000000",
+          "measuredAt": "2026-11-10",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "SUBMITTED",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:17.405Z",
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "totalAmount": "15000.00",
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": null,
+          "revisionNumber": 1,
+          "costCenterId": null,
+          "idempotencyKey": "med2-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:17.111Z",
+          "updated_at": "2026-11-11T00:12:17.405Z",
+          "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": null,
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:17.443Z"
+    },
+    {
+      "id": "H101",
+      "requisitos": [
+        "M6-10"
+      ],
+      "cenario": "Revisar",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/c545d5b4-b823-4bec-88af-c2efc2107883/review",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "notes": "ok"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 234,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "c545d5b4-b823-4bec-88af-c2efc2107883",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "measuredPct": "50.000000",
+          "measuredAt": "2026-11-10",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "REVIEWED",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:17.405Z",
+          "reviewedAt": "2026-11-11T00:12:17.667Z",
+          "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "reviewNotes": "ok",
+          "approvedAt": null,
+          "totalAmount": "15000.00",
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": null,
+          "revisionNumber": 1,
+          "costCenterId": null,
+          "idempotencyKey": "med2-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:17.111Z",
+          "updated_at": "2026-11-11T00:12:17.667Z",
+          "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": null,
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:17.677Z"
+    },
+    {
+      "id": "H104",
+      "requisitos": [
+        "M6-49",
+        "M6-10",
+        "M6-103",
+        "M6-106"
+      ],
+      "cenario": "Medições da etapa (só a versão vigente)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/measurements",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 146,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "measuredPct": "100.000000",
+            "measuredAt": "2026-11-09",
+            "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "notes": null,
+            "status": "PAYABLE",
+            "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "decidedAt": "2026-11-11T00:12:16.623Z",
+            "rejectionReason": null,
+            "submittedAt": "2026-11-11T00:12:15.995Z",
+            "reviewedAt": "2026-11-11T00:12:16.190Z",
+            "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "reviewNotes": "Conferido em campo pelo fiscal",
+            "approvedAt": "2026-11-11T00:12:16.623Z",
+            "totalAmount": "41200.00",
+            "payableFinancialEntryId": "c6c73a47-c908-452c-a3db-8d8338177778",
+            "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+            "revisionNumber": 2,
+            "costCenterId": null,
+            "idempotencyKey": null,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "created_at": "2026-11-11T00:12:15.900Z",
+            "updated_at": "2026-11-11T00:12:16.897Z",
+            "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "approved_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "reviewed_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "payable_financial_entry_id": "c6c73a47-c908-452c-a3db-8d8338177778",
+            "parent_measurement_id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:17.899Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    },
+    {
+      "id": "C008",
+      "requisitos": [
+        "M6-21",
+        "M6-10"
+      ],
+      "descricao": "Alteração depois de SUBMITTED: a medição original continua gravada, a revisão aponta para ela",
+      "sql": "SELECT id = $1 AS original, status, total_amount, parent_measurement_id = $1 AS revisao_da_original FROM construction.stage_measurements WHERE id IN ($1, $2) ORDER BY created_at",
+      "resultado": [
+        {
+          "original": true,
+          "status": "SUPERSEDED",
+          "total_amount": "42000.00",
+          "revisao_da_original": null
+        },
+        {
+          "original": false,
+          "status": "PAYABLE",
+          "total_amount": "41200.00",
+          "revisao_da_original": true
+        }
+      ],
+      "invariante": "duas linhas: a original preservada (valor original) e a revisão vinculada",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.186Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.379Z"
+}

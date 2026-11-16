@@ -1,0 +1,100 @@
+{
+ "id": "M4-FIN-TS-001",
+ "secao": "§20 Testes adversariais",
+ "requisito": "FIN-TS-001: Double click pagamento — 1 pagamento/ledger.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/finance.bankPaymentConfirmation.test.js",
+   "nome": "FIN-TS-001/018: submissão ao banco não liquida o lançamento — só CONFIRMED libera o ledger",
+   "status": "passou",
+   "duracaoMs": 540,
+   "commitDoArquivo": "f8ad9c08"
+  },
+  {
+   "arquivo": "test/finance.entries.test.js",
+   "nome": "FIN-004 idempotência: 2ª tentativa com a mesma chave é bloqueada (não duplica pagamento)",
+   "status": "passou",
+   "duracaoMs": 289,
+   "commitDoArquivo": "f656f46c"
+  },
+  {
+   "arquivo": "test/m4.settlePartialIdempotency.test.js",
+   "nome": "FIN-004 settle-partial: repetir a MESMA chave com o mesmo valor devolve 200 com a baixa original (idempotentReplay) e não cria filha nova; saldo inalterado",
+   "status": "passou",
+   "duracaoMs": 87,
+   "commitDoArquivo": "76cb9777"
+  },
+  {
+   "arquivo": "test/m4.settlePartialIdempotency.test.js",
+   "nome": "FIN-004 settle-partial: duas requisições SIMULTÂNEAS com a mesma chave geram uma baixa só (uma original e uma idempotentReplay)",
+   "status": "passou",
+   "duracaoMs": 77,
+   "commitDoArquivo": "76cb9777"
+  },
+  {
+   "arquivo": "test/m4.lancamentoConcorrenteChave.test.js",
+   "nome": "M4-FIN-TS-001 seis criações SIMULTÂNEAS com a mesma idempotencyKey: exatamente 1 lançamento (201) e as outras 409 FINANCE_DUPLICATE_PAYMENT com a mensagem de negócio, nunca UNIQUE_CONSTRAINT_VIOLATION",
+   "status": "passou",
+   "duracaoMs": 1341,
+   "commitDoArquivo": "f4c6266f"
+  },
+  {
+   "arquivo": "test/m4.lancamentoConcorrenteChave.test.js",
+   "nome": "M4-FIN-TS-001 a violação real do UNIQUE de financial_entries.idempotency_key (inserção que fura a checagem do serviço) é traduzida para FINANCE_DUPLICATE_PAYMENT; outra violação segue genérica",
+   "status": "passou",
+   "duracaoMs": 31,
+   "commitDoArquivo": "f4c6266f"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P21-2",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-001",
+    "M4-G§16.1"
+   ],
+   "titulo": "Duplo clique: duas criações SIMULTÂNEAS de intenção para o mesmo lançamento (requisição 2/2) — uma só nasce",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38"
+   },
+   "esperado": {
+    "status": [
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_ALREADY_OPEN",
+   "ok": true,
+   "ms": 108,
+   "quando": "2026-11-11T01:35:07.288Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_ALREADY_OPEN",
+     "message": "Já existe uma intenção de pagamento em aberto para este lançamento.",
+     "details": {
+      "existingId": "da58d0e3-b0ed-431d-9ebc-20e84c111029"
+     },
+     "traceId": "efba5578-676d-46b1-b1b9-435ab750fb49"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

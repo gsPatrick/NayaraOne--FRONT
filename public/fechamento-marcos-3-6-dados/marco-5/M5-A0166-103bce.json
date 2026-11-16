@@ -1,0 +1,631 @@
+{
+ "id": "M5-A0166-103bce",
+ "secao": "P1 > 21. Definition of Done",
+ "linhaCaderno": 379,
+ "requisito": "☐ Requirements/gates implementados.",
+ "demandas": "M5-D012;M5-D013",
+ "implementacao": "requirements.service.js generate/satisfy/waive + gate por etapa; checklist pela regra REG-JUR-001 do Motor de Regras",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.maquinaTipos.test.js",
+   "nome": "Guia §5: exigência com etapa SIGNING não bloqueia a revisão jurídica, só o envio para assinatura",
+   "status": "pass",
+   "ms": 297.494,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.modelosAditivos.test.js",
+   "nome": "§7/Guia §20: checklist pelo Motor de Regras (REG-JUR-001) com as características das partes — PJ e parte representada mudam a lista; nova versão da regra muda a lista",
+   "status": "pass",
+   "ms": 353.503,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.frente5.waiveHttp.test.js",
+   "nome": "dispensa sem legal:waive -> 403 (PATCH e rota dedicada); com legal:waive -> 200",
+   "status": "pass",
+   "ms": 399.08,
+   "commitDoTeste": "bd5456cd"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-108",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 5 item(ns)",
+   "quando": "2026-11-11T03:42:24.504Z"
+  },
+  {
+   "passo": "CT-114",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/dd50497d-0e64-4fed-9e1a-979bb6a73514",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=SATISFIED, id=dd50497d-0e64-4fed-9e1a-979bb6a73514",
+   "quando": "2026-11-11T03:42:24.709Z"
+  },
+  {
+   "passo": "CT-116-1",
+   "metodo": "POST",
+   "rota": "/legal/requirements/db41729a-9498-44d1-91e5-8d7b5b8b7202/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=db41729a-9498-44d1-91e5-8d7b5b8b7202",
+   "quando": "2026-11-11T03:42:24.733Z"
+  },
+  {
+   "passo": "CT-111c",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_REQUIREMENTS_PENDING: Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos",
+   "quando": "2026-11-11T03:42:24.589Z"
+  },
+  {
+   "passo": "CT-116-2",
+   "metodo": "POST",
+   "rota": "/legal/requirements/95c94b20-8943-4782-9fe6-4e89f68c9dd7/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+   "quando": "2026-11-11T03:42:24.746Z"
+  },
+  {
+   "passo": "CT-116-3",
+   "metodo": "POST",
+   "rota": "/legal/requirements/7996b029-530d-46fc-b0bb-f4acd01a9652/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=7996b029-530d-46fc-b0bb-f4acd01a9652",
+   "quando": "2026-11-11T03:42:24.757Z"
+  },
+  {
+   "passo": "CT-116-4",
+   "metodo": "POST",
+   "rota": "/legal/requirements/ca27680e-5840-46ba-b541-aecd4e51e6a1/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=ca27680e-5840-46ba-b541-aecd4e51e6a1",
+   "quando": "2026-11-11T03:42:24.769Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0166-103bce.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.checklist.test.js \"JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança\"; test/m5fech.contratos.maquinaTipos.test.js \"Guia §5: exigência com etapa SIGNING não bloqueia a revisão jurídica, só o envio para assinatura\"; test/m5fech.contratos.modelosAditivos.test.js \"§7/Guia §20: checklist pelo Motor de Regras (REG-JUR-001) com as características das partes — PJ e parte representada mudam a lista; nova versão da regra muda a lista\"; test/legal.frente5.waiveHttp.test.js \"dispensa sem legal:waive -> 403 (PATCH e rota dedicada); com legal:waive -> 200\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.checklist.test.js test/m5fech.contratos.maquinaTipos.test.js test/m5fech.contratos.modelosAditivos.test.js test/legal.frente5.waiveHttp.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-108, CT-114, CT-116-1, CT-111c, CT-515, CT-116-2, CT-116-3, CT-116-4)"
+ },
+ "passos": [
+  {
+   "id": "CT-108",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Gera o checklist documental do contrato de locação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/requirements/generate",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 92,
+   "quando": "2026-11-11T03:42:24.504Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_PF_PJ_DOCS",
+      "description": "Documentos PF/PJ das partes (locador/locatário).",
+      "requirementType": "PF_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.448Z",
+      "created_at": "2026-11-11T03:42:24.448Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_GUARANTEE",
+      "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+      "requirementType": "GUARANTEE",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.452Z",
+      "created_at": "2026-11-11T03:42:24.452Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_INSPECTION",
+      "description": "Vistoria de entrada do imóvel.",
+      "requirementType": "INSPECTION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.456Z",
+      "created_at": "2026-11-11T03:42:24.456Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_OWNERSHIP",
+      "description": "Comprovação de titularidade do imóvel.",
+      "requirementType": "OWNERSHIP_PROOF",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.461Z",
+      "created_at": "2026-11-11T03:42:24.461Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_OBLIGATIONS",
+      "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+      "requirementType": "OBLIGATIONS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.464Z",
+      "created_at": "2026-11-11T03:42:24.464Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0313-498938",
+    "M5-A0166-103bce",
+    "M5-A0127-6b0566",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-114",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exigência satisfeita com arquivo real da empresa",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/dd50497d-0e64-4fed-9e1a-979bb6a73514",
+   "corpoEnviado": {
+    "satisfiedByFileId": "32b6ad97-10c6-41b3-89cb-063726a68813"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 55,
+   "quando": "2026-11-11T03:42:24.709Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "requirementCode": "LEASE_PF_PJ_DOCS",
+     "description": "Documentos PF/PJ das partes (locador/locatário).",
+     "requirementType": "PF_DOCUMENT",
+     "status": "SATISFIED",
+     "satisfiedByFileId": "32b6ad97-10c6-41b3-89cb-063726a68813",
+     "satisfiedAt": "2026-11-11T03:42:24.702Z",
+     "waivedReason": null,
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:24.448Z",
+     "updated_at": "2026-11-11T03:42:24.702Z",
+     "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0166-103bce"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-116-1",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dispensa justificada da exigência 2 (legal:waive)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/db41729a-9498-44d1-91e5-8d7b5b8b7202/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura da matriz M5"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.733Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "requirementCode": "LEASE_GUARANTEE",
+     "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+     "requirementType": "GUARANTEE",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura da matriz M5",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:24.452Z",
+     "updated_at": "2026-11-11T03:42:24.726Z",
+     "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0166-103bce"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-111c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-003: DOCUMENTS_PENDING -> LEGAL_REVIEW com documento faltante é bloqueado",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:24.589Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENTS_PENDING",
+     "message": "Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização); Vistoria de entrada do imóvel; Comprovação de titularidade do imóvel; Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "details": {
+      "stage": "LEGAL_REVIEW",
+      "missingRequirementCodes": [
+       "LEASE_PF_PJ_DOCS",
+       "LEASE_GUARANTEE",
+       "LEASE_INSPECTION",
+       "LEASE_OWNERSHIP",
+       "LEASE_OBLIGATIONS"
+      ],
+      "pending": [
+       {
+        "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+        "requirementCode": "LEASE_PF_PJ_DOCS",
+        "description": "Documentos PF/PJ das partes (locador/locatário).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+        "requirementCode": "LEASE_GUARANTEE",
+        "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+        "requirementCode": "LEASE_INSPECTION",
+        "description": "Vistoria de entrada do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+        "requirementCode": "LEASE_OWNERSHIP",
+        "description": "Comprovação de titularidade do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+        "requirementCode": "LEASE_OBLIGATIONS",
+        "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+        "requiredStage": "LEGAL_REVIEW"
+       }
+      ]
+     },
+     "traceId": "1fcdcac7-df13-4f9c-a29d-3256fc2b5723"
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0151-ce90f9",
+    "M5-A0234-075757",
+    "M5-A0322-89a1d9"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-116-2",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dispensa justificada da exigência 3 (legal:waive)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/95c94b20-8943-4782-9fe6-4e89f68c9dd7/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura da matriz M5"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:24.746Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "requirementCode": "LEASE_INSPECTION",
+     "description": "Vistoria de entrada do imóvel.",
+     "requirementType": "INSPECTION",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura da matriz M5",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:24.456Z",
+     "updated_at": "2026-11-11T03:42:24.740Z",
+     "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0166-103bce"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-116-3",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dispensa justificada da exigência 4 (legal:waive)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/7996b029-530d-46fc-b0bb-f4acd01a9652/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura da matriz M5"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:24.757Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "requirementCode": "LEASE_OWNERSHIP",
+     "description": "Comprovação de titularidade do imóvel.",
+     "requirementType": "OWNERSHIP_PROOF",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura da matriz M5",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:24.461Z",
+     "updated_at": "2026-11-11T03:42:24.751Z",
+     "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0166-103bce"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-116-4",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dispensa justificada da exigência 5 (legal:waive)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/ca27680e-5840-46ba-b541-aecd4e51e6a1/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura da matriz M5"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:24.769Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "requirementCode": "LEASE_OBLIGATIONS",
+     "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "requirementType": "OBLIGATIONS",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura da matriz M5",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:24.464Z",
+     "updated_at": "2026-11-11T03:42:24.762Z",
+     "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0166-103bce"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-515",
+   "req": [
+    "M5-A0066-b6c17a",
+    "M5-A0265-ec6ecf"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "A:leitura",
+   "descricao": "Checklist pelo Motor de Regras: cada exigência guarda a versão PUBLICADA da regra REG-JUR-001 que a gerou (política versionada em core.rule_versions)",
+   "sql": "SELECT DISTINCT r.code, v.status, v.version_number, q.required_stage FROM legal.contract_requirements q JOIN core.rule_versions v ON v.id = q.rule_version_id JOIN core.rules r ON r.id = v.rule_id WHERE q.contract_id = :id",
+   "resultado": [
+    {
+     "code": "REG-JUR-001",
+     "status": "PUBLISHED",
+     "version_number": 1,
+     "required_stage": "LEGAL_REVIEW"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.137Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

@@ -1,0 +1,141 @@
+{
+  "id": "CRM-TS-015",
+  "secao": "Livro §19 Adversariais",
+  "requisito": "Complaint delete: usuário tenta apagar → bloqueado/audit.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 139,
+      "casos": [
+        "ocorrencia_apagar"
+      ],
+      "descricao": "Tentativa de apagar a ocorrência: recusada (e auditada)",
+      "metodo": "DELETE",
+      "rota": "/api/v1/crm/feedback-cases/e763fe99-0814-465f-ac07-5ab3b4eadb43",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": "sem corpo",
+      "status": 409,
+      "codigoErro": "FEEDBACK_CASE_DELETE_FORBIDDEN",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "FEEDBACK_CASE_DELETE_FORBIDDEN",
+          "message": "Ocorrência de atendimento não pode ser apagada. Resolva o caso com a conclusão; o histórico fica preservado.",
+          "traceId": "fecb6911-ba41-42a7-ad44-b84ee74f350c"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.237Z"
+    },
+    {
+      "seq": 140,
+      "casos": [
+        "ocorrencia_apagar"
+      ],
+      "descricao": "Tentativa pelo caminho do livro: recusada",
+      "metodo": "DELETE",
+      "rota": "/api/v1/crm/occurrences/e763fe99-0814-465f-ac07-5ab3b4eadb43",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": "sem corpo",
+      "status": 409,
+      "codigoErro": "FEEDBACK_CASE_DELETE_FORBIDDEN",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "FEEDBACK_CASE_DELETE_FORBIDDEN",
+          "message": "Ocorrência de atendimento não pode ser apagada. Resolva o caso com a conclusão; o histórico fica preservado.",
+          "traceId": "c7cb501a-250c-4295-9eac-152b482f30c3"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.267Z"
+    },
+    {
+      "seq": 141,
+      "casos": [
+        "ocorrencia_apagar"
+      ],
+      "descricao": "A ocorrência continua existindo",
+      "metodo": "GET",
+      "rota": "/api/v1/crm/feedback-cases/e763fe99-0814-465f-ac07-5ab3b4eadb43",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "e763fe99-0814-465f-ac07-5ab3b4eadb43",
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+          "opportunityId": null,
+          "messageId": null,
+          "type": "COMPLAINT",
+          "description": "Cobrança indevida.",
+          "severity": "HIGH",
+          "status": "ESCALATED",
+          "assignedToUserId": null,
+          "slaDueAt": "2026-11-12T00:16:26.176Z",
+          "escalatedAt": "2026-11-11T00:16:26.184Z",
+          "resolvedAt": null,
+          "resolutionNotes": null,
+          "lockVersion": 1,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:16:26.176Z",
+          "updated_at": "2026-11-11T00:16:26.184Z",
+          "deleted_at": null,
+          "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+          "opportunity_id": null,
+          "assigned_to_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.289Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "casos": [
+        "ocorrencia_apagar"
+      ],
+      "descricao": "Auditoria das tentativas de apagar",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "sql": "SELECT action, reason, before_json->>'status' AS status_antes, after_json->>'status' AS status_depois, occurred_at FROM audit.audit_log WHERE entity_id = $1 AND action = 'feedback_case.delete_refused'",
+      "parametros": [
+        "e763fe99-0814-465f-ac07-5ab3b4eadb43"
+      ],
+      "resultado": [
+        {
+          "action": "feedback_case.delete_refused",
+          "reason": "Tentativa de apagar ocorrência de atendimento recusada: ocorrência não se apaga para melhorar indicador (livro do Marco 3, §15).",
+          "status_antes": "ESCALATED",
+          "status_depois": "ESCALATED",
+          "occurred_at": "2026-11-11T00:16:26.258Z"
+        },
+        {
+          "action": "feedback_case.delete_refused",
+          "reason": "Tentativa de apagar ocorrência de atendimento recusada: ocorrência não se apaga para melhorar indicador (livro do Marco 3, §15).",
+          "status_antes": "ESCALATED",
+          "status_depois": "ESCALATED",
+          "occurred_at": "2026-11-11T00:16:26.280Z"
+        }
+      ],
+      "dataHora": "2026-11-11T00:16:26.289Z"
+    }
+  ]
+}

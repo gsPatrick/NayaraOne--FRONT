@@ -1,0 +1,34 @@
+{
+ "id": "M5-A0320-0f6afb",
+ "linhaCaderno": 180,
+ "requisito": "Garantia vencendo gera tarefas/eventos; contrato não perde histórico quando a garantia é substituída.",
+ "correcao": "src/modules/legal/leasing/guaranteeStateGuards.js assertNotReplaced (update/delete); gatilho legal.guarantee_substituida_imutavel (migrations/20260101015600)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.garantias.test.js",
+   "nome": "M5-A0320/§9: garantia substituída não é editada nem apagada — serviço recusa e o banco também",
+   "status": "pass",
+   "ms": 111.589,
+   "commitDoTeste": "7806a21e",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Missing expected rejection. generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, operator: 'rejects', diff: 'simple' }"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.objetivo.test.js",
+   "nome": "M5-A0002 (2): histórico completo de garantias (substituída preservada e imutável) e de obrigações (cada vencimento fica registrado)",
+   "status": "pass",
+   "ms": 331.054,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "Missing expected rejection."
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.830Z"
+}

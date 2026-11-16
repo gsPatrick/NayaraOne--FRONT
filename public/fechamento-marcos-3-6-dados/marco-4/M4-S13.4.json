@@ -1,0 +1,158 @@
+{
+ "id": "M4-§13.4",
+ "secao": "§13 Cauções",
+ "requisito": "\"Devolução/compensação cria evento e ledger próprio.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F04-1: devolução e compensação ligadas à origem, contrato e titular, com saldo e trilha",
+   "status": "passou",
+   "duracaoMs": 102,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "D3: compensação aponta a dívida do titular, exige aprovação, não move caixa e abate a dívida",
+   "status": "passou",
+   "duracaoMs": 131,
+   "commitDoArquivo": "7dd7af78"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T07",
+   "tipo": "http",
+   "linhas": [
+    "M4-§13.4"
+   ],
+   "titulo": "Devolução de caução sem apontar o recebimento de origem: recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 500,
+    "description": "Devolução de caução sem origem",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+    "isThirdPartyFunds": true,
+    "thirdPartyReference": "Caução contrato LOC-0871300",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_THIRD_PARTY_ORIGIN_REQUIRED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_THIRD_PARTY_ORIGIN_REQUIRED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T01:35:12.216Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_THIRD_PARTY_ORIGIN_REQUIRED",
+     "message": "Informe de qual recebimento de caução esta devolução ou compensação sai — é isso que liga a saída ao contrato e ao titular corretos.",
+     "traceId": "4e0c28a7-82da-4523-9534-a1d0f6a03723"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T09",
+   "tipo": "http",
+   "linhas": [
+    "M4-§13.4"
+   ],
+   "titulo": "Devolução parcial de R$ 1.000,00 da caução: lançamento próprio ligado à origem (gera ledger e evento ao ser paga)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 1000,
+    "description": "Devolução de caução 0871300",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+    "isThirdPartyFunds": true,
+    "thirdPartyReference": "Caução contrato LOC-0871300",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+    "thirdPartyOriginEntryId": "a09d6155-4634-4591-b3f1-3bfbd215d490"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 41,
+   "quando": "2026-11-11T01:35:12.269Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "2fa8e7c9-ac3b-4578-a3e9-595034b1adb4",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "1000.00",
+     "description": "Devolução de caução 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": true,
+     "thirdPartyReference": "Caução contrato LOC-0871300",
+     "thirdPartyOriginEntryId": "a09d6155-4634-4591-b3f1-3bfbd215d490",
+     "thirdPartyHolderPersonId": "7d2b1d94-518e-4e06-8ab0-2cb47a2b1759",
+     "thirdPartyReleaseType": "RETURN",
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:12.244Z",
+     "created_at": "2026-11-11T01:35:12.244Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

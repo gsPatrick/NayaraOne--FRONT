@@ -1,0 +1,127 @@
+{
+ "id": "M4-G§17.15",
+ "secao": "Guia §17 CI/CD",
+ "requisito": "Etapa \"failure_drills\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-PAY-03 recuperação após falha DEFINITIVA: nova tentativa confirmada liquida uma vez; replays e confirmação tardia da tentativa rejeitada não duplicam",
+   "status": "passou",
+   "duracaoMs": 428,
+   "commitDoArquivo": "8ca398b6"
+  },
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-PAY-05 resposta INCERTA do banco seguida da confirmação real: o pagamento é registrado no ledger exatamente uma vez",
+   "status": "passou",
+   "duracaoMs": 218,
+   "commitDoArquivo": "8ca398b6"
+  },
+  {
+   "arquivo": "test/m4.restoreDrill.finance.test.js",
+   "nome": "M4-§21.14 restore/replay financeiro: dump/restore em cluster novo preserva dados, hashes e invariantes, e o replay não duplica",
+   "status": "passou",
+   "duracaoMs": 26723,
+   "commitDoArquivo": "40d64368"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: os 17 estágios do Guia §17 com os nomes literais e na ordem do livro no estagios.json e no workflow",
+   "status": "passou",
+   "duracaoMs": 17,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: cada estágio tem comando e os testes exigidos existem de fato nos arquivos do estágio",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "3e3d2e05"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P44",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-018",
+    "M4-G§17.15"
+   ],
+   "titulo": "Banco responde PROCESSING (sem confirmação, como num timeout): nenhum sucesso falso",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/webhooks/bank-payment",
+   "cabecalhosEnviados": {
+    "x-webhook-signature": "sha256=406e95…(assinatura HMAC calculada no envio)"
+   },
+   "corpoEnviado": {
+    "externalSubmissionId": "sandbox-payment-intent:b0562a5e-9bf3-4834-b646-e2e9959ad4df",
+    "status": "PROCESSING"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 30,
+   "quando": "2026-11-11T01:35:09.278Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "received": true,
+     "processed": true
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P47",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§17.15"
+   ],
+   "titulo": "Confirmação real chega depois: registrada uma única vez",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/webhooks/bank-payment",
+   "cabecalhosEnviados": {
+    "x-webhook-signature": "sha256=3a40ea…(assinatura HMAC calculada no envio)"
+   },
+   "corpoEnviado": {
+    "externalSubmissionId": "sandbox-payment-intent:b0562a5e-9bf3-4834-b646-e2e9959ad4df",
+    "status": "CONFIRMED"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 80,
+   "quando": "2026-11-11T01:35:09.411Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "received": true,
+     "processed": true
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

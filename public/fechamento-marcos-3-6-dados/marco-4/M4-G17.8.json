@@ -1,0 +1,93 @@
+{
+ "id": "M4-G§17.8",
+ "secao": "Guia §17 CI/CD",
+ "requisito": "Etapa \"bank_adapter_contract_tests\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "B1: o adapter real envia a chave de idempotência ao provedor",
+   "status": "passou",
+   "duracaoMs": 1,
+   "commitDoArquivo": "7dd7af78"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "B5: confirmação via sandbox é SANDBOX_CONFIRMED; Santander incompleto falha fechado; sandbox proibido em produção",
+   "status": "passou",
+   "duracaoMs": 186,
+   "commitDoArquivo": "7dd7af78"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: os 17 estágios do Guia §17 com os nomes literais e na ordem do livro no estagios.json e no workflow",
+   "status": "passou",
+   "duracaoMs": 17,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: cada estágio tem comando e os testes exigidos existem de fato nos arquivos do estágio",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: estágio de banco recusa rodar fora do banco descartável",
+   "status": "passou",
+   "duracaoMs": 100,
+   "commitDoArquivo": "3e3d2e05"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P30",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§1.8",
+    "M4-G§17.8"
+   ],
+   "titulo": "Callback do banco com assinatura FORJADA: recusado, nada muda",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/webhooks/bank-payment",
+   "cabecalhosEnviados": {
+    "x-webhook-signature": "sha256=000000…(assinatura HMAC calculada no envio)"
+   },
+   "corpoEnviado": {
+    "externalSubmissionId": "sandbox-payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+    "status": "CONFIRMED"
+   },
+   "esperado": {
+    "status": [
+     401,
+     403
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 401,
+   "codigo": "BANK_PAYMENT_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 46,
+   "quando": "2026-11-11T01:35:08.302Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "BANK_PAYMENT_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura HMAC do webhook bancário ausente ou inválida.",
+     "traceId": "6c156323-10fe-461b-8ca9-09368c6db75d"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

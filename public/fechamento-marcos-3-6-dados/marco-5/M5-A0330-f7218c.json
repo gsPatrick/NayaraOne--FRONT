@@ -1,0 +1,1200 @@
+{
+ "id": "M5-A0330-f7218c",
+ "secao": "(abertura 3)",
+ "linhaCaderno": 861,
+ "requisito": "• Multa/juros/grace/cadência via Motor de Regras; acordo versionado não apaga dívida.",
+ "demandas": "M5-D304;M5-D305;M5-D310;M5-D307",
+ "implementacao": "src/features/billing/collectionCase.service.js:31 openCollectionCase (REG-LOC-002 carência e REG-LOC-001 multa/juros pelo Motor de Regras, percentuais por configuração; versões gravadas) e :162 createAgreement (agreements_json append-only, original_debt_amount intocado); src/features/billing/collectionCadence.service.js:393 runCollectionCadence (REG-LOC-004, versionada, idempotente)",
+ "tela": "Financeiro > Régua de cobrança (/painel/financeiro/regua-cobranca)",
+ "testes": [
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: caso de cobrança dentro da carência (REG-LOC-002) é bloqueado",
+   "status": "pass",
+   "ms": 39.048,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/auditoriaNayara.marco5.coverage.test.js",
+   "nome": "multa/juros: cálculo do caso de cobrança bate exatamente com a regra publicada + settings do tenant (determinístico)",
+   "status": "pass",
+   "ms": 60.587,
+   "commitDoTeste": "1d4a4ed0"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: duas aberturas CONCORRENTES de caso de cobrança para a mesma competência não duplicam",
+   "status": "pass",
+   "ms": 63.98,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.collectionCadence.test.js",
+   "nome": "CAD-1: cada etapa da régua dispara no dia certo — lembrete D-3, avisos D+1/D+5, tarefa D+15, escalonamento jurídico D+30",
+   "status": "pass",
+   "ms": 238.33,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.collectionCadence.test.js",
+   "nome": "CAD-2: rodar o job de novo não repete etapa; job parado executa só a etapa mais avançada e registra as anteriores como puladas",
+   "status": "pass",
+   "ms": 67.096,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.collectionCadence.test.js",
+   "nome": "CAD-4: nova versão da régua vale para novos ciclos; ciclo já iniciado segue na versão em que começou e o registro antigo é imutável",
+   "status": "pass",
+   "ms": 95.554,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.collectionCadence.test.js",
+   "nome": "CAD-5: a cadência nunca altera a dívida — competência e caso de cobrança mantêm os valores do início ao fim da régua",
+   "status": "pass",
+   "ms": 79.872,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.collectionCadenceRoutes.test.js",
+   "nome": "CAD-HTTP-04: publicar com billing:cadence:manage → 201 com etapas normalizadas (ordenadas)",
+   "status": "pass",
+   "ms": 5.572,
+   "commitDoTeste": "8c9bdf96"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-CO-12",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "COLLECTION_CASE_WITHIN_GRACE_PERIOD",
+   "esperado": {
+    "status": 409,
+    "codigo": "COLLECTION_CASE_WITHIN_GRACE_PERIOD"
+   },
+   "resumo": "erro COLLECTION_CASE_WITHIN_GRACE_PERIOD: Ainda dentro do período de carência (3 dias) — competência não está oficialmente em atraso.",
+   "quando": "2026-11-11T03:42:34.708Z"
+  },
+  {
+   "passo": "LC-CO-13",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=b6b7202f-a727-4453-9581-b06e6c766dcd",
+   "quando": "2026-11-11T03:42:34.752Z"
+  },
+  {
+   "passo": "LC-CO-14",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "COLLECTION_CASE_DUPLICATE",
+   "esperado": {
+    "status": 409,
+    "codigo": "COLLECTION_CASE_DUPLICATE"
+   },
+   "resumo": "erro COLLECTION_CASE_DUPLICATE: Já existe um caso de cobrança aberto para esta competência.",
+   "quando": "2026-11-11T03:42:34.771Z"
+  },
+  {
+   "passo": "LC-CO-16",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "COLLECTION_AGREEMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "COLLECTION_AGREEMENT_VALIDATION"
+   },
+   "resumo": "erro COLLECTION_AGREEMENT_VALIDATION: Os campos \"installments\" e \"agreedAmount\" são obrigatórios.",
+   "quando": "2026-11-11T03:42:34.782Z"
+  },
+  {
+   "passo": "LC-CO-17",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=AGREEMENT, id=b6b7202f-a727-4453-9581-b06e6c766dcd",
+   "quando": "2026-11-11T03:42:34.793Z"
+  },
+  {
+   "passo": "LC-CO-18",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=AGREEMENT, id=b6b7202f-a727-4453-9581-b06e6c766dcd",
+   "quando": "2026-11-11T03:42:34.814Z"
+  },
+  {
+   "passo": "LC-CO-21",
+   "metodo": "GET",
+   "rota": "/billing/collection-cadence",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 7 campo(s)",
+   "quando": "2026-11-11T03:42:34.834Z"
+  },
+  {
+   "passo": "LC-CO-22",
+   "metodo": "POST",
+   "rota": "/billing/collection-cadence/versions",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:34.842Z"
+  },
+  {
+   "passo": "LC-CO-23",
+   "metodo": "POST",
+   "rota": "/billing/collection-cadence/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PUBLISHED, id=da5e7653-b855-4f9e-b259-0917c134aee2, versionNumber=2",
+   "quando": "2026-11-11T03:42:34.865Z"
+  },
+  {
+   "passo": "LC-CO-24",
+   "metodo": "POST",
+   "rota": "/billing/collection-cadence/versions",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "COLLECTION_CADENCE_INVALID",
+   "esperado": {
+    "status": 400
+   },
+   "resumo": "erro COLLECTION_CADENCE_INVALID: Código de etapa inválido: \"x\".",
+   "quando": "2026-11-11T03:42:34.877Z"
+  },
+  {
+   "passo": "LC-CO-28",
+   "metodo": "GET",
+   "rota": "/billing/collection-cadence/steps?billingScheduleId=ed7396d5-2750-4368-b7fb-799ae1eee405",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 2 item(ns)",
+   "quando": "2026-11-11T03:42:34.979Z"
+  },
+  {
+   "passo": "LC-CO-25",
+   "metodo": "POST",
+   "rota": "/billing/schedules",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=ed7396d5-2750-4368-b7fb-799ae1eee405",
+   "quando": "2026-11-11T03:42:34.907Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0330-f7218c.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/billing.test.js test/auditoriaNayara.marco5.coverage.test.js test/billing.collectionCadence.test.js test/billing.collectionCadenceRoutes.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-CO-P2, LC-CO-12, LC-CO-13, LC-CO-14, LC-CO-15, LC-CO-16, LC-CO-17, LC-CO-18, LC-CO-19, LC-CO-21, LC-CO-22, LC-CO-23, LC-CO-24, LC-CO-26, LC-CO-27, LC-CO-28, LC-CO-29, LC-CO-25)"
+ },
+ "passos": [
+  {
+   "id": "LC-CO-P2",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: publica no Motor de Regras do tenant A as regras de locação (REG-LOC-001 multa/juros, 002 carência, 003 reajuste, 004 régua) pelo seed oficial",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "scripts/seedBillingRules.seedBillingRules(tenant A)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 37,
+   "quando": "2026-11-11T03:42:34.562Z",
+   "corpo": {
+    "result": [
+     {
+      "code": "REG-LOC-001",
+      "ruleId": "887fc6b6-6ed4-4a0c-abd0-4b5f95aec12d",
+      "ruleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+      "alreadyExisted": false
+     },
+     {
+      "code": "REG-LOC-002",
+      "ruleId": "4c151942-4556-4a6a-a7dd-309281e4b216",
+      "ruleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+      "alreadyExisted": false
+     },
+     {
+      "code": "REG-LOC-003",
+      "ruleId": "7af7b9e6-5282-4e81-bfc8-8c853b1cb590",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "alreadyExisted": false
+     },
+     {
+      "code": "REG-LOC-004",
+      "ruleId": "d7b248d9-2798-4c1c-a45e-1a056dfaeb93",
+      "ruleVersionId": "4e0c8933-834c-4b72-a3bb-856863b8f872",
+      "alreadyExisted": false
+     }
+    ]
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-CO-12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Atraso de 2 dias está dentro da carência (REG-LOC-002): caso não é aberto",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "corpoEnviado": {
+    "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+    "daysPastDue": 2
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "COLLECTION_CASE_WITHIN_GRACE_PERIOD"
+   },
+   "status": 409,
+   "codigo": "COLLECTION_CASE_WITHIN_GRACE_PERIOD",
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:34.708Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "COLLECTION_CASE_WITHIN_GRACE_PERIOD",
+     "message": "Ainda dentro do período de carência (3 dias) — competência não está oficialmente em atraso.",
+     "traceId": "6c5b5d81-a645-4984-8042-da1cbec0a624"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Atraso de 33 dias: caso aberto com multa 2% e juros 1% a.m. sobre o saldo, pró-rata após 3 dias de carência",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "corpoEnviado": {
+    "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+    "daysPastDue": 33
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:34.752Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b6b7202f-a727-4453-9581-b06e6c766dcd",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "status": "OPEN",
+     "overdueSince": "2026-10-09",
+     "originalDebtAmount": "2220.45",
+     "currentBalance": "2287.06",
+     "penaltyAmount": "44.41",
+     "interestAmount": "22.20",
+     "graceDaysApplied": 3,
+     "penaltyRuleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+     "graceRuleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+     "agreementsJson": [],
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:34.731Z",
+     "created_at": "2026-11-11T03:42:34.731Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Segundo caso para a mesma competência é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "corpoEnviado": {
+    "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+    "daysPastDue": 40
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "COLLECTION_CASE_DUPLICATE"
+   },
+   "status": 409,
+   "codigo": "COLLECTION_CASE_DUPLICATE",
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:34.771Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "COLLECTION_CASE_DUPLICATE",
+     "message": "Já existe um caso de cobrança aberto para esta competência.",
+     "traceId": "6646add8-1f4d-459c-b4bf-7edf5efa3fef"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Acordo sem parcelas e valor é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "corpoEnviado": {
+    "notes": "sem dados"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "COLLECTION_AGREEMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "COLLECTION_AGREEMENT_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:34.782Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "COLLECTION_AGREEMENT_VALIDATION",
+     "message": "Os campos \"installments\" e \"agreedAmount\" são obrigatórios.",
+     "traceId": "003f24b2-a060-4ffb-8033-4f79761d7692"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Acordo v1: 3 parcelas, 2.287,06",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "corpoEnviado": {
+    "installments": 3,
+    "agreedAmount": 2287.06,
+    "notes": "Primeira proposta"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:34.793Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b6b7202f-a727-4453-9581-b06e6c766dcd",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "status": "AGREEMENT",
+     "overdueSince": "2026-10-09",
+     "originalDebtAmount": "2220.45",
+     "currentBalance": 2287.06,
+     "penaltyAmount": "44.41",
+     "interestAmount": "22.20",
+     "graceDaysApplied": 3,
+     "penaltyRuleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+     "graceRuleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+     "agreementsJson": [
+      {
+       "versionNumber": 1,
+       "installments": 3,
+       "agreedAmount": 2287.06,
+       "notes": "Primeira proposta",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "createdAt": "2026-11-11T03:42:34.788Z"
+      }
+     ],
+     "lockVersion": 1,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:34.731Z",
+     "updated_at": "2026-11-11T03:42:34.788Z",
+     "deleted_at": null,
+     "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Acordo v2 substitui o v1 sem apagá-lo: 4 parcelas, 2.300,00",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "corpoEnviado": {
+    "installments": 4,
+    "agreedAmount": 2300,
+    "notes": "Renegociado"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:34.814Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b6b7202f-a727-4453-9581-b06e6c766dcd",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "status": "AGREEMENT",
+     "overdueSince": "2026-10-09",
+     "originalDebtAmount": "2220.45",
+     "currentBalance": 2300,
+     "penaltyAmount": "44.41",
+     "interestAmount": "22.20",
+     "graceDaysApplied": 3,
+     "penaltyRuleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+     "graceRuleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+     "agreementsJson": [
+      {
+       "notes": "Primeira proposta",
+       "createdAt": "2026-11-11T03:42:34.788Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "agreedAmount": 2287.06,
+       "installments": 3,
+       "versionNumber": 1
+      },
+      {
+       "versionNumber": 2,
+       "installments": 4,
+       "agreedAmount": 2300,
+       "notes": "Renegociado",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "createdAt": "2026-11-11T03:42:34.801Z"
+      }
+     ],
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:34.731Z",
+     "updated_at": "2026-11-11T03:42:34.802Z",
+     "deleted_at": null,
+     "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-21",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Régua vigente (REG-LOC-004) e histórico de versões",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/collection-cadence",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:34.834Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "ruleCode": "REG-LOC-004",
+     "ruleId": "d7b248d9-2798-4c1c-a45e-1a056dfaeb93",
+     "current": {
+      "id": "4e0c8933-834c-4b72-a3bb-856863b8f872",
+      "versionNumber": 1,
+      "status": "PUBLISHED",
+      "effectiveFrom": "2026-11-11T03:42:34.527Z",
+      "effectiveUntil": null,
+      "publishedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "isCurrent": true,
+      "steps": [
+       {
+        "code": "REMINDER_D-3",
+        "action": "NOTIFY",
+        "offsetDays": -3
+       },
+       {
+        "code": "NOTICE_D1",
+        "action": "NOTIFY",
+        "offsetDays": 1
+       },
+       {
+        "code": "NOTICE_D5",
+        "action": "NOTIFY",
+        "offsetDays": 5
+       },
+       {
+        "code": "TASK_D15",
+        "action": "TASK",
+        "offsetDays": 15
+       },
+       {
+        "code": "LEGAL_D30",
+        "action": "ESCALATE_LEGAL",
+        "offsetDays": 30
+       }
+      ]
+     },
+     "versions": [
+      {
+       "id": "4e0c8933-834c-4b72-a3bb-856863b8f872",
+       "versionNumber": 1,
+       "status": "PUBLISHED",
+       "effectiveFrom": "2026-11-11T03:42:34.527Z",
+       "effectiveUntil": null,
+       "publishedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "isCurrent": true,
+       "steps": [
+        {
+         "code": "REMINDER_D-3",
+         "action": "NOTIFY",
+         "offsetDays": -3
+        },
+        {
+         "code": "NOTICE_D1",
+         "action": "NOTIFY",
+         "offsetDays": 1
+        },
+        {
+         "code": "NOTICE_D5",
+         "action": "NOTIFY",
+         "offsetDays": 5
+        },
+        {
+         "code": "TASK_D15",
+         "action": "TASK",
+         "offsetDays": 15
+        },
+        {
+         "code": "LEGAL_D30",
+         "action": "ESCALATE_LEGAL",
+         "offsetDays": 30
+        }
+       ]
+      }
+     ],
+     "defaultSteps": [
+      {
+       "code": "REMINDER_D-3",
+       "offsetDays": -3,
+       "action": "NOTIFY"
+      },
+      {
+       "code": "NOTICE_D1",
+       "offsetDays": 1,
+       "action": "NOTIFY"
+      },
+      {
+       "code": "NOTICE_D5",
+       "offsetDays": 5,
+       "action": "NOTIFY"
+      },
+      {
+       "code": "TASK_D15",
+       "offsetDays": 15,
+       "action": "TASK"
+      },
+      {
+       "code": "LEGAL_D30",
+       "offsetDays": 30,
+       "action": "ESCALATE_LEGAL"
+      }
+     ],
+     "actions": [
+      "NOTIFY",
+      "TASK",
+      "ESCALATE_LEGAL"
+     ],
+     "limits": {
+      "minOffset": -30,
+      "maxOffset": 365,
+      "maxSteps": 20
+     }
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-22",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem billing:cadence:manage) não publica régua",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/billing/collection-cadence/versions",
+   "corpoEnviado": {
+    "steps": [
+     {
+      "code": "NOTICE_D1",
+      "offsetDays": 1,
+      "action": "NOTIFY"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:34.842Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "billing:cadence:manage"
+     },
+     "traceId": "79820453-1354-4557-a959-680a4dd020de"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-23",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Publica nova versão da régua: lembrete D-3, aviso D+1, tarefa D+15, jurídico D+30",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cadence/versions",
+   "corpoEnviado": {
+    "steps": [
+     {
+      "code": "REMINDER_D-3",
+      "offsetDays": -3,
+      "action": "NOTIFY"
+     },
+     {
+      "code": "NOTICE_D1",
+      "offsetDays": 1,
+      "action": "NOTIFY"
+     },
+     {
+      "code": "TASK_D15",
+      "offsetDays": 15,
+      "action": "TASK"
+     },
+     {
+      "code": "LEGAL_D30",
+      "offsetDays": 30,
+      "action": "ESCALATE_LEGAL"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:34.865Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "da5e7653-b855-4f9e-b259-0917c134aee2",
+     "versionNumber": 2,
+     "status": "PUBLISHED",
+     "effectiveFrom": "2026-11-11T03:42:34.853Z",
+     "effectiveUntil": null,
+     "publishedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "isCurrent": true,
+     "steps": [
+      {
+       "code": "REMINDER_D-3",
+       "action": "NOTIFY",
+       "offsetDays": -3
+      },
+      {
+       "code": "NOTICE_D1",
+       "action": "NOTIFY",
+       "offsetDays": 1
+      },
+      {
+       "code": "TASK_D15",
+       "action": "TASK",
+       "offsetDays": 15
+      },
+      {
+       "code": "LEGAL_D30",
+       "action": "ESCALATE_LEGAL",
+       "offsetDays": 30
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-24",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Régua com etapa inválida é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cadence/versions",
+   "corpoEnviado": {
+    "steps": [
+     {
+      "code": "x",
+      "offsetDays": 9999,
+      "action": "APAGAR_DIVIDA"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 400
+   },
+   "status": 400,
+   "codigo": "COLLECTION_CADENCE_INVALID",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:34.877Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "COLLECTION_CADENCE_INVALID",
+     "message": "Código de etapa inválido: \"x\".",
+     "traceId": "a2579a6a-8947-4c93-a04b-438c42050e76"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-26",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Job da régua no dia 11/02/2030 (D+1): executa o aviso D+1 da versão publicada",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "collectionCadence.service.runCollectionCadence(tx, { now: 2030-02-11, contractId })",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 32,
+   "quando": "2026-11-11T03:42:34.940Z",
+   "corpo": {
+    "result": {
+     "schedulesChecked": 2,
+     "executed": 1,
+     "skipped": 1,
+     "blocked": 1,
+     "errors": 0
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-CO-27",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Job da régua de novo no mesmo dia não repete a etapa (idempotente)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "collectionCadence.service.runCollectionCadence(tx, { now: 2030-02-11, contractId }) — 2ª vez",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:34.954Z",
+   "corpo": {
+    "result": {
+     "schedulesChecked": 2,
+     "executed": 0,
+     "skipped": 0,
+     "blocked": 1,
+     "errors": 0
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-CO-28",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Etapas executadas da régua para a competência 2030-02",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/collection-cadence/steps?billingScheduleId=ed7396d5-2750-4368-b7fb-799ae1eee405",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:34.979Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "51772403-c3da-4411-b820-48f39a0eb60b",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "billingScheduleId": "ed7396d5-2750-4368-b7fb-799ae1eee405",
+      "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+      "ruleVersionId": "da5e7653-b855-4f9e-b259-0917c134aee2",
+      "stepCode": "NOTICE_D1",
+      "offsetDays": 1,
+      "action": "NOTIFY",
+      "outcome": "EXECUTED",
+      "businessDate": "2030-02-11",
+      "daysFromDue": 1,
+      "balanceAtStep": "2500.00",
+      "notificationId": "9e3b7bfb-e732-4b89-bc14-72ef0be981f7",
+      "taskId": null,
+      "created_at": "2026-11-11T03:42:34.932Z",
+      "period": "2030-02",
+      "dueDate": "2030-02-10",
+      "scheduleStatus": "OPEN"
+     },
+     {
+      "id": "833559ae-d8e3-441a-a7be-c36fbc37dabf",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "billingScheduleId": "ed7396d5-2750-4368-b7fb-799ae1eee405",
+      "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+      "ruleVersionId": "da5e7653-b855-4f9e-b259-0917c134aee2",
+      "stepCode": "REMINDER_D-3",
+      "offsetDays": -3,
+      "action": "NOTIFY",
+      "outcome": "SKIPPED_SUPERSEDED",
+      "businessDate": "2030-02-11",
+      "daysFromDue": 1,
+      "balanceAtStep": "2500.00",
+      "notificationId": null,
+      "taskId": null,
+      "created_at": "2026-11-11T03:42:34.925Z",
+      "period": "2030-02",
+      "dueDate": "2030-02-10",
+      "scheduleStatus": "OPEN"
+     }
+    ],
+    "pagination": {
+     "page": 1,
+     "pageSize": 50,
+     "total": 2
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-25",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Competência 2030-02 em aberto para a régua",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/schedules",
+   "corpoEnviado": {
+    "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+    "period": "2030-02",
+    "dueDate": "2030-02-10",
+    "items": [
+     {
+      "componentType": "RENT",
+      "amount": 2500
+     }
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 30,
+   "quando": "2026-11-11T03:42:34.907Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ed7396d5-2750-4368-b7fb-799ae1eee405",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "period": "2030-02",
+     "dueDate": "2030-02-10",
+     "totalAmount": "2500.00",
+     "paidAmount": "0.00",
+     "balance": "2500.00",
+     "status": "OPEN",
+     "generatedAt": "2026-11-11T03:42:34.887Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:34.887Z",
+     "created_at": "2026-11-11T03:42:34.887Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0329-5e6273",
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-CO-15",
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "perfil": "A:gestor",
+   "descricao": "Caso gravado com as versões das regras de multa/juros e carência do Motor de Regras",
+   "sql": "SELECT cc.original_debt_amount, cc.penalty_amount, cc.interest_amount, cc.grace_days_applied, rv1.status AS regra_multa, r1.code AS cod_multa, rv2.status AS regra_carencia, r2.code AS cod_carencia FROM finance.collection_cases cc JOIN core.rule_versions rv1 ON rv1.id = cc.penalty_rule_version_id JOIN core.rules r1 ON r1.id = rv1.rule_id JOIN core.rule_versions rv2 ON rv2.id = cc.grace_rule_version_id JOIN core.rules r2 ON r2.id = rv2.rule_id WHERE cc.id = :id",
+   "resultado": [
+    {
+     "original_debt_amount": "2220.45",
+     "penalty_amount": "44.41",
+     "interest_amount": "22.20",
+     "grace_days_applied": 3,
+     "regra_multa": "PUBLISHED",
+     "cod_multa": "REG-LOC-001",
+     "regra_carencia": "PUBLISHED",
+     "cod_carencia": "REG-LOC-002"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:34.773Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-CO-19",
+   "req": [
+    "M5-A0330-f7218c"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "perfil": "A:gestor",
+   "descricao": "Histórico do acordo (v1 e v2) preservado e dívida original intacta",
+   "sql": "SELECT status, original_debt_amount, current_balance, jsonb_array_length(agreements_json::jsonb) AS versoes, agreements_json FROM finance.collection_cases WHERE id = :id",
+   "resultado": [
+    {
+     "status": "AGREEMENT",
+     "original_debt_amount": "2220.45",
+     "current_balance": "2300.00",
+     "versoes": 2,
+     "agreements_json": [
+      {
+       "notes": "Primeira proposta",
+       "createdAt": "2026-11-11T03:42:34.788Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "agreedAmount": 2287.06,
+       "installments": 3,
+       "versionNumber": 1
+      },
+      {
+       "notes": "Renegociado",
+       "createdAt": "2026-11-11T03:42:34.801Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "agreedAmount": 2300,
+       "installments": 4,
+       "versionNumber": 2
+      }
+     ]
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:34.815Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-CO-29",
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "perfil": "A:gestor",
+   "descricao": "Uma linha por etapa da régua (sem duplicar) e a dívida da competência intocada",
+   "sql": "SELECT s.step_code, count(*)::int AS vezes, max(b.balance) AS saldo FROM finance.collection_cadence_steps s JOIN finance.billing_schedules b ON b.id = s.billing_schedule_id WHERE s.billing_schedule_id = :id GROUP BY s.step_code",
+   "resultado": [
+    {
+     "step_code": "NOTICE_D1",
+     "vezes": 1,
+     "saldo": "2500.00"
+    },
+    {
+     "step_code": "REMINDER_D-3",
+     "vezes": 1,
+     "saldo": "2500.00"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:34.981Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

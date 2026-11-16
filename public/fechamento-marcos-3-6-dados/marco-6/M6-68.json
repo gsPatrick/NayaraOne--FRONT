@@ -1,0 +1,132 @@
+{
+  "id": "M6-68",
+  "requisito": "\"measurement.approved repetido → uma conta a pagar.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "constructionEvents.service.js (chave measurement.approved:<id>) + finance idempotency_key UNIQUE",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/medicoes: reaprovar a medição paga é recusado",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.minimumEvents.test.js",
+      "nome": "M6-69..M6-80: a jornada da obra grava na Outbox os 15 eventos mínimos do Caderno, com o nome exato",
+      "resultado": "passou",
+      "duracaoMs": 1392,
+      "executadoEm": "2026-11-11T00:13:57.177Z"
+    },
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-55/M6-68 medição aprovada gera obrigação financeira real e aprovar a MESMA medição duas vezes concorrentemente nunca cria duas contas a pagar",
+      "resultado": "passou",
+      "duracaoMs": 144,
+      "executadoEm": "2026-11-11T00:13:50.330Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H096",
+      "H097"
+    ],
+    "resumo": [
+      "H096 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve → 409 STAGE_MEASUREMENT_INVALID_STATUS",
+      "H097 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/decide → 409 STAGE_MEASUREMENT_INVALID_STATUS"
+    ],
+    "dataHora": "2026-11-11T00:12:16.943Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H096",
+      "requisitos": [
+        "M6-55",
+        "M6-68",
+        "M6-84"
+      ],
+      "cenario": "NEGATIVO: aprovar de novo a mesma medição (evento repetido)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 409,
+      "codigoErro": "STAGE_MEASUREMENT_INVALID_STATUS",
+      "esperado": "409 STAGE_MEASUREMENT_INVALID_STATUS",
+      "conferiu": true,
+      "duracaoMs": 21,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "STAGE_MEASUREMENT_INVALID_STATUS",
+          "message": "Só é possível decidir uma medição no estado \"Enviada para revisão, Revisada\" — esta está \"Aprovada\".",
+          "traceId": "558c643c-8ded-416c-b771-7aac1e2c1772"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.943Z"
+    },
+    {
+      "id": "H097",
+      "requisitos": [
+        "M6-55",
+        "M6-68"
+      ],
+      "cenario": "NEGATIVO: decidir (aprovar) pela rota irmã /decide a medição já paga",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/decide",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "decision": "APPROVED"
+      },
+      "statusHttp": 409,
+      "codigoErro": "STAGE_MEASUREMENT_INVALID_STATUS",
+      "esperado": "409 STAGE_MEASUREMENT_INVALID_STATUS",
+      "conferiu": true,
+      "duracaoMs": 24,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "STAGE_MEASUREMENT_INVALID_STATUS",
+          "message": "Só é possível decidir uma medição no estado \"Enviada para revisão, Revisada\" — esta está \"Aprovada\".",
+          "traceId": "f40ff462-445b-4ae5-9d6b-46438af59b65"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.967Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C006",
+      "requisitos": [
+        "M6-21",
+        "M6-36",
+        "M6-55",
+        "M6-68",
+        "M6-84",
+        "M6-85",
+        "M6-97",
+        "M6-76"
+      ],
+      "descricao": "Medição aprovada: exatamente UMA conta a pagar real no Financeiro, com a obra (project_id) e centro de custo",
+      "sql": "SELECT m.status, m.total_amount, (SELECT count(*) FROM finance.financial_entries f WHERE f.idempotency_key = 'measurement.payable:' || m.id)::int AS contas, f.nature, f.entry_type, f.amount, f.status AS status_conta, f.construction_project_id = $2 AS da_obra, f.cost_center_id IS NOT NULL AS com_centro_de_custo FROM construction.stage_measurements m JOIN finance.financial_entries f ON f.id = m.payable_financial_entry_id WHERE m.id = $1",
+      "resultado": [
+        {
+          "status": "PAYABLE",
+          "total_amount": "41200.00",
+          "contas": 1,
+          "nature": "PAYABLE",
+          "entry_type": "DEBIT",
+          "amount": "41200.00",
+          "status_conta": "PENDING",
+          "da_obra": true,
+          "com_centro_de_custo": true
+        }
+      ],
+      "invariante": "PAYABLE, 1 conta, PAYABLE/DEBIT do mesmo valor, ligada à obra e com centro de custo",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.184Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.432Z"
+}

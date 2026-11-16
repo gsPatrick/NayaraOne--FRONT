@@ -1,0 +1,105 @@
+{
+  "id": "M6-98",
+  "requisito": "Jornada E2E obrigatória de Obra.",
+  "secaoDoLivro": "Testes/DR/Homologação §4: \"Obra → orçamento → material → diário → medição → pagamento → qualidade → entrega → pós-obra\"",
+  "implementacao": "teste de API test/construction.e2e.test.js (obra, etapa com responsável, orçamento, material, diário, medição com evidência, conta pelo consumidor, baixa parcial e quitação, qualidade, entrega, pós-obra) e spec Playwright marco6-jornada-completa.spec.js",
+  "telaParaReteste": "Painel → obra (jornada completa)",
+  "commitApi": "6952bb50",
+  "branchApi": "m6fix/verificacao",
+  "commitFront": "1d3d1f2",
+  "branchFront": "m6fix/verificacao",
+  "status": "Atendido",
+  "motivoDaVerificacao": "ver Maturacao/fechamento-m3-m6/verificacao/marco-6.md",
+  "testes": [
+    {
+      "arquivo": "test/construction.e2e.test.js",
+      "nome": "M6-98: jornada E2E completa — orçamento→material→diário→medição→pagamento→qualidade→entrega→pós-obra",
+      "resultadoHead": "passou",
+      "duracaoMs": 1234.078,
+      "resultadoBase": "FALHA (etapa com responsável (Caderno §2)\n+ actual - expected\n\n+ undefined\n- '19653ea5-c5d2-4043-b55c-b14a662fb845'\n)"
+    }
+  ],
+  "provasDoVerificador": [],
+  "evidenciaAoVivo": {
+    "tipo": "Execução real dos testes no commit corrigido e na base (banco descartável, RLS real, antivírus real)",
+    "resultado": "1/1 passaram no HEAD 6952bb50; na base 41addaa2: falham",
+    "comando": "node scripts/withDisposableDb.js --port 5575 -- env CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 DISPOSABLE_DB=1 bash -c \"node scripts/seed-ci-two-tenants.js && NODE_ENV=test node --test --test-concurrency=1 <116 arquivos de Obras e vizinhos> verificacao/provas/v5-provas.test.js\" (fila global vez.sh, worktree destacado no commit 5630ac0d)",
+    "dataHora": "2026-11-12T07:21:42-03:00"
+  },
+  "telaPlaywright": {
+    "spec": "NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js",
+    "commitFront": "1d3d1f2573b2c157ca67766af3bb1a15a616cb11",
+    "resultado": "passou",
+    "passos": [
+      {
+        "passo": "1. login",
+        "ok": true
+      },
+      {
+        "passo": "2. configuração: tipo de obra, checklist da etapa FUND e evidência mínima = 1",
+        "ok": true
+      },
+      {
+        "passo": "3. obra do tipo, com responsável e prazo",
+        "ok": true
+      },
+      {
+        "passo": "4. etapa FUND com responsável (Caderno §2)",
+        "ok": true
+      },
+      {
+        "passo": "5. orçamento: linha de R$ 10.000,00, margem mínima e aprovação (baseline congelada)",
+        "ok": true
+      },
+      {
+        "passo": "6. material: requisição da etapa e recebimento do estoque",
+        "ok": true
+      },
+      {
+        "passo": "7. obra em execução e diário (RDO)",
+        "ok": true
+      },
+      {
+        "passo": "8. medição com evidência: registrar, enviar, revisar e aprovar",
+        "ok": true
+      },
+      {
+        "passo": "9. conta a pagar pelo consumidor do Financeiro; a baixa exige aprovação de outra pessoa e MFA",
+        "ok": true
+      },
+      {
+        "passo": "10. qualidade: checklist do tipo de obra gerado na etapa e aprovado",
+        "ok": true
+      },
+      {
+        "passo": "11. inspeção final e entrega da obra (gate) → Em garantia",
+        "ok": true
+      }
+    ],
+    "iniciadoEm": "2026-11-11T10:58:37.911107-03:00",
+    "requisitos": [
+      "M6-51",
+      "M6-98",
+      "M6-12",
+      "M6-19",
+      "M6-21",
+      "M6-28"
+    ],
+    "ambiente": "API do commit da branch m6fix/verificacao em banco descartável (RLS real, antivírus real) na porta 44901; Front de desenvolvimento do worktree front-m6v na 44902; credencial só pelo ambiente (E2E_EMAIL/E2E_PASSWORD)",
+    "comando": "E2E_BASE_URL=... E2E_API_URL=... E2E_EMAIL=<ambiente> E2E_PASSWORD=<ambiente> node e2e/marco6-jornada-completa.spec.js"
+  },
+  "decisoes": [
+    "DI-M6V-13"
+  ],
+  "migrations": [
+    "migrations/20260101006600-m6v-tipo-de-obra-e-checklist-por-etapa.js",
+    "migrations/20260101006601-m6v-responsavel-da-etapa.js",
+    "migrations/20260101006602-m6v-baseline-imutavel-e-revisoes.js",
+    "migrations/20260101006603-m6v-evidencia-da-medicao.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006604-finance-source-event-id-e-obra-na-baixa-parcial.js",
+    "migrations/20260101006605-m6v-alcada-permissao-propria-e-quem-propoe.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006606-finance-indices-da-obra-no-ledger.js",
+    "migrations/20260101006607-m6v-indices-da-saude-da-obra.js"
+  ],
+  "geradoEm": "2026-11-12T10:41:46.766Z"
+}

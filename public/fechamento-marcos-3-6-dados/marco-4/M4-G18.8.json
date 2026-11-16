@@ -1,0 +1,57 @@
+{
+ "id": "M4-G§18.8",
+ "secao": "Guia §18 Não improvisar",
+ "requisito": "\"❌ Não usar conta de outra empresa para 'facilitar'.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.crossCompanyIsolation.test.js",
+   "nome": "FIN-TS-004: lançamento não pode usar bankAccount de outra empresa (mesmo do mesmo grupo) — erro de aplicação, não só RLS",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "35aaf028"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "E03",
+   "tipo": "http",
+   "linhas": [
+    "M4-§15.1",
+    "M4-G§18.8"
+   ],
+   "titulo": "Nunca registrar despesa de A direto na conta de B: conta de outra empresa não é encontrada",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/bank-accounts/e13a4a4f-0377-44d8-b556-e41035439c5f",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 404
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T01:35:05.532Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+     "message": "Conta bancária não encontrada.",
+     "traceId": "ec466094-5045-4821-b512-ce3435f74496"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

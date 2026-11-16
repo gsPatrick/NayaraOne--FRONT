@@ -1,0 +1,67 @@
+{
+ "id": "M4-G§18.9",
+ "secao": "Guia §18 Não improvisar",
+ "requisito": "\"❌ Não deixar NAY chamar adapter bancário de execução diretamente.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.nayNoExecution.test.js",
+   "nome": "FIN-TS-014: não existe nenhum módulo de execução financeira acessível por \"NAY\" fora das rotas HTTP protegidas",
+   "status": "passou",
+   "duracaoMs": 84,
+   "commitDoArquivo": "e0eec045"
+  },
+  {
+   "arquivo": "test/finance.nay.test.js",
+   "nome": "NAY-FIN-04: não executa nada — lançamentos, intenções, fechamentos, extratos, conciliações, aprovações e contas bancárias idênticos depois de chamar a NAY; só ai_runs cresce",
+   "status": "passou",
+   "duracaoMs": 307,
+   "commitDoArquivo": "390b60db"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H23",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§18.9",
+    "M4-G§16.10"
+   ],
+   "titulo": "Catálogo de ferramentas da IA é restrito ao administrador de IA (perfil financeiro não lista/aciona ferramentas)",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/ai/tools",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 403
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T01:35:16.474Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "ai:admin"
+     },
+     "traceId": "13c913a8-644e-4439-b813-49e372a93af0"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

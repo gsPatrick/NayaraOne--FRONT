@@ -1,0 +1,45 @@
+{
+ "id": "M5-A0079-456494",
+ "linhaCaderno": 185,
+ "requisito": "• Checklist calculado por Motor de Regras.",
+ "correcao": "requirementRules.defaults.js LEASE_KEYS_LIST (etapa KEY_DELIVERY) + PREVIOUS_DEFAULT_HASHES; requirementRules.service.js resolveRequirementPolicy (padrão antigo -> novo); keyDeliveryGates.js syncKeyDeliveryStageItems e checklist do termo vinculado",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.chaves.test.js",
+   "nome": "M5-A0079/§10: item da etapa KEY_DELIVERY do Motor de Regras — não trava a ativação, trava a entrega até ser cumprido",
+   "status": "pass",
+   "ms": 853.651,
+   "commitDoTeste": "633cc5e5",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: a política da empresa traz o item da entrega generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, expected: true, operator: '==', diff: 'simple' }"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.chaves.test.js",
+   "nome": "M5-A0079: empresa no padrão antigo do checklist passa ao padrão novo (versão nova, auditada) e contrato com checklist antigo ganha o item na entrega",
+   "status": "pass",
+   "ms": 319.438,
+   "commitDoTeste": "633cc5e5",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: versão nova publicada generatedMessage: false, code: 'ERR_ASSERTION', actual: false, expected: true, operator: '==', diff: 'simple' }"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.chaves.test.js",
+   "nome": "M5-A0079/§7: o checklist do termo de entrega vinculado (casa nova) precisa estar completo para entregar as chaves da venda",
+   "status": "pass",
+   "ms": 371.715,
+   "commitDoTeste": "633cc5e5",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Missing expected rejection. generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, operator: 'rejects', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.874Z"
+}

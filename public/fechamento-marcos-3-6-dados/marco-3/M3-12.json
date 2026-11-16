@@ -1,0 +1,108 @@
+{
+  "linha": "M3-12",
+  "capturadoEm": "2026-11-11T11:10:36.871Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "tarefa futura na oportunidade",
+      "pedido": "POST /api/v1/opportunities/5727631c-fdc7-45a1-9aed-27d99ff77e03/tasks",
+      "corpo": {
+        "title": "Retornar ao cliente",
+        "dueAt": "2026-11-13T11:10:34.258Z"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "id": "208bab90-a6b3-4aad-b672-b57e9f5cac9a",
+        "lockVersion": 0,
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "assignedToUserId": null,
+        "title": "Retornar ao cliente",
+        "description": null,
+        "relatedEntityType": "crm.opportunities",
+        "relatedEntityId": "5727631c-fdc7-45a1-9aed-27d99ff77e03",
+        "dueAt": "2026-11-13T11:10:34.258Z",
+        "status": "OPEN",
+        "priority": "NORMAL",
+        "actionKey": null,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:34.393Z",
+        "created_at": "2026-11-11T11:10:34.393Z",
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:34.403Z"
+    },
+    {
+      "titulo": "LOST pela rota do livro (Guia §8)",
+      "pedido": "POST /api/v1/crm/opportunities/5727631c-fdc7-45a1-9aed-27d99ff77e03/lost",
+      "corpo": {
+        "reasonCode": "COMPETITOR"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "id": "5727631c-fdc7-45a1-9aed-27d99ff77e03",
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "propertyId": null,
+        "ownerUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "stage": "LOST",
+        "temperature": null,
+        "expectedValue": null,
+        "closedAt": "2026-11-11T11:10:34.414Z",
+        "lostReason": "COMPETITOR",
+        "wonReason": null,
+        "withdrawnReason": null,
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z",
+        "lockVersion": 1,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "deletedBy": null,
+        "created_at": "2026-11-11T11:10:33.865Z",
+        "updated_at": "2026-11-11T11:10:34.414Z",
+        "deleted_at": null,
+        "person_id": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "property_id": null,
+        "owner_user_id": "edd0c6db-c042-4e74-a649-523867044483"
+      },
+      "em": "2026-11-11T11:10:34.428Z"
+    },
+    {
+      "titulo": "tarefas da oportunidade depois da perda (canceladas)",
+      "pedido": "GET /api/v1/opportunities/5727631c-fdc7-45a1-9aed-27d99ff77e03/tasks",
+      "corpo": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": [
+        {
+          "id": "208bab90-a6b3-4aad-b672-b57e9f5cac9a",
+          "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+          "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+          "assignedToUserId": null,
+          "title": "Retornar ao cliente",
+          "description": null,
+          "relatedEntityType": "crm.opportunities",
+          "relatedEntityId": "5727631c-fdc7-45a1-9aed-27d99ff77e03",
+          "dueAt": "2026-11-13T11:10:34.258Z",
+          "status": "CANCELED",
+          "priority": "NORMAL",
+          "lockVersion": 1,
+          "actionKey": null,
+          "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+          "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+          "deletedBy": null,
+          "created_at": "2026-11-11T11:10:34.393Z",
+          "updated_at": "2026-11-11T11:10:34.420Z",
+          "deleted_at": null,
+          "assigned_to_user_id": null
+        }
+      ],
+      "em": "2026-11-11T11:10:34.439Z"
+    }
+  ]
+}

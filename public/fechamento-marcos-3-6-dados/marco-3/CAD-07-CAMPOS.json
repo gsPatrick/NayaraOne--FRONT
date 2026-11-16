@@ -1,0 +1,779 @@
+{
+ "id": "CAD-07-CAMPOS",
+ "meta": {
+  "geradoEm": "2026-11-11T09:25:32.895Z",
+  "inicioCaptura": "2026-11-11T09:24:54.065Z",
+  "ambiente": "API local ligada a um PostgreSQL descartável criado do zero pelas migrations (RLS FORCE, papel de runtime sem BYPASSRLS), antivírus ClamAV real. Nada foi gravado na homologação.",
+  "commitApi": "119c0fb2",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "leituraImoveis": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "config": "Empresa A — administrador de Configurações (settings:read e settings:update)"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 31,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Cria imóvel (endereço completo)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "title": "Imóvel M3IM mwbwxw8ink0t",
+    "internalCode": "IM-mwbwxw8ink0t",
+    "propertyType": "RESIDENTIAL",
+    "addressLine": "Rua Fictícia mwbwxw8ink0t, 10",
+    "city": "Campinas",
+    "state": "SP",
+    "zipCode": "13010-000"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "publicId": "21f2973e-c1b9-44b4-96da-73be20a74b47",
+     "lockVersion": 0,
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "title": "Imóvel M3IM mwbwxw8ink0t",
+     "internalCode": "IM-mwbwxw8ink0t",
+     "propertyType": "RESIDENTIAL",
+     "addressId": null,
+     "registryNumber": null,
+     "registryOffice": null,
+     "latitude": null,
+     "longitude": null,
+     "addressLine": "Rua Fictícia mwbwxw8ink0t, 10",
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": "13010-000",
+     "areaTotalM2": null,
+     "description": null,
+     "bedrooms": null,
+     "parkingSpots": null,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:01.953Z",
+     "created_at": "2026-11-11T09:25:01.953Z",
+     "descriptionPublic": null,
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    },
+    "meta": {
+     "similarPropertyWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T09:25:01.938Z"
+  },
+  {
+   "seq": 32,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Oferta ativa",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "offerType": "SALE",
+    "askingPrice": 700000
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "a4b500c9-e6d4-4f62-a210-ce07059b7cf7",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "offerType": "SALE",
+     "askingPrice": "700000.00",
+     "confidentialMinPrice": null,
+     "acceptsFinancing": null,
+     "acceptsTrade": null,
+     "status": "ACTIVE",
+     "startsAt": null,
+     "endsAt": null,
+     "conditions": null,
+     "supersededByOfferId": null,
+     "supersededAt": null,
+     "lockVersion": 0,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:25:02.544Z",
+     "updated_at": "2026-11-11T09:25:02.544Z",
+     "deleted_at": null,
+     "property_id": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:02.532Z"
+  },
+  {
+   "seq": 36,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Envia o arquivo sala.jpg por POST /files (antivírus no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "fileName": "sala.jpg",
+    "mimeType": "image/jpeg",
+    "category": "property-media",
+    "contentBase64": "/9j/4EpGSUYgZm90byBmaWN0aWNpYQ=="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "bf5c5d71-61d7-47c5-a697-702f036dd4c5",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/c917c5b8-0d2f-43c9-b77a-6b45c65e836f-sala.jpg",
+     "fileName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "checksumSha256": "d1861d229d9402a34c060f82df91cce1d385e9f48e0338ec30abae5ed230886b",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T09:25:03.073Z",
+     "uploadedByUserId": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:03.073Z",
+     "created_at": "2026-11-11T09:25:03.073Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:03.060Z"
+  },
+  {
+   "seq": 37,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Foto com o arquivo (nasce pendente)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "mediaType": "IMAGE",
+    "fileId": "bf5c5d71-61d7-47c5-a697-702f036dd4c5"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "89095659-188b-47fe-821e-472a0f2ad979",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "IMAGE",
+     "fileId": "bf5c5d71-61d7-47c5-a697-702f036dd4c5",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/c917c5b8-0d2f-43c9-b77a-6b45c65e836f-sala.jpg",
+     "originalName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "position": 1,
+     "classification": null,
+     "qualityStatus": "PENDING",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:03.400Z",
+     "created_at": "2026-11-11T09:25:03.400Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:03.093Z"
+  },
+  {
+   "seq": 38,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Aprovada na revisão de qualidade",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media/89095659-188b-47fe-821e-472a0f2ad979/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "qualityStatus": "APPROVED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "89095659-188b-47fe-821e-472a0f2ad979",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "IMAGE",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/c917c5b8-0d2f-43c9-b77a-6b45c65e836f-sala.jpg",
+     "originalName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "position": 1,
+     "classification": null,
+     "qualityStatus": "APPROVED",
+     "fileId": "bf5c5d71-61d7-47c5-a697-702f036dd4c5",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "created_at": "2026-11-11T09:25:03.400Z",
+     "updated_at": "2026-11-11T09:25:03.878Z",
+     "property_id": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:03.704Z"
+  },
+  {
+   "seq": 39,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Envia o arquivo sala.jpg por POST /files (antivírus no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "fileName": "sala.jpg",
+    "mimeType": "image/jpeg",
+    "category": "property-media",
+    "contentBase64": "/9j/4EpGSUYgZm90byBmaWN0aWNpYQ=="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "6d0b1fda-04da-4124-be06-dbc1d72f6a6c",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/d13b2da0-2544-4706-ab77-f780e4452619-sala.jpg",
+     "fileName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "checksumSha256": "d1861d229d9402a34c060f82df91cce1d385e9f48e0338ec30abae5ed230886b",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T09:25:04.115Z",
+     "uploadedByUserId": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:04.115Z",
+     "created_at": "2026-11-11T09:25:04.115Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:04.080Z"
+  },
+  {
+   "seq": 40,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Foto com o arquivo (nasce pendente)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "mediaType": "IMAGE",
+    "fileId": "6d0b1fda-04da-4124-be06-dbc1d72f6a6c"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "a633fdec-d9e9-4514-ab37-0daddca8e086",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "IMAGE",
+     "fileId": "6d0b1fda-04da-4124-be06-dbc1d72f6a6c",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/d13b2da0-2544-4706-ab77-f780e4452619-sala.jpg",
+     "originalName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "position": 2,
+     "classification": null,
+     "qualityStatus": "PENDING",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:05.035Z",
+     "created_at": "2026-11-11T09:25:05.035Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:04.143Z"
+  },
+  {
+   "seq": 41,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Aprovada na revisão de qualidade",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media/a633fdec-d9e9-4514-ab37-0daddca8e086/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "qualityStatus": "APPROVED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "a633fdec-d9e9-4514-ab37-0daddca8e086",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "IMAGE",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/d13b2da0-2544-4706-ab77-f780e4452619-sala.jpg",
+     "originalName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "position": 2,
+     "classification": null,
+     "qualityStatus": "APPROVED",
+     "fileId": "6d0b1fda-04da-4124-be06-dbc1d72f6a6c",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "created_at": "2026-11-11T09:25:05.035Z",
+     "updated_at": "2026-11-11T09:25:05.080Z",
+     "property_id": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:05.069Z"
+  },
+  {
+   "seq": 42,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Envia o arquivo sala.jpg por POST /files (antivírus no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "fileName": "sala.jpg",
+    "mimeType": "image/jpeg",
+    "category": "property-media",
+    "contentBase64": "/9j/4EpGSUYgZm90byBmaWN0aWNpYQ=="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "b996bab2-3cac-48f9-82c1-1be8c84480c5",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/f9af1524-1e94-476e-8508-704d4e66879b-sala.jpg",
+     "fileName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "checksumSha256": "d1861d229d9402a34c060f82df91cce1d385e9f48e0338ec30abae5ed230886b",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T09:25:05.422Z",
+     "uploadedByUserId": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:05.422Z",
+     "created_at": "2026-11-11T09:25:05.422Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:05.120Z"
+  },
+  {
+   "seq": 43,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Foto com o arquivo (nasce pendente)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "mediaType": "IMAGE",
+    "fileId": "b996bab2-3cac-48f9-82c1-1be8c84480c5"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "e1d8452b-dff6-4ed3-859f-de89fbc50870",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "IMAGE",
+     "fileId": "b996bab2-3cac-48f9-82c1-1be8c84480c5",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/f9af1524-1e94-476e-8508-704d4e66879b-sala.jpg",
+     "originalName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "position": 3,
+     "classification": null,
+     "qualityStatus": "PENDING",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:05.513Z",
+     "created_at": "2026-11-11T09:25:05.513Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:05.475Z"
+  },
+  {
+   "seq": 44,
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Aprovada na revisão de qualidade",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media/e1d8452b-dff6-4ed3-859f-de89fbc50870/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "qualityStatus": "APPROVED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "e1d8452b-dff6-4ed3-859f-de89fbc50870",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "IMAGE",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/f9af1524-1e94-476e-8508-704d4e66879b-sala.jpg",
+     "originalName": "sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "position": 3,
+     "classification": null,
+     "qualityStatus": "APPROVED",
+     "fileId": "b996bab2-3cac-48f9-82c1-1be8c84480c5",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "created_at": "2026-11-11T09:25:05.513Z",
+     "updated_at": "2026-11-11T09:25:05.947Z",
+     "property_id": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:05.932Z"
+  },
+  {
+   "seq": 57,
+   "casos": [
+    "gate_campos"
+   ],
+   "descricao": "Sem proprietário: bloqueado pelos campos obrigatórios (REG-IMO-FIELDS-001)",
+   "metodo": "POST",
+   "rota": "/api/v1/offers/a4b500c9-e6d4-4f62-a210-ce07059b7cf7/publish",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {},
+   "status": 422,
+   "codigoErro": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_FIELDS_001",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_FIELDS_001",
+     "message": "Publicação bloqueada: campos obrigatórios não preenchidos (ao menos um proprietário).",
+     "details": {
+      "ruleDecision": "DENY",
+      "reason": "RULE_CONDITION_NOT_MET",
+      "missingFields": [
+       "owner"
+      ],
+      "requiredFields": [
+       "title",
+       "internalCode",
+       "propertyType",
+       "address",
+       "owner"
+      ]
+     },
+     "traceId": "774340df-1ce2-45e2-a382-bf8e034859e2"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:09.620Z"
+  },
+  {
+   "seq": 58,
+   "casos": [
+    "gate_campos"
+   ],
+   "descricao": "Administrador acrescenta \"descrição\" aos campos obrigatórios",
+   "metodo": "PUT",
+   "rota": "/api/v1/settings/real_estate.publication.required_fields",
+   "perfil": "Empresa A — administrador de Configurações (settings:read e settings:update)",
+   "corpoEnviado": {
+    "value": "title,internalCode,propertyType,address,owner,description"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "52aa7b9b-fc4f-442e-917d-c4de6f251442",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "key": "real_estate.publication.required_fields",
+     "value": "title,internalCode,propertyType,address,owner,description",
+     "createdBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "updatedBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:23:59.146Z",
+     "updated_at": "2026-11-11T09:25:09.755Z",
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:09.741Z"
+  },
+  {
+   "seq": 59,
+   "casos": [
+    "gate_campos"
+   ],
+   "descricao": "Vincula o proprietário",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/owners",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "personId": "a997e052-770b-4181-8cee-278e426a82e9",
+    "ownershipPercent": 100,
+    "roleCode": "OWNER"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "d0fafaee-8236-4f0a-b30e-c0fbfcd2e436",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "personId": "a997e052-770b-4181-8cee-278e426a82e9",
+     "ownershipPercent": "100.0000",
+     "roleCode": "OWNER",
+     "validFrom": null,
+     "validUntil": null,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:10.104Z",
+     "created_at": "2026-11-11T09:25:10.104Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:09.760Z"
+  },
+  {
+   "seq": 60,
+   "casos": [
+    "gate_campos"
+   ],
+   "descricao": "Ainda falta a descrição: bloqueado por REG-IMO-FIELDS-001",
+   "metodo": "POST",
+   "rota": "/api/v1/offers/a4b500c9-e6d4-4f62-a210-ce07059b7cf7/publish",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {},
+   "status": 422,
+   "codigoErro": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_FIELDS_001",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_FIELDS_001",
+     "message": "Publicação bloqueada: campos obrigatórios não preenchidos (descrição).",
+     "details": {
+      "ruleDecision": "DENY",
+      "reason": "RULE_CONDITION_NOT_MET",
+      "missingFields": [
+       "description"
+      ],
+      "requiredFields": [
+       "title",
+       "internalCode",
+       "propertyType",
+       "address",
+       "owner",
+       "description"
+      ]
+     },
+     "traceId": "3b13c287-1615-4431-bbb9-c014df315915"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:10.284Z"
+  },
+  {
+   "seq": 61,
+   "casos": [
+    "gate_campos",
+    "gate_patch"
+   ],
+   "descricao": "PATCH que preenche a descrição e pede PUBLISHED: o gate confere o imóvel como vai ficar e publica",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "description": "Casa ampla, fictícia",
+    "publicationStatus": "PUBLISHED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "_resumo": "corpo de 7375 caracteres; início mostrado",
+    "inicio": "{\"success\":true,\"data\":{\"id\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"groupId\":\"7c74820c-4b88-4df1-afc3-0fc4b7ea62ec\",\"companyId\":\"8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7\",\"title\":\"Imóvel M3IM mwbwxw8ink0t\",\"internalCode\":\"IM-mwbwxw8ink0t\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":null,\"registryNumber\":null,\"registryOffice\":null,\"latitude\":null,\"longitude\":null,\"addressLine\":\"Rua Fictícia mwbwxw8ink0t, 10\",\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":\"13010-000\",\"areaTotalM2\":null,\"description\":\"Casa ampla, fictícia\",\"bedrooms\":null,\"parkingSpots\":null,\"attributesJson\":null,\"publicationStatus\":\"PUBLISHED\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"21f2973e-c1b9-44b4-96da-73be20a74b47\",\"mergedIntoId\":null,\"publishedAt\":\"2026-11-11T09:25:10.661Z\",\"lockVersion\":2,\"createdBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"updatedBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"deletedBy\":null,\"created_at\":\"2026-11-11T09:25:01.953Z\",\"updated_at\":\"2026-11-11T09:25:10.929Z\",\"deleted_at\":null,\"address_id\":null,\"owners\":[{\"id\":\"d0fafaee-8236-4f0a-b30e-c0fbfcd2e436\",\"groupId\":\"7c74820c-4b88-4df1-afc3-0fc4b7ea62ec\",\"companyId\":\"8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7\",\"propertyId\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"personId\":\"a997e052-770b-4181-8cee-278e426a82e9\",\"ownershipPercent\":\"100.0000\",\"roleCode\":\"OWNER\",\"validFrom\":null,\"validUntil\":null,\"createdBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"updatedBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"deletedBy\":null,\"created_at\":\"2026-11-11T09:25:10.104Z\",\"updated_at\":\"2026-11-11T09:25:10.104Z\",\"deleted_at\":null,\"property_id\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"person_id\":\"a997e052-770b-4181-8cee-278e426a82e9\"}],\"offers\":[{\"id\":\"a4b500c9-e6d4-4f62-a210-ce07059b7cf7\",\"groupId\":\"7c74820c-4b88-4df1-afc3-0fc4b7ea62ec\",\"companyId\":\"8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7\",\"propertyId\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"offerType\":\"SALE\",\"askingPrice\":\"700000.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":null,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"conditions\":null,\"supersededByOfferId\":null,\"supersededAt\":null,\"lockVersion\":0,\"createdBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"updatedBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"deletedBy\":null,\"created_at\":\"2026-11-11T09:25:02.544Z\",\"updated_at\":\"2026-11-11T09:25:02.544Z\",\"deleted_at\":null,\"property_id\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\"}],\"address\":null,\"media\":[{\"id\":\"89095659-188b-47fe-821e-472a0f2ad979\",\"groupId\":\"7c74820c-4b88-4df1-afc3-0fc4b7ea62ec\",\"companyId\":\"8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7\",\"propertyId\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"mediaType\":\"IMAGE\",\"storageKey\":\"property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/c917c5b8-0d2f-43c9-b77a-6b45c65e836f-sala.jpg\",\"originalName\":\"sala.jpg\",\"mimeType\":\"image/jpeg\",\"sizeBytes\":22,\"position\":1,\"classification\":null,\"qualityStatus\":\"APPROVED\",\"fileId\":\"bf5c5d71-61d7-47c5-a697-702f036dd4c5\",\"createdBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"updatedBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"created_at\":\"2026-11-11T09:25:03.400Z\",\"updated_at\":\"2026-11-11T09:25:03.878Z\",\"property_id\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\"},{\"id\":\"a633fdec-d9e9-4514-ab37-0daddca8e086\",\"groupId\":\"7c74820c-4b88-4df1-afc3-0fc4b7ea62ec\",\"companyId\":\"8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7\",\"propertyId\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"mediaType\":\"IMAGE\",\"storageKey\":\"property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/d13b2da0-2544-4706-ab77-f780e4452619-sala.jpg\",\"originalName\":\"sala.jpg\",\"mimeType\":\"image/jpeg\",\"sizeBytes\":22,\"position\":2,\"classification\":null,\"qualityStatus\":\"APPROVED\",\"fileId\":\"6d0b1fda-04da-4124-be06-dbc1d72f6a6c\",\"createdBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"updatedBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"created_at\":\"2026-11-11T09:25:05.035Z\",\"updated_at\":\"2026-11-11T09:25:05.080Z\",\"property_id\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\"},{\"id\":\"e1d8452b-dff6-4ed3-859f-de89fbc50870\",\"groupId\":\"7c74820c-4b88-4df1-afc3-0fc4b7ea62ec\",\"companyId\":\"8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7\",\"propertyId\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"mediaType\":\"IMAGE\",\"storageKey\":\"property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/f9af1524-1e94-476e-8508-704d4e66879b-sala.jpg\",\"originalName\":\"sala.jpg\",\"mimeType\":\"image/jpeg\",\"sizeBytes\":22,\"position\":3,\"classification\":null,\"qualityStatus\":\"APPROVED\",\"fileId\":\"b996bab2-3cac-48f9-82c1-1be8c84480c5\",\"createdBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"updatedBy\":\"d5430018-5080-4a61-bb58-39f1c1008e24\",\"created_at\":\"2026-11-11T09:25:05.513Z\",\"updated_at\":\"2026-11-11T09:25:05.947Z\",\"property_id\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\"},{\"id\":\"12799557-ceab-4fcf-9bea-246b62767acb\",\"groupId\":\"7c74820c-4b88-4df1-afc3-0fc4b7ea62ec\",\"companyId\":\"8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7\",\"propertyId\":\"a6f8a734-8b6d-4d6c-b5e6-126b416c7100\",\"mediaType\":\"VIDEO\",\"storageKey\":\"property-media/7c74820c-4b88-4df1-afc3-0fc"
+   },
+   "dataHora": "2026-11-11T09:25:10.373Z"
+  },
+  {
+   "seq": 62,
+   "casos": [
+    "gate_campos"
+   ],
+   "descricao": "Volta ao padrão dos campos",
+   "metodo": "PUT",
+   "rota": "/api/v1/settings/real_estate.publication.required_fields",
+   "perfil": "Empresa A — administrador de Configurações (settings:read e settings:update)",
+   "corpoEnviado": {
+    "value": "title,internalCode,propertyType,address,owner"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "52aa7b9b-fc4f-442e-917d-c4de6f251442",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "key": "real_estate.publication.required_fields",
+     "value": "title,internalCode,propertyType,address,owner",
+     "createdBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "updatedBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:23:59.146Z",
+     "updated_at": "2026-11-11T09:25:11.490Z",
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:11.446Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "gate_despublica",
+    "gate"
+   ],
+   "descricao": "Status e auditoria da publicação e da despublicação automática",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "SELECT action, before_json->>'publicationStatus' AS antes, after_json->>'publicationStatus' AS depois, after_json->>'gateCode' AS gate FROM audit.audit_log WHERE entity_id = $1 AND action IN ('property.publish', 'property.auto_unpublish') ORDER BY occurred_at",
+   "parametros": [
+    "a6f8a734-8b6d-4d6c-b5e6-126b416c7100"
+   ],
+   "resultado": [
+    {
+     "action": "property.publish",
+     "antes": "DRAFT",
+     "depois": "PUBLISHED",
+     "gate": null
+    },
+    {
+     "action": "property.auto_unpublish",
+     "antes": "PUBLISHED",
+     "depois": "INACTIVE",
+     "gate": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_001"
+    }
+   ],
+   "dataHora": "2026-11-11T09:25:12.087Z"
+  },
+  {
+   "casos": [
+    "gate"
+   ],
+   "descricao": "Regras do Motor de Regras publicadas para a empresa (o gate decide por elas)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "SELECT r.code, v.status, v.condition_ast_json FROM core.rules r JOIN core.rule_versions v ON v.rule_id = r.id WHERE r.code LIKE 'REG-IMO-%' ORDER BY r.code",
+   "parametros": "sem parâmetros",
+   "resultado": [
+    {
+     "code": "REG-IMO-001",
+     "status": "PUBLISHED",
+     "condition_ast_json": {
+      "op": "==",
+      "fact": "hasVideo",
+      "value": true
+     }
+    },
+    {
+     "code": "REG-IMO-002",
+     "status": "PUBLISHED",
+     "condition_ast_json": {
+      "op": ">=",
+      "fact": "daysWithoutSale",
+      "value": 90
+     }
+    },
+    {
+     "code": "REG-IMO-DOCS-001",
+     "status": "PUBLISHED",
+     "condition_ast_json": {
+      "op": "==",
+      "fact": "hasRequiredDocuments",
+      "value": true
+     }
+    },
+    {
+     "code": "REG-IMO-FIELDS-001",
+     "status": "PUBLISHED",
+     "condition_ast_json": {
+      "op": "==",
+      "fact": "hasRequiredFields",
+      "value": true
+     }
+    },
+    {
+     "code": "REG-IMO-PHOTO-MIN",
+     "status": "PUBLISHED",
+     "condition_ast_json": {
+      "op": ">=",
+      "fact": "approvedPhotoCount",
+      "value": 3
+     }
+    }
+   ],
+   "dataHora": "2026-11-11T09:25:12.091Z"
+  }
+ ]
+}

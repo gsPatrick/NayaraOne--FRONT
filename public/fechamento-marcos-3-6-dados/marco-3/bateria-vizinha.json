@@ -1,0 +1,3237 @@
+{
+ "rodada": "bateria vizinha M3CB, 11/11/2026, banco descartável 5615 criado do zero (623 migrations), ClamAV real, fila global de execução",
+ "arquivos": [
+  "test/m3cb.carteira.http.test.js",
+  "test/m3cb.crmTs009.cadencia.test.js",
+  "test/m3cb.exportacao.http.test.js",
+  "test/m3cb.finalidadeEDados.http.test.js",
+  "test/m3cb.responsavelEInteracao.http.test.js",
+  "test/m3.crmTs.livro.http.test.js",
+  "test/m3.ciEsteiraMarco3.test.js",
+  "test/crm.carts.test.js",
+  "test/crm.dashboardCreatedFilter.test.js",
+  "test/crm.dashboardStagnation.test.js",
+  "test/crm.exportVolumeLimit.test.js",
+  "test/crm.financiamentoPorEvento.test.js",
+  "test/crm.funnelStages.http.test.js",
+  "test/crm.funnelStages.test.js",
+  "test/crm.livroAntifraudeCarrinho.http.test.js",
+  "test/crm.livroApiOcorrencias.http.test.js",
+  "test/crm.livroEntidades.test.js",
+  "test/crm.nayComercial.apoio.http.test.js",
+  "test/crm.nayComercial.capacidades.http.test.js",
+  "test/crm.nayComercial.guardas.http.test.js",
+  "test/crm.nayComercial.guardas.unit.test.js",
+  "test/crm.opportunities.test.js",
+  "test/crm.opportunityOutcomeRace.test.js",
+  "test/crm.optOutGate.test.js",
+  "test/crm.ownerScope.test.js",
+  "test/crm.permanentHistory.test.js",
+  "test/crm.taskOverdueJob.test.js",
+  "test/marco3.acceptance.test.js",
+  "test/marco3.batch2.test.js",
+  "test/marco3.crm.test.js",
+  "test/marco3.crossCompanyIsolation.test.js",
+  "test/marco3.httpRoutes.test.js",
+  "test/marco3.minimumEvents.test.js",
+  "test/adversarial.crm.test.js",
+  "test/radar.eventDrivenMatch.test.js",
+  "test/radar.http.test.js",
+  "test/radar.idempotency.test.js",
+  "test/radar.livroScoring.test.js",
+  "test/radar.matching.test.js",
+  "test/radar.matchingPorEvento.http.test.js",
+  "test/radar.matchingPorEvento.test.js",
+  "test/radar.storedMatches.test.js",
+  "test/people.mesmoGrupo.http.test.js",
+  "test/people.mesmoGrupo.rls.test.js",
+  "test/correspondent.domainEvents.test.js",
+  "test/correspondent.webhooks.test.js",
+  "test/correspondent.submissions.test.js",
+  "test/rls.catalog.allTables.test.js",
+  "test/rls.policiesSelectPorEmpresa.test.js",
+  "test/api.permissionMatrix.test.js",
+  "test/m9d402.permissoesMarketing.test.js",
+  "test/m9d800.permissoes.test.js",
+  "test/marco9/integracoes/m9d220.dominio.test.js",
+  "test/marco9/integracoes/m9d221.swap.test.js",
+  "test/marco9/integracoes/m9d227.arquitetura.test.js",
+  "test/marco9/integracoes/m9d227.assinatura.test.js",
+  "test/marco9/integracoes/m9d227.portal.test.js",
+  "test/marco9/integracoes/m9d227.whatsapp.test.js",
+  "test/marco9/integracoes/m9d229.fluxo.test.js",
+  "test/marco9/integracoes/m9d229.sandbox.test.js",
+  "test/marco9/integracoes/m9d230.entrega.test.js",
+  "test/marco9/integracoes/m9d230.envio.test.js",
+  "test/marco9/integracoes/m9d230.midia.test.js",
+  "test/marco9/integracoes/m9d252.swap.test.js",
+  "test/marco9/governanca/m9d820.edicao.test.js",
+  "test/marco9/governanca/m9d820.http.test.js",
+  "test/marco9/governanca/m9d820.matriz.test.js",
+  "test/marco9/governanca/m9d821.guard.test.js",
+  "test/marco9/governanca/m9d821.servico.test.js",
+  "test/marco9/governanca/m9d822.auditoria.test.js",
+  "test/marco9/governanca/m9d822.formatos.test.js",
+  "test/marco9/governanca/m9d822.http.test.js",
+  "test/marco9/governanca/m9d822.inventario.test.js",
+  "test/marco9/governanca/m9d822.servico.test.js",
+  "test/marco9/governanca/m9d823.http.test.js",
+  "test/marco9/governanca/m9d823.servico.test.js",
+  "test/marco9/governanca/m9d824.deteccao.test.js",
+  "test/marco9/governanca/m9d824.http.test.js",
+  "test/marco9/governanca/m9d824.resposta.test.js",
+  "test/marco9/governanca/m9d825.copy.http.test.js",
+  "test/marco9/governanca/m9d825.perfisQa.test.js",
+  "test/marco9/governanca/m9d825.regras.test.js",
+  "test/marco9/governanca/m9d825.tela.test.js",
+  "test/marco9/governanca/m9d825.view.http.test.js",
+  "test/marco9/marketing/m9d414.bloqueios.test.js",
+  "test/marco9/marketing/m9d418.campanha.test.js",
+  "test/marco9/marketing/m9d418.canSend.test.js",
+  "test/marco9/marketing/m9d418.concorrencia.test.js",
+  "test/marco9/marketing/m9d418.marketing_sempre_opt_in.test.js",
+  "test/marco9/marketing/m9d418.supressao.test.js",
+  "test/marco9/marketing/m9d419.campanha.test.js",
+  "test/marco9/marketing/m9d419.consumidor.test.js",
+  "test/marco9/marketing/m9d419.evento.test.js",
+  "test/marco9/marketing/m9d419.privacidade.test.js",
+  "test/marco9/marketing/m9d419.segmento.test.js",
+  "test/marco9/marketing/m9d420.cadencia.test.js",
+  "test/marco9/marketing/m9d420.frio.test.js",
+  "test/marco9/marketing/m9d420.lead.test.js",
+  "test/marco9/marketing/m9d429.entrega.test.js",
+  "test/marco9/ia/m9d034.fronteira.test.js",
+  "test/marco9/ia/m9d034.homologacao.test.js",
+  "test/marco9/ia/m9d034.http.test.js",
+  "test/marco9/ia/m9d034.proxima_acao.test.js",
+  "test/marco9/ia/m9d034.radar.test.js",
+  "test/marco9/ia/m9d034.rascunhos.test.js",
+  "test/marco9/ia/m9d034.resumo.test.js",
+  "test/marketing.idempotencia.destinos.test.js"
+ ],
+ "totais": {
+  "tests": "617",
+  "pass": "615",
+  "fail": "2",
+  "skipped": "0"
+ },
+ "falhas": [
+  {
+   "teste": "m9d823 o token nunca aparece no log da API (abertura, 404 e 429)",
+   "resultado": "falhou",
+   "ms": 465.125125
+  },
+  {
+   "teste": "m9d825 perfil mascarado vê CPF e conta mascarados; perfil em claro vê o valor (mesma ficha)",
+   "resultado": "falhou",
+   "ms": 228.062458
+  },
+  {
+   "teste": "m9d823 o token nunca aparece no log da API (abertura, 404 e 429)",
+   "resultado": "falhou",
+   "ms": 465.125125
+  },
+  {
+   "teste": "m9d825 perfil mascarado vê CPF e conta mascarados; perfil em claro vê o valor (mesma ficha)",
+   "resultado": "falhou",
+   "ms": 228.062458
+  }
+ ],
+ "resultados": [
+  {
+   "teste": "ADV-C01 oportunidade de outra empresa não é lida nem por id nem por listagem (RLS bloqueia no banco)",
+   "resultado": "passou",
+   "ms": 203.457583
+  },
+  {
+   "teste": "ADV-C02 forjar companyId no payload da oportunidade (plantar lead na empresa vizinha) é barrado pelo banco",
+   "resultado": "passou",
+   "ms": 32.32125
+  },
+  {
+   "teste": "ADV-C03 criar proposta apontando para uma oportunidade de OUTRA empresa é 404, nunca uma proposta órfã",
+   "resultado": "passou",
+   "ms": 53.445
+  },
+  {
+   "teste": "ADV-C04 timeline não mistura conversas: mensagem de uma oportunidade não aparece na timeline de outra",
+   "resultado": "passou",
+   "ms": 74.621916
+  },
+  {
+   "teste": "ADV-C05 alterar o `value` de uma proposta já ENVIADA é recusado e o valor persistido não muda",
+   "resultado": "passou",
+   "ms": 62.335834
+  },
+  {
+   "teste": "ADV-C06 proposta com valor zero, negativo ou não numérico é recusada (não existe negociação de R$ 0)",
+   "resultado": "passou",
+   "ms": 50.136542
+  },
+  {
+   "teste": "ADV-C07 nascer com proposta já ACCEPTED (pular a negociação inteira) é recusado",
+   "resultado": "passou",
+   "ms": 25.656875
+  },
+  {
+   "teste": "ADV-C08 duas propostas CONCORRENTES na mesma oportunidade viram versões DISTINTAS, sem corromper a numeração",
+   "resultado": "passou",
+   "ms": 178.880667
+  },
+  {
+   "teste": "ADV-C09 injeção de SQL em campo de texto livre é gravada como TEXTO, não executada",
+   "resultado": "passou",
+   "ms": 57.361
+  },
+  {
+   "teste": "ADV-C10 feedback case com severity inválida (inclusive \"CRITICAL\", que parece plausível) é recusado",
+   "resultado": "passou",
+   "ms": 20.952833
+  },
+  {
+   "teste": "ADV-C11 escalar um caso JÁ RESOLVIDO é recusado (e não cria notificação de escalonamento)",
+   "resultado": "passou",
+   "ms": 50.25075
+  },
+  {
+   "teste": "ADV-C12 mensagem com canal inventado é recusada (o histórico omnichannel não aceita canal livre)",
+   "resultado": "passou",
+   "ms": 50.49125
+  },
+  {
+   "teste": "ADV-C13 visita agendada para o PASSADO é recusada, mas registrar uma visita que já ocorreu (DONE) continua valendo",
+   "resultado": "passou",
+   "ms": 75.507167
+  },
+  {
+   "teste": "ADV-C14 fechar como CLOSED_WON enviando lostReason (motivo do desfecho errado) não passa",
+   "resultado": "passou",
+   "ms": 39.817417
+  },
+  {
+   "teste": "ADV-C15 exportar a base com apenas crm:opportunities:read (sem a permissão dedicada) é 403",
+   "resultado": "passou",
+   "ms": 183.907375
+  },
+  {
+   "teste": "ADV-C16 usuário SUSPENSO não pode ser escalado como responsável por tarefa de oportunidade",
+   "resultado": "passou",
+   "ms": 41.888292
+  },
+  {
+   "teste": "ADV-C17 radar com critérios contraditórios (minPrice > maxPrice) NUNCA dá match — nem por acaso",
+   "resultado": "passou",
+   "ms": 121.920667
+  },
+  {
+   "teste": "ADV-C18 dedupe de webhook por externalMessageId não vaza mensagem entre empresas",
+   "resultado": "passou",
+   "ms": 30.494541
+  },
+  {
+   "teste": "ADV-C19 oportunidade excluída (soft delete) some da listagem, do painel e da consulta por id",
+   "resultado": "passou",
+   "ms": 41.70375
+  },
+  {
+   "teste": "ADV-C20 temperature inventada é recusada e estágio desconhecido nunca vira atalho para fechar a oportunidade",
+   "resultado": "passou",
+   "ms": 49.471833
+  },
+  {
+   "teste": "matriz: a API tem rotas protegidas por permissão",
+   "resultado": "passou",
+   "ms": 558.554542
+  },
+  {
+   "teste": "toda rota protegida recusa chamada sem token (401)",
+   "resultado": "passou",
+   "ms": 11141.373917
+  },
+  {
+   "teste": "toda rota protegida recusa token sem a permissão exigida (403 PERMISSION_DENIED com a permissão pedida)",
+   "resultado": "passou",
+   "ms": 11432.41375
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-01: criar um caso emite financing.case.created",
+   "resultado": "passou",
+   "ms": 259.940916
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-02: completar o checklist de documentos emite financing.documents.completed exatamente uma vez",
+   "resultado": "passou",
+   "ms": 381.283417
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-03: payload de financing.documents.completed nunca inclui conteúdo/fileId do documento restrito",
+   "resultado": "passou",
+   "ms": 363.046958
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-04: submissão com sucesso emite financing.submitted",
+   "resultado": "passou",
+   "ms": 790.939625
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-05: webhook aplicando APPROVED emite financing.status.changed e financing.approved",
+   "resultado": "passou",
+   "ms": 1166.274667
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-06: webhook fora de ordem (ignorado) NÃO emite financing.status.changed",
+   "resultado": "passou",
+   "ms": 1305.631417
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-07: status aplicado com opportunityId vinculado publica o evento e o CRM só se atualiza no despacho (consumidor do CRM), nunca escrita direta",
+   "resultado": "passou",
+   "ms": 1272.304166
+  },
+  {
+   "teste": "CORRESPONDENT-EVT-08: case sem opportunityId não quebra e não gera audit log de oportunidade",
+   "resultado": "passou",
+   "ms": 565.295458
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-01: submete com sucesso (sandbox) quando checklist completo e elegível",
+   "resultado": "passou",
+   "ms": 889.647167
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-02: bloqueia submissão com checklist incompleto, nunca chama o adapter",
+   "resultado": "passou",
+   "ms": 116.250375
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-03: bloqueia submissão de case inelegível (valor acima do teto do provider)",
+   "resultado": "passou",
+   "ms": 171.474667
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-04: idempotência — 2 submissões com a mesma key retornam a MESMA linha, adapter chamado uma única vez",
+   "resultado": "passou",
+   "ms": 340.746291
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-05: adapter que lança erro (não-timeout) vira status UNKNOWN, nunca derruba a requisição com 500 cru",
+   "resultado": "passou",
+   "ms": 344.946958
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-05b: withTimeout rejeita com SubmitTimeoutError quando a promise demora mais que o limite",
+   "resultado": "passou",
+   "ms": 21.177791
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-05c: withTimeout resolve normalmente quando a promise termina antes do limite",
+   "resultado": "passou",
+   "ms": 0.515
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-06: financing_case inexistente — NOT_FOUND",
+   "resultado": "passou",
+   "ms": 4.212625
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-07: acknowledgeUnknownSubmission exige status UNKNOWN",
+   "resultado": "passou",
+   "ms": 403.319542
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-08: listSubmissions retorna mais recente primeiro",
+   "resultado": "passou",
+   "ms": 382.156417
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-09: outra empresa não enxerga submission via SELECT direto",
+   "resultado": "passou",
+   "ms": 404.913875
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-10: evento financing.submission_requested é emitido (outbox)",
+   "resultado": "passou",
+   "ms": 338.474
+  },
+  {
+   "teste": "CORRESPONDENT-SUB-11: submissões concorrentes de verdade (2 transações commitadas em paralelo) nunca duplicam — perdedora recebe conflito tratado, nunca erro cru",
+   "resultado": "passou",
+   "ms": 990.847958
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-01: webhook válido aplica status, grava histórico raw+normalizado",
+   "resultado": "passou",
+   "ms": 869.483333
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-02: webhook com assinatura inválida é rejeitado e não altera nada",
+   "resultado": "passou",
+   "ms": 453.58225
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-03: webhook duplicado (mesmo externalEventId) aplica o efeito uma única vez",
+   "resultado": "passou",
+   "ms": 663.176584
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-11: duas entregas CONCORRENTES de verdade do mesmo evento (Promise.all, não sequencial) nunca duplicam histórico nem estouram erro cru",
+   "resultado": "passou",
+   "ms": 547.334292
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-04: status fora de ordem não regride o case, mas fica registrado no histórico",
+   "resultado": "passou",
+   "ms": 510.690333
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-05: mapa de status do sandbox normaliza corretamente cada valor do Caderno",
+   "resultado": "passou",
+   "ms": 0.515792
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-06: provider desconhecido na URL é recusado como assinatura inválida, sem revelar quais providers existem",
+   "resultado": "passou",
+   "ms": 0.392167
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-07: externalCaseId desconhecido (roteamento) é recusado como assinatura inválida, sem revelar que o id não existe",
+   "resultado": "passou",
+   "ms": 0.30875
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-08: payload sem campo obrigatório é rejeitado como invalid_payload",
+   "resultado": "passou",
+   "ms": 0.2785
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-09: GET status isola por empresa (RLS) — case de outra empresa não aparece",
+   "resultado": "passou",
+   "ms": 599.180334
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-10: status terminal não flipa pro irmão oposto (REJECTED não vira APPROVED, COMPLETED não vira CANCELED)",
+   "resultado": "passou",
+   "ms": 0.77675
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-PROPOSTA-01: aprovação do provider com proposta grava a proposta vigente; proposta inválida vira erro de integração sem derrubar o status",
+   "resultado": "passou",
+   "ms": 933.493917
+  },
+  {
+   "teste": "CORRESPONDENT-WEBHOOK-CANCELADO-01: cancelamento enviado pelo provider leva o caso a Cancelado",
+   "resultado": "passou",
+   "ms": 770.037916
+  },
+  {
+   "teste": "carts.service: cria carrinho versionado, gera link público sanitizado e registra eventos de view/click",
+   "resultado": "passou",
+   "ms": 709.777667
+  },
+  {
+   "teste": "dashboard do CRM: filtro por período de criação (createdFrom/createdTo) executa sem erro de coluna",
+   "resultado": "passou",
+   "ms": 183.003916
+  },
+  {
+   "teste": "Painel CRM: oportunidade aberta com nextAction VENCIDO aparece em staleOpportunities",
+   "resultado": "passou",
+   "ms": 342.583459
+  },
+  {
+   "teste": "Painel CRM: oportunidade com nextAction no futuro NÃO aparece em staleOpportunities",
+   "resultado": "passou",
+   "ms": 73.727375
+  },
+  {
+   "teste": "Painel CRM: oportunidade FECHADA (CLOSED_WON/LOST) nunca entra em staleOpportunities mesmo com tarefa vencida",
+   "resultado": "passou",
+   "ms": 128.403125
+  },
+  {
+   "teste": "CRM-TS-013: exportação acima do limite de volume é recusada, não truncada",
+   "resultado": "passou",
+   "ms": 413.05075
+  },
+  {
+   "teste": "CRM-TS-013: exportação dentro do limite de volume funciona normalmente",
+   "resultado": "passou",
+   "ms": 28.441625
+  },
+  {
+   "teste": "CRM-TS-013: a estimativa que vai ao teto é a contagem real das linhas a exportar (o arquivo nunca sai menor que o pedido)",
+   "resultado": "passou",
+   "ms": 57.433875
+  },
+  {
+   "teste": "CAD-09: status do caso -> evento no outbox (CRM intocado antes do despacho) -> despacho atualiza retrato e linha do tempo; reprocesso não duplica; nada bancário no CRM",
+   "resultado": "passou",
+   "ms": 902.682
+  },
+  {
+   "teste": "CAD-09: evento atrasado entra na linha do tempo mas não volta o retrato",
+   "resultado": "passou",
+   "ms": 93.683333
+  },
+  {
+   "teste": "CAD-09: evento da empresa A apontando para oportunidade da empresa B não toca a oportunidade de B",
+   "resultado": "passou",
+   "ms": 37.50975
+  },
+  {
+   "teste": "ROTA funil do livro: estágio do livro aceito, WON normalizado com motivo, estágio fora do livro recusado com OPPORTUNITY_STAGE_INVALID",
+   "resultado": "passou",
+   "ms": 1687.588375
+  },
+  {
+   "teste": "funil do livro: catálogo tem exatamente os 9 estágios ativos do §10 e os terminais CLOSED_WON/CLOSED_LOST/WITHDRAWN",
+   "resultado": "passou",
+   "ms": 95.173584
+  },
+  {
+   "teste": "funil do livro: sem estágio a oportunidade nasce NEW; cada estágio ativo do livro é aceito na criação e na mudança",
+   "resultado": "passou",
+   "ms": 360.445542
+  },
+  {
+   "teste": "funil do livro: WON e LOST viram CLOSED_WON e CLOSED_LOST, com o motivo estruturado obrigatório",
+   "resultado": "passou",
+   "ms": 115.633708
+  },
+  {
+   "teste": "funil do livro: estágio fora do catálogo é recusado na criação e na mudança, sem alterar a oportunidade",
+   "resultado": "passou",
+   "ms": 49.886583
+  },
+  {
+   "teste": "funil do livro: códigos antigos (quadro anterior do Front e dados legados) entram e são gravados no código do livro (DI-M3-FUNIL-1)",
+   "resultado": "passou",
+   "ms": 120.550167
+  },
+  {
+   "teste": "§18: troca de responsável em massa exige permissão específica, motivo e membro ativo; audita cada oportunidade",
+   "resultado": "passou",
+   "ms": 1456.976083
+  },
+  {
+   "teste": "§18: interação não se apaga pela API (não existe rota de exclusão) e continua consultável",
+   "resultado": "passou",
+   "ms": 378.919458
+  },
+  {
+   "teste": "§9 e §14: oferta com accepts_financing; carrinho versionado, sem dado interno nem endereço, com view/click e link que expira",
+   "resultado": "passou",
+   "ms": 1077.157041
+  },
+  {
+   "teste": "§7: foto enviada pela tela (IMAGE) só conta para publicar depois de APROVADA na revisão; recusa exige motivo; a foto original não muda",
+   "resultado": "passou",
+   "ms": 1562.757042
+  },
+  {
+   "teste": "§18/CRM-TS-013: exportar as oportunidades (base de clientes) exige a permissão dedicada e MFA recente pela rota POST /exports",
+   "resultado": "passou",
+   "ms": 369.078542
+  },
+  {
+   "teste": "§18/CRM-TS-012: corretor (escopo próprio) não abre, não edita nem vê a linha do tempo de oportunidade de outra carteira pelo id",
+   "resultado": "passou",
+   "ms": 396.377
+  },
+  {
+   "teste": "LIVRO §13: POST /crm/opportunities cria com próxima ação e recusa sem ela",
+   "resultado": "passou",
+   "ms": 1099.921
+  },
+  {
+   "teste": "LIVRO §10/§12: POST /crm/opportunities/:id/interactions grava canal SITE com occurredAt e não duplica pelo externalMessageId",
+   "resultado": "passou",
+   "ms": 724.524917
+  },
+  {
+   "teste": "LIVRO §13: visita, perda com motivo e radar pelos caminhos do livro",
+   "resultado": "passou",
+   "ms": 657.812
+  },
+  {
+   "teste": "LIVRO §15/§17: a interação abre a ocorrência (atendimento inadequado e retorno pendente) e publica crm.occurrence.opened",
+   "resultado": "passou",
+   "ms": 1145.574166
+  },
+  {
+   "teste": "LIVRO §15: reclamação grave nasce escalonada e avisa a gerência (quem vê o painel do CRM)",
+   "resultado": "passou",
+   "ms": 491.57125
+  },
+  {
+   "teste": "CRM-TS-015: apagar ocorrência é recusado pela rota (auditado) e pelo banco (delete e soft delete)",
+   "resultado": "passou",
+   "ms": 417.711
+  },
+  {
+   "teste": "§3: as 23 entidades do livro existem com o nome do livro (tabela ou visão)",
+   "resultado": "passou",
+   "ms": 128.943
+  },
+  {
+   "teste": "§3: as visões com nome do livro usam security_invoker (valem o RLS e as permissões de quem consulta)",
+   "resultado": "passou",
+   "ms": 3.56925
+  },
+  {
+   "teste": "§3: visão e tabela de origem devolvem as mesmas linhas para a mesma empresa (o RLS é o da tabela)",
+   "resultado": "passou",
+   "ms": 30.228
+  },
+  {
+   "teste": "§3/M3-12: crm.loss_reasons é exatamente o catálogo de motivos que o código valida",
+   "resultado": "passou",
+   "ms": 2.065208
+  },
+  {
+   "teste": "CAD-12 mensagem recebida gera resumo NAY, sentimento e ocorrência só como APOIO (nada é alterado nem aberto)",
+   "resultado": "passou",
+   "ms": 12239.912917
+  },
+  {
+   "teste": "CAD-12 Não inferir atributo sensível do cliente: o resumo e a recomendação saem sem o trecho sensível, e o pedido de inferir é recusado",
+   "resultado": "passou",
+   "ms": 1704.696583
+  },
+  {
+   "teste": "CAD-12 pelo caminho de MODELO: o modelo simulado infere atributo sensível e a guarda barra antes de responder e de registrar",
+   "resultado": "passou",
+   "ms": 939.661417
+  },
+  {
+   "teste": "CAD-16 não envia mensagem de alto impacto sem regras/consentimento: sem contato ou sem opt-in recusa; com consentimento vira proposta e nada sai",
+   "resultado": "passou",
+   "ms": 1799.704209
+  },
+  {
+   "teste": "CAD-16 detecta lead esquecido de forma PROATIVA: a rotina recomenda ao responsável, sem pergunta, idempotente, com liga/desliga e prazo do admin",
+   "resultado": "passou",
+   "ms": 935.899
+  },
+  {
+   "teste": "CAD-16 NAY Comercial resume o histórico antes do contato: agente ativo, resumo com fonte e carimbo de tempo",
+   "resultado": "passou",
+   "ms": 9199.000792
+  },
+  {
+   "teste": "CAD-16 NAY Comercial sugere próxima ação (recomendação ao corretor) e próximos imóveis do Radar",
+   "resultado": "passou",
+   "ms": 800.170333
+  },
+  {
+   "teste": "CAD-16 CRMX-009 NAY classifica a qualidade do cadastro e os documentos faltantes, com fonte e parâmetro do admin",
+   "resultado": "passou",
+   "ms": 1081.577833
+  },
+  {
+   "teste": "CAD-16 NAY sugere recuperação de cliente perdido: só rascunho, nada é enviado",
+   "resultado": "passou",
+   "ms": 240.9005
+  },
+  {
+   "teste": "CAD-16 CRMX-009 NAY detecta lead esquecido sob demanda, só na carteira de quem pede",
+   "resultado": "passou",
+   "ms": 538.719791
+  },
+  {
+   "teste": "Livro §18 IA acessar outro cliente: corretor A pede resumo da oportunidade do corretor B pela NAY -> recusado (regra e tool)",
+   "resultado": "passou",
+   "ms": 1201.727792
+  },
+  {
+   "teste": "CRM-TS-011 AI hallucination: campo ausente, a descrição não inventa (só fatos públicos aprovados, guarda aprova)",
+   "resultado": "passou",
+   "ms": 7612.160291
+  },
+  {
+   "teste": "CRM-TS-011 CAD-16 pelo caminho de MODELO: o modelo simulado inventa metragem e piscina e a guarda remove (validateGeneratedDescription)",
+   "resultado": "passou",
+   "ms": 1157.600959
+  },
+  {
+   "teste": "CAD-16 a descrição não usa campo interno: só a visão pública aprovada entra (endereço restrito, sem nome de proprietário)",
+   "resultado": "passou",
+   "ms": 166.528375
+  },
+  {
+   "teste": "Guia §12 onlyApprovedPublicFacts: só os campos públicos preenchidos; texto livre (título, descrição pública) não é fato",
+   "resultado": "passou",
+   "ms": 3.313542
+  },
+  {
+   "teste": "CRM-TS-011 AI hallucination: campo ausente, a descrição não inventa (validateGeneratedDescription recusa metragem, quantidade, valor e característica fora dos fatos)",
+   "resultado": "passou",
+   "ms": 8.173334
+  },
+  {
+   "teste": "CAD-12 Não inferir atributo sensível do cliente: as oito categorias da LGPD saem do texto, o resto fica",
+   "resultado": "passou",
+   "ms": 15.498792
+  },
+  {
+   "teste": "CAD-12 sentimento e ocorrência sugerida pelas palavras (parâmetros), só como indício",
+   "resultado": "passou",
+   "ms": 7.917458
+  },
+  {
+   "teste": "opportunity ativa sem nextAction/nextActionDueAt falha com 422",
+   "resultado": "passou",
+   "ms": 123.04125
+  },
+  {
+   "teste": "opportunity ativa com nextAction/nextActionDueAt é criada e publica domain event de stage_changed",
+   "resultado": "passou",
+   "ms": 49.763
+  },
+  {
+   "teste": "opportunity fechada (CLOSED_WON/CLOSED_LOST) não exige nextAction",
+   "resultado": "passou",
+   "ms": 49.7375
+  },
+  {
+   "teste": "atualizar stage de opportunity publica novo domain event de stage_changed",
+   "resultado": "passou",
+   "ms": 50.479666
+  },
+  {
+   "teste": "crm.opportunity.lost: duas chamadas CONCORRENTES fechando a mesma oportunidade como CLOSED_LOST não duplicam o evento no outbox",
+   "resultado": "passou",
+   "ms": 409.769875
+  },
+  {
+   "teste": "canContact: OPT_OUT na mesma finalidade bloqueia; sem registro, TRANSACTIONAL é permitido e MARKETING é bloqueado",
+   "resultado": "passou",
+   "ms": 297.805334
+  },
+  {
+   "teste": "messages.service.createMessage bloqueia envio OUTBOUND quando a pessoa está em opt-out (gate real, não só registro histórico)",
+   "resultado": "passou",
+   "ms": 180.853459
+  },
+  {
+   "teste": "CRM-TS-012: corretor com escopo OWN só vê as oportunidades das quais é o responsável",
+   "resultado": "passou",
+   "ms": 267.3005
+  },
+  {
+   "teste": "CRM-TS-012: gestor com escopo ALL vê oportunidades de todos os corretores",
+   "resultado": "passou",
+   "ms": 226.500458
+  },
+  {
+   "teste": "CRM-TS-012: sem ownerScope (fallback), comportamento é ALL — sem regressão para papéis ainda não migrados",
+   "resultado": "passou",
+   "ms": 201.648083
+  },
+  {
+   "teste": "CRM-TS-012: catálogo de permissões tem os 2 códigos de escopo granular seedados",
+   "resultado": "passou",
+   "ms": 9.117208
+  },
+  {
+   "teste": "CRMX-005: apagar uma oportunidade é soft delete — a linha continua existindo (auditável), só sai das listagens normais",
+   "resultado": "passou",
+   "ms": 168.773333
+  },
+  {
+   "teste": "CRMX-005: apagar uma visita é soft delete — histórico de atendimento preservado",
+   "resultado": "passou",
+   "ms": 89.683166
+  },
+  {
+   "teste": "crmTaskOverdueJob escalona tarefa de CRM vencida: publica crm.task.overdue, notifica e audita (idempotente)",
+   "resultado": "passou",
+   "ms": 187.476417
+  },
+  {
+   "teste": "Guia M3 §16: as 17 etapas com os nomes literais do livro, na ordem, no etapas.js, no etapas.json, no script e no workflow",
+   "resultado": "passou",
+   "ms": 15.446792
+  },
+  {
+   "teste": "Guia M3 §16: reordenar, renomear, faltar etapa, trocar o tipo ou tentar deploy de produção é recusado",
+   "resultado": "passou",
+   "ms": 1.60125
+  },
+  {
+   "teste": "Guia M3 §16: toda etapa de teste aponta para pelo menos um arquivo real e os testes exigidos existem nos arquivos",
+   "resultado": "passou",
+   "ms": 48.376167
+  },
+  {
+   "teste": "Guia M3 §16: fora da tag, deploy_DEV, deploy_LAB e production_approval saem NAO_APLICAVEL no relatório; com --release rodam",
+   "resultado": "passou",
+   "ms": 2009.736833
+  },
+  {
+   "teste": "Guia M3 §16: a primeira etapa vermelha para a esteira (as seguintes NAO_RODOU, M3_CI_STAGE_FAILED) e nada depois dela roda",
+   "resultado": "passou",
+   "ms": 565.416792
+  },
+  {
+   "teste": "Guia M3 §16: etapa de banco fora do banco descartável é vermelha; arquivo de teste ou teste exigido ausente recusa a esteira antes de rodar",
+   "resultado": "passou",
+   "ms": 1082.122708
+  },
+  {
+   "teste": "Guia M3 §16: o workflow roda a esteira em banco descartável; release só em tag; production_approval atrás do environment com revisor, sem deploy",
+   "resultado": "passou",
+   "ms": 15.407
+  },
+  {
+   "teste": "Guia M3 §16 load_tests: as invariantes da carga acusam violação de verdade, e a carga recusa volume inválido e banco que não é descartável",
+   "resultado": "passou",
+   "ms": 4.60075
+  },
+  {
+   "teste": "CRM-TS-001 CPF duplicado — Criar mesma pessoa — Bloqueio/reuso",
+   "resultado": "passou",
+   "ms": 8533.382334
+  },
+  {
+   "teste": "CRM-TS-002 Merge errado — CPFs conflitantes — Bloqueado",
+   "resultado": "passou",
+   "ms": 432.701041
+  },
+  {
+   "teste": "CRM-TS-003 Property duplicate — Mesma matrícula — Revisão/bloqueio",
+   "resultado": "passou",
+   "ms": 221.198917
+  },
+  {
+   "teste": "CRM-TS-004 Sale+rent — Mesmo imóvel — 1 property, 2 offers",
+   "resultado": "passou",
+   "ms": 369.02325
+  },
+  {
+   "teste": "CRM-TS-005 Publish no video — Regra exige vídeo — Bloqueado",
+   "resultado": "passou",
+   "ms": 211.654292
+  },
+  {
+   "teste": "CRM-TS-006 Internal leak — Portal consulta ocorrência interna — Nunca retorna",
+   "resultado": "passou",
+   "ms": 647.232
+  },
+  {
+   "teste": "CRM-TS-007 Lead no next action — Open sem tarefa — Bloqueado",
+   "resultado": "passou",
+   "ms": 315.385959
+  },
+  {
+   "teste": "CRM-TS-008 Lost no reason — Marcar LOST — Bloqueado",
+   "resultado": "passou",
+   "ms": 212.116667
+  },
+  {
+   "teste": "CRM-TS-009 Opt-out — Cadência tenta enviar — Bloqueado",
+   "resultado": "passou",
+   "ms": 361.496208
+  },
+  {
+   "teste": "CRM-TS-010 Radar duplicate — Mesmo match reprocessado — Não duplica",
+   "resultado": "passou",
+   "ms": 596.690041
+  },
+  {
+   "teste": "CRM-TS-011 AI hallucination — Campo ausente — Descrição não inventa",
+   "resultado": "passou",
+   "ms": 1703.999708
+  },
+  {
+   "teste": "CRM-TS-012 Cross company — Corretor A lê B — Bloqueado",
+   "resultado": "passou",
+   "ms": 305.186792
+  },
+  {
+   "teste": "CRM-TS-013 Mass export — Sem permissão — Negado",
+   "resultado": "passou",
+   "ms": 216.129292
+  },
+  {
+   "teste": "CRM-TS-014 Price race — 2 alterações simultâneas — Lock/version history correto",
+   "resultado": "passou",
+   "ms": 344.155333
+  },
+  {
+   "teste": "CRM-TS-015 Complaint delete — Usuário tenta apagar — Bloqueado/audit",
+   "resultado": "passou",
+   "ms": 258.888542
+  },
+  {
+   "teste": "CRM-TS-012 listas: o corretor A só vê a própria carteira em visitas, mensagens, propostas, radares e ocorrências; o gestor vê tudo",
+   "resultado": "passou",
+   "ms": 8191.639833
+  },
+  {
+   "teste": "CRM-TS-012 por id: registro da carteira de B responde 404 ao corretor A (leitura e escrita), sem revelar que existe",
+   "resultado": "passou",
+   "ms": 360.527375
+  },
+  {
+   "teste": "CRM-TS-012 criação: o corretor A não grava visita, mensagem, proposta, radar nem ocorrência na oportunidade de B",
+   "resultado": "passou",
+   "ms": 138.218167
+  },
+  {
+   "teste": "CRM-TS-012 painel: o corretor A vê só os números da própria carteira, mesmo pedindo o responsável B",
+   "resultado": "passou",
+   "ms": 85.437792
+  },
+  {
+   "teste": "CRM-TS-012 política de equipe: registro sem oportunidade do cliente do A segue o parâmetro crm.carteira.registro_sem_oportunidade",
+   "resultado": "passou",
+   "ms": 164.220334
+  },
+  {
+   "teste": "CRM-TS-009 Opt-out — Cadência tenta enviar — Bloqueado: opt-out registrado na pessoa suspende a cadência do lead sem retorno",
+   "resultado": "passou",
+   "ms": 383.890083
+  },
+  {
+   "teste": "CRM-TS-009 controle: sem opt-out, a mesma cadência envia o acompanhamento (o bloqueio acima é do opt-out, não da cadência parada)",
+   "resultado": "passou",
+   "ms": 450.461667
+  },
+  {
+   "teste": "CRM-TS-009 o opt-out de um canal pela pessoa grava o consentimento no CRM e a supressão do Marketing no mesmo instante",
+   "resultado": "passou",
+   "ms": 171.610041
+  },
+  {
+   "teste": "CRM-TS-013 Mass export: sem a permissão crm:opportunities:export (com MFA recente) é negado com GOV_DLP_PERMISSION, pedido BLOCKED e tentativa auditada",
+   "resultado": "passou",
+   "ms": 6402.39075
+  },
+  {
+   "teste": "M3-21 MFA: com as permissões e sem MFA recente, 403 MFA_STEP_UP_REQUIRED e nada é gerado",
+   "resultado": "passou",
+   "ms": 133.611209
+  },
+  {
+   "teste": "M3-21 volume: acima do teto da classe HIGH (política da empresa) é recusado com 422 GOV_DLP_VOLUME_EXCEEDED, não truncado",
+   "resultado": "passou",
+   "ms": 179.782
+  },
+  {
+   "teste": "M3-21 aprovado: APPROVED -> READY com MFA; o corretor de escopo próprio exporta só a própria carteira; pedido, geração e download auditados",
+   "resultado": "passou",
+   "ms": 1031.064667
+  },
+  {
+   "teste": "M3-21 a rota antiga não exporta: GET /crm/opportunities/export responde 410 com o novo caminho",
+   "resultado": "passou",
+   "ms": 8.311208
+  },
+  {
+   "teste": "M3-18 mensagem saída sem finalidade é recusada (422 MESSAGE_PURPOSE_REQUIRED): nunca vira TRANSACTIONAL por omissão",
+   "resultado": "passou",
+   "ms": 5482.477709
+  },
+  {
+   "teste": "M3-18 opt-out só de marketing não se contorna omitindo a finalidade; finalidade fora da lista única é recusada",
+   "resultado": "passou",
+   "ms": 475.142292
+  },
+  {
+   "teste": "M3-18 quais finalidades exigem OPT_IN vem do parâmetro da empresa (lista única), não de uma lista fixa no código",
+   "resultado": "passou",
+   "ms": 795.251166
+  },
+  {
+   "teste": "M3-18 acesso a dados pessoais pelo CRM: as rotas do CRM não devolvem CPF nem contato; na ficha, o corretor vê o CPF mascarado e o acesso é auditado",
+   "resultado": "passou",
+   "ms": 727.223125
+  },
+  {
+   "teste": "CAD-18 o PATCH comum não troca o responsável sem a permissão específica: 403 OPPORTUNITY_REASSIGN_FORBIDDEN e o dono não muda",
+   "resultado": "passou",
+   "ms": 4726.621375
+  },
+  {
+   "teste": "CAD-18 com a permissão, a troca pelo PATCH exige motivo e responsável ativo da empresa e audita opportunity.reassign com antes/depois",
+   "resultado": "passou",
+   "ms": 427.170084
+  },
+  {
+   "teste": "CAD-18 interação crítica imutável no banco: o papel da aplicação não apaga nem altera o conteúdo; o status de entrega continua mudando",
+   "resultado": "passou",
+   "ms": 380.45725
+  },
+  {
+   "teste": "m9d402 estrutura de pastas igual ao Guia §2 (6 áreas, cada uma com service, controller, routes e index) mais a área de apoio security (D433)",
+   "resultado": "passou",
+   "ms": 5920.406708
+  },
+  {
+   "teste": "m9d402 modulo_nao_tem_import_circular: nenhuma área importa outra por caminho interno e o grafo de requires não tem ciclo",
+   "resultado": "passou",
+   "ms": 153.638375
+  },
+  {
+   "teste": "m9d402 catálogo de 12 permissões, papéis e erro MKT_*: o código e a migration coincidem",
+   "resultado": "passou",
+   "ms": 4.547833
+  },
+  {
+   "teste": "m9d402 parâmetros de massa e de perfis estão no SETTINGS_SCHEMA com o padrão do catálogo e são lidos por código",
+   "resultado": "passou",
+   "ms": 43.537375
+  },
+  {
+   "teste": "m9d402 mass_messaging: a permissão send:mass e o guarda que lê os dois tetos existem (regra completa e recusas: M9-D433)",
+   "resultado": "passou",
+   "ms": 37.177167
+  },
+  {
+   "teste": "m9d402 permissoes_marketing_existem_e_estao_nos_papeis (banco: migration + concessão padrão idempotente)",
+   "resultado": "passou",
+   "ms": 77.6465
+  },
+  {
+   "teste": "m9d402 assistente_nao_aprova: Assistente recebe 403 MKT_FORBIDDEN em approve; Gerente passa pela permissão; correlation_id devolvido",
+   "resultado": "passou",
+   "ms": 135.509333
+  },
+  {
+   "teste": "m9d402 killswitch_reativacao_exige_mfa_step_up: ativar sem MFA passa pela porta; reativar sem step-up recebe MFA_STEP_UP_REQUIRED",
+   "resultado": "passou",
+   "ms": 87.586167
+  },
+  {
+   "teste": "m9d800 permissões governance:* semeadas e na matriz",
+   "resultado": "passou",
+   "ms": 4542.042917
+  },
+  {
+   "teste": "m9d800 concessão padrão: perfil operacional recebe só calendar:read e só o administrador recebe as 13 sensíveis",
+   "resultado": "passou",
+   "ms": 319.141041
+  },
+  {
+   "teste": "m9d800 migration do schema governance idempotente e reversível",
+   "resultado": "passou",
+   "ms": 254.92825
+  },
+  {
+   "teste": "m9d800 RLS isola duas empresas",
+   "resultado": "passou",
+   "ms": 119.587542
+  },
+  {
+   "teste": "M3-01 createPerson valida personType, exige legalName, e aceita PF e PJ",
+   "resultado": "passou",
+   "ms": 180.933542
+  },
+  {
+   "teste": "M3-02 pessoa pode ter múltiplos papéis simultâneos, persistidos e retornados",
+   "resultado": "passou",
+   "ms": 70.2915
+  },
+  {
+   "teste": "M3-04 mergePersons remapeia referências, bloqueia conflito de documento, e marca MERGED",
+   "resultado": "passou",
+   "ms": 278.727042
+  },
+  {
+   "teste": "M3-05 createCompany/updateCompany/deleteCompany (inativação) funcionam de ponta a ponta",
+   "resultado": "passou",
+   "ms": 56.630416
+  },
+  {
+   "teste": "M3-06 imóvel com proprietário vinculado, e M3-10 ocorrência interna nunca aparece em serialização pública",
+   "resultado": "passou",
+   "ms": 138.579584
+  },
+  {
+   "teste": "M3-09 publishOffer bloqueia publicação sem vídeo (REG-IMO-001), libera quando há vídeo",
+   "resultado": "passou",
+   "ms": 230.680417
+  },
+  {
+   "teste": "M3-18 recordConsent grava histórico append-only de opt-in/opt-out por canal e finalidade",
+   "resultado": "passou",
+   "ms": 61.0785
+  },
+  {
+   "teste": "M3-23 RLS de people.persons e real_estate.properties confirmado no catálogo do Postgres",
+   "resultado": "passou",
+   "ms": 35.257792
+  },
+  {
+   "teste": "M3-11: cria tarefa vinculada à oportunidade em core.tasks, lista de volta e audita",
+   "resultado": "passou",
+   "ms": 233.825958
+  },
+  {
+   "teste": "M3-11: tarefas de uma oportunidade não vazam para outra oportunidade nem para outra empresa (RLS)",
+   "resultado": "passou",
+   "ms": 72.052833
+  },
+  {
+   "teste": "M3-11: tarefa sem título, com status/prioridade fora do enum ou em oportunidade inexistente é rejeitada",
+   "resultado": "passou",
+   "ms": 36.154875
+  },
+  {
+   "teste": "M3-19: timeline traz mensagem, visita e mudança de estágio da MESMA oportunidade, do mais recente para o mais antigo",
+   "resultado": "passou",
+   "ms": 140.472042
+  },
+  {
+   "teste": "M3-19: timeline também unifica proposta e tarefa, e o filtro por tipo devolve só o pedido",
+   "resultado": "passou",
+   "ms": 75.755333
+  },
+  {
+   "teste": "M3-19: timeline de oportunidade de outra empresa é 404 (RLS), nunca uma lista vazia \"ok\"",
+   "resultado": "passou",
+   "ms": 49.753584
+  },
+  {
+   "teste": "M3-16: reler o matching do Radar N vezes é 100% sem efeito colateral (função pura de leitura)",
+   "resultado": "passou",
+   "ms": 101.7065
+  },
+  {
+   "teste": "M3-16: rodar o job do Radar DUAS vezes seguidas não republica evento nem duplica Notification",
+   "resultado": "passou",
+   "ms": 263.672917
+  },
+  {
+   "teste": "M3-12: fechar como CLOSED_WON sem wonReason é rejeitado (422)",
+   "resultado": "passou",
+   "ms": 138.193417
+  },
+  {
+   "teste": "M3-12: fechar como CLOSED_LOST sem lostReason é rejeitado (422)",
+   "resultado": "passou",
+   "ms": 43.4695
+  },
+  {
+   "teste": "M3-12: motivo fora do enum é rejeitado (422) — em ganho, perda e desistência",
+   "resultado": "passou",
+   "ms": 66.691209
+  },
+  {
+   "teste": "M3-12: motivos válidos do enum são aceitos e normalizados (WON / LOST / WITHDRAWN)",
+   "resultado": "passou",
+   "ms": 184.390583
+  },
+  {
+   "teste": "M3-13: cria proposta ligada à oportunidade, publica domain event e audita",
+   "resultado": "passou",
+   "ms": 117.316125
+  },
+  {
+   "teste": "M3-13: nova proposta para a mesma oportunidade cria uma NOVA VERSÃO e preserva o histórico",
+   "resultado": "passou",
+   "ms": 139.590125
+  },
+  {
+   "teste": "M3-13: transição de status respeita a máquina de estados",
+   "resultado": "passou",
+   "ms": 131.686417
+  },
+  {
+   "teste": "M3-25: jornada mínima — oportunidade -> proposta -> aceite -> CLOSED_WON",
+   "resultado": "passou",
+   "ms": 234.525166
+  },
+  {
+   "teste": "M3-15: imóvel que bate em tudo tem todos os critérios matched=true e score 1",
+   "resultado": "passou",
+   "ms": 94.952291
+  },
+  {
+   "teste": "M3-15: imóvel que falha só no preço mostra priceRange matched=false com motivo, e o resto matched=true",
+   "resultado": "passou",
+   "ms": 66.603167
+  },
+  {
+   "teste": "M3-15: explainMatch é puro (não quebra o matching determinístico existente)",
+   "resultado": "passou",
+   "ms": 0.395709
+  },
+  {
+   "teste": "M3-17: indicadores do painel batem exatamente com a contagem manual das mesmas oportunidades",
+   "resultado": "passou",
+   "ms": 90.602
+  },
+  {
+   "teste": "M3-20: criação calcula o SLA correto por severidade (HIGH 24h, MEDIUM 72h, LOW 7d)",
+   "resultado": "passou",
+   "ms": 78.423667
+  },
+  {
+   "teste": "M3-20: escalonamento manual muda status, marca escalated_at e notifica o responsável",
+   "resultado": "passou",
+   "ms": 45.102083
+  },
+  {
+   "teste": "M3-20: resolver um caso marca RESOLVED e audita",
+   "resultado": "passou",
+   "ms": 39.387917
+  },
+  {
+   "teste": "M3-20: o job encontra e escalona um caso com SLA VENCIDO (tempo simulado via UPDATE direto)",
+   "resultado": "passou",
+   "ms": 69.098
+  },
+  {
+   "teste": "M3-21: exportação SEM a permissão dedicada é bloqueada (403)",
+   "resultado": "passou",
+   "ms": 32.695625
+  },
+  {
+   "teste": "M3-21/CRM-TS-013: exportação SEM MFA recente é bloqueada mesmo com a permissão certa",
+   "resultado": "passou",
+   "ms": 15.681292
+  },
+  {
+   "teste": "M3-21: exportação COM a permissão e MFA recente é liberada, limita os campos e audita o pedido",
+   "resultado": "passou",
+   "ms": 59.302334
+  },
+  {
+   "teste": "CRMX-015/CRM-TS-012: people.persons — outro grupo e outra empresa não enxergam a pessoa",
+   "resultado": "passou",
+   "ms": 133.517583
+  },
+  {
+   "teste": "CRMX-015/CRM-TS-012: real_estate.properties — outra empresa não enxerga nem edita o imóvel via SELECT/UPDATE direto",
+   "resultado": "passou",
+   "ms": 31.346
+  },
+  {
+   "teste": "CRMX-015/CRM-TS-012: crm.opportunities — corretor de outra empresa não enxerga nem edita a oportunidade (cenário literal CRM-TS-012)",
+   "resultado": "passou",
+   "ms": 51.113541
+  },
+  {
+   "teste": "Marco 3 ponta a ponta via HTTP real: pessoa -> merge -> imóvel -> 2 ofertas -> oportunidade -> interação -> LOST -> radar",
+   "resultado": "passou",
+   "ms": 2201.080083
+  },
+  {
+   "teste": "Marco 3 HTTP real: LOST sem motivo é bloqueado pela rota real (CRM-TS-008 ponta a ponta)",
+   "resultado": "passou",
+   "ms": 210.503958
+  },
+  {
+   "teste": "Eventos mínimos: person.updated é publicado ao atualizar uma pessoa",
+   "resultado": "passou",
+   "ms": 241.601917
+  },
+  {
+   "teste": "Eventos mínimos: property.updated é publicado ao atualizar um imóvel",
+   "resultado": "passou",
+   "ms": 61.972541
+  },
+  {
+   "teste": "Eventos mínimos: crm.opportunity.created é publicado (distinto do stage_changed genérico)",
+   "resultado": "passou",
+   "ms": 93.47625
+  },
+  {
+   "teste": "Eventos mínimos: crm.opportunity.won e crm.opportunity.lost são publicados nas transições terminais",
+   "resultado": "passou",
+   "ms": 106.777416
+  },
+  {
+   "teste": "Eventos mínimos: crm.interaction.recorded é publicado ao criar uma mensagem/interação",
+   "resultado": "passou",
+   "ms": 30.353666
+  },
+  {
+   "teste": "Eventos mínimos: crm.visit.completed é publicado ao concluir (DONE) uma visita",
+   "resultado": "passou",
+   "ms": 50.455375
+  },
+  {
+   "teste": "Eventos mínimos: registrar visita já concluída (status DONE na criação) também dispara crm.visit.completed",
+   "resultado": "passou",
+   "ms": 38.139541
+  },
+  {
+   "teste": "m9d820 piso do livro impede enfraquecer EXPORT HIGH",
+   "resultado": "passou",
+   "ms": 165.825041
+  },
+  {
+   "teste": "m9d820 o piso só vale para EXPORT de HIGH e RESTRICTED; endurecer é sempre permitido",
+   "resultado": "passou",
+   "ms": 45.976125
+  },
+  {
+   "teste": "m9d820 alteração exige permissão dlp:admin e audita antes e depois",
+   "resultado": "passou",
+   "ms": 47.763666
+  },
+  {
+   "teste": "m9d820 PUT com o mesmo conteúdo não altera nada nem audita",
+   "resultado": "passou",
+   "ms": 105.450875
+  },
+  {
+   "teste": "m9d820 ação ou classe inexistente e campo inválido devolvem 400 GOV_DLP_POLICY_INVALID",
+   "resultado": "passou",
+   "ms": 19.591875
+  },
+  {
+   "teste": "m9d820 duas edições simultâneas da mesma linha terminam coerentes (trava da linha)",
+   "resultado": "passou",
+   "ms": 116.300416
+  },
+  {
+   "teste": "m9d820 sem permissão a leitura e a escrita da política devolvem 403",
+   "resultado": "passou",
+   "ms": 6082.98525
+  },
+  {
+   "teste": "m9d820 GET /dlp/policies mostra as 24 linhas e as 4 classes na ação EXPORT (dlp:export ou dlp:admin)",
+   "resultado": "passou",
+   "ms": 65.058791
+  },
+  {
+   "teste": "m9d820 PUT que enfraquece o piso devolve 422 GOV_DLP_FLOOR_VIOLATION e política inexistente 400",
+   "resultado": "passou",
+   "ms": 54.535708
+  },
+  {
+   "teste": "m9d820 PUT de dlp:admin grava a política nova, audita antes e depois e não vaza para a outra empresa",
+   "resultado": "passou",
+   "ms": 85.635583
+  },
+  {
+   "teste": "m9d820 matriz padrão tem 24 linhas",
+   "resultado": "passou",
+   "ms": 134.924167
+  },
+  {
+   "teste": "m9d820 matriz padrão segue a tabela da demanda",
+   "resultado": "passou",
+   "ms": 30.452375
+  },
+  {
+   "teste": "m9d820 COPY de RESTRICTED negado",
+   "resultado": "passou",
+   "ms": 28.53175
+  },
+  {
+   "teste": "m9d820 max_rows padrão é 100.000, 50.000, 10.000 e 1.000 por classe",
+   "resultado": "passou",
+   "ms": 28.129542
+  },
+  {
+   "teste": "m9d820 tetos de expiração por classe são LOW 168, MEDIUM 72, HIGH 48 e RESTRICTED 24 horas",
+   "resultado": "passou",
+   "ms": 27.424875
+  },
+  {
+   "teste": "m9d820 marca d'água é campo da política, editável, padrão desligado em todas as classes",
+   "resultado": "passou",
+   "ms": 54.157875
+  },
+  {
+   "teste": "m9d820 os parâmetros governanca.dlp.* definem a política inicial da empresa",
+   "resultado": "passou",
+   "ms": 48.1695
+  },
+  {
+   "teste": "m9d820 a política efetiva é resolvida pela classe devolvida pelo registro (a classe padrão sem registro é de M9-D910)",
+   "resultado": "passou",
+   "ms": 38.015833
+  },
+  {
+   "teste": "m9d820 a IA só recebe o campo se a classe permitir e ai_allowed for verdadeiro",
+   "resultado": "passou",
+   "ms": 20.03725
+  },
+  {
+   "teste": "m9d820 isolamento entre empresas",
+   "resultado": "passou",
+   "ms": 46.984959
+  },
+  {
+   "teste": "m9d821 ordem das 6 etapas respeitada",
+   "resultado": "passou",
+   "ms": 5.821542
+  },
+  {
+   "teste": "m9d821 RESTRICTED sem MFA com 800 linhas: etapas 1 a 3 passam e a 4 falha",
+   "resultado": "passou",
+   "ms": 0.346333
+  },
+  {
+   "teste": "m9d821 volume acima do teto bloqueia e abaixo aprova",
+   "resultado": "passou",
+   "ms": 0.56
+  },
+  {
+   "teste": "m9d821 justificativa curta bloqueia com PURPOSE e o MFA nem é avaliado",
+   "resultado": "passou",
+   "ms": 0.660375
+  },
+  {
+   "teste": "m9d821 política com allowed falso bloqueia com POLICY",
+   "resultado": "passou",
+   "ms": 0.285958
+  },
+  {
+   "teste": "m9d821 a IA só passa se a classe permitir e ai_allowed for verdadeiro",
+   "resultado": "passou",
+   "ms": 0.364542
+  },
+  {
+   "teste": "m9d821 usuário suspenso por anomalia é bloqueado em EXPORT, SHARE e PRINT e liberado em VIEW com SUSPENDED",
+   "resultado": "passou",
+   "ms": 2.202208
+  },
+  {
+   "teste": "m9d821 a permissão da política e a do módulo de origem são exigidas (etapa 2c)",
+   "resultado": "passou",
+   "ms": 0.474417
+  },
+  {
+   "teste": "m9d821 VIEW e COPY percorrem só as etapas 1, 2, 4 e 6",
+   "resultado": "passou",
+   "ms": 0.637291
+  },
+  {
+   "teste": "m9d821 a decisão traz as obrigações: auditoria, expiração, marca d'água e máscara",
+   "resultado": "passou",
+   "ms": 0.737542
+  },
+  {
+   "teste": "m9d821 cada motivo de bloqueio vira o erro HTTP do livro, com a mensagem em português",
+   "resultado": "passou",
+   "ms": 1.039542
+  },
+  {
+   "teste": "m9d821 o resolvedor stub devolve HIGH sem registro de classificação",
+   "resultado": "passou",
+   "ms": 293.505083
+  },
+  {
+   "teste": "m9d821 pedido aprovado gera export_job APPROVED com decision_trace completo",
+   "resultado": "passou",
+   "ms": 102.934
+  },
+  {
+   "teste": "m9d821 bloqueio grava export_job BLOCKED",
+   "resultado": "passou",
+   "ms": 129.329167
+  },
+  {
+   "teste": "m9d821 bloqueio publica dlp.export.blocked uma vez",
+   "resultado": "passou",
+   "ms": 107.6265
+  },
+  {
+   "teste": "m9d821 classificação mais alta do pedido prevalece",
+   "resultado": "passou",
+   "ms": 121.973208
+  },
+  {
+   "teste": "m9d821 mesma Idempotency-Key devolve o mesmo job",
+   "resultado": "passou",
+   "ms": 183.413417
+  },
+  {
+   "teste": "m9d821 bloqueio não é desfeito por rollback do negócio",
+   "resultado": "passou",
+   "ms": 289.680208
+  },
+  {
+   "teste": "m9d821 erro no meio da decisão deixa o job FAILED e relança o erro",
+   "resultado": "passou",
+   "ms": 57.97275
+  },
+  {
+   "teste": "m9d821 isolamento entre empresas",
+   "resultado": "passou",
+   "ms": 154.045542
+  },
+  {
+   "teste": "m9d821 export_job guarda kind EXPORT, SHARE, PRINT ou DOWNLOAD e recusa outro valor",
+   "resultado": "passou",
+   "ms": 210.930042
+  },
+  {
+   "teste": "m9d821 VIEW e COPY percorrem só as etapas 1, 2, 4 e 6 e não criam export_job",
+   "resultado": "passou",
+   "ms": 104.776667
+  },
+  {
+   "teste": "m9d821 usuário suspenso por anomalia é bloqueado em EXPORT e liberado em VIEW com SUSPENDED",
+   "resultado": "passou",
+   "ms": 102.681042
+  },
+  {
+   "teste": "m9d821 pedido sem ação válida ou sem tipo de recurso é recusado antes de gravar",
+   "resultado": "passou",
+   "ms": 33.584084
+  },
+  {
+   "teste": "m9d822 a auditoria do pedido guarda a finalidade e a justificativa informadas",
+   "resultado": "passou",
+   "ms": 735.442667
+  },
+  {
+   "teste": "m9d822 o pedido bloqueado também guarda a finalidade e a justificativa",
+   "resultado": "passou",
+   "ms": 248.109875
+  },
+  {
+   "teste": "m9d822 exportação sem linhas não registra leitura em claro de campo algum",
+   "resultado": "passou",
+   "ms": 449.399625
+  },
+  {
+   "teste": "m9d822 exportação com linhas registra a leitura em claro com a quantidade de linhas lidas",
+   "resultado": "passou",
+   "ms": 350.184417
+  },
+  {
+   "teste": "m9d822 o arquivo gerado sem linhas diz isso no pedido consultado",
+   "resultado": "passou",
+   "ms": 280.9015
+  },
+  {
+   "teste": "m9d822 CSV sem marca: cabeçalho, números intactos e fórmulas neutralizadas",
+   "resultado": "passou",
+   "ms": 396.314625
+  },
+  {
+   "teste": "m9d822 marca d'água presente no CSV e no PDF (e no XLSX)",
+   "resultado": "passou",
+   "ms": 137.289166
+  },
+  {
+   "teste": "m9d822 XLSX: pacote válido, número como número e texto neutralizado",
+   "resultado": "passou",
+   "ms": 117.796208
+  },
+  {
+   "teste": "m9d822 arquivo pronto (DIMOB) só ganha a linha final da marca",
+   "resultado": "passou",
+   "ms": 122.693333
+  },
+  {
+   "teste": "m9d822 pedido real com watermark: true entrega CSV, XLSX e PDF marcados; sem o pedido nem a política, sem marca",
+   "resultado": "passou",
+   "ms": 1420.107208
+  },
+  {
+   "teste": "m9d822 a política da classe que liga a marca d'água vale sem o pedido pedir",
+   "resultado": "passou",
+   "ms": 328.707875
+  },
+  {
+   "teste": "m9d822 sem Idempotency-Key 400, sem permissão 403 e corpo inválido 400",
+   "resultado": "passou",
+   "ms": 4866.157541
+  },
+  {
+   "teste": "m9d822 HIGH sem MFA recente devolve 403 MFA_STEP_UP_REQUIRED e o pedido fica BLOCKED",
+   "resultado": "passou",
+   "ms": 326.953625
+  },
+  {
+   "teste": "m9d822 exportação HIGH real: 202, job READY, URL assinada, arquivo, auditoria de download e 410 depois da expiração",
+   "resultado": "passou",
+   "ms": 721.733208
+  },
+  {
+   "teste": "m9d822 mesma Idempotency-Key repete o mesmo pedido e outro corpo é 422",
+   "resultado": "passou",
+   "ms": 904.722833
+  },
+  {
+   "teste": "m9d822 GET /exports/catalog lista recursos, finalidades e formatos; as rotas antigas devolvem 410 GOV_EXPORT_MOVED",
+   "resultado": "passou",
+   "ms": 213.698584
+  },
+  {
+   "teste": "m9d822 varredura por text/csv, exceljs e pdfkit em src não acha geração de arquivo fora do exports_catalog",
+   "resultado": "passou",
+   "ms": 1784.104833
+  },
+  {
+   "teste": "m9d822 a varredura realmente acha os geradores conhecidos (não é um passe vazio)",
+   "resultado": "passou",
+   "ms": 983.81375
+  },
+  {
+   "teste": "m9d822 toda entrada do inventário aponta para arquivos que existem e traz o motivo",
+   "resultado": "passou",
+   "ms": 1.63125
+  },
+  {
+   "teste": "m9d822 as exportações pedidas pelo usuário estão no catálogo com classe em toda coluna e o nó EXPORT de lineage",
+   "resultado": "passou",
+   "ms": 0.444041
+  },
+  {
+   "teste": "m9d822 export RESTRICTED sem MFA bloqueia",
+   "resultado": "passou",
+   "ms": 672.499333
+  },
+  {
+   "teste": "m9d822 export HIGH sem justificativa bloqueia",
+   "resultado": "passou",
+   "ms": 360.884625
+  },
+  {
+   "teste": "m9d822 o arquivo expira no teto da política vigente da classe (valores em M9-D820)",
+   "resultado": "passou",
+   "ms": 536.1075
+  },
+  {
+   "teste": "m9d822 job de expiração apaga o arquivo e mantém o hash",
+   "resultado": "passou",
+   "ms": 441.134084
+  },
+  {
+   "teste": "m9d822 recurso, coluna e formato inválidos devolvem 400 e job inexistente 404",
+   "resultado": "passou",
+   "ms": 222.822041
+  },
+  {
+   "teste": "m9d822 mesma Idempotency-Key não gera dois arquivos",
+   "resultado": "passou",
+   "ms": 311.120833
+  },
+  {
+   "teste": "m9d822 download por outra pessoa recusado",
+   "resultado": "passou",
+   "ms": 363.0955
+  },
+  {
+   "teste": "m9d822 download com job GENERATING devolve 409",
+   "resultado": "passou",
+   "ms": 354.963666
+  },
+  {
+   "teste": "m9d822 coluna RESTRICTED sai mascarada sem governance:dlp:view-restricted e em claro com ela",
+   "resultado": "passou",
+   "ms": 576.764042
+  },
+  {
+   "teste": "m9d823 criar, abrir sem login, revogar e abrir de novo (404) pela API",
+   "resultado": "passou",
+   "ms": 6001.771292
+  },
+  {
+   "teste": "m9d823 sem Idempotency-Key 400, sem permissão 403, prazo acima do teto 422 e HIGH sem MFA 403",
+   "resultado": "passou",
+   "ms": 446.870583
+  },
+  {
+   "teste": "m9d823 acesso público excedendo o limite por IP devolve 429",
+   "resultado": "passou",
+   "ms": 385.131375
+  },
+  {
+   "teste": "m9d823 link de outra empresa não abre pela sessão da primeira e o contador é compartilhado entre processos (no banco)",
+   "resultado": "passou",
+   "ms": 294.015583
+  },
+  {
+   "teste": "m9d823 o token nunca aparece no log da API (abertura, 404 e 429)",
+   "resultado": "falhou",
+   "ms": 465.125125
+  },
+  {
+   "teste": "m9d823 o link expira no prazo pedido dentro do teto da política vigente",
+   "resultado": "passou",
+   "ms": 699.645875
+  },
+  {
+   "teste": "m9d823 prazo acima do teto recusado",
+   "resultado": "passou",
+   "ms": 282.071875
+  },
+  {
+   "teste": "m9d823 token guardado apenas em hash",
+   "resultado": "passou",
+   "ms": 263.548667
+  },
+  {
+   "teste": "m9d823 acesso público mostra o recurso com campos HIGH e RESTRICTED mascarados",
+   "resultado": "passou",
+   "ms": 345.803834
+  },
+  {
+   "teste": "m9d823 revogação vale no próximo acesso",
+   "resultado": "passou",
+   "ms": 304.327709
+  },
+  {
+   "teste": "m9d823 404 igual para inexistente, revogado, expirado e adulterado",
+   "resultado": "passou",
+   "ms": 395.712416
+  },
+  {
+   "teste": "m9d823 RESTRICTED sem MFA bloqueia e HIGH sem justificativa também",
+   "resultado": "passou",
+   "ms": 271.526917
+  },
+  {
+   "teste": "m9d823 revogar muda share_links e export_jobs na mesma transação",
+   "resultado": "passou",
+   "ms": 261.60175
+  },
+  {
+   "teste": "m9d823 shareLinkExpiryJob marca EXPIRED nos dois",
+   "resultado": "passou",
+   "ms": 321.654417
+  },
+  {
+   "teste": "m9d823 mesma Idempotency-Key devolve o mesmo link sem repetir o token e outro corpo é 409",
+   "resultado": "passou",
+   "ms": 214.224166
+  },
+  {
+   "teste": "m9d824 mass export dispara anomaly",
+   "resultado": "passou",
+   "ms": 534.673541
+  },
+  {
+   "teste": "m9d824 pedidos bloqueados também contam e fora da janela de 30 minutos não contam",
+   "resultado": "passou",
+   "ms": 250.352834
+  },
+  {
+   "teste": "m9d824 150 leituras não disparam",
+   "resultado": "passou",
+   "ms": 333.366958
+  },
+  {
+   "teste": "m9d824 250 leituras HIGH em 8 minutos abrem a anomalia e 20 RESTRICTED também",
+   "resultado": "passou",
+   "ms": 365.065375
+  },
+  {
+   "teste": "m9d824 cópia registrada conta como sinal",
+   "resultado": "passou",
+   "ms": 195.435292
+  },
+  {
+   "teste": "m9d824 cópia negada de RESTRICTED vira sinal DENIED e LOW e MEDIUM não geram sinal",
+   "resultado": "passou",
+   "ms": 144.489084
+  },
+  {
+   "teste": "m9d824 segunda anomalia do mesmo usuário e tipo não abre enquanto houver OPEN",
+   "resultado": "passou",
+   "ms": 404.772667
+  },
+  {
+   "teste": "m9d824 os limiares e as horas são lidos dos parâmetros",
+   "resultado": "passou",
+   "ms": 299.178167
+  },
+  {
+   "teste": "m9d824 falha do detector em RESTRICTED mantém bloqueio",
+   "resultado": "passou",
+   "ms": 196.214084
+  },
+  {
+   "teste": "m9d824 isolamento entre empresas",
+   "resultado": "passou",
+   "ms": 292.430875
+  },
+  {
+   "teste": "m9d824 leitura de 250 itens HIGH gera sinais pela rota de VIEW e abre a anomalia",
+   "resultado": "passou",
+   "ms": 13397.833958
+  },
+  {
+   "teste": "m9d824 GET /dlp/anomalies lista para a revisão e exige governance:dlp:admin",
+   "resultado": "passou",
+   "ms": 350.50775
+  },
+  {
+   "teste": "m9d824 a anomalia suspende EXPORT e SHARE, não o login",
+   "resultado": "passou",
+   "ms": 1000.682375
+  },
+  {
+   "teste": "m9d824 a anomalia força MFA na próxima ação",
+   "resultado": "passou",
+   "ms": 293.408
+  },
+  {
+   "teste": "m9d824 CONFIRMED prorroga a suspensão e ela cai ao vencer",
+   "resultado": "passou",
+   "ms": 312.141875
+  },
+  {
+   "teste": "m9d824 FALSE_POSITIVE zera os flags na hora e CONFIRMED pode ser revertida com motivo",
+   "resultado": "passou",
+   "ms": 432.173125
+  },
+  {
+   "teste": "m9d824 uma anomalia liberada não solta a suspensão de outra ainda aberta",
+   "resultado": "passou",
+   "ms": 215.162083
+  },
+  {
+   "teste": "m9d824 revisão exige motivo, decisão válida e respeita as transições",
+   "resultado": "passou",
+   "ms": 197.574541
+  },
+  {
+   "teste": "m9d825 copy-events exige apenas login e responde 201 com id",
+   "resultado": "passou",
+   "ms": 4543.462958
+  },
+  {
+   "teste": "m9d825 negação de RESTRICTED vira auditoria e sinal COPY negado",
+   "resultado": "passou",
+   "ms": 140.285625
+  },
+  {
+   "teste": "m9d825 copy-events ALLOWED para campo RESTRICTED devolve 403 e registra a negação",
+   "resultado": "passou",
+   "ms": 200.863583
+  },
+  {
+   "teste": "m9d825 COPY de HIGH é permitido com auditoria e sinal",
+   "resultado": "passou",
+   "ms": 179.269042
+  },
+  {
+   "teste": "m9d825 campo inexistente, corpo inválido e LOW",
+   "resultado": "passou",
+   "ms": 211.456292
+  },
+  {
+   "teste": "m9d825 isolamento entre empresas no registro de cópia",
+   "resultado": "passou",
+   "ms": 626.862375
+  },
+  {
+   "teste": "m9d825 a suspensão por anomalia não atinge VIEW nem COPY",
+   "resultado": "passou",
+   "ms": 225.756708
+  },
+  {
+   "teste": "m9d825 perfis de QA do seed: o par difere só pela permissão dedicada e ambos leem Pessoas e contas",
+   "resultado": "passou",
+   "ms": 3952.98675
+  },
+  {
+   "teste": "m9d825 perfil mascarado vê CPF e conta mascarados; perfil em claro vê o valor (mesma ficha)",
+   "resultado": "falhou",
+   "ms": 228.062458
+  },
+  {
+   "teste": "m9d825 a varredura acha os campos por classe e o recurso mais próximo, nas listas e nos aninhados",
+   "resultado": "passou",
+   "ms": 2.782041
+  },
+  {
+   "teste": "m9d825 a máscara cobre só as classes pedidas e o resto fica intacto",
+   "resultado": "passou",
+   "ms": 0.871042
+  },
+  {
+   "teste": "m9d825 valor curto, número, objeto e nulo saem sem vazar o conteúdo",
+   "resultado": "passou",
+   "ms": 0.322083
+  },
+  {
+   "teste": "m9d825 o registro de campos do parâmetro é validado e tem padrão para cada módulo do livro",
+   "resultado": "passou",
+   "ms": 1.930875
+  },
+  {
+   "teste": "m9d825 as seis áreas do livro estão no escopo da política de VIEW",
+   "resultado": "passou",
+   "ms": 0.264125
+  },
+  {
+   "teste": "m9d824 os limiares e as horas do parâmetro têm formato validado e padrão do livro",
+   "resultado": "passou",
+   "ms": 2.232791
+  },
+  {
+   "teste": "m9d824 do sinal do guard à linha: o que gera sinal e o que não gera",
+   "resultado": "passou",
+   "ms": 0.412291
+  },
+  {
+   "teste": "m9d825 COPY de RESTRICTED é negado e a área de transferência fica inalterada",
+   "resultado": "passou",
+   "ms": 7.75925
+  },
+  {
+   "teste": "m9d825 Ctrl+C, recortar, arrastar e menu de contexto em RESTRICTED são cancelados e registrados",
+   "resultado": "passou",
+   "ms": 2.042792
+  },
+  {
+   "teste": "m9d825 COPY de HIGH copia e audita",
+   "resultado": "passou",
+   "ms": 0.832959
+  },
+  {
+   "teste": "m9d825 falha no registro da cópia cancela a cópia",
+   "resultado": "passou",
+   "ms": 0.579166
+  },
+  {
+   "teste": "m9d825 cópia em massa de coluna RESTRICTED sai mascarada ou omitida",
+   "resultado": "passou",
+   "ms": 0.711208
+  },
+  {
+   "teste": "m9d825 o valor mascarado pelo servidor nunca volta na edição",
+   "resultado": "passou",
+   "ms": 0.798417
+  },
+  {
+   "teste": "m9d825 VIEW de RESTRICTED sem permissão dedicada devolve o campo mascarado",
+   "resultado": "passou",
+   "ms": 5020.01175
+  },
+  {
+   "teste": "m9d825 RESTRICTED em claro só com a permissão dedicada e com auditoria",
+   "resultado": "passou",
+   "ms": 233.674833
+  },
+  {
+   "teste": "m9d825 nenhuma rota aceita parâmetro que desligue a máscara",
+   "resultado": "passou",
+   "ms": 724.099083
+  },
+  {
+   "teste": "m9d825 falha da política mascara RESTRICTED e libera LOW com alerta",
+   "resultado": "passou",
+   "ms": 104.876791
+  },
+  {
+   "teste": "m9d825 cópias e leituras de RESTRICTED contam como sinais de anomalia",
+   "resultado": "passou",
+   "ms": 263.32075
+  },
+  {
+   "teste": "m9d825 leitura de HIGH gera sinal de acesso",
+   "resultado": "passou",
+   "ms": 184.200958
+  },
+  {
+   "teste": "m9d825 isolamento entre empresas",
+   "resultado": "passou",
+   "ms": 231.539791
+  },
+  {
+   "teste": "m9d825 sem login a resposta não passa pela política e o módulo desligado não mascara",
+   "resultado": "passou",
+   "ms": 60.165709
+  },
+  {
+   "teste": "m9d034_nao_existe_write_tool_na_allowlist",
+   "resultado": "passou",
+   "ms": 335.94075
+  },
+  {
+   "teste": "m9d034_pedido_de_escrita_recusado",
+   "resultado": "passou",
+   "ms": 895.248417
+  },
+  {
+   "teste": "m9d034_propostas_so_com_parametro_ligado",
+   "resultado": "passou",
+   "ms": 948.736375
+  },
+  {
+   "teste": "m9d034_golden_verde",
+   "resultado": "passou",
+   "ms": 550.612708
+  },
+  {
+   "teste": "m9d034_ligar_permitir_propostas_exige_avaliacao_e_homologacao_servico",
+   "resultado": "passou",
+   "ms": 333.100917
+  },
+  {
+   "teste": "m9d034_aceitar_recomendacao_nao_cria_tarefa",
+   "resultado": "passou",
+   "ms": 5565.821083
+  },
+  {
+   "teste": "m9d034_ligar_permitir_propostas_exige_avaliacao_e_homologacao",
+   "resultado": "passou",
+   "ms": 591.66225
+  },
+  {
+   "teste": "m9d034_proxima_acao_regras_puras_na_ordem_do_livro",
+   "resultado": "passou",
+   "ms": 108.393875
+  },
+  {
+   "teste": "m9d034_proxima_acao_por_regra_antes_de_modelo",
+   "resultado": "passou",
+   "ms": 880.551292
+  },
+  {
+   "teste": "m9d034_proxima_acao_proposta_sem_resposta_por_regra_e_sem_repetir_no_dia",
+   "resultado": "passou",
+   "ms": 434.031083
+  },
+  {
+   "teste": "m9d034_proxima_acao_cliente_respondeu_nenhuma_regra_vale_e_o_modelo_redige",
+   "resultado": "passou",
+   "ms": 401.639875
+  },
+  {
+   "teste": "m9d034_proxima_acao_documentos_pendentes_do_financiamento",
+   "resultado": "passou",
+   "ms": 398.019042
+  },
+  {
+   "teste": "m9d034_proxima_acao_oportunidade_encerrada_nao_gera_recomendacao",
+   "resultado": "passou",
+   "ms": 226.485584
+  },
+  {
+   "teste": "m9d034_lista_radar_ate_10_com_motivo",
+   "resultado": "passou",
+   "ms": 2222.271709
+  },
+  {
+   "teste": "m9d034_radar_sem_imoveis_e_tool_devolve_o_mesmo_com_o_limite_da_empresa",
+   "resultado": "passou",
+   "ms": 849.528334
+  },
+  {
+   "teste": "m9d034_descricao_de_imovel_e_rascunho_com_fontes_sem_inventar_atributo",
+   "resultado": "passou",
+   "ms": 777.415167
+  },
+  {
+   "teste": "m9d034_recuperacao_de_cliente_e_rascunho_e_nao_e_enviada",
+   "resultado": "passou",
+   "ms": 317.561
+  },
+  {
+   "teste": "m9d034_resumo_com_fontes_e_snapshot",
+   "resultado": "passou",
+   "ms": 545.582708
+  },
+  {
+   "teste": "m9d034_dias_sem_contato_calculado_por_codigo",
+   "resultado": "passou",
+   "ms": 252.14275
+  },
+  {
+   "teste": "m9d034_resumo_sem_interacao_conta_desde_a_abertura_e_encerrada_nao_cobra_contato",
+   "resultado": "passou",
+   "ms": 334.912125
+  },
+  {
+   "teste": "m9d034_oportunidade_de_outra_empresa_bloqueada",
+   "resultado": "passou",
+   "ms": 708.659084
+  },
+  {
+   "teste": "m9d034_sem_permissao_no_crm_403",
+   "resultado": "passou",
+   "ms": 326.154792
+  },
+  {
+   "teste": "dominio_nao_muda_sem_evento_interno",
+   "resultado": "passou",
+   "ms": 1620.773041
+  },
+  {
+   "teste": "dominio_consumo_idempotente",
+   "resultado": "passou",
+   "ms": 496.930875
+  },
+  {
+   "teste": "dominio_compensacao_cria_novo_dispatch",
+   "resultado": "passou",
+   "ms": 725.877833
+  },
+  {
+   "teste": "dominio_usuario_recebe_aceite_com_fornecedor_fora",
+   "resultado": "passou",
+   "ms": 839.573291
+  },
+  {
+   "teste": "dominio_dado_externo_rejeitado_nao_grava",
+   "resultado": "passou",
+   "ms": 1043.633
+  },
+  {
+   "teste": "dominio_falha_um_portal_nao_reverte_imovel",
+   "resultado": "passou",
+   "ms": 652.29075
+  },
+  {
+   "teste": "swap_mesma_suite_dois_adapters_resultado_igual",
+   "resultado": "passou",
+   "ms": 2827.475084
+  },
+  {
+   "teste": "swap_no_meio_preserva_conversation_id",
+   "resultado": "passou",
+   "ms": 5019.747708
+  },
+  {
+   "teste": "swap_dispatch_em_voo_drena_na_antiga",
+   "resultado": "passou",
+   "ms": 1539.627375
+  },
+  {
+   "teste": "swap_dominios_diferentes_recusado",
+   "resultado": "passou",
+   "ms": 145.23225
+  },
+  {
+   "teste": "swap_capability_ausente_degrada_declarado",
+   "resultado": "passou",
+   "ms": 1296.81775
+  },
+  {
+   "teste": "contingencia_parametros_declarados_no_dicionario_e_lidos_pelo_codigo",
+   "resultado": "passou",
+   "ms": 602.16175
+  },
+  {
+   "teste": "contingencia_ganchos_do_dominio_registrados_no_framework",
+   "resultado": "passou",
+   "ms": 6.111
+  },
+  {
+   "teste": "contingencia_assinatura_cancelada_so_deixa_de_contar_se_a_pessoa_assinou",
+   "resultado": "passou",
+   "ms": 0.410458
+  },
+  {
+   "teste": "contingencia_assinatura_preserva_envelope_e_estado",
+   "resultado": "passou",
+   "ms": 2759.792708
+  },
+  {
+   "teste": "contingencia_assinatura_manual_exige_evidencia_com_hash",
+   "resultado": "passou",
+   "ms": 1518.237084
+  },
+  {
+   "teste": "contingencia_assinatura_alternativo_exige_aprovacao",
+   "resultado": "passou",
+   "ms": 1328.281959
+  },
+  {
+   "teste": "contingencia_assinatura_alternativo_troca_o_envio_da_fila_quando_nada_chegou_ao_fornecedor",
+   "resultado": "passou",
+   "ms": 1794.512208
+  },
+  {
+   "teste": "contingencia_portal_publicacao_interna_mantida_e_reprocessada",
+   "resultado": "passou",
+   "ms": 9791.849458
+  },
+  {
+   "teste": "contingencia_portal_reprocessa_o_envio_recusado_e_abre_uma_tarefa_so_depois_do_prazo",
+   "resultado": "passou",
+   "ms": 2769.711667
+  },
+  {
+   "teste": "contingencia_portal_despublicacao_pendente_continua_unpublishing",
+   "resultado": "passou",
+   "ms": 2388.095375
+  },
+  {
+   "teste": "contingencia_whatsapp_fila_nao_marca_entregue",
+   "resultado": "passou",
+   "ms": 2297.703834
+  },
+  {
+   "teste": "contingencia_whatsapp_alternativo_com_consentimento",
+   "resultado": "passou",
+   "ms": 1843.174834
+  },
+  {
+   "teste": "contingencia_whatsapp_outro_fornecedor_marca_canal_alternativo_e_marketing_nao_usa",
+   "resultado": "passou",
+   "ms": 2585.614666
+  },
+  {
+   "teste": "contingencia_whatsapp_marketing_vence_e_cancela",
+   "resultado": "passou",
+   "ms": 692.854959
+  },
+  {
+   "teste": "contingencia_whatsapp_mensagem_vencida_na_janela_vira_modelo",
+   "resultado": "passou",
+   "ms": 933.367292
+  },
+  {
+   "teste": "messaging_delivery_somente_por_evidencia",
+   "resultado": "passou",
+   "ms": 1721.427042
+  },
+  {
+   "teste": "messaging_falha_de_entrega_nao_cria_entregue_nem_contato",
+   "resultado": "passou",
+   "ms": 2551.295083
+  },
+  {
+   "teste": "messaging_status_fora_de_ordem_nao_regride_no_crm",
+   "resultado": "passou",
+   "ms": 792.981208
+  },
+  {
+   "teste": "messaging_inbound_vira_interacao",
+   "resultado": "passou",
+   "ms": 366.886333
+  },
+  {
+   "teste": "messaging_external_id_deduplica_inbound",
+   "resultado": "passou",
+   "ms": 268.899042
+  },
+  {
+   "teste": "messaging_telefone_invalido_e_capacidade_ausente_no_servico",
+   "resultado": "passou",
+   "ms": 309.082875
+  },
+  {
+   "teste": "messaging_rotas_do_crm_exigem_permissao",
+   "resultado": "passou",
+   "ms": 12.98875
+  },
+  {
+   "teste": "messaging_send_text_template_media_getstatus",
+   "resultado": "passou",
+   "ms": 6.289542
+  },
+  {
+   "teste": "messaging_sandbox_falhas_injetadas",
+   "resultado": "passou",
+   "ms": 126.347542
+  },
+  {
+   "teste": "messaging_telefone_e164",
+   "resultado": "passou",
+   "ms": 1.121625
+  },
+  {
+   "teste": "messaging_status_fora_de_ordem_nao_regride",
+   "resultado": "passou",
+   "ms": 0.38975
+  },
+  {
+   "teste": "whatsapp_falha_nao_cria_interacao_entregue",
+   "resultado": "passou",
+   "ms": 7153.828167
+  },
+  {
+   "teste": "whatsapp_mapping_troca_de_fornecedor_preserva_conversa_e_canal",
+   "resultado": "passou",
+   "ms": 1068.412958
+  },
+  {
+   "teste": "whatsapp_fora_da_janela_exige_template",
+   "resultado": "passou",
+   "ms": 1456.978208
+  },
+  {
+   "teste": "whatsapp_template_variaveis_conferem",
+   "resultado": "passou",
+   "ms": 1086.238958
+  },
+  {
+   "teste": "whatsapp_sem_consentimento_bloqueia",
+   "resultado": "passou",
+   "ms": 488.173333
+  },
+  {
+   "teste": "whatsapp_optout_por_palavra_chave_revoga_consentimento",
+   "resultado": "passou",
+   "ms": 615.576333
+  },
+  {
+   "teste": "whatsapp_optout_cancela_itens_na_fila",
+   "resultado": "passou",
+   "ms": 1152.273042
+  },
+  {
+   "teste": "whatsapp_midia_so_se_arquivo_clean",
+   "resultado": "passou",
+   "ms": 4831.134583
+  },
+  {
+   "teste": "whatsapp_midia_entrante_em_quarentena",
+   "resultado": "passou",
+   "ms": 1701.273791
+  },
+  {
+   "teste": "adv_provider_swap_mesmo_resultado_contract",
+   "resultado": "passou",
+   "ms": 9846.583083
+  },
+  {
+   "teste": "bloqueio_de_envio_executa_acoes_internas: com SUPPRESSED e com KILL_SWITCH a mensagem e SKIPPED, a tarefa executa, run BLOCKED e evento blocked",
+   "resultado": "passou",
+   "ms": 670.568167
+  },
+  {
+   "teste": "runner_respeita_kill_switch_no_passo_3: global, canal, campanha e automacao; estado ilegivel tambem bloqueia; reativar volta a processar",
+   "resultado": "passou",
+   "ms": 1228.62175
+  },
+  {
+   "teste": "bloqueio_de_aplicabilidade_nao_executa_nenhuma_acao: CONDITION_FALSE deixa tudo SKIPPED, sem tarefa e sem mensagem",
+   "resultado": "passou",
+   "ms": 182.965292
+  },
+  {
+   "teste": "sujeito_de_outra_empresa_bloqueia: CROSS_COMPANY, nenhuma acao",
+   "resultado": "passou",
+   "ms": 90.3435
+  },
+  {
+   "teste": "run_fora_da_validade_nasce_blocked_outside_validity sem executar acao (evaluateValidity da D413)",
+   "resultado": "passou",
+   "ms": 1503.199666
+  },
+  {
+   "teste": "cada_motivo_de_bloqueio_da_lista_de_17_e_produzido: um caso por motivo; QUIET_HOURS e MKT_NO_PUBLISHED_VERSION nunca viram blocked_reason",
+   "resultado": "passou",
+   "ms": 2574.619833
+  },
+  {
+   "teste": "cap_avaliado_uma_unica_vez_dentro_do_cansend: uma consulta do cap por tentativa de envio, na ordem opt-out, quiet hours, cap, consent",
+   "resultado": "passou",
+   "ms": 212.026167
+  },
+  {
+   "teste": "runner_usa_politica_e_cansend_da_d416_e_d418: a acao de envio fica em actions_result na forma da DI-D416-3",
+   "resultado": "passou",
+   "ms": 138.638
+  },
+  {
+   "teste": "step_de_campanha_dispara_por_cansend_e_termina_em_sent_blocked_ou_failed",
+   "resultado": "passou",
+   "ms": 447.714041
+  },
+  {
+   "teste": "step_de_campanha_avalia_cansend_na_hora_do_envio_e_finalidade_desconhecida_nunca_envia",
+   "resultado": "passou",
+   "ms": 344.175875
+  },
+  {
+   "teste": "opt_out_recebe_automacao_bloqueado",
+   "resultado": "passou",
+   "ms": 430.297584
+  },
+  {
+   "teste": "ordem_de_precedencia_supressao_quiet_cap_consent",
+   "resultado": "passou",
+   "ms": 604.487333
+  },
+  {
+   "teste": "quiet_hours_cruza_meia_noite",
+   "resultado": "passou",
+   "ms": 1304.767334
+  },
+  {
+   "teste": "quiet_hours_borda_08_00_liberado_e_21_00_bloqueado",
+   "resultado": "passou",
+   "ms": 157.933542
+  },
+  {
+   "teste": "transacional_nao_exige_opt_in_mas_respeita_supressao",
+   "resultado": "passou",
+   "ms": 416.90425
+  },
+  {
+   "teste": "finalidade_fora_das_listas_e_recusada_e_pos_venda_exige_opt_in",
+   "resultado": "passou",
+   "ms": 887.310625
+  },
+  {
+   "teste": "politica_de_canal_whatsapp_fora_da_janela_so_com_template_oficial",
+   "resultado": "passou",
+   "ms": 131.948667
+  },
+  {
+   "teste": "sem_endereco_utilizavel_e_bloqueado_e_endereco_formatado_de_outro_jeito_e_o_mesmo",
+   "resultado": "passou",
+   "ms": 101.548666
+  },
+  {
+   "teste": "opt_out_simultaneo_ao_envio",
+   "resultado": "passou",
+   "ms": 1877.090667
+  },
+  {
+   "teste": "marketing_nunca_entra_na_lista_sem_opt_in",
+   "resultado": "passou",
+   "ms": 182.12125
+  },
+  {
+   "teste": "marketing_continua_exigindo_opt_in_mesmo_fora_da_lista_configurada",
+   "resultado": "passou",
+   "ms": 57.407375
+  },
+  {
+   "teste": "palavra_sair_cria_supressao_imediata",
+   "resultado": "passou",
+   "ms": 750.305875
+  },
+  {
+   "teste": "supressao_automatica_por_link_bounce_reclamacao_e_numero_invalido_e_duplicada_devolve_a_existente",
+   "resultado": "passou",
+   "ms": 511.288417
+  },
+  {
+   "teste": "supressao_guarda_apenas_hash",
+   "resultado": "passou",
+   "ms": 78.4255
+  },
+  {
+   "teste": "remover_supressao_exige_permissao_e_motivo",
+   "resultado": "passou",
+   "ms": 133.94875
+  },
+  {
+   "teste": "supressao_cancela_acoes_scheduled_da_run_waiting",
+   "resultado": "passou",
+   "ms": 324.832833
+  },
+  {
+   "teste": "supressao_e_isolada_por_empresa",
+   "resultado": "passou",
+   "ms": 221.223375
+  },
+  {
+   "teste": "opt_out_cancela_steps_posteriores",
+   "resultado": "passou",
+   "ms": 1008.734459
+  },
+  {
+   "teste": "consumidor_cria_a_supressao_que_faltar_sem_emitir_novo_evento_e_cancela_o_agendado",
+   "resultado": "passou",
+   "ms": 265.529
+  },
+  {
+   "teste": "consumidor_confere_idempotente_a_supressao_ja_criada_e_processa_cada_eventid_uma_vez",
+   "resultado": "passou",
+   "ms": 61.419417
+  },
+  {
+   "teste": "consumidor_nao_recria_supressao_de_quem_deu_novo_opt_in_depois_do_pedido",
+   "resultado": "passou",
+   "ms": 55.419958
+  },
+  {
+   "teste": "opt_out_emite_evento_sem_endereco",
+   "resultado": "passou",
+   "ms": 412.058166
+  },
+  {
+   "teste": "opt_out_emite_um_unico_evento_e_a_supressao_nao_reemite",
+   "resultado": "passou",
+   "ms": 422.8405
+  },
+  {
+   "teste": "tela_de_pessoas_registra_opt_out_com_supressao_cancelamento_e_um_unico_evento",
+   "resultado": "passou",
+   "ms": 82.150875
+  },
+  {
+   "teste": "evento_de_uma_empresa_nao_aparece_na_outra",
+   "resultado": "passou",
+   "ms": 76.417959
+  },
+  {
+   "teste": "person_hash_e_sha256_de_pessoa_dois_pontos_segredo_estavel_por_empresa_e_diferente_entre_empresas",
+   "resultado": "passou",
+   "ms": 171.802875
+  },
+  {
+   "teste": "publico_alcancavel_exclui_suprimidos_e_opt_outs_e_o_resumo_so_tem_contagens",
+   "resultado": "passou",
+   "ms": 627.761542
+  },
+  {
+   "teste": "clique_sem_consentimento_nao_grava_pessoa",
+   "resultado": "passou",
+   "ms": 111.004959
+  },
+  {
+   "teste": "exportar_lista_de_campanha_nao_existe",
+   "resultado": "passou",
+   "ms": 1011.008041
+  },
+  {
+   "teste": "segmento_por_dado_sensivel_recusado",
+   "resultado": "passou",
+   "ms": 1394.813
+  },
+  {
+   "teste": "segmento_com_qualquer_campo_da_lista_proibida_e_recusado",
+   "resultado": "passou",
+   "ms": 1298.287583
+  },
+  {
+   "teste": "campo_fora_das_listas_tambem_e_recusado_e_a_lista_e_parametro_da_empresa",
+   "resultado": "passou",
+   "ms": 187.235041
+  },
+  {
+   "teste": "sem_retorno_segue_cadencia_configuravel",
+   "resultado": "passou",
+   "ms": 1985.866458
+  },
+  {
+   "teste": "a_cadencia_vem_do_parametro_sem_nova_versao",
+   "resultado": "passou",
+   "ms": 759.855917
+  },
+  {
+   "teste": "resposta_encerra_cadencia",
+   "resultado": "passou",
+   "ms": 700.596458
+  },
+  {
+   "teste": "oportunidade_encerrada_nao_recebe_acompanhamento",
+   "resultado": "passou",
+   "ms": 164.643
+  },
+  {
+   "teste": "acompanhamento_respeita_supressao_e_nao_exige_opt_in",
+   "resultado": "passou",
+   "ms": 185.956625
+  },
+  {
+   "teste": "a_automacao_so_dispara_as_09h_do_fuso_da_empresa",
+   "resultado": "passou",
+   "ms": 334.198708
+  },
+  {
+   "teste": "mesma_janela_duas_vezes_nao_repete_o_acompanhamento",
+   "resultado": "passou",
+   "ms": 491.332583
+  },
+  {
+   "teste": "cliente_frio_respeita_limite_de_4_em_90_dias",
+   "resultado": "passou",
+   "ms": 4650.874875
+  },
+  {
+   "teste": "cliente_frio_sem_opt_in_nao_recebe",
+   "resultado": "passou",
+   "ms": 529.028792
+  },
+  {
+   "teste": "cliente_frio_limite_usa_o_cap_da_versao_lido_do_parametro",
+   "resultado": "passou",
+   "ms": 1076.901042
+  },
+  {
+   "teste": "quem_interagiu_ha_menos_dias_que_o_parametro_nao_e_cliente_frio",
+   "resultado": "passou",
+   "ms": 524.586416
+  },
+  {
+   "teste": "mensagem_automatica_nao_conta_como_interacao_e_a_resposta_tira_da_nutricao",
+   "resultado": "passou",
+   "ms": 883.850041
+  },
+  {
+   "teste": "sem_conteudo_aprovado_nada_e_enviado",
+   "resultado": "passou",
+   "ms": 165.347084
+  },
+  {
+   "teste": "a_nutricao_leva_so_o_conteudo_aprovado_e_sai_no_canal_com_opt_in",
+   "resultado": "passou",
+   "ms": 462.653875
+  },
+  {
+   "teste": "mesma_semana_duas_vezes_nao_repete_a_nutricao_e_a_agenda_so_dispara_na_segunda",
+   "resultado": "passou",
+   "ms": 534.483583
+  },
+  {
+   "teste": "lead_novo_envia_confirmacao_e_cria_tarefa",
+   "resultado": "passou",
+   "ms": 979.398125
+  },
+  {
+   "teste": "lead_novo_sai_no_canal_de_origem",
+   "resultado": "passou",
+   "ms": 1202.546
+  },
+  {
+   "teste": "prazo_da_tarefa_vem_do_parametro_da_empresa",
+   "resultado": "passou",
+   "ms": 839.329542
+  },
+  {
+   "teste": "lead_novo_em_quiet_hours_cria_tarefa_e_adia_mensagem",
+   "resultado": "passou",
+   "ms": 733.939334
+  },
+  {
+   "teste": "mesmo_evento_lead_2x_uma_confirmacao",
+   "resultado": "passou",
+   "ms": 509.119375
+  },
+  {
+   "teste": "lead_novo_bloqueado_por_supressao_ou_kill_switch_ainda_cria_a_tarefa",
+   "resultado": "passou",
+   "ms": 616.758709
+  },
+  {
+   "teste": "lead_sem_canal_de_contato_bloqueia_a_run_e_cria_so_a_tarefa",
+   "resultado": "passou",
+   "ms": 155.674
+  },
+  {
+   "teste": "origem_fora_da_lista_nao_dispara_e_a_lista_vem_de_parametro",
+   "resultado": "passou",
+   "ms": 323.498375
+  },
+  {
+   "teste": "cooldown_de_24h_por_pessoa_bloqueia_a_segunda_confirmacao_mas_cria_a_tarefa",
+   "resultado": "passou",
+   "ms": 729.604792
+  },
+  {
+   "teste": "a_automacao_nasce_publicada_media_risco_com_owner_cooldown_e_cap",
+   "resultado": "passou",
+   "ms": 75.745542
+  },
+  {
+   "teste": "status_entregue_so_apos_confirmacao",
+   "resultado": "passou",
+   "ms": 1166.348166
+  },
+  {
+   "teste": "falha_de_entrega_grava_status_failed_e_preserva_ultimo_contato",
+   "resultado": "passou",
+   "ms": 4266.398667
+  },
+  {
+   "teste": "email_sent_sem_confirmacao_conta_no_cap_e_nao_conta_como_contato",
+   "resultado": "passou",
+   "ms": 1076.89675
+  },
+  {
+   "teste": "falha_de_entrega_nao_finge_contato",
+   "resultado": "passou",
+   "ms": 294.004917
+  },
+  {
+   "teste": "webhook_de_status_idempotente_e_vale_o_mais_avancado",
+   "resultado": "passou",
+   "ms": 663.114458
+  },
+  {
+   "teste": "bounce_permanente_reclamacao_e_numero_invalido_viram_supressao_e_bounce_leve_nao",
+   "resultado": "passou",
+   "ms": 1226.626
+  },
+  {
+   "teste": "estados_concorrentes_da_mesma_mensagem_terminam_no_mais_avancado",
+   "resultado": "passou",
+   "ms": 1544.470792
+  },
+  {
+   "teste": "mesmo_evento_2x_gera_uma_run_e_uma_mensagem",
+   "resultado": "passou",
+   "ms": 189.926625
+  },
+  {
+   "teste": "action_key_e_unica_no_crm",
+   "resultado": "passou",
+   "ms": 188.398542
+  },
+  {
+   "teste": "duas_conexoes_mesmo_evento_uma_run",
+   "resultado": "passou",
+   "ms": 514.500792
+  },
+  {
+   "teste": "HTTP mesmo grupo: os tokens das duas entradas apontam para empresas diferentes do mesmo grupo",
+   "resultado": "passou",
+   "ms": 9035.016084
+  },
+  {
+   "teste": "HTTP mesmo grupo: empresa B não lê nem grava a pessoa da empresa A (404 limpo, nunca 500) e nada é gravado em A",
+   "resultado": "passou",
+   "ms": 1680.245834
+  },
+  {
+   "teste": "HTTP mesmo grupo: o mesmo CPF na empresa B é recusado com 409 sem entregar a pessoa de A",
+   "resultado": "passou",
+   "ms": 474.631125
+  },
+  {
+   "teste": "HTTP mesmo grupo: fluxo legítimo intacto em cada empresa e A também não vê a pessoa de B",
+   "resultado": "passou",
+   "ms": 1192.209708
+  },
+  {
+   "teste": "mesmo grupo: empresa B não lê a pessoa da empresa A (por id, na lista, nos consentimentos e nos contatos)",
+   "resultado": "passou",
+   "ms": 249.199417
+  },
+  {
+   "teste": "mesmo grupo: empresa B não grava na pessoa da empresa A (consentimento, edição, exclusão, INSERT/UPDATE/DELETE direto)",
+   "resultado": "passou",
+   "ms": 80.03875
+  },
+  {
+   "teste": "recusa limpa: gravação barrada pelo RLS vira 403 TENANT_SCOPE_DENIED; GRANT ausente continua erro do servidor",
+   "resultado": "passou",
+   "ms": 39.661833
+  },
+  {
+   "teste": "mesmo grupo: sem empresa no contexto não se lê nem se grava pessoa (falha fechada)",
+   "resultado": "passou",
+   "ms": 30.07625
+  },
+  {
+   "teste": "mesmo grupo: o mesmo CPF em outra empresa do grupo é recusado com 409 sem revelar a pessoa (UNIQUE por grupo)",
+   "resultado": "passou",
+   "ms": 44.439542
+  },
+  {
+   "teste": "fluxo legítimo intacto: cada empresa cria, lê, edita, deduplica, registra consentimento e mescla as próprias pessoas",
+   "resultado": "passou",
+   "ms": 188.617417
+  },
+  {
+   "teste": "CRMX-007: criar uma offer ACTIVE dispara o matching do Radar por evento (despacho do outbox), não só no próximo job periódico",
+   "resultado": "passou",
+   "ms": 412.321917
+  },
+  {
+   "teste": "CRMX-007: criar offer que NÃO bate com nenhum radar ativo não gera evento nenhum",
+   "resultado": "passou",
+   "ms": 194.873042
+  },
+  {
+   "teste": "ROTA Radar livro: obrigatórios + preferências ponderadas + exclusão, matches ordenados por score, explicação, histórico gravado e isolamento",
+   "resultado": "passou",
+   "ms": 7310.932458
+  },
+  {
+   "teste": "radar idempotente: reprocessar o mesmo match (mesmo radar + mesmo imóvel) não duplica o evento radar.matched",
+   "resultado": "passou",
+   "ms": 375.089667
+  },
+  {
+   "teste": "Radar livro: obrigatório que falha tira o imóvel (matched=false, score 0, REQUIRED_FAILED), mesmo com preferências atendidas",
+   "resultado": "passou",
+   "ms": 200.197708
+  },
+  {
+   "teste": "Radar livro: exclusão que bate tira o imóvel com o motivo (tipo e atributo)",
+   "resultado": "passou",
+   "ms": 3.972917
+  },
+  {
+   "teste": "Radar livro: preferências ponderadas somam o peso atendido sobre o total (bairro, quartos, suítes, vagas)",
+   "resultado": "passou",
+   "ms": 0.934833
+  },
+  {
+   "teste": "Radar livro: critérios flexíveis por atributo (acabamento) e por distância (km, haversine)",
+   "resultado": "passou",
+   "ms": 1.149042
+  },
+  {
+   "teste": "Radar livro: critérios planos de sempre continuam obrigatórios e mesclam com required; fingerprint estável",
+   "resultado": "passou",
+   "ms": 1.716125
+  },
+  {
+   "teste": "Radar livro: validação do payload na criação e na edição (código fora da lista, peso inválido, value ausente)",
+   "resultado": "passou",
+   "ms": 175.801709
+  },
+  {
+   "teste": "Radar livro: GET matches (matching real) tira o excluído e ordena por score desc, cada imóvel com a explicação",
+   "resultado": "passou",
+   "ms": 846.595042
+  },
+  {
+   "teste": "matching determinístico: radar retorna apenas properties com offer ACTIVE que batem em TODOS os critérios",
+   "resultado": "passou",
+   "ms": 552.056125
+  },
+  {
+   "teste": "ROTA POST /crm/radars: matching por evento no despacho do outbox, idempotente no reenvio",
+   "resultado": "passou",
+   "ms": 3293.841
+  },
+  {
+   "teste": "CRMX-007 radar novo: evento crm.radar.created no outbox, nada gravado antes do despacho; o despacho grava o match e os eventos; o mesmo evento 2x não duplica",
+   "resultado": "passou",
+   "ms": 1139.763334
+  },
+  {
+   "teste": "CRMX-007 cliente novo com radar: person.created despachado roda o radar do cliente",
+   "resultado": "passou",
+   "ms": 672.570417
+  },
+  {
+   "teste": "CRMX-007 oferta alterada: preço que entra na faixa e status que volta a ACTIVE refazem o matching por evento",
+   "resultado": "passou",
+   "ms": 1095.988208
+  },
+  {
+   "teste": "CRMX-007 radar inativo ou excluído: o evento despachado não grava nada",
+   "resultado": "passou",
+   "ms": 279.696958
+  },
+  {
+   "teste": "radar_matches: oferta ativa grava o match (score, critérios, fingerprint, versão) e publica crm.radar.match.created; o job 2x não duplica",
+   "resultado": "passou",
+   "ms": 383.867084
+  },
+  {
+   "teste": "radar_matches: mudar o critério gera novo registro com novo fingerprint e novo evento; o anterior fica no histórico",
+   "resultado": "passou",
+   "ms": 215.538167
+  },
+  {
+   "teste": "radar_matches: histórico imutável (UPDATE recusado pelo gatilho e DELETE sem permissão para o runtime)",
+   "resultado": "passou",
+   "ms": 286.442625
+  },
+  {
+   "teste": "radar_matches: RLS — outra empresa não lê nem grava match da empresa A",
+   "resultado": "passou",
+   "ms": 140.873708
+  },
+  {
+   "teste": "RLS/FORCE RLS habilitados em 100% das tabelas multiempresa (coluna company_id) do catálogo Postgres",
+   "resultado": "passou",
+   "ms": 1222.480542
+  },
+  {
+   "teste": "M9-D600: analytics.metric_definitions, metric_versions e metric_snapshots têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 4.198875
+  },
+  {
+   "teste": "M9-D601: analytics.dashboard_definitions, dashboard_widgets, executive_briefs e export_jobs têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 7.694083
+  },
+  {
+   "teste": "M9-D700: analytics.access_log tem RLS, FORCE RLS e só as políticas de SELECT e INSERT",
+   "resultado": "passou",
+   "ms": 5.242416
+  },
+  {
+   "teste": "M9-D607: analytics.rm_applied_events (sem UPDATE) e rm_stale_aggregates têm RLS e FORCE RLS",
+   "resultado": "passou",
+   "ms": 2.850459
+  },
+  {
+   "teste": "M9-D602: analytics.alert_definitions, alert_instances, data_quality_checks e read_model_refreshes têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 3.259958
+  },
+  {
+   "teste": "M9-D207: integration.integration_errors e integration.platform_unknown_webhooks têm RLS e FORCE RLS",
+   "resultado": "passou",
+   "ms": 2.320958
+  },
+  {
+   "teste": "M9-D206: integration.provider_health tem RLS, FORCE RLS, a política tenant_isolation e a função de expurgo SECURITY DEFINER",
+   "resultado": "passou",
+   "ms": 30.922708
+  },
+  {
+   "teste": "M9-D203: integration.webhook_inbox tem RLS, FORCE RLS, a política tenant_isolation e a função de retenção SECURITY DEFINER",
+   "resultado": "passou",
+   "ms": 6.160125
+  },
+  {
+   "teste": "M9-D205: integration.dispatches tem RLS, FORCE RLS, a política tenant_isolation, o gatilho de imutabilidade e a função de retenção SECURITY DEFINER",
+   "resultado": "passou",
+   "ms": 29.151917
+  },
+  {
+   "teste": "M9-D014: ai.budgets e ai.budget_alerts têm RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 37.549041
+  },
+  {
+   "teste": "M9-D015: ai.cache_entries tem RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 1.258125
+  },
+  {
+   "teste": "M9-D032: ai.evaluations, ai.evaluation_items, ai.feedback e ai.golden_candidates têm RLS, FORCE RLS, tenant_isolation e gatilho de imutabilidade",
+   "resultado": "passou",
+   "ms": 10.9855
+  },
+  {
+   "teste": "M9-D033: ai.golden_cases tem RLS, FORCE RLS, tenant_isolation, system_default_read e o gatilho de imutabilidade",
+   "resultado": "passou",
+   "ms": 1.045666
+  },
+  {
+   "teste": "M9-D009: ai.memories tem RLS, FORCE RLS, tenant_isolation e os gatilhos de não apagar e de conteúdo imutável",
+   "resultado": "passou",
+   "ms": 16.089458
+  },
+  {
+   "teste": "M9-D625: analytics.rm_finance_intercompany tem RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 1.849709
+  },
+  {
+   "teste": "M9-D615: analytics.rm_finance_health e rm_finance_sector_margin têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 2.880083
+  },
+  {
+   "teste": "M9-D627: os 8 read models de Marketing e Atendimento têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 9.929291
+  },
+  {
+   "teste": "M9-D670/M9-D671: rm_mkt_campaign_month e rm_mkt_optout_month têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 2.271334
+  },
+  {
+   "teste": "M9-D618: os 9 read models de Obras, Estoque e Pós-obra têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 1.652125
+  },
+  {
+   "teste": "M9-D616: os 9 read models de Comercial/CRM e Imóveis têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 2.897125
+  },
+  {
+   "teste": "M9-D617: os 9 read models de Locação têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 2.087584
+  },
+  {
+   "teste": "M9-D802: calendar_alert_log tem RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 3.745041
+  },
+  {
+   "teste": "M9-D619: os 7 read models de Jurídico e Correspondente têm RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 2.069584
+  },
+  {
+   "teste": "M9-D804: data_domains e data_domain_assignments têm RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 1.938333
+  },
+  {
+   "teste": "M9-D224: integration.alerts tem RLS, FORCE RLS, a política tenant_isolation e o índice único dos abertos",
+   "resultado": "passou",
+   "ms": 3.672625
+  },
+  {
+   "teste": "M9-D214: integration.dispatch_attempts tem RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 0.877708
+  },
+  {
+   "teste": "M9-D022/D023: ai.ingestions e ai.chunks têm RLS, FORCE RLS, tenant_isolation e gatilho de não apagar",
+   "resultado": "passou",
+   "ms": 1.8325
+  },
+  {
+   "teste": "M9-D807: field_change_evidence tem RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 0.80375
+  },
+  {
+   "teste": "M9-D609: snapshot_job_runs tem RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 1.685208
+  },
+  {
+   "teste": "M9-D708: metric_acceptance tem RLS, FORCE RLS e 3 políticas (sem DELETE)",
+   "resultado": "passou",
+   "ms": 2.307167
+  },
+  {
+   "teste": "M9-D805: review_queue_items tem RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 1.248375
+  },
+  {
+   "teste": "M9-D806: quality_rules, quality_scores e quality_issues têm RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 1.806167
+  },
+  {
+   "teste": "M9-D808: bulk_changes e bulk_change_items têm RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 1.0425
+  },
+  {
+   "teste": "M9-D911: as tabelas de retenção têm RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 1.011542
+  },
+  {
+   "teste": "M9-D910: data_classification_registry e classification_review_items têm RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 2.040791
+  },
+  {
+   "teste": "M9-D912: legal_holds e legal_hold_targets têm RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 1.145958
+  },
+  {
+   "teste": "M9-D652: rm_project_occurrences tem RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 0.850125
+  },
+  {
+   "teste": "M9-D628: rm_tech_* e rm_ai_* têm RLS, FORCE RLS e 4 políticas; tech_signal_log tem RLS, FORCE RLS e 3 políticas",
+   "resultado": "passou",
+   "ms": 1.002292
+  },
+  {
+   "teste": "M9-D709: rm_decision_queue tem RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 0.809625
+  },
+  {
+   "teste": "M9-D710: rm_command_events tem RLS, FORCE RLS e 4 políticas",
+   "resultado": "passou",
+   "ms": 0.841083
+  },
+  {
+   "teste": "M9-D810: lineage_nodes, lineage_edges e lineage_seed_state têm RLS, FORCE RLS e a política tenant_isolation por grupo",
+   "resultado": "passou",
+   "ms": 1.523083
+  },
+  {
+   "teste": "M9-D820: dlp_policies tem RLS, FORCE RLS e a política tenant_isolation por empresa",
+   "resultado": "passou",
+   "ms": 1.432125
+  },
+  {
+   "teste": "M9-D821: export_jobs tem RLS, FORCE RLS e a política tenant_isolation por empresa",
+   "resultado": "passou",
+   "ms": 2.929833
+  },
+  {
+   "teste": "M9-D824: access_signals, access_anomalies e user_dlp_state têm RLS, FORCE RLS e a política tenant_isolation por empresa",
+   "resultado": "passou",
+   "ms": 2.958292
+  },
+  {
+   "teste": "M9-D823: share_links e public_access_counters têm RLS, FORCE RLS e as políticas esperadas",
+   "resultado": "passou",
+   "ms": 2.307333
+  },
+  {
+   "teste": "M9-D832: manual_operation_imports e reconciliations têm RLS, FORCE RLS e a política tenant_isolation por empresa",
+   "resultado": "passou",
+   "ms": 3.121417
+  },
+  {
+   "teste": "M9-D834: bcp_form_templates tem RLS, FORCE RLS e a política de leitura",
+   "resultado": "passou",
+   "ms": 2.726459
+  },
+  {
+   "teste": "M9-D830: bcp_sectors tem RLS, FORCE RLS e a política de leitura",
+   "resultado": "passou",
+   "ms": 1.620792
+  },
+  {
+   "teste": "M9-D833: manual_operation_checks e bcp_payment_pendings têm RLS, FORCE RLS e a política tenant_isolation por empresa",
+   "resultado": "passou",
+   "ms": 2.567958
+  },
+  {
+   "teste": "M9-D843: idempotency_keys, error_catalog e rate_limit_counters têm RLS, FORCE RLS e as políticas esperadas",
+   "resultado": "passou",
+   "ms": 3.185125
+  },
+  {
+   "teste": "M9-D841: api_consumers, api_consumer_usage e api_deprecations têm RLS, FORCE RLS e a política tenant_isolation por empresa",
+   "resultado": "passou",
+   "ms": 3.960833
+  },
+  {
+   "teste": "M9-D046: ai.release_gates tem RLS, FORCE RLS e a política tenant_isolation",
+   "resultado": "passou",
+   "ms": 0.898083
+  },
+  {
+   "teste": "M9-D844: api_clients tem RLS, FORCE RLS, tenant_isolation e a consulta por client_id; api_scopes é catálogo de leitura aberta",
+   "resultado": "passou",
+   "ms": 3.616458
+  },
+  {
+   "teste": "M9-D234: email_messages e email_message_events têm RLS, FORCE RLS e política por empresa",
+   "resultado": "passou",
+   "ms": 2.127333
+  },
+  {
+   "teste": "M9-D235: email_inbound_messages e email_inbound_attachments têm RLS, FORCE RLS e política por empresa",
+   "resultado": "passou",
+   "ms": 3.985708
+  },
+  {
+   "teste": "M9-D238: insurance_policy_versions e insurance_manual_tasks têm RLS, FORCE RLS e política por empresa",
+   "resultado": "passou",
+   "ms": 2.999625
+  },
+  {
+   "teste": "M9-D237: finance.bank_statement_entries tem RLS, FORCE RLS, a política tenant_isolation e o índice único (connection_id, entry_id)",
+   "resultado": "passou",
+   "ms": 6.625125
+  },
+  {
+   "teste": "M9-D232: real_estate.portal_listings tem RLS, FORCE RLS, a política tenant_isolation e o índice único parcial (property_id, connection_id)",
+   "resultado": "passou",
+   "ms": 2.921
+  },
+  {
+   "teste": "M9-D241: nfse_rps_sequences tem RLS, FORCE RLS e política por empresa; RPS único; tax_documents aponta XML e PDF para files",
+   "resultado": "passou",
+   "ms": 7.260958
+  },
+  {
+   "teste": "M9-D259: site_pages tem RLS, FORCE RLS e política por empresa e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 1.970916
+  },
+  {
+   "teste": "M9-D247: files.quarantine tem RLS, FORCE RLS e política por empresa e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 2.079041
+  },
+  {
+   "teste": "M9-D230: crm.channels, crm.conversations e crm.conversation_links têm RLS, FORCE RLS e política por empresa e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 10.539334
+  },
+  {
+   "teste": "M9-D860: tabelas do FinOps têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 3.81925
+  },
+  {
+   "teste": "M9-D861: budgets e budget_alerts têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 4.775041
+  },
+  {
+   "teste": "M9-D862: finops_findings tem RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 1.933125
+  },
+  {
+   "teste": "M9-D863: degradation_policies e degradation_actions têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 4.908209
+  },
+  {
+   "teste": "M9-D870: feature_flags, config_entries e flag_versions têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 2.607167
+  },
+  {
+   "teste": "M9-D871: flag_alert_log tem RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 1.4375
+  },
+  {
+   "teste": "M9-D906: external_refs tem RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 1.701083
+  },
+  {
+   "teste": "M9-D900: mig_sources, mig_runs, mig_batches, mig_records e mig_event_keys têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 3.506292
+  },
+  {
+   "teste": "M9-D902: cutover_activities e cutover_raci têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 2.315167
+  },
+  {
+   "teste": "M9-D901: mig_counters e mig_blockers têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime, e mig_records tem o gatilho de contagem",
+   "resultado": "passou",
+   "ms": 4.398708
+  },
+  {
+   "teste": "M9-D905: mig_entity_schema e mig_batch_leaves têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 5.22325
+  },
+  {
+   "teste": "M9-D903: parallel_windows, parallel_rules, parallel_runs e parallel_results têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 6.866958
+  },
+  {
+   "teste": "M9-D907: external_op_types, external_op_log, rollback_items e cutover_decisions têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 3.776959
+  },
+  {
+   "teste": "M9-D908: mig_clock_checks, mig_dry_reports e mig_alert_log têm RLS, FORCE RLS, política tenant_isolation e GRANT ao runtime",
+   "resultado": "passou",
+   "ms": 3.463458
+  },
+  {
+   "teste": "RLS: toda política que libera SELECT numa tabela com company_id restringe por empresa (fora os lookups deliberados)",
+   "resultado": "passou",
+   "ms": 192.069083
+  },
+  {
+   "teste": "RLS: os lookups deliberados continuam com o predicado exato (mudou o predicado, revise o isolamento)",
+   "resultado": "passou",
+   "ms": 42.766417
+  },
+  {
+   "teste": "RLS: people.persons tem leitura por empresa e escrita por comando, nenhuma política FOR ALL",
+   "resultado": "passou",
+   "ms": 10.042375
+  },
+  {
+   "teste": "m9d823 o token nunca aparece no log da API (abertura, 404 e 429)",
+   "resultado": "falhou",
+   "ms": 465.125125
+  },
+  {
+   "teste": "m9d825 perfil mascarado vê CPF e conta mascarados; perfil em claro vê o valor (mesma ficha)",
+   "resultado": "falhou",
+   "ms": 228.062458
+  }
+ ]
+}

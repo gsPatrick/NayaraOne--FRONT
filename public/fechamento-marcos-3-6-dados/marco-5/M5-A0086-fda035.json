@@ -1,0 +1,494 @@
+{
+ "id": "M5-A0086-fda035",
+ "secao": "P1 > 10. Entrega de chaves",
+ "linhaCaderno": 199,
+ "requisito": "• Evento keys.delivered inicia pós-chaves/cadências e obrigações.",
+ "demandas": "M5-D103;M5-D025",
+ "implementacao": "src/features/billing/keysDeliveredObligations.consumer.js (consumidor \"locacao.obrigacoes\" de keys.delivered no motor de eventos: início = data da entrega em São Paulo, próximo vencimento pela periodicidade, prazo da troca de titularidade = entrega + locacao.titularidade.prazo_dias, padrão 30; idempotente) + pós-chaves/cadência do Marketing (seeds/posChaves.js)",
+ "tela": "Contratos > Entrega de chaves (/painel/contratos/entrega-chaves, /painel/contratos/entrega-chaves/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.chavesLivro.test.js",
+   "nome": "fechamento M5 §10 (M5-D103): keys.delivered inicia as obrigações — início e próximo vencimento pela periodicidade e prazo da troca de titularidade; reentrega não muda nada",
+   "status": "pass",
+   "ms": 177.188,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.chaves.test.js",
+   "nome": "fechamento M5 §10/§18: keys.delivered é publicado uma única vez, na mesma transação da liberação, e nada é publicado quando o gate bloqueia",
+   "status": "pass",
+   "ms": 93.261,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-CH-23",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=RELEASED, id=9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+   "quando": "2026-11-11T03:42:33.282Z"
+  },
+  {
+   "passo": "LC-EN-28",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/05621526-8875-4a0d-8345-569a4a3e6085/release",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=RELEASED, id=05621526-8875-4a0d-8345-569a4a3e6085",
+   "quando": "2026-11-11T03:42:36.698Z"
+  },
+  {
+   "passo": "LC-CH-36",
+   "metodo": "POST",
+   "rota": "/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/key-delivery",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=RELEASED, id=372750c1-c70d-41b3-aeed-94e13b53e926",
+   "quando": "2026-11-11T03:42:33.656Z"
+  },
+  {
+   "passo": "LC-EN-27",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=78f9f0a5-f15b-4cb0-8654-486d27241e65",
+   "quando": "2026-11-11T03:42:36.655Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0086-fda035.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado (2ª onda): keys.delivered inicia as obrigações da locação (LC-EN-29/30: início, próximo vencimento e prazo de 30 dias da troca de titularidade de água e luz), além do pós-chaves/cadências do Marketing. O livro não fixa o prazo: parâmetro locacao.titularidade.prazo_dias (1 a 90), padrão 30 = o prazo que o job de vencidas já usava. Teste novo \"keys.delivered inicia as obrigações\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.chavesLivro.test.js test/m5fech.locacao.chaves.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-CH-23, LC-CH-26, LC-EN-28, LC-EN-29, LC-EN-30, LC-CH-36, LC-EN-27)"
+ },
+ "passos": [
+  {
+   "id": "LC-CH-23",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Com contrato SIGNED, vistoria de entrada assinada pelas duas partes, garantia vigente, quantidade/identificação e termo assinado: chaves entregues",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:33.282Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:33.273Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 3,
+     "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+     "photosRequired": false,
+     "photosFileIds": null,
+     "termType": null,
+     "termSignedAt": "2026-11-11T03:42:33.270Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "termEvidenceSha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE CHAVES\n\nContrato: LOC-2026-0011 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 3 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta principal e 1 controle do portão\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos não obrigatórias nesta entrega: o estado do imóvel já está registrado na vistoria de entrada assinada pelo locador e pelo locatário.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "da8df6e2b75492cf06008258719f23535f5778962d635126425de8afb5a326c3",
+     "photoPolicy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:32.004Z",
+     "updated_at": "2026-11-11T03:42:33.274Z",
+     "deleted_at": null,
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0226-43d13b",
+    "M5-A0136-e672e2",
+    "M5-A0079-456494",
+    "M5-A0080-157e61",
+    "M5-A0081-9fbe36",
+    "M5-A0082-0bfb1f",
+    "M5-A0083-ed53e0",
+    "M5-A0084-c60910",
+    "M5-A0085-d2ec3a",
+    "M5-A0086-fda035",
+    "M5-A0145-146a2f",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-28",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Chaves entregues com a vistoria do próprio contrato e o termo assinado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/05621526-8875-4a0d-8345-569a4a3e6085/release",
+   "corpoEnviado": {
+    "keysCount": 2,
+    "keysIdentification": "2 chaves da porta",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "78f9f0a5-f15b-4cb0-8654-486d27241e65"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T03:42:36.698Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "05621526-8875-4a0d-8345-569a4a3e6085",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:36.680Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 2,
+     "keysIdentification": "2 chaves da porta",
+     "photosRequired": false,
+     "photosFileIds": null,
+     "termType": null,
+     "termSignedAt": "2026-11-11T03:42:36.676Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "78f9f0a5-f15b-4cb0-8654-486d27241e65",
+     "termEvidenceSha256": "81b8e970fc8fd4ec3bcad129c0721b6041a8cd121dc4ba181494f8845de3a9a4",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE CHAVES\n\nContrato: LOC-2026-0016 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 2 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos não obrigatórias nesta entrega: o estado do imóvel já está registrado na vistoria de entrada assinada pelo locador e pelo locatário.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "c47f76c6a9a744d27df2abc86bebedd732681d8f72fa5b7c0683f9485f27beef",
+     "photoPolicy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:36.385Z",
+     "updated_at": "2026-11-11T03:42:36.680Z",
+     "deleted_at": null,
+     "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0086-fda035",
+    "M5-A0081-9fbe36"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-29",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Motor de eventos entrega keys.delivered aos consumidores: o da locação inicia as obrigações (início, próximo vencimento, prazo da troca de titularidade)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "engines/events/consumers.runEventConsumers(keys.delivered)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 88,
+   "quando": "2026-11-11T03:42:36.786Z",
+   "corpo": {
+    "result": {
+     "consumidores": [
+      "locacao.obrigacoes",
+      "marketing.content.type_triggers",
+      "marketing.automation.runner",
+      "analytics.read-model.worker"
+     ]
+    }
+   },
+   "req": [
+    "M5-A0086-fda035",
+    "M5-A0094-c81c5a",
+    "M5-A0095-1df93e"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-CH-36",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "POST /contracts/:id/key-delivery (rota literal do Guia §14) com todos os gates cumpridos: chaves entregues (RELEASED)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/key-delivery",
+   "corpoEnviado": {
+    "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:33.656Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "372750c1-c70d-41b3-aeed-94e13b53e926",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:33.649Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 3,
+     "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+     "photosRequired": false,
+     "photosFileIds": null,
+     "termType": null,
+     "termSignedAt": "2026-11-11T03:42:33.644Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "termEvidenceSha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE CHAVES\n\nContrato: LOC-2026-0011 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 3 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta principal e 1 controle do portão\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos não obrigatórias nesta entrega: o estado do imóvel já está registrado na vistoria de entrada assinada pelo locador e pelo locatário.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "da8df6e2b75492cf06008258719f23535f5778962d635126425de8afb5a326c3",
+     "photoPolicy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:33.635Z",
+     "updated_at": "2026-11-11T03:42:33.649Z",
+     "deleted_at": null,
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0205-eaae4a",
+    "M5-A0216-061071",
+    "M5-A0080-157e61",
+    "M5-A0081-9fbe36",
+    "M5-A0082-0bfb1f",
+    "M5-A0083-ed53e0",
+    "M5-A0085-d2ec3a",
+    "M5-A0086-fda035"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-27",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Via do termo de entrega assinada pelo locatário (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "termo-g.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "VGVybW8gODU0OTQzMg==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T03:42:36.655Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "78f9f0a5-f15b-4cb0-8654-486d27241e65",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/0c8e5f0b-0017-4500-9478-1d8491165622-termo-g.pdf",
+     "fileName": "termo-g.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 13,
+     "checksumSha256": "81b8e970fc8fd4ec3bcad129c0721b6041a8cd121dc4ba181494f8845de3a9a4",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:36.634Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:36.634Z",
+     "created_at": "2026-11-11T03:42:36.634Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0086-fda035"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-CH-26",
+   "req": [
+    "M5-A0086-fda035",
+    "M5-A0136-e672e2",
+    "M5-A0226-43d13b",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "perfil": "A:gestor",
+   "descricao": "Outbox: keys.delivered publicado na mesma transação da entrega (uma vez, com chave de idempotência)",
+   "sql": "SELECT event_type, idempotency_key, payload_json FROM integration.outbox_events WHERE aggregate_id = :id AND event_type IN ('keys.delivered','legal.key_delivery.released') ORDER BY event_type",
+   "resultado": [
+    {
+     "event_type": "keys.delivered",
+     "idempotency_key": "keys.delivered:9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+     "payload_json": {
+      "id": "9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+      "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+      "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+     }
+    },
+    {
+     "event_type": "legal.key_delivery.released",
+     "idempotency_key": "legal.key_delivery.released:9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+     "payload_json": {
+      "id": "9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+      "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+      "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+     }
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:33.334Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-EN-30",
+   "req": [
+    "M5-A0086-fda035",
+    "M5-A0094-c81c5a",
+    "M5-A0095-1df93e"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "perfil": "A:gestor",
+   "descricao": "Água e luz com início = data da entrega (São Paulo), próximo vencimento pela periodicidade e a troca de titularidade com prazo de 30 dias da entrega",
+   "sql": "SELECT o.utility_type, o.periodicity, o.starts_on, o.next_due_on, t.due_date, (t.due_date - o.starts_on) AS prazo_dias FROM legal.lease_obligations o JOIN finance.ownership_transfer_tasks t ON t.utility_obligation_id = o.id WHERE o.contract_id = :c ORDER BY o.utility_type",
+   "resultado": [
+    {
+     "utility_type": "ELECTRICITY",
+     "periodicity": "MONTHLY",
+     "starts_on": "2026-11-11",
+     "next_due_on": "2026-12-11",
+     "due_date": "2026-12-11",
+     "prazo_dias": 30
+    },
+    {
+     "utility_type": "WATER",
+     "periodicity": "MONTHLY",
+     "starts_on": "2026-11-11",
+     "next_due_on": "2026-12-11",
+     "due_date": "2026-12-11",
+     "prazo_dias": 30
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:36.789Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

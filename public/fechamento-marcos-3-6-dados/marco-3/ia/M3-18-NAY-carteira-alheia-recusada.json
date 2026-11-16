@@ -1,0 +1,22 @@
+{
+  "capturadoEm": "2026-11-11T12:48:47.112Z",
+  "pedido": {
+    "taskType": "resumir_oportunidade",
+    "quem": "corretor A (read:own)",
+    "oportunidade": "do corretor B"
+  },
+  "resposta": {
+    "status": 404,
+    "body": {
+      "success": false,
+      "error": {
+        "code": "AI_CROSS_COMPANY_BLOCKED",
+        "message": "Dado não encontrado.",
+        "details": {
+          "runId": "9ffb40c4-127e-4720-9e5c-c848459891f4"
+        },
+        "traceId": "77846164-1708-4dd1-a403-1510bdc262af"
+      }
+    }
+  }
+}

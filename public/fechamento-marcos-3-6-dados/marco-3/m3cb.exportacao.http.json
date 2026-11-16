@@ -1,0 +1,133 @@
+{
+ "arquivo": "test/m3cb.exportacao.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-11T12:49:58.499Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:58.538Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:58.730Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:58.761Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:58.939Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:58.990Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:59.188Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/exports",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "GOV_DLP_PERMISSION"
+  },
+  {
+   "em": "2026-11-11T12:49:59.336Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/exports",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED"
+  },
+  {
+   "em": "2026-11-11T12:49:59.507Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/exports",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "GOV_DLP_VOLUME_EXCEEDED"
+  },
+  {
+   "em": "2026-11-11T12:49:59.666Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/exports",
+   "perfil": "A:maker",
+   "status": 202,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:59.721Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/exports/fb8f6bb4-a7ae-47dc-82cd-95a8ccc3dd6f",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:00.010Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/exports/fb8f6bb4-a7ae-47dc-82cd-95a8ccc3dd6f",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:00.221Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/exports",
+   "perfil": "A:gestor",
+   "status": 202,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:00.261Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/exports/d2e66c37-4b77-4aa7-b1c6-70c22010fc9e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:00.549Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/exports/d2e66c37-4b77-4aa7-b1c6-70c22010fc9e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:00.567Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/opportunities/export",
+   "perfil": "A:gestor",
+   "status": 410,
+   "codigo": "GOV_EXPORT_MOVED"
+  }
+ ]
+}

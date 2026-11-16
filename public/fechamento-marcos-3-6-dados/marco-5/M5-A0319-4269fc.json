@@ -1,0 +1,400 @@
+{
+ "id": "M5-A0319-4269fc",
+ "secao": "P1 > 9. Garantias locatícias [tabela: Código | Tipo | Dados]",
+ "linhaCaderno": 179,
+ "requisito": "OTHER | Outra homologada | Fluxo configurado.",
+ "demandas": "M5-D020",
+ "implementacao": "src/modules/legal/leasing/guaranteeTypeData.js readOtherFlows/resolveTypeData (OTHER exige homologatedFlowCode existente em legal.guarantee_other_flows da empresa e os requiredFields do fluxo em flowData); parâmetro no SETTINGS_SCHEMA (src/features/settings/settings.service.js)",
+ "tela": "Contratos > Garantias (/painel/contratos/garantias, /painel/contratos/garantias/novo)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.garantias.test.js",
+   "nome": "fechamento M5 §9 OTHER: só com fluxo homologado configurado pela empresa, com os campos que o fluxo exige",
+   "status": "pass",
+   "ms": 18.494,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.http.test.js",
+   "nome": "fechamento M5 3ª rodada/HTTP: GET /legal/guarantee-flows mostra a quem cadastra garantia (legal:create) os fluxos homologados de OTHER, sem settings:read",
+   "status": "pass",
+   "ms": 16.974,
+   "commitDoTeste": "fd18a57a"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-GA-11",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_FLOW_NOT_CONFIGURED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_FLOW_NOT_CONFIGURED"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_FLOW_NOT_CONFIGURED: Esta forma de garantia não foi homologada para esta empresa.",
+   "quando": "2026-11-11T03:42:30.558Z"
+  },
+  {
+   "passo": "LC-GA-38",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDATION: O fluxo \"Carta de fiança bancária\" exige: numeroCarta.",
+   "quando": "2026-11-11T03:42:30.587Z"
+  },
+  {
+   "passo": "LC-GA-39",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+   "quando": "2026-11-11T03:42:30.621Z"
+  },
+  {
+   "passo": "LC-GA-44",
+   "metodo": "GET",
+   "rota": "/legal/guarantee-flows",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:30.573Z"
+  },
+  {
+   "passo": "LC-GA-45",
+   "metodo": "GET",
+   "rota": "/legal/guarantee-flows",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:30.577Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0319-4269fc.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado (2ª onda): \"fluxo configurado\" é o parâmetro legal.guarantee_other_flows da empresa ([{code, label, requiredFields}], padrão vazio = nenhuma outra homologada). Fluxo não homologado 400 LEGAL_GUARANTEE_FLOW_NOT_CONFIGURED (LC-GA-11); faltando campo do fluxo 400 (LC-GA-38); homologado e completo ACTIVE (LC-GA-39). Teste novo \"OTHER\". 3ª rodada: GET /legal/guarantee-flows mostra os fluxos homologados a quem cadastra garantia (legal:create), sem settings:read (LC-GA-44); leitura sem legal:create 403 (LC-GA-45).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.garantias.test.js test/m5fech.locacao.http.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-GA-11, LC-GA-37, LC-GA-38, LC-GA-39, LC-GA-44, LC-GA-45)"
+ },
+ "passos": [
+  {
+   "id": "LC-GA-11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Outra garantia com fluxo não homologado pela empresa é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "OTHER",
+    "homologatedFlowCode": "FLUXO-INEXISTENTE",
+    "value": 1000
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_FLOW_NOT_CONFIGURED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_FLOW_NOT_CONFIGURED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:30.558Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_FLOW_NOT_CONFIGURED",
+     "message": "Esta forma de garantia não foi homologada para esta empresa.",
+     "traceId": "020b044c-9aed-4aa3-b672-c6ef54357231"
+    }
+   },
+   "req": [
+    "M5-A0319-4269fc"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-37",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Administração homologa o fluxo \"Carta de fiança bancária\" (parâmetro legal.guarantee_other_flows da empresa)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "settings.service.upsertSetting('legal.guarantee_other_flows', [...])",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:30.566Z",
+   "corpo": {
+    "result": {
+     "dataValues": {
+      "id": "402630c8-960b-4c8c-bf63-ec884462adb7",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "key": "legal.guarantee_other_flows",
+      "value": "[{\"code\":\"CARTA_FIANCA\",\"label\":\"Carta de fiança bancária\",\"requiredFields\":[\"banco\",\"numeroCarta\"]}]",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": {},
+      "created_at": {},
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "_previousDataValues": {
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "key": "legal.guarantee_other_flows",
+      "value": "[{\"code\":\"CARTA_FIANCA\",\"label\":\"Carta de fiança bancária\",\"requiredFields\":[\"banco\",\"numeroCarta\"]}]",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "id": "402630c8-960b-4c8c-bf63-ec884462adb7",
+      "deletedBy": null,
+      "created_at": {},
+      "updated_at": {},
+      "deleted_at": null
+     },
+     "uniqno": 1,
+     "_changed": {},
+     "_options": {
+      "isNewRecord": true,
+      "_schema": "core",
+      "_schemaDelimiter": ""
+     },
+     "isNewRecord": false
+    }
+   },
+   "req": [
+    "M5-A0319-4269fc"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-GA-38",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fluxo homologado sem os campos que ele exige é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "OTHER",
+    "homologatedFlowCode": "CARTA_FIANCA",
+    "flowData": {
+     "banco": "Banco Fictício"
+    }
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDATION",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:30.587Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDATION",
+     "message": "O fluxo \"Carta de fiança bancária\" exige: numeroCarta.",
+     "traceId": "93ac77ae-3338-4747-bc49-c3e042507c63"
+    }
+   },
+   "req": [
+    "M5-A0319-4269fc"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-39",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Outra garantia pelo fluxo homologado com os campos exigidos: ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "OTHER",
+    "homologatedFlowCode": "CARTA_FIANCA",
+    "flowData": {
+     "banco": "Banco Fictício",
+     "numeroCarta": "CF-8549432"
+    },
+    "value": 1000,
+    "startsAt": "2026-01-01"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T03:42:30.621Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ffd7a2a9-05b9-4faa-bb98-f7b014807be6",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "OTHER",
+     "guarantorPersonId": null,
+     "value": "1000.00",
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": null,
+     "homologatedFlowCode": "CARTA_FIANCA",
+     "flowData": {
+      "banco": "Banco Fictício",
+      "numeroCarta": "CF-8549432"
+     },
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.596Z",
+     "created_at": "2026-11-11T03:42:30.596Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0319-4269fc",
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-44",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Quem cadastra garantia (legal:create) lê os fluxos homologados sem settings:read",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/legal/guarantee-flows",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:30.573Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "code": "CARTA_FIANCA",
+      "label": "Carta de fiança bancária",
+      "requiredFields": [
+       "banco",
+       "numeroCarta"
+      ]
+     }
+    ]
+   },
+   "req": [
+    "M5-A0319-4269fc"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-45",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem legal:create) não lê os fluxos homologados",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/guarantee-flows",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:30.577Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "b5189916-be7a-42e7-b649-6e41183280f1"
+    }
+   },
+   "req": [
+    "M5-A0319-4269fc"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

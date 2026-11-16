@@ -1,0 +1,339 @@
+{
+  "id": "M6-44",
+  "requisito": "Tela: Detalhe da obra (cronograma, orçamento, saúde).",
+  "secaoDoLivro": "Checklist de escopo §6 (telas inferidas do escopo; o Caderno é de backend)",
+  "implementacao": "NayaraOne--FRONT app/painel/obras/lista/[id]/page.js → API getProject + getProjectHealth",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>: abrir a tela e executar o fluxo",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-42 GET .../health devolve os 9 campos do read model de custo com valores reais",
+      "resultado": "passou",
+      "duracaoMs": 339,
+      "executadoEm": "2026-11-11T00:13:50.795Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H042",
+      "H172",
+      "H183"
+    ],
+    "resumo": [
+      "H042 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages → 200",
+      "H172 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health → 200",
+      "H183 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:09.933Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js",
+      "requisitos": [
+        "M6-98",
+        "M6-43",
+        "M6-44",
+        "M6-45",
+        "M6-46",
+        "M6-48",
+        "M6-49",
+        "M6-50",
+        "M6-51",
+        "M6-52"
+      ],
+      "iniciadoEm": "2026-11-11T00:13:46Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "1. login — <usuário de teste>"
+        },
+        {
+          "ok": true,
+          "passo": "2. criar obra — http://localhost:3106/painel/obras/lista/03829419-92d3-4027-9579-6b39b911662c"
+        },
+        {
+          "ok": true,
+          "passo": "3. criar etapa — Fundação e estrutura"
+        },
+        {
+          "ok": true,
+          "passo": "4. orçamento (linha criada) — R$ 10.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "5. aprovar orçamento"
+        },
+        {
+          "ok": true,
+          "passo": "6. medição registrada — 20% / R$ 2.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "7. medição aprovada (fluxo DRAFT->SUBMITTED->REVIEWED->APPROVED)"
+        },
+        {
+          "ok": true,
+          "passo": "8. diário (RDO) registrado — 8 trabalhadores"
+        },
+        {
+          "ok": true,
+          "passo": "9. não conformidade aberta — Trinca na fundação"
+        },
+        {
+          "ok": true,
+          "passo": "10a. tentativa de entrega da obra — botão de entrega não visível no status atual da obra"
+        },
+        {
+          "ok": true,
+          "passo": "10b. chamado de pós-obra criado"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H042",
+      "requisitos": [
+        "M6-02",
+        "M6-44",
+        "M6-103"
+      ],
+      "cenario": "Cronograma: etapas da obra",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 17,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Fundação",
+            "stageCode": "FUN-c4fcd6",
+            "plannedCost": "45000.00",
+            "sequence": 1,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.312Z",
+            "updated_at": "2026-11-11T00:12:09.312Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          },
+          {
+            "id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Alvenaria",
+            "stageCode": "ALV-c4fcd6",
+            "plannedCost": "35000.00",
+            "sequence": 2,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.358Z",
+            "updated_at": "2026-11-11T00:12:09.358Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          },
+          {
+            "id": "e16ccea5-a649-4817-8ca2-b9a797854c1e",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Cobertura",
+            "stageCode": "COB-c4fcd6",
+            "plannedCost": "6000.00",
+            "sequence": 3,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.377Z",
+            "updated_at": "2026-11-11T00:12:09.377Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:09.933Z"
+    },
+    {
+      "id": "H172",
+      "requisitos": [
+        "M6-41",
+        "M6-42",
+        "M6-44",
+        "M6-99",
+        "M6-23"
+      ],
+      "cenario": "Saúde da obra: 9 campos do read model de custo + KPIs",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 139,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "baselineBudget": 86000,
+          "approvedChanges": 6000,
+          "committedCost": 80000,
+          "actualFinancialCost": 0,
+          "consumedInventoryCost": 1617,
+          "forecastToComplete": 1617,
+          "projectedTotalCost": 3234,
+          "projectedMargin": 82766,
+          "marginPct": 96.24,
+          "minMarginPct": 10,
+          "belowMinMargin": false,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "economyAmount": 82766,
+          "commissionAmount": 1655.32,
+          "costBasis": {
+            "base": "CAIXA",
+            "paidFinancialCost": 0,
+            "openPayablesCost": 61600,
+            "pendingApprovedMeasurementsCost": 56200,
+            "includedInActualFinancialCost": false
+          },
+          "updatedAt": "2026-11-11T00:12:28.517Z",
+          "kpis": {
+            "physicalProgressPct": 50,
+            "plannedProgressPct": 100,
+            "scheduleProgressPct": 12.28,
+            "progressVsScheduleGapPct": 37.72,
+            "scheduleDelayDays": 0,
+            "isOverdue": false,
+            "payablePendingTotal": 61600,
+            "measurementsByStatus": {
+              "SUPERSEDED": 1,
+              "PAYABLE": 2
+            },
+            "wastagePct": 5.81,
+            "recurrenceByRootCause": [
+              {
+                "cause": "HIGH",
+                "count": 1
+              },
+              {
+                "cause": "LOW",
+                "count": 1
+              },
+              {
+                "cause": "CRITICAL",
+                "count": 1
+              },
+              {
+                "cause": "Umidade no depósito",
+                "count": 1
+              },
+              {
+                "cause": "Furto no canteiro",
+                "count": 1
+              }
+            ]
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.522Z"
+    },
+    {
+      "id": "H183",
+      "requisitos": [
+        "M6-18",
+        "M6-44"
+      ],
+      "cenario": "Obra encerrada",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 145,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": "2026-11-11",
+          "costCenterId": null,
+          "status": "CLOSED",
+          "lockVersion": 11,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:29.253Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:29.411Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.406Z"
+}

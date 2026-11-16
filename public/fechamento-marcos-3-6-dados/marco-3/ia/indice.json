@@ -1,0 +1,89 @@
+{
+ "pastaDeOrigem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia",
+ "arquivos": [
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-12-resumo-mensagem-apoio.json",
+   "bytes": 2394,
+   "sha256": "c825ee908acd31c65b6249d0bb3b58cc807f57ed9178b3ffc86ebad49c4d6c4b",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-12-resumo-mensagem-apoio.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-12-sensivel-modelo-simulado.json",
+   "bytes": 2104,
+   "sha256": "37168c831e5a06ce2dee2a5eb9931976eeeadeb9d696d7d9bc69740789dd75da",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-12-sensivel-modelo-simulado.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-16-classificacao-cadastro.json",
+   "bytes": 3110,
+   "sha256": "9c80846f278ec43ec71742864428329dbe955a921b66ea1d8010b23531a2c58c",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-16-classificacao-cadastro.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-16-envio-com-consentimento.json",
+   "bytes": 2402,
+   "sha256": "b61a3d2f5d0a4c35ff1399a1b92d7b935e831b67d24c1aa14bcdfaea7379e1f6",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-16-envio-com-consentimento.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-16-envio-sem-consentimento.json",
+   "bytes": 1904,
+   "sha256": "145c1b68a91f81258be88151e986d15f36fdec1f613a865faceae4215e965624",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-16-envio-sem-consentimento.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-16-lead-esquecido-proativo.json",
+   "bytes": 2795,
+   "sha256": "7448d1df8d00283ba29ac3031b4bed84213fc405261480e6774596de77df237f",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-16-lead-esquecido-proativo.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-16-lead-esquecido-sob-demanda.json",
+   "bytes": 3740,
+   "sha256": "ed13a56667f318943e99765e57a632441f5b91570a149994df4c59f42e96cb65",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-16-lead-esquecido-sob-demanda.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-16-proxima-acao.json",
+   "bytes": 1472,
+   "sha256": "8fe605ed27a7151d2c30ae2d4e620d3141c9e76d3bd7b361608f1078bcb2577e",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-16-proxima-acao.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CAD-16-resumo.json",
+   "bytes": 2118,
+   "sha256": "d10a171acfcbb591aad43785276ce86b4c7731d545206f8d0ffca16b426753e4",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CAD-16-resumo.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CRM-TS-011-descricao-modelo-simulado.json",
+   "bytes": 2389,
+   "sha256": "125db39caef2566fbe8014712253881b978a4347706665d169a635c4eac173da",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CRM-TS-011-descricao-modelo-simulado.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/CRM-TS-011-descricao-regra.json",
+   "bytes": 2112,
+   "sha256": "338af4dd46a1d83397f31e9714aa6c53c02542f0c5bd8048288c873e7a813d6b",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/CRM-TS-011-descricao-regra.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/ia/M3-18-NAY-carteira-alheia-recusada.json",
+   "bytes": 525,
+   "sha256": "39e3680413aa26c5f54d5efc251a674b0fab080549942bf52d366f604fab8f0d",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/ia/M3-18-NAY-carteira-alheia-recusada.json",
+   "mascarado": false
+  }
+ ]
+}

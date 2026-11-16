@@ -1,0 +1,253 @@
+{
+ "id": "M4-§11.5",
+ "secao": "§11 Conciliação",
+ "requisito": "Classe Sem correspondência: \"Nenhuma → fila de pendência.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/finance.reconciliationSuggestions.test.js",
+   "nome": "suggestReconciliationMatches: SEM CORRESPONDÊNCIA quando nenhum lançamento aberto bate",
+   "status": "passou",
+   "duracaoMs": 19,
+   "commitDoArquivo": "f656f46c"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "contrato §11 suggestReconciliationMatches devolve SEM CORRESPONDÊNCIA quando nenhum candidato chega a 0.45",
+   "status": "passou",
+   "duracaoMs": 15,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C24",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.5",
+    "M4-G§15.7"
+   ],
+   "titulo": "Nenhum candidato: SEM CORRESPONDÊNCIA (fila de pendência)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/bank-transactions/be92f80c-48bc-4ab6-84b0-a7b0102d5e56/reconciliation-suggestions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 43,
+   "quando": "2026-11-11T01:35:11.436Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "bankTransactionId": "be92f80c-48bc-4ab6-84b0-a7b0102d5e56",
+     "finalClass": "NO_MATCH",
+     "candidates": []
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C34",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.5"
+   ],
+   "titulo": "Auto-conciliação sem correspondência: nada é conciliado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/be92f80c-48bc-4ab6-84b0-a7b0102d5e56/auto-reconcile",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T01:35:11.648Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "bankTransactionId": "be92f80c-48bc-4ab6-84b0-a7b0102d5e56",
+     "finalClass": "NO_MATCH",
+     "candidates": [],
+     "autoReconciled": false
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O11",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.7",
+    "M4-§11.5"
+   ],
+   "titulo": "GET /finance/reconciliation/pending: fila de pendências (extrato sem conciliação + classificação)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/reconciliation/pending",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T01:35:18.343Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "bankTransactions": [
+      {
+       "id": "be92f80c-48bc-4ab6-84b0-a7b0102d5e56",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-SEM-0871300",
+       "fingerprint": "e65e3f3dfbcd96b9695949fed8c63745f7a17ca1a25367e3cb8644b83f899b09",
+       "amount": "505.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "Credito sem lancamento correspondente",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "created_at": "2026-11-11T01:35:10.955Z",
+       "updated_at": "2026-11-11T01:35:10.955Z",
+       "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "pendingType": "BANK_TRANSACTION_UNMATCHED"
+      },
+      {
+       "id": "cff6aa38-fd87-4f6d-b9b9-ea476c91c88f",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-DV-0871300",
+       "fingerprint": "114b70670334051f6d1f8892305e8a6912c33cfd8c6871c188c5ecab894475ae",
+       "amount": "605.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "PIX recebido valor diferente",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "created_at": "2026-11-11T01:35:10.965Z",
+       "updated_at": "2026-11-11T01:35:10.965Z",
+       "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "pendingType": "BANK_TRANSACTION_UNMATCHED"
+      }
+     ],
+     "classificationPendings": [
+      {
+       "id": "4df478bd-2859-4f6a-a061-4691d73d9379",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": null,
+       "costCenterId": null,
+       "resultCenterId": null,
+       "contractId": null,
+       "constructionProjectId": null,
+       "chartOfAccountId": null,
+       "chartOfAccountVersionId": null,
+       "originRef": null,
+       "isThirdPartyFunds": false,
+       "thirdPartyReference": null,
+       "thirdPartyOriginEntryId": null,
+       "thirdPartyHolderPersonId": null,
+       "settlementMethod": null,
+       "settlementEvidenceFileId": null,
+       "settlementReason": null,
+       "settlementEvidenceAttachedBy": null,
+       "settlementEvidenceAttachedAt": null,
+       "thirdPartyReleaseType": null,
+       "thirdPartyCompensatedEntryId": null,
+       "entryType": "CREDIT",
+       "nature": "PENDING_CLASSIFICATION",
+       "amount": "20.00",
+       "description": "Valor recebido a mais (R$ 20,00) em \"Recebível excedente 0871300\" — aguardando classificação manual.",
+       "dueAt": null,
+       "competenceMonth": "2026-11",
+       "settledAt": null,
+       "status": "PENDING",
+       "idempotencyKey": "baixa-parcial:008bf701846097b24572713058a8566d8688396114fcd3768811d38224feb463:excedente",
+       "reversalOfEntryId": null,
+       "parentEntryId": "0fbc8ff0-ff72-4e3d-a1eb-e59a34cbf196",
+       "requiresManualReview": false,
+       "manualReviewReason": null,
+       "manualReviewClearedAt": null,
+       "manualReviewClearedBy": null,
+       "lockVersion": 0,
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "created_at": "2026-11-11T01:35:03.762Z",
+       "updated_at": "2026-11-11T01:35:03.762Z",
+       "bank_account_id": null,
+       "cost_center_id": null,
+       "result_center_id": null,
+       "contract_id": null,
+       "chart_of_account_id": null,
+       "construction_project_id": null,
+       "createdAt": "2026-11-11T01:35:03.762Z",
+       "parentEntry": {
+        "id": "0fbc8ff0-ff72-4e3d-a1eb-e59a34cbf196",
+        "description": "Recebível excedente 0871300",
+        "amount": "100.00",
+        "dueAt": null
+       }
+      }
+     ],
+     "totals": {
+      "bankTransactions": 2,
+      "bankTransactionsAmount": "1110.92",
+      "classificationPendings": 1,
+      "classificationPendingsAmount": "20.00"
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q19",
+   "linhas": [
+    "M4-§19.7",
+    "M4-§11.5"
+   ],
+   "descricao": "Transações bancárias sem conciliação (pendências) por conta",
+   "sql": "select bt.bank_account_id, count(*)::int as pendentes, sum(abs(bt.amount)) as valor from finance.bank_transactions bt where not exists (select 1 from finance.reconciliations r where r.bank_transaction_id = bt.id) group by 1",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+     "pendentes": 2,
+     "valor": "1110.92"
+    }
+   ],
+   "invariante": "listagem (sem invariante numérico)",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.743Z"
+  }
+ ]
+}

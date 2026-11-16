@@ -1,0 +1,46 @@
+{
+  "id": "M5-A0120-db30b1",
+  "capturadoEm": "2026-11-11T10:27:20.383Z",
+  "passos": [
+    {
+      "id": "CT5-31",
+      "req": [
+        "M5-A0064-2c0af0",
+        "M5-A0062-45c618",
+        "M5-A0120-db30b1"
+      ],
+      "titulo": "Modelo publicado com duas cláusulas, contrato e versão 1 gerada pelo modelo; nova versão da cláusula do foro, cláusula nova, modelo publicado de novo e versão 2",
+      "perfil": "serviço (sem HTTP)",
+      "metodo": "CALL",
+      "rota": "template.service + contractVersions.service",
+      "status": "ok",
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": "ok"
+      },
+      "ok": true,
+      "resumo": "{\"contractId\":\"edbcd520-e0be-4e39-8535-2330d2ba8588\",\"v1\":\"28fe9c42-e4dd-491b-9227-e1592240b54c\",\"v2\":\"ce5082d7-86b5-45d2-a29d-16957d7a3ec8\",\"b\":\"156884b8-5892-4b47-8e55-884793e8cae4\",\"b2\":\"60e2e7fe-8",
+      "quando": "2026-11-11T10:26:57.970Z"
+    },
+    {
+      "id": "CT5-33",
+      "req": [
+        "M5-A0120-db30b1"
+      ],
+      "titulo": "NAY compara v1 x v2: cláusulas incluídas (foro v2, multa) e excluídas (foro v1)",
+      "perfil": "A:leitura",
+      "metodo": "GET",
+      "rota": "/legal/nay/contracts/edbcd520-e0be-4e39-8535-2330d2ba8588/compare?from=1&to=2",
+      "corpoEnviado": null,
+      "status": 200,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 200
+      },
+      "ok": true,
+      "resumo": "clausulasIncluidas=CAP-FORO-179439281497375835 v2, CAP-MULTA-179439281497375835 v1; clausulasExcluidas=CAP-FORO-179439281497375835 v1",
+      "quando": "2026-11-11T10:26:59.230Z"
+    }
+  ],
+  "consultasBanco": []
+}

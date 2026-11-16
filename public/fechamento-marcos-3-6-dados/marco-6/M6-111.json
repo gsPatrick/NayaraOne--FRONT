@@ -1,0 +1,581 @@
+{
+  "id": "M6-111",
+  "requisito": "Bloqueio de retirada das fotos obrigatórias (e da causa raiz) de um chamado de garantia FECHADO; só é permitido trocar por outro valor válido.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §2 e §9 (antes/depois obrigatórios) — pedido da cliente",
+  "implementacao": "maintenanceCaseClosedRules.js#assertClosedCaseStillMeetsRequirements (MAINTENANCE_CASE_CLOSED_REQUIREMENTS) + evidenceFiles.js (troca só por foto real)",
+  "telaParaReteste": "Painel → /painel/obras/pos-obra/<id>: chamado Fechado → Editar → remover (X) a foto \"antes\" ou \"depois\": aparece \"Falta preencher: evidência ...\" e \"Salvar alterações\" fica desabilitado; pela API a mesma retirada volta 422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS e nada é gravado (já reconferido na tela pela cliente; automatizado em e2e/marco6-chamado-fechado-fotos.spec.js)",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.closedCaseRequirements.test.js",
+      "nome": "NEGATIVO: chamado fechado nao aceita retirar causa raiz (null, vazio) nem evidencias; nada e gravado",
+      "resultado": "passou",
+      "duracaoMs": 1720,
+      "executadoEm": "2026-11-11T00:12:20.574Z"
+    },
+    {
+      "arquivo": "test/construction.closedCaseRequirements.test.js",
+      "nome": "NEGATIVO: chamado fechado nao aceita trocar a foto obrigatoria por um ID sem arquivo (CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND); nada e gravado",
+      "resultado": "passou",
+      "duracaoMs": 479,
+      "executadoEm": "2026-11-11T00:12:21.459Z"
+    },
+    {
+      "arquivo": "test/construction.closedCaseRequirements.test.js",
+      "nome": "POSITIVO: chamado fechado aceita trocar a causa raiz por outra valida, trocar evidencias por outras e editar descricao/custos",
+      "resultado": "passou",
+      "duracaoMs": 634,
+      "executadoEm": "2026-11-11T00:12:22.094Z"
+    },
+    {
+      "arquivo": "test/construction.closedCaseRequirements.test.js",
+      "nome": "POSITIVO: chamado ainda nao fechado continua podendo ficar sem causa raiz/evidencias (so o fechamento exige)",
+      "resultado": "passou",
+      "duracaoMs": 652,
+      "executadoEm": "2026-11-11T00:12:22.746Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H152",
+      "H153",
+      "H154",
+      "H156",
+      "H157",
+      "H158",
+      "H159",
+      "H160",
+      "H161",
+      "H162"
+    ],
+    "resumo": [
+      "H152 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 400 MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+      "H153 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "H154 POST /api/v1/files → 201",
+      "H156 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "H157 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "H158 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "H159 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "H160 POST /api/v1/files → 201",
+      "H161 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 200",
+      "H162 GET /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:26.750Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-chamado-fechado-fotos.spec.js",
+      "requisitos": [
+        "M6-111",
+        "M6-52",
+        "M6-26"
+      ],
+      "iniciadoEm": "2026-11-11T00:13:27Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "0. chamado FECHADO preparado pela API (fotos antes/depois, causa raiz, atendimento) — 2279620b-6579-48b0-b9fa-9b80c944ef2c"
+        },
+        {
+          "ok": true,
+          "passo": "1. login pela tela"
+        },
+        {
+          "ok": true,
+          "passo": "2. Editar chamado fechado mostra o aviso de fotos/causa obrigatórias"
+        },
+        {
+          "ok": true,
+          "passo": "3. remover a foto \"antes\": aviso \"Falta preencher\" e Salvar desabilitado"
+        },
+        {
+          "ok": true,
+          "passo": "4. API confirma: chamado continua FECHADO com as duas fotos e a causa raiz"
+        },
+        {
+          "ok": true,
+          "passo": "5. mesma retirada direto na API é recusada (422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS) — 422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H152",
+      "requisitos": [
+        "M6-26",
+        "M6-111"
+      ],
+      "cenario": "NEGATIVO: fechar sem foto \"depois\"",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED",
+        "rootCauseCode": "WORKMANSHIP"
+      },
+      "statusHttp": 400,
+      "codigoErro": "MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+      "esperado": "400 MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+      "conferiu": true,
+      "duracaoMs": 11,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+          "message": "Não é possível fechar o chamado sem evidências \"antes\" e \"depois\" (\"beforeMediaFileIds\"/\"afterMediaFileIds\").",
+          "traceId": "1d65b749-f44d-4dff-a0c6-7e0a0e6266ee"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.750Z"
+    },
+    {
+      "id": "H153",
+      "requisitos": [
+        "M6-111",
+        "M6-110"
+      ],
+      "cenario": "NEGATIVO: fechar com foto \"depois\" que não é arquivo enviado",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED",
+        "rootCauseCode": "WORKMANSHIP",
+        "afterMediaFileIds": [
+          "66666666-6666-4666-8666-666666666666"
+        ]
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 13,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"afterMediaFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "afterMediaFileIds",
+            "missingFileIds": [
+              "66666666-6666-4666-8666-666666666666"
+            ]
+          },
+          "traceId": "4f13b696-0727-4647-89cc-225b8d08fee7"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.763Z"
+    },
+    {
+      "id": "H154",
+      "requisitos": [
+        "M6-111"
+      ],
+      "cenario": "Envio da foto/documento \"garantia-infiltracao-depois\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "garantia-infiltracao-depois.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 236,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "003b5fa6-1d7f-4ae0-b61c-0e596bbeb842",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/e5857ca2-1d71-4065-88ed-c340d7f6151c-garantia-infiltracao-depois.jpg",
+          "fileName": "garantia-infiltracao-depois.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "cae1a17b1cc8a12a1339a320a435e9b11a22d45f0ec8510e313b9f874bc75c8c",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:26.958Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.958Z",
+          "created_at": "2026-11-11T00:12:26.958Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.999Z"
+    },
+    {
+      "id": "H156",
+      "requisitos": [
+        "M6-111"
+      ],
+      "cenario": "NEGATIVO: retirar a foto \"antes\" de um chamado FECHADO",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "beforeMediaFileIds": []
+      },
+      "statusHttp": 422,
+      "codigoErro": "MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "esperado": "422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "conferiu": true,
+      "duracaoMs": 15,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+          "message": "Chamado fechado precisa manter evidência \"antes\". Você pode trocar por outro valor válido, mas não retirar.",
+          "details": {
+            "missing": [
+              "evidência \"antes\""
+            ]
+          },
+          "traceId": "ef0b7b1e-1dc7-4df8-8fc6-28c877185ba4"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.176Z"
+    },
+    {
+      "id": "H157",
+      "requisitos": [
+        "M6-111"
+      ],
+      "cenario": "NEGATIVO: retirar a foto \"depois\" de um chamado FECHADO (null)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterMediaFileIds": null
+      },
+      "statusHttp": 422,
+      "codigoErro": "MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "esperado": "422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "conferiu": true,
+      "duracaoMs": 14,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+          "message": "Chamado fechado precisa manter evidência \"depois\". Você pode trocar por outro valor válido, mas não retirar.",
+          "details": {
+            "missing": [
+              "evidência \"depois\""
+            ]
+          },
+          "traceId": "5785af78-b065-47cf-9fc2-9c95242b390c"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.190Z"
+    },
+    {
+      "id": "H158",
+      "requisitos": [
+        "M6-111"
+      ],
+      "cenario": "NEGATIVO: retirar a causa raiz de um chamado FECHADO",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "rootCauseCode": ""
+      },
+      "statusHttp": 422,
+      "codigoErro": "MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "esperado": "422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+      "conferiu": true,
+      "duracaoMs": 15,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MAINTENANCE_CASE_CLOSED_REQUIREMENTS",
+          "message": "Chamado fechado precisa manter causa raiz. Você pode trocar por outro valor válido, mas não retirar.",
+          "details": {
+            "missing": [
+              "causa raiz"
+            ]
+          },
+          "traceId": "0368ce9f-eca6-4f6e-9e04-06c6c4f063cd"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.206Z"
+    },
+    {
+      "id": "H159",
+      "requisitos": [
+        "M6-111",
+        "M6-110"
+      ],
+      "cenario": "NEGATIVO: trocar a foto \"depois\" do chamado FECHADO por um ID sem arquivo",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterMediaFileIds": [
+          "55555555-5555-4555-8555-555555555555"
+        ]
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 49,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"afterMediaFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "afterMediaFileIds",
+            "missingFileIds": [
+              "55555555-5555-4555-8555-555555555555"
+            ]
+          },
+          "traceId": "a7c425af-6f96-4676-8558-75b775be830e"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.255Z"
+    },
+    {
+      "id": "H160",
+      "requisitos": [
+        "M6-111"
+      ],
+      "cenario": "Envio da foto/documento \"garantia-depois-nova\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "garantia-depois-nova.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 221,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "12207804-959e-4b64-93d7-76f8e2d78a6d",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/f2a6650f-a7e2-4394-a2a0-cbabb38a09a2-garantia-depois-nova.jpg",
+          "fileName": "garantia-depois-nova.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "812a7daf2a145d08681003f35465ef5703c984afa0e25563e11cdb1790dc2b9b",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:27.440Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:27.440Z",
+          "created_at": "2026-11-11T00:12:27.440Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.476Z"
+    },
+    {
+      "id": "H161",
+      "requisitos": [
+        "M6-111"
+      ],
+      "cenario": "Trocar a foto \"depois\" por outra foto real é permitido (chamado continua FECHADO)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterMediaFileIds": [
+          "12207804-959e-4b64-93d7-76f8e2d78a6d"
+        ]
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 29,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "CLOSED",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "afterMediaFileIds": [
+            "12207804-959e-4b64-93d7-76f8e2d78a6d"
+          ],
+          "laborCost": "650.00",
+          "materialCost": "210.00",
+          "rootCauseCode": "WORKMANSHIP",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "lockVersion": 3,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "updated_at": "2026-11-11T00:12:27.500Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.506Z"
+    },
+    {
+      "id": "H162",
+      "requisitos": [
+        "M6-111",
+        "M6-26"
+      ],
+      "cenario": "Chamado fechado mantém causa raiz e fotos",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 11,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "CLOSED",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "afterMediaFileIds": [
+            "12207804-959e-4b64-93d7-76f8e2d78a6d"
+          ],
+          "laborCost": "650.00",
+          "materialCost": "210.00",
+          "rootCauseCode": "WORKMANSHIP",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "lockVersion": 3,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "updated_at": "2026-11-11T00:12:27.500Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.517Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C015",
+      "requisitos": [
+        "M6-15",
+        "M6-26",
+        "M6-63",
+        "M6-88",
+        "M6-111"
+      ],
+      "descricao": "Chamados de garantia: categoria, severidade, SLA, responsável, causa, custos, fotos que existem; escalonamento do vencido",
+      "sql": "SELECT severity, category, status, root_cause_code, sla_due_at IS NOT NULL AS sla, responsible_user_id IS NOT NULL AS responsavel, labor_cost, material_cost, escalation_level, (SELECT count(*) FROM people.files f WHERE f.id = ANY(m.before_media_file_ids || m.after_media_file_ids))::int AS fotos_existentes, cardinality(m.before_media_file_ids || m.after_media_file_ids) AS fotos, (SELECT count(*) FROM construction.warranty_actions a WHERE a.warranty_case_id = m.id)::int AS acoes FROM construction.maintenance_cases m WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "severity": "HIGH",
+          "category": "WATERPROOFING",
+          "status": "CLOSED",
+          "root_cause_code": "WORKMANSHIP",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": "650.00",
+          "material_cost": "210.00",
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        },
+        {
+          "severity": "CRITICAL",
+          "category": "STRUCTURAL",
+          "status": "CLOSED",
+          "root_cause_code": "DESIGN_FLAW",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": null,
+          "material_cost": null,
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        }
+      ],
+      "invariante": "dois chamados fechados com causa, fotos antes/depois existentes e ação de atendimento",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.200Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.466Z"
+}

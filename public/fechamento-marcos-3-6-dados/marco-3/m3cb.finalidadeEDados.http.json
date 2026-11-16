@@ -1,0 +1,253 @@
+{
+ "arquivo": "test/m3cb.finalidadeEDados.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-11T12:50:07.256Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:07.313Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:07.376Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "MESSAGE_PURPOSE_REQUIRED"
+  },
+  {
+   "em": "2026-11-11T12:50:07.454Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages/send",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "MESSAGE_PURPOSE_REQUIRED"
+  },
+  {
+   "em": "2026-11-11T12:50:07.501Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:07.752Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:07.797Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:07.869Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people/3b4eacb8-f976-4259-9ade-1376b0ecf40b/consents",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:07.902Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "MESSAGE_BLOCKED_BY_CONSENT"
+  },
+  {
+   "em": "2026-11-11T12:50:07.917Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "MESSAGE_PURPOSE_REQUIRED"
+  },
+  {
+   "em": "2026-11-11T12:50:07.929Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "MESSAGE_PURPOSE_UNKNOWN"
+  },
+  {
+   "em": "2026-11-11T12:50:07.958Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:08.334Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:08.437Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:08.553Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:08.681Z",
+   "metodo": "PUT",
+   "caminho": "/api/v1/settings/marketing.consent.exige_opt_in_para",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:08.708Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "MESSAGE_BLOCKED_BY_CONSENT"
+  },
+  {
+   "em": "2026-11-11T12:50:08.739Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people/a5c846e6-29ec-406b-9f97-03c3a6ad5b6e/consents",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:08.773Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.065Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.092Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.121Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.136Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.153Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/opportunities/bba9141d-d9f8-4390-a7a5-8c1223901fa0",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.175Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/opportunities/bba9141d-d9f8-4390-a7a5-8c1223901fa0/timeline",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.303Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages?opportunityId=bba9141d-d9f8-4390-a7a5-8c1223901fa0",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.338Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits?opportunityId=bba9141d-d9f8-4390-a7a5-8c1223901fa0",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.363Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/proposals?opportunityId=bba9141d-d9f8-4390-a7a5-8c1223901fa0",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.397Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/dashboard",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.411Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/radar",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:50:09.490Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/people/060346f9-f035-449a-b3fd-2de7f676cae2",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  }
+ ]
+}

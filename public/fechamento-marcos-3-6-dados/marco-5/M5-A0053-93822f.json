@@ -1,0 +1,260 @@
+{
+ "id": "M5-A0053-93822f",
+ "secao": "P1 > 5. Estado do contrato [tabela: Status | Definição]",
+ "linhaCaderno": 113,
+ "requisito": "LEGAL_REVIEW | Revisão jurídica.",
+ "demandas": "M5-D002;M5-D013",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js:118 VALID_TRANSITIONS (LEGAL_REVIEW); gate da etapa LEGAL_REVIEW",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G5: ciclo completo DRAFT -> DOCUMENTS_PENDING -> LEGAL_REVIEW -> APPROVED -> SIGNING -> SIGNED -> ACTIVE -> SUSPENDED -> ACTIVE -> TERMINATED -> CLOSED é persistido e auditado passo a passo",
+   "status": "pass",
+   "ms": 453.326,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.maquinaTipos.test.js",
+   "nome": "Guia §3/§5: DRAFT -> LEGAL_REVIEW direto com checklist completo; LEGAL_REVIEW -> DRAFT mesmo com pendência; atalhos fora do livro recusados",
+   "status": "pass",
+   "ms": 494.592,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-119",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=LEGAL_REVIEW, id=89be6fd4-d483-4ecc-adcc-3ae9db3f8700, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:24.848Z"
+  },
+  {
+   "passo": "CT-120c",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=LEGAL_REVIEW, id=89be6fd4-d483-4ecc-adcc-3ae9db3f8700, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:24.934Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0053-93822f.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/marco5.auditGapClosureR1.test.js test/m5fech.contratos.maquinaTipos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-119, CT-120c, CT-224)"
+ },
+ "passos": [
+  {
+   "id": "CT-119",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DOCUMENTS_PENDING -> LEGAL_REVIEW (revisão jurídica)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 51,
+   "quando": "2026-11-11T03:42:24.848Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": null,
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0004",
+     "status": "LEGAL_REVIEW",
+     "totalValue": "1500.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:24.319Z",
+     "updated_at": "2026-11-11T03:42:24.813Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null,
+     "versions": []
+    }
+   },
+   "req": [
+    "M5-A0053-93822f",
+    "M5-A0196-8a7471"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-120c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DRAFT -> LEGAL_REVIEW direto com o checklist resolvido (Guia §3)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 39,
+   "quando": "2026-11-11T03:42:24.934Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": null,
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0004",
+     "status": "LEGAL_REVIEW",
+     "totalValue": "1500.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 4,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:24.319Z",
+     "updated_at": "2026-11-11T03:42:24.908Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null,
+     "versions": []
+    }
+   },
+   "req": [
+    "M5-A0196-8a7471",
+    "M5-A0263-1349d7",
+    "M5-A0053-93822f"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-224",
+   "req": [
+    "M5-A0196-8a7471",
+    "M5-A0263-1349d7",
+    "M5-A0051-1355bb",
+    "M5-A0052-d0edf7",
+    "M5-A0053-93822f",
+    "M5-A0054-f96f34",
+    "M5-A0055-965151",
+    "M5-A0056-103e8b",
+    "M5-A0057-c754d9",
+    "M5-A0058-6ae767",
+    "M5-A0059-0f891e",
+    "M5-A0060-eea580"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "perfil": "A:leitura",
+   "descricao": "Trilha auditada do ciclo completo: cada mudança de estado com antes/depois, na ordem do Guia §3",
+   "sql": "SELECT before_json->>'status' AS de, after_json->>'status' AS para FROM audit.audit_log WHERE entity_id = :id AND action IN ('legal.contract.status_change','legal.contract.suspend','legal.contract.reactivate','legal.contract.terminate','legal.contract.close') ORDER BY occurred_at",
+   "resultado": [
+    {
+     "de": "DRAFT",
+     "para": "DOCUMENTS_PENDING"
+    },
+    {
+     "de": "DOCUMENTS_PENDING",
+     "para": "LEGAL_REVIEW"
+    },
+    {
+     "de": "LEGAL_REVIEW",
+     "para": "DRAFT"
+    },
+    {
+     "de": "DRAFT",
+     "para": "LEGAL_REVIEW"
+    },
+    {
+     "de": "LEGAL_REVIEW",
+     "para": "APPROVED"
+    },
+    {
+     "de": "APPROVED",
+     "para": "SIGNING"
+    },
+    {
+     "de": "SIGNING",
+     "para": "SIGNED"
+    },
+    {
+     "de": "SIGNED",
+     "para": "ACTIVE"
+    },
+    {
+     "de": "ACTIVE",
+     "para": "SUSPENDED"
+    },
+    {
+     "de": "SUSPENDED",
+     "para": "ACTIVE"
+    },
+    {
+     "de": "ACTIVE",
+     "para": "TERMINATED"
+    },
+    {
+     "de": "TERMINATED",
+     "para": "CLOSED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.000Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

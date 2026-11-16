@@ -1,0 +1,81 @@
+{
+ "id": "M4-G§17.10",
+ "secao": "Guia §17 CI/CD",
+ "requisito": "Etapa \"closed_period_tests\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.closing.test.js",
+   "nome": "F02-C1b: mês fechado não recebe nem perde lançamento em nenhum caminho (criar, editar, baixar, baixa parcial, estornar)",
+   "status": "passou",
+   "duracaoMs": 125,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: os 17 estágios do Guia §17 com os nomes literais e na ordem do livro no estagios.json e no workflow",
+   "status": "passou",
+   "duracaoMs": 17,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: cada estágio tem comando e os testes exigidos existem de fato nos arquivos do estágio",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: estágio de banco recusa rodar fora do banco descartável",
+   "status": "passou",
+   "duracaoMs": 100,
+   "commitDoArquivo": "3e3d2e05"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "F06",
+   "tipo": "http",
+   "linhas": [
+    "M4-§16.1",
+    "M4-G§17.10"
+   ],
+   "titulo": "Pedir de novo o fechamento do mês já fechado: recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/period-closures",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "referenceMonth": "2071-05"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "FINANCE_PERIOD_ALREADY_CLOSED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_PERIOD_ALREADY_CLOSED",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T01:35:14.568Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_PERIOD_ALREADY_CLOSED",
+     "message": "O período 05/2071 já está fechado.",
+     "traceId": "73c38bd3-7580-4b15-9c56-a8de8448ee2c"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

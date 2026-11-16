@@ -1,0 +1,34 @@
+{
+ "id": "M5-A0307-653b7c",
+ "linhaCaderno": 42,
+ "requisito": "JUR-010 | Prova com cadeia de custódia | Arquivo, áudio, foto e documento mantêm hash/origem/acessos.",
+ "correcao": "src/modules/legal/cases/evidenceFileAccess.js recordEvidenceFileAccess (toda classe; hash, classe, origem) chamado em files.controller.js (GET /files/:id e /content) e dlp/downloads/download.controller.js (/download); origem = fileAccess.service resolveFileOwnership().origins",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.evidencias.test.js",
+   "nome": "M5-A0307/JUR-010: ler uma prova do processo (dados e conteúdo) fica registrado em toda classe de arquivo, com hash e origem",
+   "status": "pass",
+   "ms": 1368.387,
+   "commitDoTeste": "70bb844a",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: classe LOW + actual - expected + [] - [ -   'METADATA', -   'CONTENT' - ] generatedMessage: false, code: 'ERR_ASSERTION', actual: [], expected: [ 'METADATA', 'CONTENT' ], operator: 'deepStrictEqual', diff: 'simple' }"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.evidencias.test.js",
+   "nome": "M5-A0207/Guia §13: origem e hash do manifesto vêm do servidor — o chamador não escolhe a origem nem o hash do item sem arquivo",
+   "status": "pass",
+   "ms": 75.138,
+   "commitDoTeste": "70bb844a",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal: + actual - expected + 'cartorio.inventado' - 'people.file_links:LegalCase' generatedMessage: true, code: 'ERR_ASSERTION', actual: 'cartorio.inventado', expected: 'people.file_links:LegalCase', operator: 'strictEqual', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.784Z"
+}

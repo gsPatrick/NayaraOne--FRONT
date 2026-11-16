@@ -1,0 +1,217 @@
+{
+ "id": "M4-§4.1",
+ "secao": "§4 Plano de contas",
+ "requisito": "\"Plano de contas versionado por grupo, com contas analíticas e sintéticas.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-PC1 cada alteração gera versão append-only; o lançamento usa a classificação vigente na data do fato",
+   "status": "passou",
+   "duracaoMs": 117,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-PC2 versões do plano de contas são append-only no banco e o lançamento novo exige a versão",
+   "status": "passou",
+   "duracaoMs": 37,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-01 cria hierarquia de contas, vincula lançamento e filtra a listagem por conta contábil",
+   "status": "passou",
+   "duracaoMs": 106,
+   "commitDoArquivo": "fa15be9f"
+  },
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-03 plano de contas: conta SINTÉTICA (com subconta ativa) não recebe lançamento; a ANALÍTICA recebe",
+   "status": "passou",
+   "duracaoMs": 27,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N02",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.1",
+    "M4-§5.1"
+   ],
+   "titulo": "Gestor (finance:chartOfAccounts) cria conta SINTÉTICA do plano de contas",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/chart-of-accounts",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "code": "3-0871300",
+    "name": "Despesas operacionais (sintética)",
+    "accountType": "EXPENSE"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T01:35:01.227Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "a665c8cd-fd4c-4afa-8b5c-19be8fb26d56",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "code": "3-0871300",
+     "name": "Despesas operacionais (sintética)",
+     "accountType": "EXPENSE",
+     "parentAccountId": null,
+     "isActive": true,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:01.198Z",
+     "created_at": "2026-11-11T01:35:01.198Z"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "N04",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.1"
+   ],
+   "titulo": "Lançamento em conta SINTÉTICA é recusado (só analítica recebe lançamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 10,
+    "description": "Despesa em conta sintética",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "chartOfAccountId": "a665c8cd-fd4c-4afa-8b5c-19be8fb26d56"
+   },
+   "esperado": {
+    "status": [
+     400,
+     409,
+     422
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_CHART_ACCOUNT_SYNTHETIC",
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T01:35:01.272Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_CHART_ACCOUNT_SYNTHETIC",
+     "message": "A conta \"3-0871300 — Despesas operacionais (sintética)\" é sintética (tem 1 subconta(s)); lance na conta analítica.",
+     "traceId": "90a96432-4a42-4eff-923b-2632429a56c5"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "N09",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.1",
+    "M4-§4.6"
+   ],
+   "titulo": "Lançamento na conta analítica grava a versão vigente da classificação no fato",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 10,
+    "description": "Despesa na conta analítica 0871300",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "chartOfAccountId": "490c2c5b-8aa8-46f2-a9b1-48fd7660dd78"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 112,
+   "quando": "2026-11-11T01:35:01.484Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "3794da36-6052-4c7b-935f-11ab8069ea67",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": null,
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "10.00",
+     "description": "Despesa na conta analítica 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": "490c2c5b-8aa8-46f2-a9b1-48fd7660dd78",
+     "chartOfAccountVersionId": "aeeee8ca-348a-4c3e-bfda-c284eb9a5146",
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:01.397Z",
+     "created_at": "2026-11-11T01:35:01.397Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

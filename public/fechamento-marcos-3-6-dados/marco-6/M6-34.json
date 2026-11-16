@@ -1,0 +1,129 @@
+{
+  "id": "M6-34",
+  "requisito": "API mínima: POST /projects/:id/daily-logs.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#createDailyReport (alias de /daily-reports)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/diario: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-58: diário duplicado no mesmo turno bloqueia; turnos diferentes não bloqueiam",
+      "resultado": "passou",
+      "duracaoMs": 230,
+      "executadoEm": "2026-11-11T00:12:37.873Z"
+    },
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-94: idempotencyKey de captura offline evita duplicar RDO ao ressincronizar",
+      "resultado": "passou",
+      "duracaoMs": 30,
+      "executadoEm": "2026-11-11T00:12:38.221Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H050"
+    ],
+    "resumo": [
+      "H050 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:11.338Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H050",
+      "requisitos": [
+        "M6-34",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-20",
+        "M6-48",
+        "M6-73",
+        "M6-110",
+        "M6-98"
+      ],
+      "cenario": "Criar RDO (obra/data/turno, equipe com documento, serviços, foto com hash, materiais, ocorrências e bloqueios)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reportDate": "2026-11-09",
+        "shiftCode": "MANHA",
+        "weather": "Ensolarado",
+        "workforceCount": 9,
+        "servicesPerformed": "Concretagem da sapata S3",
+        "occurrences": "Chuva rápida às 10h",
+        "blockages": "Bomba de concreto atrasou 40 min",
+        "evidenceFileIds": [
+          "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+        ],
+        "idempotencyKey": "rdo-c4fcd6",
+        "workers": [
+          {
+            "personId": "e683ff67-ec97-4add-9404-e21d862d69d5",
+            "role": "Armador",
+            "documentFileIds": [
+              "5f279065-01f6-4610-9100-7e3d01797f98"
+            ]
+          }
+        ],
+        "materials": [
+          {
+            "materialDescription": "Cimento CP-II",
+            "quantity": 12,
+            "unit": "saco"
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 337,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7fdbcbde-77f4-4aa3-8372-c8df19160180",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reportDate": "2026-11-09",
+          "shiftCode": "MANHA",
+          "weather": "Ensolarado",
+          "workforceCount": 9,
+          "occurrences": "Chuva rápida às 10h",
+          "blockages": "Bomba de concreto atrasou 40 min",
+          "servicesPerformed": "Concretagem da sapata S3",
+          "evidenceFileIds": [
+            "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+          ],
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "reportedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "clientLocalId": null,
+          "idempotencyKey": "rdo-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:11.317Z",
+          "created_at": "2026-11-11T00:12:11.317Z",
+          "supersedesId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:11.338Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.403Z"
+}

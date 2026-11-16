@@ -1,0 +1,112 @@
+{
+  "linha": "M3-19",
+  "capturadoEm": "2026-11-11T11:10:36.872Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "oportunidade",
+      "pedido": "POST /api/v1/crm/opportunities",
+      "corpo": {
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "id": "aeb91097-641c-4b7d-8c10-df07210d7074",
+        "lockVersion": 0,
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "propertyId": null,
+        "ownerUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "stage": "NEW",
+        "temperature": null,
+        "expectedValue": null,
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z",
+        "wonReason": null,
+        "lostReason": null,
+        "withdrawnReason": null,
+        "closedAt": null,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:35.932Z",
+        "created_at": "2026-11-11T11:10:35.932Z",
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:35.963Z"
+    },
+    {
+      "titulo": "interação registrada hoje de um contato de 3 dias atrás",
+      "pedido": "POST /api/v1/crm/opportunities/aeb91097-641c-4b7d-8c10-df07210d7074/interactions",
+      "corpo": {
+        "channel": "PHONE",
+        "direction": "IN",
+        "occurredAt": "2026-11-08T11:10:35.963Z",
+        "summary": "Cliente ligou"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "id": "e5e9b5fd-981a-4e65-aec5-fa156c25da3a",
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "opportunityId": "aeb91097-641c-4b7d-8c10-df07210d7074",
+        "channel": "PHONE",
+        "direction": "INBOUND",
+        "authorType": "CLIENT",
+        "authorUserId": null,
+        "body": "Cliente ligou",
+        "occurredAt": "2026-11-08T11:10:35.963Z",
+        "status": "RECEIVED",
+        "externalMessageId": null,
+        "connectionId": null,
+        "dispatchId": null,
+        "deliveryStatus": null,
+        "conversationId": null,
+        "mediaQuarantineId": null,
+        "purpose": null,
+        "actionKey": null,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:36.001Z",
+        "created_at": "2026-11-11T11:10:36.001Z",
+        "mediaState": null,
+        "failureReason": null,
+        "alternateChannel": null,
+        "alternateRef": null,
+        "alternateAt": null
+      },
+      "em": "2026-11-11T11:10:36.168Z"
+    },
+    {
+      "titulo": "linha do tempo: a interação fica na data do contato",
+      "pedido": "GET /api/v1/opportunities/aeb91097-641c-4b7d-8c10-df07210d7074/timeline?types=MESSAGE",
+      "corpo": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": [
+        {
+          "type": "MESSAGE",
+          "id": "e5e9b5fd-981a-4e65-aec5-fa156c25da3a",
+          "occurredAt": "2026-11-08T11:10:35.963Z",
+          "actorUserId": null,
+          "data": {
+            "channel": "PHONE",
+            "direction": "INBOUND",
+            "authorType": "CLIENT",
+            "status": "RECEIVED",
+            "automatic": false,
+            "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+            "body": "Cliente ligou"
+          }
+        }
+      ],
+      "em": "2026-11-11T11:10:36.281Z"
+    }
+  ]
+}

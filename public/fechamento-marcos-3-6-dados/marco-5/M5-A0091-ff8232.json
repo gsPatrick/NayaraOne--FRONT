@@ -1,0 +1,242 @@
+{
+ "id": "M5-A0091-ff8232",
+ "secao": "P1 > 11. Vistoria",
+ "linhaCaderno": 212,
+ "requisito": "• Correção após assinatura cria addendum/revision, não altera laudo original.",
+ "demandas": "M5-D029;M5-D028",
+ "implementacao": "src/modules/legal/inspections/inspection.service.js:626 createInspectionRevision; rota POST /api/v1/legal/inspections/:id/revisions",
+ "tela": "Contratos > Vistorias (/painel/contratos/vistorias, /painel/contratos/vistorias/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-06 JUR-TS-006/§11: correção de vistoria assinada cria revisão com itens copiados; o laudo original continua intacto e imutável",
+   "status": "pass",
+   "ms": 44.539,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-32",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/revisions",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_REVISION_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_REVISION_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_INSPECTION_REVISION_REASON_REQUIRED: Informe o motivo (\"reason\") da revisão da vistoria.",
+   "quando": "2026-11-11T03:42:31.557Z"
+  },
+  {
+   "passo": "LC-VI-33",
+   "metodo": "POST",
+   "rota": "/legal/inspections/3fe6d1c0-eeed-408d-82da-189250a0249f/revisions",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_REVISION_NOT_SIGNED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_REVISION_NOT_SIGNED"
+   },
+   "resumo": "erro LEGAL_INSPECTION_REVISION_NOT_SIGNED: A vistoria ainda não foi assinada — corrija a própria vistoria; revisão só existe para laudo assinad",
+   "quando": "2026-11-11T03:42:31.565Z"
+  },
+  {
+   "passo": "LC-VI-34",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/revisions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=2792ae03-3506-4fb6-b1db-fa0e47c90645",
+   "quando": "2026-11-11T03:42:31.600Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0091-ff8232.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m45.cadernoM5Gaps.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-32, LC-VI-33, LC-VI-34, LC-VI-35)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-32",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Revisão sem motivo é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/revisions",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_REVISION_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_REVISION_REASON_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:31.557Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_REVISION_REASON_REQUIRED",
+     "message": "Informe o motivo (\"reason\") da revisão da vistoria.",
+     "traceId": "56c0ced8-6368-4d7f-a327-ae53aa46ba78"
+    }
+   },
+   "req": [
+    "M5-A0091-ff8232",
+    "M5-A0154-31578b"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-33",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Revisão só existe para laudo assinado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/3fe6d1c0-eeed-408d-82da-189250a0249f/revisions",
+   "corpoEnviado": {
+    "reason": "correção"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_REVISION_NOT_SIGNED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_REVISION_NOT_SIGNED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:31.565Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_REVISION_NOT_SIGNED",
+     "message": "A vistoria ainda não foi assinada — corrija a própria vistoria; revisão só existe para laudo assinado.",
+     "traceId": "b6fea314-ae64-43f2-80d5-b89e8ea55f55"
+    }
+   },
+   "req": [
+    "M5-A0091-ff8232",
+    "M5-A0154-31578b"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-34",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Correção após assinatura cria revisão (nova vistoria apontando para a original)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/revisions",
+   "corpoEnviado": {
+    "reason": "Corrigir a descrição do armário da cozinha"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 32,
+   "quando": "2026-11-11T03:42:31.600Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "2792ae03-3506-4fb6-b1db-fa0e47c90645",
+     "status": "SCHEDULED",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "ENTRY",
+     "scheduledAt": "2026-11-11T03:42:31.572Z",
+     "revisionOfInspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "revisionReason": "Corrigir a descrição do armário da cozinha",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.573Z",
+     "created_at": "2026-11-11T03:42:31.573Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0091-ff8232",
+    "M5-A0154-31578b",
+    "M5-A0009-e79a24"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-VI-35",
+   "req": [
+    "M5-A0091-ff8232",
+    "M5-A0154-31578b",
+    "M5-A0009-e79a24",
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204",
+    "M5-A0256-42d414",
+    "M5-A0268-8ec039",
+    "M5-A0009-e79a24"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "perfil": "A:leitura",
+   "descricao": "Original intacto (status, itens e assinaturas) e revisão com os itens copiados e o motivo",
+   "sql": "SELECT i.id, i.status, i.revision_of_inspection_id, i.revision_reason, (SELECT count(*) FROM legal.inspection_items it WHERE it.inspection_id = i.id AND it.deleted_at IS NULL) AS itens, (SELECT count(*) FROM legal.inspection_signatures s WHERE s.inspection_id = i.id) AS assinaturas FROM legal.inspections i WHERE i.id IN (:a, :b)",
+   "resultado": [
+    {
+     "id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "status": "COMPLETED",
+     "revision_of_inspection_id": null,
+     "revision_reason": null,
+     "itens": "5",
+     "assinaturas": "2"
+    },
+    {
+     "id": "2792ae03-3506-4fb6-b1db-fa0e47c90645",
+     "status": "SCHEDULED",
+     "revision_of_inspection_id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "revision_reason": "Corrigir a descrição do armário da cozinha",
+     "itens": "5",
+     "assinaturas": "0"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:31.603Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

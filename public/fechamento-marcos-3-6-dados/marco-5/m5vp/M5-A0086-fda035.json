@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0086-fda035",
+ "linhaCaderno": 199,
+ "requisito": "• Evento keys.delivered inicia pós-chaves/cadências e obrigações.",
+ "correcao": "keys.delivered da liberação real -> consumidores do motor de eventos: marketing/automations/runner (POS-CHAVES) e billing/keysDeliveredObligations.consumer.js; ciclo pelo job (obligations/leaseObligationOverdue.js)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.posChaves.test.js",
+   "nome": "M5-A0086/§10: keys.delivered da liberação real inicia a cadência pós-chaves (Marketing) e as obrigações da locação",
+   "status": "pass",
+   "ms": 1136.569,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "Cannot find module '../src/features/billing/obligations/leaseObligationOverdue'\nRequire stack:\n- /Users/patrick.developer/Desktop/Developer/Projects/Nayara/_suite-m5vp/API-base/test/m5vp.posChaves.test.js"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.931Z"
+}

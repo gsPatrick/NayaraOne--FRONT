@@ -1,0 +1,154 @@
+{
+ "id": "M4-G§19.F7",
+ "secao": "Guia §19 Sprints",
+ "requisito": "Sprint F7: \"Intercompany + fechamento.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-IC2 pedido nasce sem lançamentos; quem pede não aprova; outra pessoa aprova e cria os dois lados",
+   "status": "passou",
+   "duracaoMs": 143,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F02-6: controle positivo — com tudo conferido o período vai a REVIEW, fecha em CLOSED e grava snapshot íntegro",
+   "status": "passou",
+   "duracaoMs": 105,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "IC10",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§19.F7"
+   ],
+   "titulo": "Conciliação da transferência entre empresas",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/intercompany-transfers/444500d3-9bb5-45d4-928e-584f576a2523/reconcile",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T01:35:14.225Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "444500d3-9bb5-45d4-928e-584f576a2523",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "fromCompanyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "toCompanyId": "213c5901-9715-45c1-95f6-02140a54efd3",
+     "amount": "7500.00",
+     "reason": "Rateio administrativo da obra 0871300",
+     "status": "RECONCILED",
+     "fromEntryId": "7251bc99-0104-42e1-9ed2-39c40a4c0b2e",
+     "toEntryId": "1edecbad-b72a-49af-973a-92441a969d71",
+     "evidenceFileId": "ff8c40c3-73e5-429c-91e0-456d26315738",
+     "fromBankAccountId": "3069537d-ce7a-44b3-bfdc-533045eaeff1",
+     "toBankAccountId": "e13a4a4f-0377-44d8-b556-e41035439c5f",
+     "requestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "approvedAt": "2026-11-11T01:35:14.166Z",
+     "rejectedByUserId": null,
+     "rejectedAt": null,
+     "rejectionReason": null,
+     "reconciledAt": "2026-11-11T01:35:14.213Z",
+     "reconciledByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:14.099Z",
+     "updated_at": "2026-11-11T01:35:14.213Z",
+     "from_company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "to_company_id": "213c5901-9715-45c1-95f6-02140a54efd3",
+     "from_entry_id": "7251bc99-0104-42e1-9ed2-39c40a4c0b2e",
+     "to_entry_id": "1edecbad-b72a-49af-973a-92441a969d71"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "F03-2",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§19.F7"
+   ],
+   "titulo": "Conferência de comissões e repasses de 2071-05",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/checks",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "referenceMonth": "2071-05",
+    "checkType": "COMMISSIONS_REPASSES",
+    "note": "Comissões e repasses revisados (captura do Marco 4)"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T01:35:14.396Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b301ccb0-2eb7-40fc-aa6e-8653a9f487f7",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "referenceMonth": "2071-05",
+     "status": "OPEN",
+     "thirdPartyCheckedAt": "2026-11-11T01:35:14.350Z",
+     "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "thirdPartyCheckNote": "Caixa de terceiros conferido contra o extrato (captura do Marco 4)",
+     "thirdPartyBalanceAtCheck": "1650.00",
+     "commissionsReviewedAt": "2026-11-11T01:35:14.380Z",
+     "commissionsReviewedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "commissionsReviewNote": "Comissões e repasses revisados (captura do Marco 4)",
+     "commissionsFingerprintAtReview": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+     "currentSnapshotId": null,
+     "reviewRequestedByUserId": null,
+     "reviewRequestedAt": null,
+     "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": null,
+     "closedByUserId": null,
+     "reopenedAt": null,
+     "reopenedByUserId": null,
+     "reopenReason": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:14.345Z",
+     "updated_at": "2026-11-11T01:35:14.380Z",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

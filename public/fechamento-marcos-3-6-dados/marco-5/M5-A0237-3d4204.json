@@ -1,0 +1,321 @@
+{
+ "id": "M5-A0237-3d4204",
+ "secao": "P2 > 16. Testes que escrever primeiro",
+ "linhaCaderno": 734,
+ "requisito": "☐ Vistoria assinada é imutável.",
+ "demandas": "M5-D028;X45-D036",
+ "implementacao": "src/modules/legal/inspections/inspection.service.js:34 assertInspectionNotSigned",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/legal.inspections.test.js",
+   "nome": "JUR-007: vistoria com QUALQUER assinatura fica imutável — nem item novo, nem mídia nova",
+   "status": "pass",
+   "ms": 78.095,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G6: assinatura congela a vistoria — item/mídia não podem mais ser alterados depois de qualquer assinatura registrada",
+   "status": "pass",
+   "ms": 64.46,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-26",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE"
+   },
+   "resumo": "erro LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE: Esta vistoria já tem assinatura registrada e ficou imutável — itens e mídia não podem mais ser alter",
+   "quando": "2026-11-11T03:42:31.487Z"
+  },
+  {
+   "passo": "LC-VI-27",
+   "metodo": "POST",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE"
+   },
+   "resumo": "erro LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE: Esta vistoria já tem assinatura registrada e ficou imutável — itens e mídia não podem mais ser alter",
+   "quando": "2026-11-11T03:42:31.504Z"
+  },
+  {
+   "passo": "LC-VI-28",
+   "metodo": "PATCH",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro ROUTE_NOT_FOUND: Rota não encontrada.",
+   "quando": "2026-11-11T03:42:31.511Z"
+  },
+  {
+   "passo": "LC-VI-29",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/complete",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_ALREADY_COMPLETED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_ALREADY_COMPLETED"
+   },
+   "resumo": "erro LEGAL_INSPECTION_ALREADY_COMPLETED: Vistoria já está concluída.",
+   "quando": "2026-11-11T03:42:31.518Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0237-3d4204.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.inspections.test.js test/marco5.auditGapClosureR1.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-26, LC-VI-27, LC-VI-28, LC-VI-29, LC-VI-35, LC-VI-50)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-26",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Vistoria assinada: item novo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Área — acréscimo",
+    "condition": "GOOD"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:31.487Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+     "message": "Esta vistoria já tem assinatura registrada e ficou imutável — itens e mídia não podem mais ser alterados.",
+     "traceId": "dadbb7f4-3440-4147-9dee-53bd850e7e1f"
+    }
+   },
+   "req": [
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204",
+    "M5-A0256-42d414",
+    "M5-A0268-8ec039",
+    "M5-A0009-e79a24",
+    "M5-A0154-31578b"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-27",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Vistoria assinada: mídia nova é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "corpoEnviado": {
+    "fileId": "df88c2c0-3015-4b9f-a0ba-70f61b0482e8",
+    "mediaType": "PHOTO"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:31.504Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+     "message": "Esta vistoria já tem assinatura registrada e ficou imutável — itens e mídia não podem mais ser alterados.",
+     "traceId": "8b5acc69-890e-4ba9-9197-133fbc416e8b"
+    }
+   },
+   "req": [
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204",
+    "M5-A0256-42d414",
+    "M5-A0268-8ec039",
+    "M5-A0009-e79a24"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-28",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Não existe rota de edição da vistoria (PATCH)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+   "corpoEnviado": {
+    "status": "SCHEDULED"
+   },
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:31.511Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "ROUTE_NOT_FOUND",
+     "message": "Rota não encontrada.",
+     "traceId": "a671e11f-4579-4aea-9047-09dc3ad9bac3"
+    }
+   },
+   "req": [
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204",
+    "M5-A0256-42d414",
+    "M5-A0268-8ec039",
+    "M5-A0009-e79a24"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-29",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Concluir de novo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/complete",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_ALREADY_COMPLETED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_ALREADY_COMPLETED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:31.518Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_ALREADY_COMPLETED",
+     "message": "Vistoria já está concluída.",
+     "traceId": "c149ae64-93df-408b-aa5f-354ac691ce25"
+    }
+   },
+   "req": [
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204",
+    "M5-A0256-42d414",
+    "M5-A0268-8ec039",
+    "M5-A0009-e79a24"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-VI-35",
+   "req": [
+    "M5-A0091-ff8232",
+    "M5-A0154-31578b",
+    "M5-A0009-e79a24",
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204",
+    "M5-A0256-42d414",
+    "M5-A0268-8ec039",
+    "M5-A0009-e79a24"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "perfil": "A:leitura",
+   "descricao": "Original intacto (status, itens e assinaturas) e revisão com os itens copiados e o motivo",
+   "sql": "SELECT i.id, i.status, i.revision_of_inspection_id, i.revision_reason, (SELECT count(*) FROM legal.inspection_items it WHERE it.inspection_id = i.id AND it.deleted_at IS NULL) AS itens, (SELECT count(*) FROM legal.inspection_signatures s WHERE s.inspection_id = i.id) AS assinaturas FROM legal.inspections i WHERE i.id IN (:a, :b)",
+   "resultado": [
+    {
+     "id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "status": "COMPLETED",
+     "revision_of_inspection_id": null,
+     "revision_reason": null,
+     "itens": "5",
+     "assinaturas": "2"
+    },
+    {
+     "id": "2792ae03-3506-4fb6-b1db-fa0e47c90645",
+     "status": "SCHEDULED",
+     "revision_of_inspection_id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "revision_reason": "Corrigir a descrição do armário da cozinha",
+     "itens": "5",
+     "assinaturas": "0"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:31.603Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-VI-50",
+   "req": [
+    "M5-A0202-a24762",
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "perfil": "A:leitura",
+   "descricao": "As duas assinaturas guardam o MESMO hash canônico do conteúdo da vistoria (snapshot_hash)",
+   "sql": "SELECT party_role, snapshot_hash, signature_hash FROM legal.inspection_signatures WHERE inspection_id = :i ORDER BY signed_at",
+   "resultado": [
+    {
+     "party_role": "LANDLORD",
+     "snapshot_hash": "c8ebf5fe8b814d6fee1942329a4ef065ed7bd904992897c50d7748e33b389eb2",
+     "signature_hash": "84ae7a567c5a0a254fdbc5fdb862f77f8e339ca048bfd81fa0ee7f78941b0cea"
+    },
+    {
+     "party_role": "TENANT",
+     "snapshot_hash": "c8ebf5fe8b814d6fee1942329a4ef065ed7bd904992897c50d7748e33b389eb2",
+     "signature_hash": "d309a01c8eb2b83f26c687a6d4225081b6daa6d21cd913c53aeba09a179c9d07"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:31.549Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

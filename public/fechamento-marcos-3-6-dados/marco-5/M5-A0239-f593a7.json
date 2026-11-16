@@ -1,0 +1,336 @@
+{
+ "id": "M5-A0239-f593a7",
+ "secao": "P2 > 16. Testes que escrever primeiro",
+ "linhaCaderno": 740,
+ "requisito": "☐ Hash de prova divergente falha.",
+ "demandas": "M5-D038;M5-D039",
+ "implementacao": "src/modules/legal/cases/evidence-package.service.js verifyEvidencePackageIntegrity",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-010: prova alterada — o hash diverge e a integridade falha (export adulterado e linha do banco reescrita)",
+   "status": "pass",
+   "ms": 18.427,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L15: export de dossiê reescrito de forma AUTOCONSISTENTE (manifesto + hash) é desmascarado pelo hash gravado no banco",
+   "status": "pass",
+   "ms": 17.105,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E35",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=33e5ae18-7e2f-4c1b-9372-117bb7a32051",
+   "quando": "2026-11-11T03:42:39.071Z"
+  },
+  {
+   "passo": "JR-E36",
+   "metodo": "GET",
+   "rota": "/files/33e5ae18-7e2f-4c1b-9372-117bb7a32051/content",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "%PDF-1.4 Prova de integridade mwbkpkp8rgtk",
+   "quando": "2026-11-11T03:42:39.091Z"
+  },
+  {
+   "passo": "JR-E38",
+   "metodo": "GET",
+   "rota": "/files/33e5ae18-7e2f-4c1b-9372-117bb7a32051/content",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "FILE_INTEGRITY_VIOLATION",
+   "esperado": {
+    "status": 409,
+    "codigo": "FILE_INTEGRITY_VIOLATION"
+   },
+   "resumo": "erro FILE_INTEGRITY_VIOLATION: O conteúdo deste arquivo não confere com o que foi gravado no envio — a leitura foi bloqueada e o in",
+   "quando": "2026-11-11T03:42:39.106Z"
+  },
+  {
+   "passo": "JR-E42",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "id=c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "quando": "2026-11-11T03:42:39.157Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0239-f593a7.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.adversariais.test.js test/adversarial.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E35, JR-E36, JR-E37, JR-E38, JR-E26, JR-E42)"
+ },
+ "passos": [
+  {
+   "id": "JR-E35",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: prova enviada (SHA-256 gravado no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "prova-integridade-mwbkpkp8rgtk.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgUHJvdmEgZGUgaW50ZWdyaWRhZGUgbXdia3BrcDhyZ3Rr",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 38,
+   "quando": "2026-11-11T03:42:39.071Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "33e5ae18-7e2f-4c1b-9372-117bb7a32051",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/323df61a-78bc-4f56-aebb-10f3ea7fd0af-prova-integridade-mwbkpkp8rgtk.pdf",
+     "fileName": "prova-integridade-mwbkpkp8rgtk.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 42,
+     "checksumSha256": "2a733708e99272b317b91836b8ee206231324a4bc4b592f744a9a2af33464499",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:39.049Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:39.049Z",
+     "created_at": "2026-11-11T03:42:39.049Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7",
+    "M5-A0113-48df89"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E36",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "A prova íntegra é servida (conteúdo confere com o SHA-256)",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/files/33e5ae18-7e2f-4c1b-9372-117bb7a32051/content",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:39.091Z",
+   "corpo": "%PDF-1.4 Prova de integridade mwbkpkp8rgtk",
+   "req": [
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7",
+    "M5-A0113-48df89"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E37",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Adulteração simulada: um byte do blob da prova trocado no storage local do ambiente descartável",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "fs: inverte o último byte de UPLOADS_ROOT/<storageKey> (só do arquivo enviado em JR-E35)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 1,
+   "quando": "2026-11-11T03:42:39.092Z",
+   "corpo": {
+    "result": {
+     "arquivo": "33e5ae18-7e2f-4c1b-9372-117bb7a32051",
+     "bytes": 77
+    }
+   },
+   "req": [
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-E38",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-010 por HTTP: prova alterada — a leitura é recusada (integridade falha) e o incidente é auditado",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/files/33e5ae18-7e2f-4c1b-9372-117bb7a32051/content",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 409,
+    "codigo": "FILE_INTEGRITY_VIOLATION"
+   },
+   "status": 409,
+   "codigo": "FILE_INTEGRITY_VIOLATION",
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:39.106Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FILE_INTEGRITY_VIOLATION",
+     "message": "O conteúdo deste arquivo não confere com o que foi gravado no envio — a leitura foi bloqueada e o incidente registrado.",
+     "traceId": "82b73afa-648a-4524-ba7e-817363a64ba9"
+    }
+   },
+   "req": [
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7",
+    "M5-A0307-653b7c"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E26",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-010: prova alterada no export (hash de item trocado) → integridade falha contra o hash gravado",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "verifyEvidencePackageIntegrity(export adulterado, package_hash)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 0,
+   "quando": "2026-11-11T03:42:38.962Z",
+   "corpo": {
+    "result": {
+     "valid": false,
+     "recomputedHash": "eb3f46b622c04c3e879a4dee51c51c6ed0c61e45f1dc43dd52606c60f1c4be21",
+     "expectedHash": "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7",
+    "M5-A0307-653b7c"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-E42",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "O dossiê continua com o hash gravado (a verificação de integridade confronta o export com este valor)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:39.157Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c2c501d7-6d10-4577-80c7-fb33b2f48390",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "manifestJson": [
+      {
+       "hash": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+       "type": "PHOTO",
+       "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+       "source": "people.files",
+       "createdAt": "2026-11-11T03:42:38.561Z",
+       "description": "Foto original do dano",
+       "referenceId": null,
+       "originalName": "foto-original-mwbkpkp8rgtk.pdf"
+      },
+      {
+       "hash": null,
+       "type": "NOTE",
+       "description": "Nota do perito (sem arquivo)",
+       "referenceId": null
+      }
+     ],
+     "packageHash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:38.744Z",
+     "legal_case_id": "b684c133-de9b-461e-bd47-84912b4c9ed1"
+    }
+   },
+   "req": [
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

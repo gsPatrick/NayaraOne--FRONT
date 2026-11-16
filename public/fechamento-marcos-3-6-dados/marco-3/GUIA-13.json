@@ -1,0 +1,2675 @@
+{
+ "id": "GUIA-13",
+ "secao": "Guia §13 APIs mínimas",
+ "requisito": "POST /people, POST /people/:id/merge, POST /properties, POST /properties/:id/offers, POST /offers/:id/publish, POST /crm/opportunities, POST /crm/opportunities/:id/interactions, POST /crm/opportunities/:id/visits, POST /crm/opportunities/:id/lost, POST /crm/radars, GET /crm/radars/:id/matches, POST /crm/occurrences.",
+ "meta": {
+  "geradoEm": "2026-11-11T00:16:28.061Z",
+  "inicioCaptura": "2026-11-11T00:16:12.980Z",
+  "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+  "commitApi": "d6bc89b7",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+   "corretor": "Empresa A — corretor (só a própria carteira)",
+   "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+   "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+   "mascarado": "Empresa A — leitura sem campo restrito",
+   "claro": "Empresa A — leitura com campo restrito em claro"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 3,
+   "casos": [
+    "pessoa_pf_pj"
+   ],
+   "descricao": "Cria pessoa física com CPF válido e e-mail principal",
+   "metodo": "POST",
+   "rota": "/api/v1/people",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Maria Fictícia mwbdc8mt0kr7",
+    "taxIdNormalized": "72519586192",
+    "birthOrFoundationDate": "1988-04-12",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": "[e-mail omitido]",
+      "isPrimary": true
+     }
+    ]
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personType": "PF",
+     "legalName": "Maria Fictícia mwbdc8mt0kr7",
+     "preferredName": null,
+     "taxIdNormalized": "72519586192",
+     "taxIdNormalizedHash": "40d917df190b2e20ea7cd54dc4c18d47e5f908e9c428d3be16ab7a06cdc6af0f",
+     "birthOrFoundationDate": "1988-04-12",
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:18.900Z",
+     "updated_at": "2026-11-11T00:16:18.900Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [
+      {
+       "id": "b5bfe559-34f2-4d17-9bd8-de8723800cec",
+       "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+       "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+       "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+       "contactType": "EMAIL",
+       "valueNormalized": "[e-mail omitido]",
+       "isPrimary": true,
+       "consentStatus": null,
+       "verifiedAt": null,
+       "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "deletedBy": null,
+       "created_at": "2026-11-11T00:16:18.908Z",
+       "updated_at": "2026-11-11T00:16:18.908Z",
+       "deleted_at": null,
+       "person_id": "f6d6adbf-0670-4128-a50d-3896159d8e6a"
+      }
+     ],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 50,
+      "missing": [
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    },
+    "meta": {
+     "similarPersonWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T00:16:18.869Z"
+  },
+  {
+   "seq": 4,
+   "casos": [
+    "pessoa_pf_pj"
+   ],
+   "descricao": "Cria pessoa jurídica com CNPJ válido",
+   "metodo": "POST",
+   "rota": "/api/v1/people",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personType": "PJ",
+    "legalName": "Imobiliária Fictícia mwbdc8mt0kr7 Ltda",
+    "taxIdNormalized": "91349210000145"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "8a08397e-302b-4bcc-b3e7-50d543c06285",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personType": "PJ",
+     "legalName": "Imobiliária Fictícia mwbdc8mt0kr7 Ltda",
+     "preferredName": null,
+     "taxIdNormalized": "91349210000145",
+     "taxIdNormalizedHash": "ee2bcbe3a208368509a8d0a62f45475ba32e38b4376b861e8a666f99d6824e73",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:19.179Z",
+     "updated_at": "2026-11-11T00:16:19.179Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    },
+    "meta": {
+     "similarPersonWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T00:16:19.168Z"
+  },
+  {
+   "seq": 18,
+   "casos": [
+    "merge_ok"
+   ],
+   "descricao": "Pessoa canônica",
+   "metodo": "POST",
+   "rota": "/api/v1/people",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "João Merge mwbdc8mt0kr7",
+    "allowDuplicate": true,
+    "contacts": [
+     {
+      "contactType": "PHONE",
+      "valueNormalized": "+5519956180037",
+      "isPrimary": true
+     }
+    ]
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "b81a3954-af4f-4282-b551-ad1991bd6f3a",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personType": "PF",
+     "legalName": "João Merge mwbdc8mt0kr7",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:20.054Z",
+     "updated_at": "2026-11-11T00:16:20.054Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [
+      {
+       "id": "e696d831-d927-4849-9ddb-8f18e931017b",
+       "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+       "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+       "personId": "b81a3954-af4f-4282-b551-ad1991bd6f3a",
+       "contactType": "PHONE",
+       "valueNormalized": "+5519956180037",
+       "isPrimary": true,
+       "consentStatus": null,
+       "verifiedAt": null,
+       "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "deletedBy": null,
+       "created_at": "2026-11-11T00:16:20.060Z",
+       "updated_at": "2026-11-11T00:16:20.060Z",
+       "deleted_at": null,
+       "person_id": "b81a3954-af4f-4282-b551-ad1991bd6f3a"
+      }
+     ],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    },
+    "meta": {
+     "similarPersonWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T00:16:20.037Z"
+  },
+  {
+   "seq": 19,
+   "casos": [
+    "merge_ok"
+   ],
+   "descricao": "Pessoa duplicada (mesmo telefone), criada com exceção",
+   "metodo": "POST",
+   "rota": "/api/v1/people",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Joao Merge mwbdc8mt0kr7",
+    "allowDuplicate": true
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "499bb071-fe04-449c-97c8-2e28a2a54d1d",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personType": "PF",
+     "legalName": "Joao Merge mwbdc8mt0kr7",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:20.353Z",
+     "updated_at": "2026-11-11T00:16:20.353Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    },
+    "meta": {
+     "similarPersonWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T00:16:20.235Z"
+  },
+  {
+   "seq": 20,
+   "casos": [
+    "merge_ok"
+   ],
+   "descricao": "Merge controlado: absorvida vira MERGED e referências vão para a canônica",
+   "metodo": "POST",
+   "rota": "/api/v1/people/b81a3954-af4f-4282-b551-ad1991bd6f3a/merge",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "absorbedId": "499bb071-fe04-449c-97c8-2e28a2a54d1d"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "canonicalId": "b81a3954-af4f-4282-b551-ad1991bd6f3a",
+     "absorbedId": "499bb071-fe04-449c-97c8-2e28a2a54d1d",
+     "status": "MERGED",
+     "remappedReferences": {
+      "people.person_roles": 0,
+      "people.person_contacts": 0,
+      "people.person_documents": 0,
+      "people.person_addresses": 0,
+      "people.communication_consents": 0,
+      "real_estate.property_owners": 0,
+      "crm.opportunities": 0,
+      "crm.visits": 0,
+      "crm.property_radars": 0,
+      "crm.messages": 0,
+      "legal.contract_parties": 0,
+      "legal.signatures": 0,
+      "finance.bank_accounts": 0,
+      "finance.owner_repasses": 0,
+      "construction.maintenance_cases": 0
+     }
+    }
+   },
+   "dataHora": "2026-11-11T00:16:20.598Z"
+  },
+  {
+   "seq": 21,
+   "casos": [
+    "merge_ok"
+   ],
+   "descricao": "A absorvida fica preservada como MERGED (histórico)",
+   "metodo": "GET",
+   "rota": "/api/v1/people/499bb071-fe04-449c-97c8-2e28a2a54d1d",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "499bb071-fe04-449c-97c8-2e28a2a54d1d",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personType": "PF",
+     "legalName": "Joao Merge mwbdc8mt0kr7",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "MERGED",
+     "mergedIntoId": "b81a3954-af4f-4282-b551-ad1991bd6f3a",
+     "riskFlagsJson": null,
+     "lockVersion": 1,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:20.353Z",
+     "updated_at": "2026-11-11T00:16:20.733Z",
+     "deleted_at": null,
+     "merged_into_id": "b81a3954-af4f-4282-b551-ad1991bd6f3a",
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    }
+   },
+   "dataHora": "2026-11-11T00:16:20.782Z"
+  },
+  {
+   "seq": 51,
+   "casos": [
+    "imovel_completo"
+   ],
+   "descricao": "Cria imóvel físico (endereço estruturado, matrícula, características)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "title": "Casa Fictícia mwbdcbsmq7m7",
+    "internalCode": "M3-mwbdcbsmq7m7",
+    "propertyType": "RESIDENTIAL",
+    "registryNumber": "MAT-mwbdcbsmq7m7",
+    "registryOffice": "1º Cartório Fictício",
+    "city": "Campinas",
+    "state": "SP",
+    "areaTotalM2": 180,
+    "bedrooms": 3,
+    "parkingSpots": 2,
+    "latitude": -22.9056,
+    "longitude": -47.0608,
+    "address": {
+     "zipCode": "13010-000",
+     "street": "Rua Sigilosa mwbdcbsmq7m7",
+     "number": "100",
+     "neighborhood": "Cambuí",
+     "city": "Campinas",
+     "state": "SP"
+    }
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "publicId": "f2e9e1ae-708a-4863-9cde-78481f85baa5",
+     "lockVersion": 0,
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "title": "Casa Fictícia mwbdcbsmq7m7",
+     "internalCode": "M3-mwbdcbsmq7m7",
+     "propertyType": "RESIDENTIAL",
+     "addressId": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+     "registryNumber": "MAT-mwbdcbsmq7m7",
+     "registryOffice": "1º Cartório Fictício",
+     "latitude": "-22.9056000",
+     "longitude": "-47.0608000",
+     "addressLine": null,
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": null,
+     "areaTotalM2": "180.000000",
+     "description": null,
+     "bedrooms": 3,
+     "parkingSpots": 2,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:22.994Z",
+     "created_at": "2026-11-11T00:16:22.994Z",
+     "descriptionPublic": null,
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    },
+    "meta": {
+     "similarPropertyWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.966Z"
+  },
+  {
+   "seq": 52,
+   "casos": [
+    "imovel_completo"
+   ],
+   "descricao": "Vincula o proprietário ao imóvel",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/owners",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+    "ownershipPercent": 100,
+    "roleCode": "OWNER"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "3abd3e05-17ff-403a-a29a-d174efdb064d",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+     "ownershipPercent": "100.0000",
+     "roleCode": "OWNER",
+     "validFrom": null,
+     "validUntil": null,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:23.087Z",
+     "created_at": "2026-11-11T00:16:23.087Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:23.067Z"
+  },
+  {
+   "seq": 53,
+   "casos": [
+    "imovel_completo"
+   ],
+   "descricao": "Documento REGISTRY do imóvel",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/documents",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "documentType": "REGISTRY",
+    "label": "REGISTRY",
+    "status": "REGULARIZADO"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "4eec571c-e2a8-477d-b0e2-7e09090be914",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "documentType": "REGISTRY",
+     "label": "REGISTRY",
+     "valueNumber": null,
+     "valueAmount": null,
+     "status": "REGULARIZADO",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:23.122Z",
+     "created_at": "2026-11-11T00:16:23.122Z"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:23.109Z"
+  },
+  {
+   "seq": 54,
+   "casos": [
+    "imovel_completo"
+   ],
+   "descricao": "Documento IPTU do imóvel",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/documents",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "documentType": "IPTU",
+    "label": "IPTU",
+    "status": "REGULARIZADO"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "ca9e3936-b934-4e0e-ae26-76f162aec61e",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "documentType": "IPTU",
+     "label": "IPTU",
+     "valueNumber": null,
+     "valueAmount": null,
+     "status": "REGULARIZADO",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:23.145Z",
+     "created_at": "2026-11-11T00:16:23.145Z"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:23.138Z"
+  },
+  {
+   "seq": 55,
+   "casos": [
+    "imovel_completo"
+   ],
+   "descricao": "Detalhe do imóvel com proprietários, documentos e localização",
+   "metodo": "GET",
+   "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "title": "Casa Fictícia mwbdcbsmq7m7",
+     "internalCode": "M3-mwbdcbsmq7m7",
+     "propertyType": "RESIDENTIAL",
+     "addressId": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+     "registryNumber": "MAT-mwbdcbsmq7m7",
+     "registryOffice": "1º Cartório Fictício",
+     "latitude": "-22.9056000",
+     "longitude": "-47.0608000",
+     "addressLine": null,
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": null,
+     "areaTotalM2": "180.000000",
+     "description": null,
+     "bedrooms": 3,
+     "parkingSpots": 2,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "descriptionPublic": null,
+     "publicId": "f2e9e1ae-708a-4863-9cde-78481f85baa5",
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "lockVersion": 0,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:22.994Z",
+     "updated_at": "2026-11-11T00:16:22.994Z",
+     "deleted_at": null,
+     "address_id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+     "owners": [
+      {
+       "id": "3abd3e05-17ff-403a-a29a-d174efdb064d",
+       "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+       "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+       "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+       "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+       "ownershipPercent": "100.0000",
+       "roleCode": "OWNER",
+       "validFrom": null,
+       "validUntil": null,
+       "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "deletedBy": null,
+       "created_at": "2026-11-11T00:16:23.087Z",
+       "updated_at": "2026-11-11T00:16:23.087Z",
+       "deleted_at": null,
+       "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+       "person_id": "f6d6adbf-0670-4128-a50d-3896159d8e6a"
+      }
+     ],
+     "offers": [],
+     "address": {
+      "id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+      "zipCode": "13010-000",
+      "street": "Rua Sigilosa mwbdcbsmq7m7",
+      "number": "100",
+      "complement": null,
+      "neighborhood": "Cambuí",
+      "city": "Campinas",
+      "state": "SP",
+      "created_at": "2026-11-11T00:16:22.992Z",
+      "updated_at": "2026-11-11T00:16:22.992Z"
+     },
+     "media": [],
+     "documents": [
+      {
+       "id": "ca9e3936-b934-4e0e-ae26-76f162aec61e",
+       "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+       "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+       "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+       "documentType": "IPTU",
+       "label": "IPTU",
+       "valueNumber": null,
+       "valueAmount": null,
+       "status": "REGULARIZADO",
+       "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "created_at": "2026-11-11T00:16:23.145Z",
+       "updated_at": "2026-11-11T00:16:23.145Z",
+       "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+      },
+      {
+       "id": "4eec571c-e2a8-477d-b0e2-7e09090be914",
+       "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+       "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+       "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+       "documentType": "REGISTRY",
+       "label": "REGISTRY",
+       "valueNumber": null,
+       "valueAmount": null,
+       "status": "REGULARIZADO",
+       "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+       "created_at": "2026-11-11T00:16:23.122Z",
+       "updated_at": "2026-11-11T00:16:23.122Z",
+       "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+      }
+     ]
+    }
+   },
+   "dataHora": "2026-11-11T00:16:23.159Z"
+  },
+  {
+   "seq": 58,
+   "casos": [
+    "ofertas_venda_locacao",
+    "oferta_financiamento"
+   ],
+   "descricao": "Oferta de VENDA no imóvel, aceita financiamento",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "offerType": "SALE",
+    "askingPrice": 950000,
+    "acceptsFinancing": true,
+    "confidentialMinPrice": 900000
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "350abdaa-a138-42b6-9a1a-e74a9217c929",
+     "lockVersion": 0,
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "offerType": "SALE",
+     "askingPrice": "950000.00",
+     "confidentialMinPrice": "900000.00",
+     "acceptsFinancing": true,
+     "acceptsTrade": null,
+     "status": "ACTIVE",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:23.333Z",
+     "created_at": "2026-11-11T00:16:23.333Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:23.321Z"
+  },
+  {
+   "seq": 59,
+   "casos": [
+    "ofertas_venda_locacao"
+   ],
+   "descricao": "Oferta de LOCAÇÃO no MESMO imóvel",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "offerType": "RENT",
+    "askingPrice": 4800
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "b9bd6b43-d4e6-4732-9523-596d76e3f374",
+     "lockVersion": 0,
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "offerType": "RENT",
+     "askingPrice": "4800.00",
+     "confidentialMinPrice": null,
+     "acceptsFinancing": null,
+     "acceptsTrade": null,
+     "status": "ACTIVE",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:23.500Z",
+     "created_at": "2026-11-11T00:16:23.500Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:23.449Z"
+  },
+  {
+   "seq": 60,
+   "casos": [
+    "ofertas_venda_locacao",
+    "oferta_financiamento"
+   ],
+   "descricao": "Um imóvel, duas ofertas ativas (venda e locação)",
+   "metodo": "GET",
+   "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "b9bd6b43-d4e6-4732-9523-596d76e3f374",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "offerType": "RENT",
+      "askingPrice": "4800.00",
+      "confidentialMinPrice": null,
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "ACTIVE",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:23.500Z",
+      "updated_at": "2026-11-11T00:16:23.500Z",
+      "deleted_at": null,
+      "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+     },
+     {
+      "id": "350abdaa-a138-42b6-9a1a-e74a9217c929",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "offerType": "SALE",
+      "askingPrice": "950000.00",
+      "confidentialMinPrice": "900000.00",
+      "acceptsFinancing": true,
+      "acceptsTrade": null,
+      "status": "ACTIVE",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:23.333Z",
+      "updated_at": "2026-11-11T00:16:23.333Z",
+      "deleted_at": null,
+      "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T00:16:23.594Z"
+  },
+  {
+   "seq": 85,
+   "casos": [
+    "publicar_ok"
+   ],
+   "descricao": "Foto aprovada na revisão",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/1e329720-60b9-4576-a658-f97b3aaaaf2b/media/9de690ff-fd56-4f99-b41d-78680838a3b8/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "qualityStatus": "APPROVED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "9de690ff-fd56-4f99-b41d-78680838a3b8",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+     "mediaType": "IMAGE",
+     "storageKey": "fotos/original-0-mwbdccmim8e1.jpg",
+     "originalName": "sala-1.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": null,
+     "position": 1,
+     "classification": null,
+     "qualityStatus": "APPROVED",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "created_at": "2026-11-11T00:16:24.469Z",
+     "updated_at": "2026-11-11T00:16:24.725Z",
+     "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.718Z"
+  },
+  {
+   "seq": 86,
+   "casos": [
+    "publicar_ok"
+   ],
+   "descricao": "Foto aprovada na revisão",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/1e329720-60b9-4576-a658-f97b3aaaaf2b/media/a6caa639-043b-47e0-8e59-ae86462b3484/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "qualityStatus": "APPROVED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "a6caa639-043b-47e0-8e59-ae86462b3484",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+     "mediaType": "IMAGE",
+     "storageKey": "fotos/original-1-mwbdccmim8e1.jpg",
+     "originalName": "sala-2.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": null,
+     "position": 2,
+     "classification": null,
+     "qualityStatus": "APPROVED",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "created_at": "2026-11-11T00:16:24.519Z",
+     "updated_at": "2026-11-11T00:16:24.770Z",
+     "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.750Z"
+  },
+  {
+   "seq": 87,
+   "casos": [
+    "publicar_ok"
+   ],
+   "descricao": "Foto aprovada na revisão",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/1e329720-60b9-4576-a658-f97b3aaaaf2b/media/41223659-bdf0-4d18-b95b-8ecb3cfb31d5/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "qualityStatus": "APPROVED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "41223659-bdf0-4d18-b95b-8ecb3cfb31d5",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+     "mediaType": "IMAGE",
+     "storageKey": "fotos/original-2-mwbdccmim8e1.jpg",
+     "originalName": "sala-3.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": null,
+     "position": 3,
+     "classification": null,
+     "qualityStatus": "APPROVED",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "created_at": "2026-11-11T00:16:24.572Z",
+     "updated_at": "2026-11-11T00:16:24.814Z",
+     "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.804Z"
+  },
+  {
+   "seq": 88,
+   "casos": [
+    "publicar_ok"
+   ],
+   "descricao": "Com 3 fotos aprovadas o gate de fotos passa; falta documento mínimo (REG-IMO-DOCS-001)",
+   "metodo": "POST",
+   "rota": "/api/v1/offers/504e941b-1f51-4a40-b834-ddc9f8f36d5c/publish",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {},
+   "status": 422,
+   "codigoErro": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_DOCS_001",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_DOCS_001",
+     "message": "Publicação bloqueada: documentos mínimos (matrícula/IPTU) ausentes.",
+     "details": {
+      "ruleDecision": "DENY",
+      "reason": "RULE_CONDITION_NOT_MET",
+      "missingDocTypes": [
+       "REGISTRY",
+       "IPTU"
+      ]
+     },
+     "traceId": "1ca499d2-ae91-4f8e-994d-333d15415b6b"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.840Z"
+  },
+  {
+   "seq": 89,
+   "casos": [
+    "publicar_ok"
+   ],
+   "descricao": "Documento REGISTRY",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/1e329720-60b9-4576-a658-f97b3aaaaf2b/documents",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "documentType": "REGISTRY",
+    "label": "REGISTRY",
+    "status": "REGULARIZADO"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "a3e5c509-b898-482d-80ce-5c2c619c36eb",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+     "documentType": "REGISTRY",
+     "label": "REGISTRY",
+     "valueNumber": null,
+     "valueAmount": null,
+     "status": "REGULARIZADO",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:24.892Z",
+     "created_at": "2026-11-11T00:16:24.892Z"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.884Z"
+  },
+  {
+   "seq": 90,
+   "casos": [
+    "publicar_ok"
+   ],
+   "descricao": "Documento IPTU",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/1e329720-60b9-4576-a658-f97b3aaaaf2b/documents",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "documentType": "IPTU",
+    "label": "IPTU",
+    "status": "REGULARIZADO"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "64733e85-4c03-420c-a468-9dda659094d3",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+     "documentType": "IPTU",
+     "label": "IPTU",
+     "valueNumber": null,
+     "valueAmount": null,
+     "status": "REGULARIZADO",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:24.910Z",
+     "created_at": "2026-11-11T00:16:24.910Z"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.904Z"
+  },
+  {
+   "seq": 91,
+   "casos": [
+    "publicar_ok"
+   ],
+   "descricao": "Publicação liberada pelo gate (vídeo, fotos aprovadas e documentos)",
+   "metodo": "POST",
+   "rota": "/api/v1/offers/504e941b-1f51-4a40-b834-ddc9f8f36d5c/publish",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {},
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "property": {
+      "id": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbdccmim8e1",
+      "internalCode": "M3-mwbdccmim8e1",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "116ddaba-2b71-4fa8-818f-7bc51b6d0c83",
+      "registryNumber": "MAT-mwbdccmim8e1",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": null,
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "PUBLISHED",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "ee099b49-fbc1-41b7-ad33-80e2d8f0de67",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:24.055Z",
+      "updated_at": "2026-11-11T00:16:24.971Z",
+      "deleted_at": null,
+      "address_id": "116ddaba-2b71-4fa8-818f-7bc51b6d0c83"
+     },
+     "offer": {
+      "id": "504e941b-1f51-4a40-b834-ddc9f8f36d5c",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+      "offerType": "RENT",
+      "askingPrice": "3900.00",
+      "confidentialMinPrice": null,
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "ACTIVE",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:24.113Z",
+      "updated_at": "2026-11-11T00:16:24.113Z",
+      "deleted_at": null,
+      "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+     }
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.944Z"
+  },
+  {
+   "seq": 92,
+   "casos": [
+    "oportunidade_ok"
+   ],
+   "descricao": "Lead",
+   "metodo": "POST",
+   "rota": "/api/v1/people",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Lead CRM mwbdcdcy6z5l",
+    "allowDuplicate": true
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personType": "PF",
+     "legalName": "Lead CRM mwbdcdcy6z5l",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:25.003Z",
+     "updated_at": "2026-11-11T00:16:25.003Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    },
+    "meta": {
+     "similarPersonWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T00:16:24.994Z"
+  },
+  {
+   "seq": 94,
+   "casos": [
+    "oportunidade_ok",
+    "jornada_e2e"
+   ],
+   "descricao": "Cria oportunidade (caminho do livro) com responsável e próxima ação",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/opportunities",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+    "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+    "stage": "NEW",
+    "ownerUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+    "nextAction": "Ligar para qualificar",
+    "nextActionDueAt": "2026-11-13T00:16:25.199Z"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "f5ebb76a-a180-4725-9ec7-3736e035e71d",
+     "lockVersion": 0,
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "ownerUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "stage": "NEW",
+     "temperature": null,
+     "expectedValue": null,
+     "nextAction": "Ligar para qualificar",
+     "nextActionDueAt": "2026-11-13T00:16:25.199Z",
+     "wonReason": null,
+     "lostReason": null,
+     "withdrawnReason": null,
+     "closedAt": null,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:25.211Z",
+     "created_at": "2026-11-11T00:16:25.211Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:25.199Z"
+  },
+  {
+   "seq": 108,
+   "casos": [
+    "interacao_livro",
+    "interacao_canais",
+    "jornada_e2e"
+   ],
+   "descricao": "Interação pelo caminho do livro: formulário do SITE, entrada, com occurredAt",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/opportunities/f5ebb76a-a180-4725-9ec7-3736e035e71d/interactions",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "channel": "SITE",
+    "direction": "IN",
+    "occurredAt": "2026-11-10T23:16:25.689Z",
+    "summary": "Quer visitar no sábado.",
+    "externalMessageId": "site-mwbdcdcy6z5l"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "05c1c61e-3554-476b-814c-0ec9a41f4c70",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "opportunityId": "f5ebb76a-a180-4725-9ec7-3736e035e71d",
+     "channel": "SITE",
+     "direction": "INBOUND",
+     "authorType": "CLIENT",
+     "authorUserId": null,
+     "body": "Quer visitar no sábado.",
+     "occurredAt": "2026-11-10T23:16:25.689Z",
+     "status": "RECEIVED",
+     "externalMessageId": "site-mwbdcdcy6z5l",
+     "connectionId": null,
+     "dispatchId": null,
+     "deliveryStatus": null,
+     "conversationId": null,
+     "mediaQuarantineId": null,
+     "purpose": null,
+     "actionKey": null,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:25.706Z",
+     "created_at": "2026-11-11T00:16:25.706Z",
+     "mediaState": null,
+     "failureReason": null,
+     "alternateChannel": null,
+     "alternateRef": null,
+     "alternateAt": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:25.689Z"
+  },
+  {
+   "seq": 118,
+   "casos": [
+    "visita_livro",
+    "jornada_e2e"
+   ],
+   "descricao": "Visita agendada pelo caminho do livro",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/opportunities/f5ebb76a-a180-4725-9ec7-3736e035e71d/visits",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+    "scheduledAt": "2026-11-14T00:16:25.830Z"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "d8395c81-71b4-470e-b9c4-479bed435d49",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "opportunityId": "f5ebb76a-a180-4725-9ec7-3736e035e71d",
+     "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "agentUserId": null,
+     "scheduledAt": "2026-11-14T00:16:25.830Z",
+     "status": "SCHEDULED",
+     "feedback": null,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:25.843Z",
+     "created_at": "2026-11-11T00:16:25.843Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:25.830Z"
+  },
+  {
+   "seq": 119,
+   "casos": [
+    "visita_livro"
+   ],
+   "descricao": "Visita no passado é recusada",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/opportunities/f5ebb76a-a180-4725-9ec7-3736e035e71d/visits",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+    "scheduledAt": "2026-11-10T00:16:25.848Z"
+   },
+   "status": 422,
+   "codigoErro": "VISIT_SCHEDULED_IN_THE_PAST",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "VISIT_SCHEDULED_IN_THE_PAST",
+     "message": "Não é possível agendar uma visita para uma data no passado. Para registrar uma visita que já ocorreu, use o status DONE, NO_SHOW ou CANCELED.",
+     "details": {
+      "scheduledAt": "2026-11-10T00:16:25.848Z",
+      "status": "SCHEDULED"
+     },
+     "traceId": "31675c62-2344-4bec-8a0c-7b4e965fb81c"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:25.848Z"
+  },
+  {
+   "seq": 129,
+   "casos": [
+    "perda_com_motivo"
+   ],
+   "descricao": "Perda com motivo estruturado",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/opportunities/c3955ba0-9185-4e01-8405-49c1555478d6/lost",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "reasonCode": "PRICE_TOO_HIGH"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c3955ba0-9185-4e01-8405-49c1555478d6",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "ownerUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "stage": "CLOSED_LOST",
+     "temperature": null,
+     "expectedValue": null,
+     "closedAt": "2026-11-11T00:16:26.015Z",
+     "lostReason": "PRICE_TOO_HIGH",
+     "wonReason": null,
+     "withdrawnReason": null,
+     "nextAction": "Ligar para qualificar",
+     "nextActionDueAt": "2026-11-13T00:16:25.972Z",
+     "lockVersion": 1,
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:25.987Z",
+     "updated_at": "2026-11-11T00:16:26.015Z",
+     "deleted_at": null,
+     "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+     "owner_user_id": "50440c45-76e5-4fa5-bad5-fabbab6eb717"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:26.006Z"
+  },
+  {
+   "seq": 130,
+   "casos": [
+    "perda_com_motivo"
+   ],
+   "descricao": "Motivo fora do catálogo é recusado",
+   "metodo": "PATCH",
+   "rota": "/api/v1/opportunities/c3955ba0-9185-4e01-8405-49c1555478d6",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "stage": "CLOSED_LOST",
+    "lostReason": "PORQUE_SIM"
+   },
+   "status": 422,
+   "codigoErro": "OPPORTUNITY_OUTCOME_REASON_INVALID",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "OPPORTUNITY_OUTCOME_REASON_INVALID",
+     "message": "O motivo \"PORQUE_SIM\" não é um motivo de perda válido. Use um de: PRICE_TOO_HIGH, COMPETITOR, FINANCING_DENIED, LOCATION, OTHER.",
+     "details": {
+      "stage": "CLOSED_LOST",
+      "field": "lostReason",
+      "allowed": [
+       "PRICE_TOO_HIGH",
+       "COMPETITOR",
+       "FINANCING_DENIED",
+       "LOCATION",
+       "OTHER"
+      ],
+      "received": "PORQUE_SIM"
+     },
+     "traceId": "275db855-9dd7-4433-9336-99cd4fdeaf66"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:26.029Z"
+  },
+  {
+   "seq": 133,
+   "casos": [
+    "ocorrencia_da_interacao",
+    "ocorrencia_sla"
+   ],
+   "descricao": "A interação abre a ocorrência (atendimento inadequado), com SLA calculado",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/occurrences",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+    "messageId": "4e871d12-a2c7-4c4e-b1b7-b020073e49f0",
+    "type": "POOR_SERVICE",
+    "severity": "MEDIUM",
+    "description": "Sem retorno há 5 dias.",
+    "assignedToUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "79dc09fb-34ba-4709-8d61-5c123a228f54",
+     "lockVersion": 0,
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "opportunityId": "f5ebb76a-a180-4725-9ec7-3736e035e71d",
+     "messageId": "4e871d12-a2c7-4c4e-b1b7-b020073e49f0",
+     "type": "POOR_SERVICE",
+     "description": "Sem retorno há 5 dias.",
+     "severity": "MEDIUM",
+     "status": "OPEN",
+     "assignedToUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "slaDueAt": "2026-11-14T00:16:26.116Z",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:26.116Z",
+     "created_at": "2026-11-11T00:16:26.116Z",
+     "escalatedAt": null,
+     "resolvedAt": null,
+     "resolutionNotes": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:26.099Z"
+  },
+  {
+   "seq": 135,
+   "casos": [
+    "ocorrencia_sla"
+   ],
+   "descricao": "Elogio também recebe SLA",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/feedback-cases",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+    "type": "COMPLIMENT",
+    "severity": "LOW",
+    "description": "Elogio ao corretor."
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "08712e2d-9c6c-4083-b344-ec3c1a49cfac",
+     "lockVersion": 0,
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+     "opportunityId": null,
+     "messageId": null,
+     "type": "COMPLIMENT",
+     "description": "Elogio ao corretor.",
+     "severity": "LOW",
+     "status": "OPEN",
+     "assignedToUserId": null,
+     "slaDueAt": "2026-11-18T00:16:26.158Z",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:26.158Z",
+     "created_at": "2026-11-11T00:16:26.158Z",
+     "escalatedAt": null,
+     "resolvedAt": null,
+     "resolutionNotes": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:26.151Z"
+  },
+  {
+   "seq": 160,
+   "casos": [
+    "radar_criar",
+    "jornada_e2e"
+   ],
+   "descricao": "Cria radar com obrigatórios, preferências ponderadas, flexível e exclusão",
+   "metodo": "POST",
+   "rota": "/api/v1/radar",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+    "criteriaJson": {
+     "required": {
+      "city": "Campinas",
+      "offerType": "SALE",
+      "maxPrice": 1000000
+     },
+     "preferences": [
+      {
+       "code": "NEIGHBORHOOD",
+       "value": "Cambuí",
+       "weight": 2
+      },
+      {
+       "code": "MIN_BEDROOMS",
+       "value": 3,
+       "weight": 1
+      },
+      {
+       "code": "MIN_PARKING",
+       "value": 2,
+       "weight": 1
+      }
+     ],
+     "flexible": [
+      {
+       "code": "MAX_DISTANCE_KM",
+       "lat": -22.9056,
+       "lng": -47.0608,
+       "value": 5,
+       "weight": 1
+      }
+     ],
+     "exclusions": [
+      {
+       "code": "PROPERTY_TYPE",
+       "value": "LAND"
+      }
+     ]
+    }
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "_resumo": "corpo de 26539 caracteres; início mostrado",
+    "inicio": "{\"success\":true,\"data\":{\"id\":\"e8f32f2c-a4d5-4945-909e-d94e429ebeea\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"personId\":\"92e15d2b-0859-4eb9-898e-6d8ef7517fd5\",\"opportunityId\":null,\"criteriaJson\":{\"flexible\":[{\"lat\":-22.9056,\"lng\":-47.0608,\"code\":\"MAX_DISTANCE_KM\",\"value\":5,\"weight\":1}],\"required\":{\"city\":\"Campinas\",\"maxPrice\":1000000,\"offerType\":\"SALE\"},\"exclusions\":[{\"code\":\"PROPERTY_TYPE\",\"value\":\"LAND\"}],\"preferences\":[{\"code\":\"NEIGHBORHOOD\",\"value\":\"Cambuí\",\"weight\":2},{\"code\":\"MIN_BEDROOMS\",\"value\":3,\"weight\":1},{\"code\":\"MIN_PARKING\",\"value\":2,\"weight\":1}]},\"status\":\"ACTIVE\",\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updated_at\":\"2026-11-11T00:16:26.613Z\",\"created_at\":\"2026-11-11T00:16:26.613Z\",\"deletedBy\":null,\"deleted_at\":null,\"matches\":[{\"id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbdcbsmq7m7\",\"internalCode\":\"M3-mwbdcbsmq7m7\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"registryNumber\":\"MAT-mwbdcbsmq7m7\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":null,\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"DRAFT\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"f2e9e1ae-708a-4863-9cde-78481f85baa5\",\"mergedIntoId\":null,\"publishedAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:22.994Z\",\"updated_at\":\"2026-11-11T00:16:22.994Z\",\"deleted_at\":null,\"address_id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"offers\":[{\"id\":\"d4eef318-1bfb-496a-9031-395197337f89\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"offerType\":\"SALE\",\"askingPrice\":\"912000.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":true,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":3,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.617Z\",\"updated_at\":\"2026-11-11T00:16:23.855Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"}],\"address\":{\"id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"zipCode\":\"13010-000\",\"street\":\"Rua Sigilosa mwbdcbsmq7m7\",\"number\":\"100\",\"complement\":null,\"neighborhood\":\"Cambuí\",\"city\":\"Campinas\",\"state\":\"SP\",\"created_at\":\"2026-11-11T00:16:22.992Z\",\"updated_at\":\"2026-11-11T00:16:22.992Z\"},\"radarMatch\":{\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"matched\":true,\"matchedCount\":9,\"totalCriteria\":9,\"score\":1,\"requiredScore\":1,\"reasons\":[\"NEIGHBORHOOD\",\"MIN_BEDROOMS\",\"MIN_PARKING\",\"MAX_DISTANCE_KM\"],\"criteria\":{\"city\":{\"category\":\"REQUIRED\",\"matched\":true},\"activeOffer\":{\"category\":\"REQUIRED\",\"matched\":true},\"offerType\":{\"category\":\"REQUIRED\",\"matched\":true},\"priceRange\":{\"category\":\"REQUIRED\",\"matched\":true},\"preference:NEIGHBORHOOD\":{\"category\":\"PREFERENCE\",\"code\":\"NEIGHBORHOOD\",\"weight\":2,\"matched\":true},\"preference:MIN_BEDROOMS\":{\"category\":\"PREFERENCE\",\"code\":\"MIN_BEDROOMS\",\"weight\":1,\"matched\":true},\"preference:MIN_PARKING\":{\"category\":\"PREFERENCE\",\"code\":\"MIN_PARKING\",\"weight\":1,\"matched\":true},\"flexible:MAX_DISTANCE_KM\":{\"category\":\"FLEXIBLE\",\"code\":\"MAX_DISTANCE_KM\",\"weight\":1,\"matched\":true,\"distanceKm\":0},\"exclusion:PROPERTY_TYPE:LAND\":{\"category\":\"EXCLUSION\",\"code\":\"PROPERTY_TYPE\",\"matched\":true}}}},{\"id\":\"bf1a187a-85e9-4b29-b375-0f841717a9fe\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbd656vhbtq\",\"internalCode\":\"M3-mwbd656vhbtq\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"3b52224e-f652-4f1b-b24d-ca742c781f22\",\"registryNumber\":\"MAT-mwbd656vhbtq\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":\"Casa térrea mwbd6kk6x4n0\",\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"DRAFT\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"3d9d6ab2-c64e-420f-947f-adc1529d3532\",\"mergedIntoId\":null,\"publishedAt\":null,\"lockVersion\":1,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:11:34.485Z\",\"updated_at\":\"2026-11-11T00:11:54.630Z\",\"deleted_at\":null,\"address_id\":\"3b52224e-f652-4f1b-b24d-ca742c7"
+   },
+   "dataHora": "2026-11-11T00:16:26.599Z"
+  },
+  {
+   "seq": 161,
+   "casos": [
+    "radar_criar"
+   ],
+   "descricao": "Radar pelo caminho do livro (POST /crm/radars)",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/radars",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+    "criteriaJson": {
+     "city": "Campinas",
+     "offerType": "RENT"
+    }
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "_resumo": "corpo de 24509 caracteres; início mostrado",
+    "inicio": "{\"success\":true,\"data\":{\"id\":\"0d6b4e7a-00c2-48b2-bf52-09fd172a11c1\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"personId\":\"92e15d2b-0859-4eb9-898e-6d8ef7517fd5\",\"opportunityId\":null,\"criteriaJson\":{\"city\":\"Campinas\",\"offerType\":\"RENT\"},\"status\":\"ACTIVE\",\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updated_at\":\"2026-11-11T00:16:26.634Z\",\"created_at\":\"2026-11-11T00:16:26.634Z\",\"deletedBy\":null,\"deleted_at\":null,\"matches\":[{\"id\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbdccmim8e1\",\"internalCode\":\"M3-mwbdccmim8e1\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"116ddaba-2b71-4fa8-818f-7bc51b6d0c83\",\"registryNumber\":\"MAT-mwbdccmim8e1\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":null,\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"PUBLISHED\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"ee099b49-fbc1-41b7-ad33-80e2d8f0de67\",\"mergedIntoId\":null,\"publishedAt\":\"2026-11-11T00:16:24.952Z\",\"lockVersion\":1,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:24.055Z\",\"updated_at\":\"2026-11-11T00:16:24.971Z\",\"deleted_at\":null,\"address_id\":\"116ddaba-2b71-4fa8-818f-7bc51b6d0c83\",\"offers\":[{\"id\":\"504e941b-1f51-4a40-b834-ddc9f8f36d5c\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\",\"offerType\":\"RENT\",\"askingPrice\":\"3900.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":null,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:24.113Z\",\"updated_at\":\"2026-11-11T00:16:24.113Z\",\"deleted_at\":null,\"property_id\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\"}],\"address\":{\"id\":\"116ddaba-2b71-4fa8-818f-7bc51b6d0c83\",\"zipCode\":\"13010-000\",\"street\":\"Rua Sigilosa mwbdccmim8e1\",\"number\":\"100\",\"complement\":null,\"neighborhood\":\"Cambuí\",\"city\":\"Campinas\",\"state\":\"SP\",\"created_at\":\"2026-11-11T00:16:24.053Z\",\"updated_at\":\"2026-11-11T00:16:24.053Z\"},\"radarMatch\":{\"propertyId\":\"1e329720-60b9-4576-a658-f97b3aaaaf2b\",\"matched\":true,\"matchedCount\":3,\"totalCriteria\":3,\"score\":1,\"requiredScore\":1,\"reasons\":[],\"criteria\":{\"city\":{\"category\":\"REQUIRED\",\"matched\":true},\"activeOffer\":{\"category\":\"REQUIRED\",\"matched\":true},\"offerType\":{\"category\":\"REQUIRED\",\"matched\":true}}}},{\"id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbdcbsmq7m7\",\"internalCode\":\"M3-mwbdcbsmq7m7\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"registryNumber\":\"MAT-mwbdcbsmq7m7\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":null,\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"DRAFT\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"f2e9e1ae-708a-4863-9cde-78481f85baa5\",\"mergedIntoId\":null,\"publishedAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:22.994Z\",\"updated_at\":\"2026-11-11T00:16:22.994Z\",\"deleted_at\":null,\"address_id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"offers\":[{\"id\":\"b9bd6b43-d4e6-4732-9523-596d76e3f374\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"offerType\":\"RENT\",\"askingPrice\":\"4800.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":null,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.500Z\",\"updated_at\":\"2026-11-11T00:16:23.500Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"}],\"address\":{\"id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"zipCode\":\"13010-000\",\"street\":\"Rua Sigilosa mwbdcbsmq7m7\",\"number\":\"100\",\"complement\":null,\"neighborhood\":\"Cambuí\",\"city\":\"Campinas\",\"state\":\"SP\",\"created_at\":\"2026-11-11T00:16:22.992Z\",\"updated_at\":\"2026-11-11T00:16:22.992Z\"},\"radarM"
+   },
+   "dataHora": "2026-11-11T00:16:26.625Z"
+  },
+  {
+   "seq": 162,
+   "casos": [
+    "radar_criar"
+   ],
+   "descricao": "Critério fora da lista é recusado",
+   "metodo": "POST",
+   "rota": "/api/v1/radar",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+    "criteriaJson": {
+     "city": "Campinas",
+     "preferences": [
+      {
+       "code": "VISTA_PARA_O_MAR",
+       "value": true
+      }
+     ]
+    }
+   },
+   "status": 422,
+   "codigoErro": "RADAR_CRITERIA_INVALID",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "RADAR_CRITERIA_INVALID",
+     "message": "O critério preferences[0] tem código \"VISTA_PARA_O_MAR\" fora da lista aceita (NEIGHBORHOOD, MIN_BEDROOMS, MIN_SUITES, MIN_PARKING).",
+     "details": {
+      "field": "preferences[0].code"
+     },
+     "traceId": "835944b0-0174-4767-a50c-595f050423d9"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:26.643Z"
+  },
+  {
+   "seq": 163,
+   "casos": [
+    "radar_matches",
+    "jornada_e2e"
+   ],
+   "descricao": "Imóveis compatíveis, ordenados por score, com critérios atendidos e falhos",
+   "metodo": "GET",
+   "rota": "/api/v1/radar/e8f32f2c-a4d5-4945-909e-d94e429ebeea/matches",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbdcbsmq7m7",
+      "internalCode": "M3-mwbdcbsmq7m7",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+      "registryNumber": "MAT-mwbdcbsmq7m7",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": null,
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "f2e9e1ae-708a-4863-9cde-78481f85baa5",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:22.994Z",
+      "updated_at": "2026-11-11T00:16:22.994Z",
+      "deleted_at": null,
+      "address_id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+      "offers": [
+       {
+        "id": "d4eef318-1bfb-496a-9031-395197337f89",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+        "offerType": "SALE",
+        "askingPrice": "912000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": true,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 3,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:23.617Z",
+        "updated_at": "2026-11-11T00:16:23.855Z",
+        "deleted_at": null,
+        "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+       }
+      ],
+      "address": {
+       "id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+       "zipCode": "13010-000",
+       "street": "Rua Sigilosa mwbdcbsmq7m7",
+       "number": "100",
+       "complement": null,
+       "neighborhood": "Cambuí",
+       "city": "Campinas",
+       "state": "SP",
+       "created_at": "2026-11-11T00:16:22.992Z",
+       "updated_at": "2026-11-11T00:16:22.992Z"
+      },
+      "radarMatch": {
+       "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+       "matched": true,
+       "matchedCount": 9,
+       "totalCriteria": 9,
+       "score": 1,
+       "requiredScore": 1,
+       "reasons": [
+        "NEIGHBORHOOD",
+        "MIN_BEDROOMS",
+        "MIN_PARKING",
+        "MAX_DISTANCE_KM"
+       ],
+       "criteria": {
+        "city": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "activeOffer": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "offerType": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "priceRange": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "preference:NEIGHBORHOOD": {
+         "category": "PREFERENCE",
+         "code": "NEIGHBORHOOD",
+         "weight": 2,
+         "matched": true
+        },
+        "preference:MIN_BEDROOMS": {
+         "category": "PREFERENCE",
+         "code": "MIN_BEDROOMS",
+         "weight": 1,
+         "matched": true
+        },
+        "preference:MIN_PARKING": {
+         "category": "PREFERENCE",
+         "code": "MIN_PARKING",
+         "weight": 1,
+         "matched": true
+        },
+        "flexible:MAX_DISTANCE_KM": {
+         "category": "FLEXIBLE",
+         "code": "MAX_DISTANCE_KM",
+         "weight": 1,
+         "matched": true,
+         "distanceKm": 0
+        },
+        "exclusion:PROPERTY_TYPE:LAND": {
+         "category": "EXCLUSION",
+         "code": "PROPERTY_TYPE",
+         "matched": true
+        }
+       }
+      }
+     },
+     {
+      "id": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbd656vhbtq",
+      "internalCode": "M3-mwbd656vhbtq",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+      "registryNumber": "MAT-mwbd656vhbtq",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": "Casa térrea mwbd6kk6x4n0",
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "3d9d6ab2-c64e-420f-947f-adc1529d3532",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:11:34.485Z",
+      "updated_at": "2026-11-11T00:11:54.630Z",
+      "deleted_at": null,
+      "address_id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+      "offers": [
+       {
+        "id": "dd0f3b2d-75e4-4f02-adb6-674ae1decf28",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+        "offerType": "SALE",
+        "askingPrice": "912000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": true,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 3,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:11:36.535Z",
+        "updated_at": "2026-11-11T00:11:37.104Z",
+        "deleted_at": null,
+        "property_id": "bf1a187a-85e9-4b29-b375-0f841717a9fe"
+       }
+      ],
+      "address": {
+       "id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+       "zipCode": "13010-000",
+       "street": "Rua Sigilosa mwbd656vhbtq",
+       "number": "100",
+       "complement": null,
+       "neighborhood": "Cambuí",
+       "city": "Campinas",
+       "state": "SP",
+       "created_at": "2026-11-11T00:11:34.484Z",
+       "updated_at": "2026-11-11T00:11:34.484Z"
+      },
+      "radarMatch": {
+       "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+       "matched": true,
+       "matchedCount": 9,
+       "totalCriteria": 9,
+       "score": 1,
+       "requiredScore": 1,
+       "reasons": [
+        "NEIGHBORHOOD",
+        "MIN_BEDROOMS",
+        "MIN_PARKING",
+        "MAX_DISTANCE_KM"
+       ],
+       "criteria": {
+        "city": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "activeOffer": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "offerType": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "priceRange": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "preference:NEIGHBORHOOD": {
+         "category": "PREFERENCE",
+         "code": "NEIGHBORHOOD",
+         "weight": 2,
+         "matched": true
+        },
+        "preference:MIN_BEDROOMS": {
+         "category": "PREFERENCE",
+         "code": "MIN_BEDROOMS",
+         "weight": 1,
+         "matched": true
+        },
+        "preference:MIN_PARKING": {
+         "category": "PREFERENCE",
+         "code": "MIN_PARKING",
+         "weight": 1,
+         "matched": true
+        },
+        "flexible:MAX_DISTANCE_KM": {
+         "category": "FLEXIBLE",
+         "code": "MAX_DISTANCE_KM",
+         "weight": 1,
+         "matched": true,
+         "distanceKm": 0
+        },
+        "exclusion:PROPERTY_TYPE:LAND": {
+         "category": "EXCLUSION",
+         "code": "PROPERTY_TYPE",
+         "matched": true
+        }
+       }
+      }
+     },
+     {
+      "id": "d16f183d-4c31-459a-a341-282a30ea71ff",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbd3nabhv5l",
+      "internalCode": "M3-mwbd3nabhv5l",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+      "registryNumber": "MAT-mwbd3nabhv5l",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": "Casa térrea mwbd4x190e1t",
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "78ac1973-8248-4c02-8e2c-0ac365f7dd0b",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:09:38.281Z",
+      "updated_at": "2026-11-11T00:10:38.344Z",
+      "deleted_at": null,
+      "address_id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+      "offers": [
+       {
+        "id": "697c2293-0e60-4baf-a718-03167cf33dca",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+        "offerType": "SALE",
+        "askingPrice": "911000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": true,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 3,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:09:51.133Z",
+        "updated_at": "2026-11-11T00:09:55.310Z",
+        "deleted_at": null,
+        "property_id": "d16f183d-4c31-459a-a341-282a30ea71ff"
+       }
+      ],
+      "address": {
+       "id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+       "zipCode": "13010-000",
+       "street": "Rua Sigilosa mwbd3nabhv5l",
+       "number": "100",
+       "complement": null,
+       "neighborhood": "Cambuí",
+       "city": "Campinas",
+       "state": "SP",
+       "created_at": "2026-11-11T00:09:38.277Z",
+       "updated_at": "2026-11-11T00:09:38.277Z"
+      },
+      "radarMatch": {
+       "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+       "matched": true,
+       "matchedCount": 9,
+       "totalCriteria": 9,
+       "score": 1,
+       "requiredScore": 1,
+       "reasons": [
+        "NEIGHBORHOOD",
+        "MIN_BEDROOMS",
+        "MIN_PARKING",
+        "MAX_DISTANCE_KM"
+       ],
+       "criteria": {
+        "city": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "activeOffer": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "offerType": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "priceRange": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "preference:NEIGHBORHOOD": {
+         "category": "PREFERENCE",
+         "code": "NEIGHBORHOOD",
+         "weight": 2,
+         "matched": true
+        },
+        "preference:MIN_BEDROOMS": {
+         "category": "PREFERENCE",
+         "code": "MIN_BEDROOMS",
+         "weight": 1,
+         "matched": true
+        },
+        "preference:MIN_PARKING": {
+         "category": "PREFERENCE",
+         "code": "MIN_PARKING",
+         "weight": 1,
+         "matched": true
+        },
+        "flexible:MAX_DISTANCE_KM": {
+         "category": "FLEXIBLE",
+         "code": "MAX_DISTANCE_KM",
+         "weight": 1,
+         "matched": true,
+         "distanceKm": 0
+        },
+        "exclusion:PROPERTY_TYPE:LAND": {
+         "category": "EXCLUSION",
+         "code": "PROPERTY_TYPE",
+         "matched": true
+        }
+       }
+      }
+     }
+    ],
+    "_resumo": "lista com 9 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:26.658Z"
+  },
+  {
+   "seq": 164,
+   "casos": [
+    "radar_matches"
+   ],
+   "descricao": "Mesma consulta pelo caminho do livro (GET /crm/radars/:id/matches)",
+   "metodo": "GET",
+   "rota": "/api/v1/crm/radars/e8f32f2c-a4d5-4945-909e-d94e429ebeea/matches",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbdcbsmq7m7",
+      "internalCode": "M3-mwbdcbsmq7m7",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+      "registryNumber": "MAT-mwbdcbsmq7m7",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": null,
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "f2e9e1ae-708a-4863-9cde-78481f85baa5",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:22.994Z",
+      "updated_at": "2026-11-11T00:16:22.994Z",
+      "deleted_at": null,
+      "address_id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+      "offers": [
+       {
+        "id": "d4eef318-1bfb-496a-9031-395197337f89",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+        "offerType": "SALE",
+        "askingPrice": "912000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": true,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 3,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:23.617Z",
+        "updated_at": "2026-11-11T00:16:23.855Z",
+        "deleted_at": null,
+        "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+       }
+      ],
+      "address": {
+       "id": "f74c875c-0c1d-4c1d-a969-7c23f321a0b4",
+       "zipCode": "13010-000",
+       "street": "Rua Sigilosa mwbdcbsmq7m7",
+       "number": "100",
+       "complement": null,
+       "neighborhood": "Cambuí",
+       "city": "Campinas",
+       "state": "SP",
+       "created_at": "2026-11-11T00:16:22.992Z",
+       "updated_at": "2026-11-11T00:16:22.992Z"
+      },
+      "radarMatch": {
+       "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+       "matched": true,
+       "matchedCount": 9,
+       "totalCriteria": 9,
+       "score": 1,
+       "requiredScore": 1,
+       "reasons": [
+        "NEIGHBORHOOD",
+        "MIN_BEDROOMS",
+        "MIN_PARKING",
+        "MAX_DISTANCE_KM"
+       ],
+       "criteria": {
+        "city": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "activeOffer": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "offerType": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "priceRange": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "preference:NEIGHBORHOOD": {
+         "category": "PREFERENCE",
+         "code": "NEIGHBORHOOD",
+         "weight": 2,
+         "matched": true
+        },
+        "preference:MIN_BEDROOMS": {
+         "category": "PREFERENCE",
+         "code": "MIN_BEDROOMS",
+         "weight": 1,
+         "matched": true
+        },
+        "preference:MIN_PARKING": {
+         "category": "PREFERENCE",
+         "code": "MIN_PARKING",
+         "weight": 1,
+         "matched": true
+        },
+        "flexible:MAX_DISTANCE_KM": {
+         "category": "FLEXIBLE",
+         "code": "MAX_DISTANCE_KM",
+         "weight": 1,
+         "matched": true,
+         "distanceKm": 0
+        },
+        "exclusion:PROPERTY_TYPE:LAND": {
+         "category": "EXCLUSION",
+         "code": "PROPERTY_TYPE",
+         "matched": true
+        }
+       }
+      }
+     },
+     {
+      "id": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbd656vhbtq",
+      "internalCode": "M3-mwbd656vhbtq",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+      "registryNumber": "MAT-mwbd656vhbtq",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": "Casa térrea mwbd6kk6x4n0",
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "3d9d6ab2-c64e-420f-947f-adc1529d3532",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:11:34.485Z",
+      "updated_at": "2026-11-11T00:11:54.630Z",
+      "deleted_at": null,
+      "address_id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+      "offers": [
+       {
+        "id": "dd0f3b2d-75e4-4f02-adb6-674ae1decf28",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+        "offerType": "SALE",
+        "askingPrice": "912000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": true,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 3,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:11:36.535Z",
+        "updated_at": "2026-11-11T00:11:37.104Z",
+        "deleted_at": null,
+        "property_id": "bf1a187a-85e9-4b29-b375-0f841717a9fe"
+       }
+      ],
+      "address": {
+       "id": "3b52224e-f652-4f1b-b24d-ca742c781f22",
+       "zipCode": "13010-000",
+       "street": "Rua Sigilosa mwbd656vhbtq",
+       "number": "100",
+       "complement": null,
+       "neighborhood": "Cambuí",
+       "city": "Campinas",
+       "state": "SP",
+       "created_at": "2026-11-11T00:11:34.484Z",
+       "updated_at": "2026-11-11T00:11:34.484Z"
+      },
+      "radarMatch": {
+       "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+       "matched": true,
+       "matchedCount": 9,
+       "totalCriteria": 9,
+       "score": 1,
+       "requiredScore": 1,
+       "reasons": [
+        "NEIGHBORHOOD",
+        "MIN_BEDROOMS",
+        "MIN_PARKING",
+        "MAX_DISTANCE_KM"
+       ],
+       "criteria": {
+        "city": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "activeOffer": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "offerType": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "priceRange": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "preference:NEIGHBORHOOD": {
+         "category": "PREFERENCE",
+         "code": "NEIGHBORHOOD",
+         "weight": 2,
+         "matched": true
+        },
+        "preference:MIN_BEDROOMS": {
+         "category": "PREFERENCE",
+         "code": "MIN_BEDROOMS",
+         "weight": 1,
+         "matched": true
+        },
+        "preference:MIN_PARKING": {
+         "category": "PREFERENCE",
+         "code": "MIN_PARKING",
+         "weight": 1,
+         "matched": true
+        },
+        "flexible:MAX_DISTANCE_KM": {
+         "category": "FLEXIBLE",
+         "code": "MAX_DISTANCE_KM",
+         "weight": 1,
+         "matched": true,
+         "distanceKm": 0
+        },
+        "exclusion:PROPERTY_TYPE:LAND": {
+         "category": "EXCLUSION",
+         "code": "PROPERTY_TYPE",
+         "matched": true
+        }
+       }
+      }
+     },
+     {
+      "id": "d16f183d-4c31-459a-a341-282a30ea71ff",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbd3nabhv5l",
+      "internalCode": "M3-mwbd3nabhv5l",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+      "registryNumber": "MAT-mwbd3nabhv5l",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": "Casa térrea mwbd4x190e1t",
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "78ac1973-8248-4c02-8e2c-0ac365f7dd0b",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:09:38.281Z",
+      "updated_at": "2026-11-11T00:10:38.344Z",
+      "deleted_at": null,
+      "address_id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+      "offers": [
+       {
+        "id": "697c2293-0e60-4baf-a718-03167cf33dca",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+        "offerType": "SALE",
+        "askingPrice": "911000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": true,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 3,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:09:51.133Z",
+        "updated_at": "2026-11-11T00:09:55.310Z",
+        "deleted_at": null,
+        "property_id": "d16f183d-4c31-459a-a341-282a30ea71ff"
+       }
+      ],
+      "address": {
+       "id": "cfed5fd4-c39e-4899-9667-6e25eafb234d",
+       "zipCode": "13010-000",
+       "street": "Rua Sigilosa mwbd3nabhv5l",
+       "number": "100",
+       "complement": null,
+       "neighborhood": "Cambuí",
+       "city": "Campinas",
+       "state": "SP",
+       "created_at": "2026-11-11T00:09:38.277Z",
+       "updated_at": "2026-11-11T00:09:38.277Z"
+      },
+      "radarMatch": {
+       "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+       "matched": true,
+       "matchedCount": 9,
+       "totalCriteria": 9,
+       "score": 1,
+       "requiredScore": 1,
+       "reasons": [
+        "NEIGHBORHOOD",
+        "MIN_BEDROOMS",
+        "MIN_PARKING",
+        "MAX_DISTANCE_KM"
+       ],
+       "criteria": {
+        "city": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "activeOffer": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "offerType": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "priceRange": {
+         "category": "REQUIRED",
+         "matched": true
+        },
+        "preference:NEIGHBORHOOD": {
+         "category": "PREFERENCE",
+         "code": "NEIGHBORHOOD",
+         "weight": 2,
+         "matched": true
+        },
+        "preference:MIN_BEDROOMS": {
+         "category": "PREFERENCE",
+         "code": "MIN_BEDROOMS",
+         "weight": 1,
+         "matched": true
+        },
+        "preference:MIN_PARKING": {
+         "category": "PREFERENCE",
+         "code": "MIN_PARKING",
+         "weight": 1,
+         "matched": true
+        },
+        "flexible:MAX_DISTANCE_KM": {
+         "category": "FLEXIBLE",
+         "code": "MAX_DISTANCE_KM",
+         "weight": 1,
+         "matched": true,
+         "distanceKm": 0
+        },
+        "exclusion:PROPERTY_TYPE:LAND": {
+         "category": "EXCLUSION",
+         "code": "PROPERTY_TYPE",
+         "matched": true
+        }
+       }
+      }
+     }
+    ],
+    "_resumo": "lista com 9 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:26.672Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "publicar_ok",
+    "publicar_fotos_nao_aprovadas"
+   ],
+   "descricao": "Fotos depois de publicar: arquivo original (storage_key/original_name) intacto, só o status de qualidade mudou",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "sql": "SELECT media_type, original_name, storage_key, quality_status FROM real_estate.property_media WHERE property_id = $1 ORDER BY position",
+   "parametros": [
+    "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+   ],
+   "resultado": [
+    {
+     "media_type": "VIDEO",
+     "original_name": null,
+     "storage_key": "videos/tour-mwbdccmim8e1.mp4",
+     "quality_status": "APPROVED"
+    },
+    {
+     "media_type": "IMAGE",
+     "original_name": "sala-1.jpg",
+     "storage_key": "fotos/original-0-mwbdccmim8e1.jpg",
+     "quality_status": "APPROVED"
+    },
+    {
+     "media_type": "IMAGE",
+     "original_name": "sala-2.jpg",
+     "storage_key": "fotos/original-1-mwbdccmim8e1.jpg",
+     "quality_status": "APPROVED"
+    },
+    {
+     "media_type": "IMAGE",
+     "original_name": "sala-3.jpg",
+     "storage_key": "fotos/original-2-mwbdccmim8e1.jpg",
+     "quality_status": "APPROVED"
+    },
+    {
+     "media_type": "IMAGE",
+     "original_name": "sala-4.jpg",
+     "storage_key": "fotos/original-3-mwbdccmim8e1.jpg",
+     "quality_status": "REJECTED"
+    }
+   ],
+   "dataHora": "2026-11-11T00:16:24.994Z"
+  }
+ ]
+}

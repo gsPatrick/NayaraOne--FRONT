@@ -1,0 +1,345 @@
+{
+ "id": "M4-§18.6",
+ "secao": "§18 NAY Financeira",
+ "requisito": "\"Se dados estiverem incompletos, deve dizer que a conclusão é parcial.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/finance.nay.test.js",
+   "nome": "NAY-FIN-03: dados incompletos — sem conta, conta sem extrato do mês e extrato sem conciliação — dão conclusaoParcial=true com o motivo",
+   "status": "passou",
+   "duracaoMs": 195,
+   "commitDoArquivo": "390b60db"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H21",
+   "tipo": "http",
+   "linhas": [
+    "M4-§18.2",
+    "M4-§18.5",
+    "M4-§18.6"
+   ],
+   "titulo": "NAY sugere cobrança/priorização, separa realizado, previsto e estimado e avisa conclusão parcial",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/nay/insights",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 78,
+   "quando": "2026-11-11T01:35:16.435Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Financeira",
+     "metodo": "RULE_BASED",
+     "aiRunId": "ac94c271-3e3b-4fc8-8c7b-2a0ac40ab22b",
+     "geradoEm": "2026-11-11T01:35:16.370Z",
+     "sourceSnapshotAt": "2026-11-11T01:35:16.370Z",
+     "conclusaoParcial": true,
+     "motivosParcial": [
+      "8 conta(s) bancária(s) em uso sem extrato importado em 2026-11.",
+      "2 transação(ões) de extrato ainda sem conciliação."
+     ],
+     "explicacoes": {
+      "fluxoCaixa": {
+       "texto": "Caixa livre de R$ 572.76 (extrato importado R$ 2222.76 menos R$ 1650.00 de terceiros retidos). Nos próximos 7 dias: R$ 2122.76 a receber e R$ 26320.00 a pagar.",
+       "numeros": [
+        {
+         "indicador": "caixaLivre",
+         "valor": 572.76,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          },
+          {
+           "tabela": "finance.bank_transactions"
+          }
+         ]
+        },
+        {
+         "indicador": "dinheiroTerceirosRetido",
+         "valor": 1650,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          },
+          {
+           "tabela": "finance.financial_entries"
+          }
+         ]
+        },
+        {
+         "indicador": "aReceber7d",
+         "valor": 2122.76,
+         "natureza": "PREVISTO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          }
+         ]
+        },
+        {
+         "indicador": "aPagar7d",
+         "valor": 26320,
+         "natureza": "PREVISTO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          }
+         ]
+        },
+        {
+         "indicador": "saldoProjetado",
+         "valor": -23111.94,
+         "natureza": "PREVISTO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          }
+         ]
+        }
+       ]
+      },
+      "variacoes": {
+       "texto": "Resultado realizado de 2026-11: R$ -394.40; de 2026-10: R$ 0.00 (variação R$ -394.40).",
+       "numeros": [
+        {
+         "indicador": "recebido_2026-11",
+         "valor": 2200.6,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "tabela": "finance.financial_entries"
+          }
+         ]
+        },
+        {
+         "indicador": "pago_2026-11",
+         "valor": 2595,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "tabela": "finance.financial_entries"
+          }
+         ]
+        },
+        {
+         "indicador": "recebido_2026-10",
+         "valor": 0,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "tabela": "finance.financial_entries"
+          }
+         ]
+        },
+        {
+         "indicador": "pago_2026-10",
+         "valor": 0,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "tabela": "finance.financial_entries"
+          }
+         ]
+        },
+        {
+         "indicador": "variacaoResultado",
+         "valor": -394.4,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "tabela": "finance.financial_entries"
+          }
+         ]
+        }
+       ]
+      },
+      "inadimplencia": {
+       "texto": "R$ 0.00 a receber vencido em 0 lançamento(s); índice de vencidos sobre o total elegível: 0.00%.",
+       "numeros": [
+        {
+         "indicador": "recebiveisVencidos",
+         "valor": 0,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          }
+         ]
+        },
+        {
+         "indicador": "indiceInadimplencia",
+         "valor": 0,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          }
+         ]
+        }
+       ]
+      },
+      "necessidadeCapital": {
+       "texto": "Estimativa de necessidade de R$ 23624.48 para cobrir as saídas vencidas e da próxima semana (saídas obrigatórias − caixa livre − entradas prováveis).",
+       "numeros": [
+        {
+         "indicador": "necessidadeParaRespirar",
+         "valor": 23624.48,
+         "natureza": "ESTIMADO",
+         "fontes": [
+          {
+           "readModel": "finance.weeklyHealthReport",
+           "sourceSnapshotAt": "2026-11-11T01:35:16.370Z"
+          }
+         ]
+        }
+       ]
+      },
+      "anomalias": {
+       "texto": "2 caso(s) de anomalia HIGH/CRITICAL em aberto.",
+       "numeros": [
+        {
+         "indicador": "anomaliasAltoRisco",
+         "valor": 2,
+         "natureza": "REALIZADO",
+         "fontes": [
+          {
+           "tabela": "finance.anomaly_cases"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     "sugestoes": {
+      "cobranca": [],
+      "renegociacao": [],
+      "reducaoCusto": [
+       {
+        "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+        "nome": "Centro de custo Administrativo",
+        "mesAtual": 2595,
+        "mesAnterior": 0,
+        "crescimento": 2595,
+        "natureza": "REALIZADO",
+        "razao": "Gasto liquidado cresceu R$ 2595.00 de 2026-10 para 2026-11."
+       }
+      ],
+      "priorizacaoPagaveis": [
+       {
+        "ordem": 1,
+        "financialEntryId": "794e12f2-41ba-4cda-b0a0-5fe50e59f2a9",
+        "descricao": "Despesa maker-checker 0871300",
+        "valor": 250,
+        "vencimento": "2026-11-13T01:35:06.444Z",
+        "vencido": false,
+        "natureza": "PREVISTO",
+        "razao": "Ordem por vencimento (vencidos primeiro). Pagamento só pelo fluxo de intenção + aprovação + MFA."
+       },
+       {
+        "ordem": 2,
+        "financialEntryId": "b252fd57-fa48-4f22-b119-b166a5d7d663",
+        "descricao": "Despesa do próprio checker 0871300",
+        "valor": 90,
+        "vencimento": "2026-11-13T01:35:06.852Z",
+        "vencido": false,
+        "natureza": "PREVISTO",
+        "razao": "Ordem por vencimento (vencidos primeiro). Pagamento só pelo fluxo de intenção + aprovação + MFA."
+       },
+       {
+        "ordem": 3,
+        "financialEntryId": "416a15cd-40b3-4308-95df-d5be124d6d61",
+        "descricao": "Pagamento com troca de favorecido 0871300",
+        "valor": 980,
+        "vencimento": "2026-11-13T01:35:09.766Z",
+        "vencido": false,
+        "natureza": "PREVISTO",
+        "razao": "Ordem por vencimento (vencidos primeiro). Pagamento só pelo fluxo de intenção + aprovação + MFA."
+       },
+       {
+        "ordem": 4,
+        "financialEntryId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+        "descricao": "Pagamento alto na conta nova 0871300",
+        "valor": 25000,
+        "vencimento": "2026-11-13T01:35:10.211Z",
+        "vencido": false,
+        "natureza": "PREVISTO",
+        "razao": "Ordem por vencimento (vencidos primeiro). Pagamento só pelo fluxo de intenção + aprovação + MFA."
+       },
+       {
+        "ordem": 5,
+        "financialEntryId": "3794da36-6052-4c7b-935f-11ab8069ea67",
+        "descricao": "Despesa na conta analítica 0871300",
+        "valor": 10,
+        "vencimento": null,
+        "vencido": false,
+        "natureza": "PREVISTO",
+        "razao": "Ordem por vencimento (vencidos primeiro). Pagamento só pelo fluxo de intenção + aprovação + MFA."
+       },
+       {
+        "ordem": 6,
+        "financialEntryId": "43eef209-a606-4556-811a-a16dee808329",
+        "descricao": "Forjando empresa 0871300",
+        "valor": 15,
+        "vencimento": null,
+        "vencido": false,
+        "natureza": "PREVISTO",
+        "razao": "Ordem por vencimento (vencidos primeiro). Pagamento só pelo fluxo de intenção + aprovação + MFA."
+       }
+      ]
+     },
+     "fontes": {
+      "tabelas": [
+       "finance.financial_entries",
+       "finance.bank_transactions",
+       "finance.reconciliations",
+       "finance.bank_accounts",
+       "finance.commissions",
+       "finance.owner_repasses",
+       "finance.anomaly_cases",
+       "finance.cost_centers"
+      ],
+      "readModel": "finance.weeklyHealthReport",
+      "sourceSnapshotAt": "2026-11-11T01:35:16.370Z",
+      "regras": [
+       {
+        "codigo": "FIN-005",
+        "ruleVersionId": null,
+        "origem": "padrão (regra não publicada)"
+       }
+      ]
+     },
+     "limites": "A NAY Financeira só explica e sugere. Ela não cria ledger, não paga, não altera favorecido, não fecha período nem executa nenhuma ação: toda ação continua nas rotas humanas, com permissão, aprovação e MFA."
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

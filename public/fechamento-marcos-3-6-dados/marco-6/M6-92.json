@@ -1,0 +1,459 @@
+{
+ "id": "M6-92",
+ "requisito": "DoD: RLS verdes.",
+ "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §13 Definition of Done; Guia do Marcelo (Obras) §16",
+ "implementacao": "RLS ENABLE+FORCE em toda tabela construction.* (política tenant_isolation)",
+ "telaParaReteste": "Painel → /painel/obras/lista: cada empresa vê só as suas obras",
+ "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+ "branchApi": "m6fix/matriz",
+ "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+ "status": "Atendido",
+ "testes": [
+  {
+   "arquivo": "test/construction.rlsWrite.test.js",
+   "nome": "M6-66: UPDATE direta em linha de orçamento de outra empresa é bloqueada pelo RLS (não só a leitura)",
+   "resultado": "passou",
+   "duracaoMs": 240,
+   "executadoEm": "2026-11-11T00:14:29.307Z"
+  },
+  {
+   "arquivo": "test/construction.adminPermissions.test.js",
+   "nome": "construction:* — o papel ADMIN da empresa semente tem as 5 permissões do módulo de Obras concedidas",
+   "resultado": "passou",
+   "duracaoMs": 421,
+   "executadoEm": "2026-11-11T00:11:54.957Z"
+  }
+ ],
+ "evidenciaAoVivo": {
+  "tipo": "Resposta HTTP real (API em banco descartável)",
+  "respostas": [
+   "H001",
+   "H184",
+   "H185",
+   "H186",
+   "H187",
+   "H190"
+  ],
+  "resumo": [
+   "H001 POST /api/v1/auth/login → 200",
+   "H184 GET /api/v1/construction/projects → 401 MISSING_ACCESS_TOKEN",
+   "H185 POST /api/v1/construction/projects → 201",
+   "H186 GET /api/v1/construction/projects/de4a396c-c6a8-49af-8360-77966eac280c → 404 PROJECT_NOT_FOUND",
+   "H187 PATCH /api/v1/construction/projects/de4a396c-c6a8-49af-8360-77966eac280c → 404 PROJECT_NOT_FOUND",
+   "H190 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f → 404 PROJECT_NOT_FOUND"
+  ],
+  "dataHora": "2026-11-11T00:11:58.536Z"
+ },
+ "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+ "respostasHttp": [
+  {
+   "id": "H001",
+   "requisitos": [
+    "M6-92"
+   ],
+   "cenario": "Login normal do gestor por POST /auth/login (sem MFA, sem token forjado; credencial e tokens omitidos na evidência)",
+   "metodo": "POST",
+   "rota": "/api/v1/auth/login",
+   "perfil": "sem login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "credencial": "<omitido>"
+   },
+   "statusHttp": 200,
+   "codigoErro": "nenhum (resposta de sucesso)",
+   "esperado": "200",
+   "conferiu": true,
+   "duracaoMs": 1170,
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "accessToken": "<omitido>",
+     "refreshToken": "<omitido>",
+     "sessionId": "<omitido>",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+      "name": "M6 Captura — Gestor de obras",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+     "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+     "roles": [
+      "M6 Captura — Gestor de obras c4fcd6"
+     ],
+     "permissions": [
+      "legal:create",
+      "legal:read",
+      "construction:create",
+      "construction:read",
+      "construction:update",
+      "construction:approve",
+      "construction:delete"
+     ]
+    }
+   },
+   "dataHora": "2026-11-11T00:11:58.536Z"
+  },
+  {
+   "id": "H184",
+   "requisitos": [
+    "M6-92",
+    "M6-66"
+   ],
+   "cenario": "NEGATIVO: listar obras sem login",
+   "metodo": "GET",
+   "rota": "/api/v1/construction/projects",
+   "perfil": "sem login",
+   "corpoEnviado": "sem corpo (requisição sem payload)",
+   "statusHttp": 401,
+   "codigoErro": "MISSING_ACCESS_TOKEN",
+   "esperado": "401",
+   "conferiu": true,
+   "duracaoMs": 10,
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "97ee4b6f-2589-47de-86fc-48fa2961a762"
+    }
+   },
+   "dataHora": "2026-11-11T00:12:29.421Z"
+  },
+  {
+   "id": "H185",
+   "requisitos": [
+    "M6-57",
+    "M6-66",
+    "M6-92"
+   ],
+   "cenario": "Empresa B cria a própria obra (outro tenant)",
+   "metodo": "POST",
+   "rota": "/api/v1/construction/projects",
+   "perfil": "Gestor de obras da Empresa B (outro tenant)",
+   "corpoEnviado": {
+    "name": "Obra da Empresa B c4fcd6",
+    "budgetAmount": 5000
+   },
+   "statusHttp": 201,
+   "codigoErro": "nenhum (resposta de sucesso)",
+   "esperado": "201",
+   "conferiu": true,
+   "duracaoMs": 53,
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "de4a396c-c6a8-49af-8360-77966eac280c",
+     "lockVersion": 0,
+     "groupId": "d756ec3d-09c3-4e65-ac42-abd5ee8c6484",
+     "companyId": "c8ed5020-5bd2-4b53-9085-b65c137f553e",
+     "propertyId": null,
+     "unitId": null,
+     "name": "Obra da Empresa B c4fcd6",
+     "code": "OBRA-2026-0001",
+     "responsibleUserId": null,
+     "budgetAmount": "5000.00",
+     "costCenterId": null,
+     "startsAt": null,
+     "endsAtPlanned": null,
+     "status": "PLANNED",
+     "createdBy": "003c825f-3505-44c9-90d1-467cae8f122f",
+     "updatedBy": "003c825f-3505-44c9-90d1-467cae8f122f",
+     "updated_at": "2026-11-11T00:12:29.445Z",
+     "created_at": "2026-11-11T00:12:29.445Z",
+     "actualEndDate": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:12:29.474Z"
+  },
+  {
+   "id": "H186",
+   "requisitos": [
+    "M6-57",
+    "M6-66",
+    "M6-92"
+   ],
+   "cenario": "NEGATIVO: gestor da Empresa A lê a obra da Empresa B",
+   "metodo": "GET",
+   "rota": "/api/v1/construction/projects/de4a396c-c6a8-49af-8360-77966eac280c",
+   "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+   "corpoEnviado": "sem corpo (requisição sem payload)",
+   "statusHttp": 404,
+   "codigoErro": "PROJECT_NOT_FOUND",
+   "esperado": "404 PROJECT_NOT_FOUND",
+   "conferiu": true,
+   "duracaoMs": 9,
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROJECT_NOT_FOUND",
+     "message": "Obra não encontrada.",
+     "traceId": "12b09076-479e-4d89-bbf1-6f12906cefba"
+    }
+   },
+   "dataHora": "2026-11-11T00:12:29.483Z"
+  },
+  {
+   "id": "H187",
+   "requisitos": [
+    "M6-57",
+    "M6-66",
+    "M6-92"
+   ],
+   "cenario": "NEGATIVO: gestor da Empresa A altera a obra da Empresa B",
+   "metodo": "PATCH",
+   "rota": "/api/v1/construction/projects/de4a396c-c6a8-49af-8360-77966eac280c",
+   "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+   "corpoEnviado": {
+    "name": "invasão"
+   },
+   "statusHttp": 404,
+   "codigoErro": "PROJECT_NOT_FOUND",
+   "esperado": "404 PROJECT_NOT_FOUND",
+   "conferiu": true,
+   "duracaoMs": 13,
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROJECT_NOT_FOUND",
+     "message": "Obra não encontrada.",
+     "traceId": "4d7a47aa-bc2a-48f9-9c93-dc3bb1d5f5f7"
+    }
+   },
+   "dataHora": "2026-11-11T00:12:29.496Z"
+  },
+  {
+   "id": "H190",
+   "requisitos": [
+    "M6-66",
+    "M6-92"
+   ],
+   "cenario": "NEGATIVO: gestor da Empresa B lê a obra da Empresa A",
+   "metodo": "GET",
+   "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f",
+   "perfil": "Gestor de obras da Empresa B (outro tenant)",
+   "corpoEnviado": "sem corpo (requisição sem payload)",
+   "statusHttp": 404,
+   "codigoErro": "PROJECT_NOT_FOUND",
+   "esperado": "404 PROJECT_NOT_FOUND",
+   "conferiu": true,
+   "duracaoMs": 15,
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROJECT_NOT_FOUND",
+     "message": "Obra não encontrada.",
+     "traceId": "95b21eb8-3bc3-406f-abde-0b0a7d4e3592"
+    }
+   },
+   "dataHora": "2026-11-11T00:12:29.668Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "C001",
+   "requisitos": [
+    "M6-01",
+    "M6-02",
+    "M6-03",
+    "M6-04",
+    "M6-05",
+    "M6-06",
+    "M6-07",
+    "M6-08",
+    "M6-09",
+    "M6-10",
+    "M6-11",
+    "M6-12",
+    "M6-13",
+    "M6-14",
+    "M6-15",
+    "M6-16",
+    "M6-92",
+    "M6-103",
+    "M6-95"
+   ],
+   "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+   "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+   "resultado": [
+    {
+     "tabela": "budget_lines",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "budgets",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "change_orders",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "daily_materials",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "daily_reports",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "daily_workers",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "loss_records",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "maintenance_cases",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "measurement_items",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "nonconformities",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "project_stages",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "projects",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": true,
+     "politicas": 1
+    },
+    {
+     "tabela": "quality_checklist_items",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "stage_dependencies",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "stage_measurements",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    },
+    {
+     "tabela": "warranty_actions",
+     "rls": true,
+     "force": true,
+     "company_id": true,
+     "unit_id": false,
+     "politicas": 1
+    }
+   ],
+   "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+   "invarianteOk": true,
+   "executadaEm": "2026-11-11T00:12:30.166Z"
+  },
+  {
+   "id": "C024",
+   "requisitos": [
+    "M6-57",
+    "M6-66",
+    "M6-92"
+   ],
+   "descricao": "Role de runtime SEM contexto de empresa: nenhuma obra visível (fail-closed)",
+   "sql": "SELECT count(*)::int AS obras FROM construction.projects",
+   "resultado": [
+    {
+     "obras": 0
+    }
+   ],
+   "invariante": "zero linhas",
+   "invarianteOk": true,
+   "executadaEm": "2026-11-11T00:12:30.216Z"
+  },
+  {
+   "id": "C025",
+   "requisitos": [
+    "M6-57",
+    "M6-66",
+    "M6-92"
+   ],
+   "descricao": "Role de runtime no contexto da Empresa A: vê a própria obra e não vê a obra nem os lançamentos da Empresa B",
+   "sql": "SELECT (SELECT count(*) FROM construction.projects WHERE id = $1)::int AS obra_a, (SELECT count(*) FROM construction.projects WHERE id = $2)::int AS obra_b, (SELECT count(*) FROM finance.financial_entries WHERE company_id <> $3)::int AS lancamentos_de_outra_empresa",
+   "resultado": [
+    {
+     "obra_a": 1,
+     "obra_b": 0,
+     "lancamentos_de_outra_empresa": 0
+    }
+   ],
+   "invariante": "obra A = 1, obra B = 0, lançamentos de outra empresa = 0",
+   "invarianteOk": true,
+   "executadaEm": "2026-11-11T00:12:30.220Z"
+  }
+ ],
+ "auditoria": [],
+ "geradoEm": "2026-11-11T00:16:28.458Z"
+}

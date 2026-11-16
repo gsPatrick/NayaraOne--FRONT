@@ -1,0 +1,631 @@
+{
+ "id": "CRMX-012",
+ "meta": {
+  "geradoEm": "2026-11-11T09:25:32.895Z",
+  "inicioCaptura": "2026-11-11T09:24:54.065Z",
+  "ambiente": "API local ligada a um PostgreSQL descartável criado do zero pelas migrations (RLS FORCE, papel de runtime sem BYPASSRLS), antivírus ClamAV real. Nada foi gravado na homologação.",
+  "commitApi": "119c0fb2",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "leituraImoveis": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "config": "Empresa A — administrador de Configurações (settings:read e settings:update)"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 30,
+   "casos": [
+    "gate_criacao"
+   ],
+   "descricao": "POST /properties já PUBLISHED passa pelo gate: sem oferta é recusado e nada é gravado",
+   "metodo": "POST",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "title": "Já publicado mwbwxw4ajp64",
+    "internalCode": "PUB-mwbwxw4ajp64",
+    "propertyType": "RESIDENTIAL",
+    "publicationStatus": "PUBLISHED"
+   },
+   "status": 409,
+   "codigoErro": "PROPERTY_PUBLISH_REQUIRES_ACTIVE_OFFER",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_PUBLISH_REQUIRES_ACTIVE_OFFER",
+     "message": "Não é possível publicar um imóvel sem nenhuma oferta ativa vinculada.",
+     "traceId": "97edd16e-3dd6-457c-9204-0d3e217fee40"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:01.786Z"
+  },
+  {
+   "seq": 33,
+   "casos": [
+    "gate_video"
+   ],
+   "descricao": "Envia o arquivo tour.mp4 por POST /files (antivírus no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "fileName": "tour.mp4",
+    "mimeType": "video/mp4",
+    "category": "property-media",
+    "contentBase64": "YXJxdWl2byBmaWN0w61jaW8gdG91ci5tcDQgbXdid3h3cTlkb244"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "46dbd123-1e71-4c15-bb8e-bce66eee4e71",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/6f7459ab-2302-4cd2-8d78-cd29874e48ae-tour.mp4",
+     "fileName": "tour.mp4",
+     "mimeType": "video/mp4",
+     "sizeBytes": 39,
+     "checksumSha256": "f9c4abb3084445da8478a18d5524d8a98ba58323d4762bf5f477d8fd76a9b731",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T09:25:02.777Z",
+     "uploadedByUserId": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:02.777Z",
+     "created_at": "2026-11-11T09:25:02.777Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:02.577Z"
+  },
+  {
+   "seq": 34,
+   "casos": [
+    "gate_video"
+   ],
+   "descricao": "Vídeo com o arquivo (nasce pendente)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "mediaType": "VIDEO",
+    "fileId": "46dbd123-1e71-4c15-bb8e-bce66eee4e71"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "12799557-ceab-4fcf-9bea-246b62767acb",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "VIDEO",
+     "fileId": "46dbd123-1e71-4c15-bb8e-bce66eee4e71",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/6f7459ab-2302-4cd2-8d78-cd29874e48ae-tour.mp4",
+     "originalName": "tour.mp4",
+     "mimeType": "video/mp4",
+     "sizeBytes": 39,
+     "position": 0,
+     "classification": null,
+     "qualityStatus": "PENDING",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:02.873Z",
+     "created_at": "2026-11-11T09:25:02.873Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:02.809Z"
+  },
+  {
+   "seq": 35,
+   "casos": [
+    "gate_video"
+   ],
+   "descricao": "Recusada na revisão de qualidade",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media/12799557-ceab-4fcf-9bea-246b62767acb/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "qualityStatus": "REJECTED",
+    "reason": "Placa de carro visível"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "12799557-ceab-4fcf-9bea-246b62767acb",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "VIDEO",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/6f7459ab-2302-4cd2-8d78-cd29874e48ae-tour.mp4",
+     "originalName": "tour.mp4",
+     "mimeType": "video/mp4",
+     "sizeBytes": 39,
+     "position": 0,
+     "classification": null,
+     "qualityStatus": "REJECTED",
+     "fileId": "46dbd123-1e71-4c15-bb8e-bce66eee4e71",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "created_at": "2026-11-11T09:25:02.873Z",
+     "updated_at": "2026-11-11T09:25:03.040Z",
+     "property_id": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:03.024Z"
+  },
+  {
+   "seq": 45,
+   "casos": [
+    "gate_video"
+   ],
+   "descricao": "Vídeo REJEITADO não conta: bloqueado por REG-IMO-001",
+   "metodo": "POST",
+   "rota": "/api/v1/offers/a4b500c9-e6d4-4f62-a210-ce07059b7cf7/publish",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {},
+   "status": 422,
+   "codigoErro": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_001",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_001",
+     "message": "Publicação bloqueada: vídeo obrigatório ausente (só conta vídeo com arquivo e qualidade aprovada).",
+     "details": {
+      "ruleDecision": "DENY",
+      "reason": "RULE_CONDITION_NOT_MET"
+     },
+     "traceId": "a9200ed5-11d5-4bca-9b96-d77a6e5635be"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:05.975Z"
+  },
+  {
+   "seq": 46,
+   "casos": [
+    "gate_video"
+   ],
+   "descricao": "Envia o arquivo tour.mp4 por POST /files (antivírus no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "fileName": "tour.mp4",
+    "mimeType": "video/mp4",
+    "category": "property-media",
+    "contentBase64": "YXJxdWl2byBmaWN0w61jaW8gdG91ci5tcDQgbXdid3h6dnBxNHk4"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "7de2e616-07b6-4455-b664-55fa848c6050",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/37683224-1dec-4c0f-ba71-5c539e8554a7-tour.mp4",
+     "fileName": "tour.mp4",
+     "mimeType": "video/mp4",
+     "sizeBytes": 39,
+     "checksumSha256": "4e63748cf88e62bc1e21632c5275730320493e783c55d17b42c6257fd55b764a",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T09:25:06.765Z",
+     "uploadedByUserId": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:06.765Z",
+     "created_at": "2026-11-11T09:25:06.765Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:06.661Z"
+  },
+  {
+   "seq": 47,
+   "casos": [
+    "gate_video"
+   ],
+   "descricao": "Vídeo com o arquivo (nasce pendente)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "mediaType": "VIDEO",
+    "fileId": "7de2e616-07b6-4455-b664-55fa848c6050"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "05ff8cbb-0640-453c-b433-d467f156c337",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "VIDEO",
+     "fileId": "7de2e616-07b6-4455-b664-55fa848c6050",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/37683224-1dec-4c0f-ba71-5c539e8554a7-tour.mp4",
+     "originalName": "tour.mp4",
+     "mimeType": "video/mp4",
+     "sizeBytes": 39,
+     "position": 4,
+     "classification": null,
+     "qualityStatus": "PENDING",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:07.133Z",
+     "created_at": "2026-11-11T09:25:07.133Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:06.875Z"
+  },
+  {
+   "seq": 48,
+   "casos": [
+    "gate_video"
+   ],
+   "descricao": "Aprovada na revisão de qualidade",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/media/05ff8cbb-0640-453c-b433-d467f156c337/quality",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "qualityStatus": "APPROVED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "05ff8cbb-0640-453c-b433-d467f156c337",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "mediaType": "VIDEO",
+     "storageKey": "property-media/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/37683224-1dec-4c0f-ba71-5c539e8554a7-tour.mp4",
+     "originalName": "tour.mp4",
+     "mimeType": "video/mp4",
+     "sizeBytes": 39,
+     "position": 4,
+     "classification": null,
+     "qualityStatus": "APPROVED",
+     "fileId": "7de2e616-07b6-4455-b664-55fa848c6050",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "created_at": "2026-11-11T09:25:07.133Z",
+     "updated_at": "2026-11-11T09:25:07.334Z",
+     "property_id": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:07.299Z"
+  },
+  {
+   "seq": 49,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Envia o arquivo registry.pdf por POST /files (antivírus no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "fileName": "registry.pdf",
+    "mimeType": "application/pdf",
+    "category": "property-documents",
+    "contentBase64": "JVBERi0xLjQKJSBSRUdJU1RSWQo="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "INTERNAL",
+     "id": "41138c37-9191-4c0e-a40a-659672ff4f8f",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "storageKey": "property-documents/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/7b8dc5eb-3cf9-4642-9f65-1bfa15b9fb86-registry.pdf",
+     "fileName": "registry.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 20,
+     "checksumSha256": "0e3ab973d159ef9c8ddb8df4ee6b573dc135633a66ef5026d4ccc6130cde9dd5",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T09:25:07.870Z",
+     "uploadedByUserId": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:07.870Z",
+     "created_at": "2026-11-11T09:25:07.870Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:07.373Z"
+  },
+  {
+   "seq": 50,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Documento REGISTRY com o arquivo",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/documents",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "documentType": "REGISTRY",
+    "fileId": "41138c37-9191-4c0e-a40a-659672ff4f8f",
+    "valueNumber": "REGISTRY-1"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "d126e5d1-2b09-44e2-9eba-7499621b5a6d",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "documentType": "REGISTRY",
+     "fileId": "41138c37-9191-4c0e-a40a-659672ff4f8f",
+     "label": null,
+     "valueNumber": "REGISTRY-1",
+     "valueAmount": null,
+     "status": null,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:07.984Z",
+     "created_at": "2026-11-11T09:25:07.984Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:07.933Z"
+  },
+  {
+   "seq": 51,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Falta o IPTU com arquivo: bloqueado por REG-IMO-DOCS-001 (lista do parâmetro)",
+   "metodo": "POST",
+   "rota": "/api/v1/offers/a4b500c9-e6d4-4f62-a210-ce07059b7cf7/publish",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {},
+   "status": 422,
+   "codigoErro": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_DOCS_001",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_DOCS_001",
+     "message": "Publicação bloqueada: documentos obrigatórios ausentes (IPTU). O documento só conta com o arquivo anexado.",
+     "details": {
+      "ruleDecision": "DENY",
+      "reason": "RULE_CONDITION_NOT_MET",
+      "missingDocTypes": [
+       "IPTU"
+      ],
+      "requiredDocTypes": [
+       "REGISTRY",
+       "IPTU"
+      ]
+     },
+     "traceId": "6a6959d1-5bf0-4450-b0f2-f6a2ce79313f"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:08.010Z"
+  },
+  {
+   "seq": 52,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Administrador passa a exigir também o condomínio",
+   "metodo": "PUT",
+   "rota": "/api/v1/settings/real_estate.publication.required_document_types",
+   "perfil": "Empresa A — administrador de Configurações (settings:read e settings:update)",
+   "corpoEnviado": {
+    "value": "REGISTRY,IPTU,CONDO_FEE"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "30708ece-c03e-4513-867e-7661cd3b30d3",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "key": "real_estate.publication.required_document_types",
+     "value": "REGISTRY,IPTU,CONDO_FEE",
+     "createdBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "updatedBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:23:57.336Z",
+     "updated_at": "2026-11-11T09:25:08.637Z",
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:08.612Z"
+  },
+  {
+   "seq": 53,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Envia o arquivo iptu.pdf por POST /files (antivírus no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "fileName": "iptu.pdf",
+    "mimeType": "application/pdf",
+    "category": "property-documents",
+    "contentBase64": "JVBERi0xLjQKJSBJUFRVCg=="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "INTERNAL",
+     "id": "4d9ba0cc-2695-4a1b-a25d-24d494c60776",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "storageKey": "property-documents/7c74820c-4b88-4df1-afc3-0fc4b7ea62ec/ad88d039-cf70-48d7-b3ff-60115e69d88e-iptu.pdf",
+     "fileName": "iptu.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 16,
+     "checksumSha256": "d510ebc0728fa1f7b58e648cab0474ab3264e3e18c337e0169eaa45b97e901ff",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T09:25:09.003Z",
+     "uploadedByUserId": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:09.003Z",
+     "created_at": "2026-11-11T09:25:09.003Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:08.955Z"
+  },
+  {
+   "seq": 54,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Documento IPTU com o arquivo",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/a6f8a734-8b6d-4d6c-b5e6-126b416c7100/documents",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "documentType": "IPTU",
+    "fileId": "4d9ba0cc-2695-4a1b-a25d-24d494c60776",
+    "valueNumber": "IPTU-1"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "25223563-c913-4757-abe2-900645b20e97",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "a6f8a734-8b6d-4d6c-b5e6-126b416c7100",
+     "documentType": "IPTU",
+     "fileId": "4d9ba0cc-2695-4a1b-a25d-24d494c60776",
+     "label": null,
+     "valueNumber": "IPTU-1",
+     "valueAmount": null,
+     "status": null,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:09.259Z",
+     "created_at": "2026-11-11T09:25:09.259Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:09.213Z"
+  },
+  {
+   "seq": 55,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Agora falta o condomínio: bloqueado por REG-IMO-DOCS-001",
+   "metodo": "POST",
+   "rota": "/api/v1/offers/a4b500c9-e6d4-4f62-a210-ce07059b7cf7/publish",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {},
+   "status": 422,
+   "codigoErro": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_DOCS_001",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_DOCS_001",
+     "message": "Publicação bloqueada: documentos obrigatórios ausentes (CONDO_FEE). O documento só conta com o arquivo anexado.",
+     "details": {
+      "ruleDecision": "DENY",
+      "reason": "RULE_CONDITION_NOT_MET",
+      "missingDocTypes": [
+       "CONDO_FEE"
+      ],
+      "requiredDocTypes": [
+       "REGISTRY",
+       "IPTU",
+       "CONDO_FEE"
+      ]
+     },
+     "traceId": "f23c01ee-cda6-4afc-b93a-5a1504b3151b"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:09.520Z"
+  },
+  {
+   "seq": 56,
+   "casos": [
+    "gate_docs"
+   ],
+   "descricao": "Volta ao padrão (matrícula e IPTU)",
+   "metodo": "PUT",
+   "rota": "/api/v1/settings/real_estate.publication.required_document_types",
+   "perfil": "Empresa A — administrador de Configurações (settings:read e settings:update)",
+   "corpoEnviado": {
+    "value": "REGISTRY,IPTU"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "30708ece-c03e-4513-867e-7661cd3b30d3",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "key": "real_estate.publication.required_document_types",
+     "value": "REGISTRY,IPTU",
+     "createdBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "updatedBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:23:57.336Z",
+     "updated_at": "2026-11-11T09:25:09.616Z",
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:09.588Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "gate_criacao"
+   ],
+   "descricao": "Nenhum imóvel gravado com aquele código",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "SELECT count(*)::int AS imoveis FROM real_estate.properties WHERE internal_code = $1",
+   "parametros": [
+    "PUB-mwbwxw4ajp64"
+   ],
+   "resultado": [
+    {
+     "imoveis": 0
+    }
+   ],
+   "dataHora": "2026-11-11T09:25:01.937Z"
+  }
+ ]
+}

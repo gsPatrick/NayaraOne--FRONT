@@ -1,0 +1,159 @@
+{
+ "id": "M4-G§14.4",
+ "secao": "Guia §14 Eventos mínimos",
+ "requisito": "Evento \"finance.payment.completed\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-01 eventos mínimos do Guia §14 com o nome literal: payment.prepared/approved/completed/reversed, receipt.completed, reconciliation.completed, anomaly.opened",
+   "status": "passou",
+   "duracaoMs": 511,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P31",
+   "tipo": "http",
+   "linhas": [
+    "M4-§8.9",
+    "M4-G§7",
+    "M4-G§14.4"
+   ],
+   "titulo": "Callback CONFIRMED assinado (HMAC): a confirmação efetiva cria o movimento realizado",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/webhooks/bank-payment",
+   "cabecalhosEnviados": {
+    "x-webhook-signature": "sha256=4aa239…(assinatura HMAC calculada no envio)"
+   },
+   "corpoEnviado": {
+    "externalSubmissionId": "sandbox-payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+    "status": "CONFIRMED"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 260,
+   "quando": "2026-11-11T01:35:08.562Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "received": true,
+     "processed": true
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q11",
+   "linhas": [
+    "M4-G§14.1",
+    "M4-G§14.4",
+    "M4-G§14.10"
+   ],
+   "descricao": "Eventos finance.* gravados no outbox na mesma transação (nomes literais do Guia §14)",
+   "sql": "select event_type, count(*)::int as quantidade from integration.outbox_events where event_type like 'finance.%' group by 1 order by 1",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "event_type": "finance.anomaly.opened",
+     "quantidade": 7
+    },
+    {
+     "event_type": "finance.approval_request.created",
+     "quantidade": 3
+    },
+    {
+     "event_type": "finance.approval_step.decided",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.bank_account.created",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.bank_account.sensitive_data_changed",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.commission.created",
+     "quantidade": 3
+    },
+    {
+     "event_type": "finance.entry.created",
+     "quantidade": 40
+    },
+    {
+     "event_type": "finance.entry.reversed",
+     "quantidade": 4
+    },
+    {
+     "event_type": "finance.entry.settled",
+     "quantidade": 19
+    },
+    {
+     "event_type": "finance.intercompany_transfer.approved",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.owner_repass.completed",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.owner_repasse.created",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.payment.approved",
+     "quantidade": 9
+    },
+    {
+     "event_type": "finance.payment.completed",
+     "quantidade": 7
+    },
+    {
+     "event_type": "finance.payment.prepared",
+     "quantidade": 10
+    },
+    {
+     "event_type": "finance.payment.reversed",
+     "quantidade": 4
+    },
+    {
+     "event_type": "finance.period.closed",
+     "quantidade": 2
+    },
+    {
+     "event_type": "finance.receipt.completed",
+     "quantidade": 12
+    },
+    {
+     "event_type": "finance.reconciliation.completed",
+     "quantidade": 7
+    },
+    {
+     "event_type": "finance.reconciliation.matched",
+     "quantidade": 7
+    }
+   ],
+   "invariante": "há eventos finance.* (a lista mostra os nomes)",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.723Z"
+  }
+ ]
+}

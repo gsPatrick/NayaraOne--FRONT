@@ -1,0 +1,395 @@
+{
+ "id": "M4-§17.5",
+ "secao": "§17 Antifraude",
+ "requisito": "Risco \"Valor fora do padrão\" → controle \"Anomaly score + revisão\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-21 pagamento 3x acima da média histórica da conta é flagado, notifica o financeiro e trava a liquidação",
+   "status": "passou",
+   "duracaoMs": 176,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-21 liberação de revisão manual exige revisor humano identificado (actorUserId nulo é recusado)",
+   "status": "passou",
+   "duracaoMs": 25,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.antifraudeValorForaDoPadrao.test.js",
+   "nome": "M4-§17.5 valor fora do padrão: PAYABLE de 30.000 numa conta com histórico de 100 nasce retido para revisão e abre caso AMOUNT_OUTLIER HIGH em GET /finance/anomaly-cases; valor dentro do padrão não retém",
+   "status": "passou",
+   "duracaoMs": 1661,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.antifraudeValorForaDoPadrao.test.js",
+   "nome": "M4-§17.5 pagamento retido não liquida (409 FINANCE_ENTRY_REQUIRES_MANUAL_REVIEW) até a liberação humana com MFA; liberado, preparar a intenção não abre outro caso",
+   "status": "passou",
+   "duracaoMs": 358,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H34",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.5"
+   ],
+   "titulo": "Pagamento de valor muito acima do histórico da conta (anomaly score)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 30000,
+    "description": "Pagamento fora do padrão 0871300",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 72,
+   "quando": "2026-11-11T01:35:16.838Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89ad418b-af23-4297-ad6a-be5a9b034aee",
+     "requiresManualReview": true,
+     "lockVersion": 1,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "30000.00",
+     "description": "Pagamento fora do padrão 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:16.787Z",
+     "created_at": "2026-11-11T01:35:16.780Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": "Valor 30000.00 é 46.7x a média histórica (642.50) dos 4 pagamentos já liquidados desta conta bancária (limiar FIN-005: 3x).",
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H35",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.5"
+   ],
+   "titulo": "Intenção de pagamento do valor fora do padrão",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "89ad418b-af23-4297-ad6a-be5a9b034aee"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 66,
+   "quando": "2026-11-11T01:35:16.906Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "reconciliationAttempts": 0,
+     "id": "6fda54ed-864f-43a1-9dab-7c580d4e3070",
+     "idempotencyKey": "payment-intent:6fda54ed-864f-43a1-9dab-7c580d4e3070",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "89ad418b-af23-4297-ad6a-be5a9b034aee",
+     "snapshotJson": {
+      "dueAt": null,
+      "amount": "30000.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento fora do padrão 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "89ad418b-af23-4297-ad6a-be5a9b034aee",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "6bf750463267a257e52e33adfb03b068241cc6cef5199bd1008b889e1e38e5f4",
+     "status": "PENDING",
+     "approvalRequestId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:16.862Z",
+     "created_at": "2026-11-11T01:35:16.862Z",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciledAt": null,
+     "reconciledEntryId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H36",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.5"
+   ],
+   "titulo": "O lançamento fora do padrão fica retido para revisão (requiresManualReview) e abre caso AMOUNT_OUTLIER",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/entries/89ad418b-af23-4297-ad6a-be5a9b034aee",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200,
+    "conteudo": "requiresManualReview = true (anomaly score do §17)"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "requiresManualReview = true (anomaly score do §17)",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T01:35:16.930Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89ad418b-af23-4297-ad6a-be5a9b034aee",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "30000.00",
+     "description": "Pagamento fora do padrão 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": true,
+     "manualReviewReason": "Valor 30000.00 é 46.7x a média histórica (642.50) dos 4 pagamentos já liquidados desta conta bancária (limiar FIN-005: 3x).",
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:16.780Z",
+     "updated_at": "2026-11-11T01:35:16.787Z",
+     "bank_account_id": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "HML-anomalias",
+   "descricao": "Leitura de anomalias na homologação",
+   "metodo": "GET",
+   "rota": "/finance/anomaly-cases",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:09.161Z",
+   "duracaoMs": 378,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "total": 73,
+    "porStatus": {
+     "OPEN": 37,
+     "RESOLVED": 36
+    },
+    "amostra": [
+     {
+      "id": "31e89975-bd1b-41d6-a1fe-6aea1a7c9fe7",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "caseType": "FREQUENT_REVERSAL",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "4b6a0669-18ce-43ea-b624-da2784c8beab",
+      "reason": "39 estornos nos últimos 30 dias — acima do limiar configurado.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "a657944e-985f-4563-bb71-47417b45fbf6",
+      "updatedBy": "a657944e-985f-4563-bb71-47417b45fbf6",
+      "created_at": "2026-10-28T17:05:37.176Z",
+      "updated_at": "2026-10-28T17:05:37.176Z",
+      "createdAt": "2026-10-28T17:05:37.176Z",
+      "updatedAt": "2026-10-28T17:05:37.176Z",
+      "caseTypeLabel": "Estornos frequentes",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "4b6a0669-18ce-43ea-b624-da2784c8beab",
+       "description": "Recebimento de materiais — PO 29904201-565e-4c91-ac4c-d5833110c569 (NF IA-RETESTE-M7-EXCEDENTE-FICTICIO-28).",
+       "amount": "400.00",
+       "status": "REVERSED"
+      }
+     },
+     {
+      "id": "4d6265f0-29bb-47f2-8c94-27e363154af6",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "caseType": "FREQUENT_REVERSAL",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "d64bb0c6-9d5f-4889-908a-dc1adfc58627",
+      "reason": "38 estornos nos últimos 30 dias — acima do limiar configurado.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-28T00:02:08.811Z",
+      "updated_at": "2026-10-28T00:02:08.811Z",
+      "createdAt": "2026-10-28T00:02:08.811Z",
+      "updatedAt": "2026-10-28T00:02:08.811Z",
+      "caseTypeLabel": "Estornos frequentes",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "d64bb0c6-9d5f-4889-908a-dc1adfc58627",
+       "description": "Recebimento de materiais — PO 2a588a7a-f119-422c-b782-0fd5ade70683 (NF IA-RETESTE-M7-2810-FICTICIA-01).",
+       "amount": "400.00",
+       "status": "REVERSED"
+      }
+     },
+     {
+      "id": "d13b450e-5cb2-4c21-b159-837a1ae91bb2",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "caseType": "FREQUENT_REVERSAL",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "5a42b8b4-5ba9-4a7f-bcbd-c56ac62f072f",
+      "reason": "37 estornos nos últimos 30 dias — acima do limiar configurado.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-26T02:21:42.967Z",
+      "updated_at": "2026-10-26T02:21:42.967Z",
+      "createdAt": "2026-10-26T02:21:42.967Z",
+      "updatedAt": "2026-10-26T02:21:42.967Z",
+      "caseTypeLabel": "Estornos frequentes",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "5a42b8b4-5ba9-4a7f-bcbd-c56ac62f072f",
+       "description": "Comissão de correspondente bancário — caso a4bf131f-f68d-44c4-bd99-852ba4439104 (provider manual)",
+       "amount": "2400.00",
+       "status": "REVERSED"
+      }
+     }
+    ]
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:09.161Z"
+  }
+ ],
+ "consultasBanco": []
+}

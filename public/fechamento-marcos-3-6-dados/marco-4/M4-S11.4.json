@@ -1,0 +1,231 @@
+{
+ "id": "M4-§11.4",
+ "secao": "§11 Conciliação",
+ "requisito": "Classe Ambíguo: \"Várias possibilidades → nunca auto conciliar.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/finance.reconciliationSuggestions.test.js",
+   "nome": "suggestReconciliationMatches: AMBÍGUO quando 2 candidatos empatados na faixa FORTE — nunca resolve sozinho",
+   "status": "passou",
+   "duracaoMs": 77,
+   "commitDoArquivo": "f656f46c"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "contrato §11 suggestReconciliationMatches classifica AMBÍGUO quando há múltiplos candidatos fortes empatados, e nunca auto concilia nesse caso",
+   "status": "passou",
+   "duracaoMs": 30,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C04",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.4"
+   ],
+   "titulo": "Dois lançamentos de MESMO valor (1/2) para a classe AMBÍGUO",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "404.46",
+    "description": "Recebimento ambiguo 1 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+    "dueAt": "2026-11-10T12:00:00-03:00"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 51,
+   "quando": "2026-11-11T01:35:10.763Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "55f39594-ced2-4e8c-8f3c-c963f02b14be",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "404.46",
+     "description": "Recebimento ambiguo 1 0871300",
+     "dueAt": "2026-11-10T15:00:00.000Z",
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:10.737Z",
+     "created_at": "2026-11-11T01:35:10.737Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C23",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.4",
+    "M4-FIN-TS-008"
+   ],
+   "titulo": "Dois candidatos empatados: AMBÍGUO, nunca auto",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/bank-transactions/7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e/reconciliation-suggestions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200,
+    "conteudo": "finalClass = AMBIGUOUS"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "finalClass = AMBIGUOUS",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 47,
+   "quando": "2026-11-11T01:35:11.393Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "bankTransactionId": "7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e",
+     "finalClass": "AMBIGUOUS",
+     "candidates": [
+      {
+       "financialEntryId": "55f39594-ced2-4e8c-8f3c-c963f02b14be",
+       "score": 0.7,
+       "criteria": {
+        "amountMatch": true,
+        "referenceMatch": false,
+        "byExternalId": false,
+        "counterpartyMatch": true,
+        "dateMatch": true
+       },
+       "class": "PROBABLE",
+       "reasons": [
+        "Valor igual",
+        "Mesma conta bancária",
+        "Data dentro da janela de tolerância"
+       ]
+      },
+      {
+       "financialEntryId": "f343c533-bbb5-41db-8b3e-96d7f78a047e",
+       "score": 0.7,
+       "criteria": {
+        "amountMatch": true,
+        "referenceMatch": false,
+        "byExternalId": false,
+        "counterpartyMatch": true,
+        "dateMatch": true
+       },
+       "class": "PROBABLE",
+       "reasons": [
+        "Valor igual",
+        "Mesma conta bancária",
+        "Data dentro da janela de tolerância"
+       ]
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C44",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.4"
+   ],
+   "titulo": "Ambíguo resolvido por humano escolhendo o lançamento certo",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/reconciliations",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "55f39594-ced2-4e8c-8f3c-c963f02b14be",
+    "bankTransactionId": "7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 60,
+   "quando": "2026-11-11T01:35:11.870Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "2f7a65b7-e3f7-4130-8a5b-a0e922cd0fcf",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "55f39594-ced2-4e8c-8f3c-c963f02b14be",
+     "bankTransactionId": "7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e",
+     "matchedAt": "2026-11-11T01:35:11.828Z",
+     "matchedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "matchMethod": "MANUAL",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:11.828Z",
+     "created_at": "2026-11-11T01:35:11.828Z",
+     "matchGroupId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

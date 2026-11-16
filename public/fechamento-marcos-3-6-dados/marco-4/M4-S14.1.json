@@ -1,0 +1,147 @@
+{
+ "id": "M4-§14.1",
+ "secao": "§14 Comissões",
+ "requisito": "\"Direito de comissão nasce de fato gerador definido pelo Motor de Regras.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM1 percentual/base/versão nunca vêm do pedido; sem regra publicada falha fechado",
+   "status": "passou",
+   "duracaoMs": 25,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "MFA-09",
+   "tipo": "http",
+   "linhas": [
+    "M4-§14.1"
+   ],
+   "titulo": "Publicar regra de comissão sem verificação recente: recusada",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/commission-rule",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "componentPercentages": {
+     "BROKER": 5
+    }
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T01:34:35.305Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Esta ação exige verificação MFA recente. Verifique seu código em \"/users/me/mfa/verify\" e tente novamente.",
+     "traceId": "e314d0f6-e8a7-47f6-9b55-6b2dbb55ce6a"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T40",
+   "tipo": "http",
+   "linhas": [
+    "M4-§14.1"
+   ],
+   "titulo": "Sem regra publicada no Motor de Regras, não há comissão",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/commission-rule",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 422
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 422,
+   "codigo": "FINANCE_COMMISSION_RULE_NOT_CONFIGURED",
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T01:35:13.008Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_COMMISSION_RULE_NOT_CONFIGURED",
+     "message": "Não há regra de comissão publicada para esta empresa (REG-FIN-002) — publique o percentual de cada componente antes de registrar comissões.",
+     "details": {
+      "reason": "RULE_NOT_FOUND"
+     },
+     "traceId": "c55fbedf-0e68-417f-8b7b-6fc7231ae2c7"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T41",
+   "tipo": "http",
+   "linhas": [
+    "M4-§14.1",
+    "M4-G§1.6",
+    "M4-G§18.7"
+   ],
+   "titulo": "Checker publica a regra de comissão (MFA recente): percentuais por componente, versão gravada",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/commission-rule",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "componentPercentages": {
+     "BROKER": 5,
+     "MANAGER": 2,
+     "CORRESPONDENT": 1
+    },
+    "description": "Regra fictícia da captura do Marco 4"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 58,
+   "quando": "2026-11-11T01:35:13.066Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "90c6f137-0045-4c83-a150-a5e57502e768",
+     "ruleCode": "REG-FIN-002",
+     "versionNumber": 1,
+     "components": {
+      "BROKER": 5,
+      "MANAGER": 2,
+      "CORRESPONDENT": 1
+     },
+     "base": "SOURCE_ENTRY_AMOUNT"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

@@ -1,0 +1,144 @@
+{
+ "esteira": "juridico (Guia M5 §17)",
+ "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5",
+ "release": false,
+ "inicio": "2026-11-11T03:26:12.833Z",
+ "etapas": [
+  {
+   "numero": 1,
+   "nome": "lint",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 41336,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 2,
+   "nome": "typecheck",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 133458,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 3,
+   "nome": "migrations",
+   "status": "VERDE",
+   "motivo": "3 comando(s)",
+   "duracaoMs": 9013,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 4,
+   "nome": "contract_state_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 17642,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 5,
+   "nome": "requirements_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 12001,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 6,
+   "nome": "signature_adapter_contract_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 2464,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 7,
+   "nome": "signature_webhook_idempotency_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 10400,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 8,
+   "nome": "inspection_immutability_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 2761,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 9,
+   "nome": "key_delivery_gate_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 5441,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 10,
+   "nome": "deadline_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 10369,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 11,
+   "nome": "evidence_integrity_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 3970,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 12,
+   "nome": "multi_company_tests",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 9240,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 13,
+   "nome": "security_scan",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 2047,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 14,
+   "nome": "deploy_DEV",
+   "status": "NAO_APLICAVEL",
+   "motivo": "etapa de release: só em tag jur-release-*",
+   "duracaoMs": 0,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 15,
+   "nome": "deploy_LAB",
+   "status": "NAO_APLICAVEL",
+   "motivo": "etapa de release: só em tag jur-release-*",
+   "duracaoMs": 0,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 16,
+   "nome": "failure_drills",
+   "status": "VERMELHO",
+   "motivo": "comando terminou com 1: node scripts/restoreDrill/legalFullDrill.js --port 5536",
+   "duracaoMs": 40854,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 17,
+   "nome": "pentest",
+   "status": "NAO_RODOU",
+   "motivo": "etapa anterior vermelha",
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  }
+ ],
+ "fim": "2026-11-11T03:31:13.832Z"
+}

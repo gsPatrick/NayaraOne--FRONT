@@ -1,0 +1,35 @@
+{
+ "id": "M5-A0336-97de94",
+ "linhaCaderno": 869,
+ "requisito": "• Rent advance: produto separado, eligibility/proposal/acceptance/payment/recovery; principal e custo separados no Financeiro.",
+ "correcao": "Front lib/legal/rentAdvanceStatus.js + RentAdvancesTab.js: a tela segue a máquina de estados da API (nasce em ELIGIBILITY_PENDING; Propor, Aceitar, Pagar, Registrar recuperação; Recuperada/Recusada sem ação), rótulo legível em todos",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "NayaraOne--FRONT/test/m5vp.uatLocacao.test.mjs",
+   "nome": "UAT-C12: a antecipação segue os estados da API — rótulo legível em todos e a ação de cada um, a partir de ELIGIBILITY_PENDING",
+   "status": "pass",
+   "ms": 1.009,
+   "commitDoTeste": "d401fa9",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  }
+ ],
+ "uatCobranca": {
+  "quando": "2026-11-12T09:43:23.292Z",
+  "resultado": "15/15",
+  "passos": [
+   {
+    "id": "UAT-C12",
+    "label": "antecipação é produto separado: elegível -> proposta -> aceita -> paga (principal R$ 7.000,00 e custo R$ 350,00 separados)",
+    "ok": true,
+    "detail": ""
+   }
+  ]
+ },
+ "medidoEm": "2026-11-12T11:01:40.771Z"
+}

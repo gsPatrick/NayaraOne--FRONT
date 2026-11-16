@@ -1,0 +1,96 @@
+{
+ "id": "M4-§5.14",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.owner_repasses — \"Repasses a proprietários.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.acceptance.test.js",
+   "nome": "M4-15/contrato §12 createOwnerRepasse calcula líquido = min(bruto, teto elegível) - deduções, nunca editável diretamente",
+   "status": "passou",
+   "duracaoMs": 98,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T25",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.2",
+    "M4-§5.14",
+    "M4-§12.4"
+   ],
+   "titulo": "Repasse criado: bruto R$ 1.500,00, taxa de administração R$ 150,00 com motivo e documento, líquido R$ 1.350,00",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+    "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+    "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+    "sourceEntryIds": [
+     "39b64069-e468-4f3c-b0db-691437ba5e18"
+    ],
+    "referenceMonth": "2026-11",
+    "idempotencyKey": "m4-rep-0871300",
+    "grossAmount": 1500,
+    "deductionsAmount": 150,
+    "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+    "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 62,
+   "quando": "2026-11-11T01:35:12.445Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f79e16fb-a3db-4320-b9e5-daf743655f93",
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+     "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+     "grossAmount": "1500.00",
+     "deductionsAmount": "150.00",
+     "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+     "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc",
+     "netAmount": "1350.00",
+     "referenceMonth": "2026-11",
+     "status": "PENDING",
+     "idempotencyKey": "m4-rep-0871300",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:12.406Z",
+     "created_at": "2026-11-11T01:35:12.406Z",
+     "financialEntryId": null,
+     "paidAt": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "confirmedByUserId": null,
+     "paymentEvidenceFileId": null,
+     "paymentSettlementMethod": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

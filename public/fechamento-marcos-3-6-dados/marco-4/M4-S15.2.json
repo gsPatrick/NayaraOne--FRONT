@@ -1,0 +1,187 @@
+{
+ "id": "M4-§15.2",
+ "secao": "§15 Intercompany",
+ "requisito": "\"Relatório consolidado elimina a duplicidade apenas na apresentação.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-IC4 consolidado do grupo elimina os dois lados da transferência (sem duplicidade) e só onde o usuário tem permissão",
+   "status": "passou",
+   "duracaoMs": 134,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-18 createIntercompanyTransfer gera exatamente 2 lançamentos, um em cada empresa, com valores batendo",
+   "status": "passou",
+   "duracaoMs": 47,
+   "commitDoArquivo": "fa15be9f"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-IC2 pedido nasce sem lançamentos; quem pede não aprova; outra pessoa aprova e cria os dois lados",
+   "status": "passou",
+   "duracaoMs": 143,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "IC12",
+   "tipo": "http",
+   "linhas": [
+    "M4-§15.2",
+    "M4-§3.2"
+   ],
+   "titulo": "Consolidado do grupo: a transferência interna é eliminada só na apresentação",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/reports/group-consolidated",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 29,
+   "quando": "2026-11-11T01:35:14.264Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "referenceMonth": null,
+     "companies": [
+      {
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "name": "CI — Empresa Fictícia A",
+       "totalCredits": 8833.36,
+       "totalDebits": 38370,
+       "intercompanyCredits": 0,
+       "intercompanyDebits": 0
+      }
+     ],
+     "eliminations": [],
+     "consolidated": {
+      "totalCredits": 8833.36,
+      "totalDebits": 38370,
+      "net": -29536.64
+     },
+     "excludedCompanies": [
+      {
+       "companyId": "213c5901-9715-45c1-95f6-02140a54efd3",
+       "name": "CI — Empresa Fictícia A2 (Construção) 0871300",
+       "reason": "Sem permissão finance:read nesta empresa."
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "HML-consolidado",
+   "descricao": "Consolidado do grupo (eliminação intercompany só na apresentação)",
+   "metodo": "GET",
+   "rota": "/finance/reports/group-consolidated",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:09.845Z",
+   "duracaoMs": 230,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "success": true,
+    "data": {
+     "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+     "referenceMonth": null,
+     "companies": [
+      {
+       "companyId": "b6c27725-5fa3-4451-b775-16118b4b16f5",
+       "name": "HOMO QA — M45 Intercompany Destino",
+       "totalCredits": 50,
+       "totalDebits": 0,
+       "intercompanyCredits": 50,
+       "intercompanyDebits": 0
+      },
+      {
+       "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+       "name": "Nayara One — Empresa Dev",
+       "totalCredits": 4233904.88,
+       "totalDebits": 1500393.88,
+       "intercompanyCredits": 0,
+       "intercompanyDebits": 50
+      }
+     ],
+     "eliminations": [
+      {
+       "transferId": "da08dcfa-1f64-4611-aae4-bee59afaf5df",
+       "fromCompanyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+       "toCompanyId": "b6c27725-5fa3-4451-b775-16118b4b16f5",
+       "amount": 50
+      }
+     ],
+     "consolidated": {
+      "totalCredits": 4233904.88,
+      "totalDebits": 1500343.88,
+      "net": 2733561
+     },
+     "excludedCompanies": [
+      {
+       "companyId": "f4b9c916-5ab3-4411-b013-4e806ee341cc",
+       "name": "HOMO QA — F01 Empresa B (cláusulas)",
+       "reason": "Sem permissão finance:read nesta empresa."
+      },
+      {
+       "companyId": "ecfd4c21-e785-4bad-888e-7afa52125886",
+       "name": "HOMO QA — F06 Empresa B (IDOR, mesmo grupo)",
+       "reason": "Sem permissão finance:read nesta empresa."
+      },
+      {
+       "companyId": "525417f5-0de5-4d9a-a5b2-4de6794c9428",
+       "name": "HOMO QA — FACL Empresa B",
+       "reason": "Sem permissão finance:read nesta empresa."
+      },
+      {
+       "companyId": "f23cab0a-568b-466f-9b23-b2026bc615a0",
+       "name": "NAY-FIN empresa de teste 17924577589652204",
+       "reason": "Sem permissão finance:read nesta empresa."
+      },
+      {
+       "companyId": "f127743c-9638-4613-a587-0c725e58ea70",
+       "name": "NAY-FIN empresa de teste 17924578847391753",
+       "reason": "Sem permissão finance:read nesta empresa."
+      },
+      {
+       "companyId": "756dc915-8a78-4224-a878-8281f79706a7",
+       "name": "NAY-FIN empresa de teste 17925128524114170",
+       "reason": "Sem permissão finance:read nesta empresa."
+      },
+      {
+       "companyId": "2416e740-6e87-474f-a631-7d307ecad90a",
+       "name": "NAY-FIN empresa de teste 17929777805745042",
+       "reason": "Sem permissão finance:read nesta empresa."
+      },
+      {
+       "companyId": "8fb03a88-54fe-4b58-8590-308db16cb0c4",
+       "name": "NAY-JUR empresa vizinha (teste)",
+       "reason": "Sem permissão finance:read nesta empresa."
+      }
+     ]
+    }
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:09.845Z"
+  }
+ ],
+ "consultasBanco": []
+}

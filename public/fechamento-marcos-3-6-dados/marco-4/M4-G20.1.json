@@ -1,0 +1,59 @@
+{
+ "id": "M4-G§20.1",
+ "secao": "Guia §20 DoD do Marcelo",
+ "requisito": "\"Schema/migrations reproduzíveis.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-07 §5 tabelas do caderno: ledger, entry_installments, security_deposits, accounts_chart e closing_periods existem, seguem a RLS e são somente leitura",
+   "status": "passou",
+   "duracaoMs": 38,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "G03",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§17.4",
+    "M4-G§20.1",
+    "M4-G§17.3"
+   ],
+   "titulo": "Banco pronto: schema criado do zero pelas migrations (cluster descartável)",
+   "perfil": "anonimo",
+   "metodo": "GET",
+   "rota": "/health/db",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T01:35:18.707Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "status": "ready",
+     "database": "up",
+     "latencyMs": 0,
+     "timestamp": "2026-11-11T01:35:18.706Z"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

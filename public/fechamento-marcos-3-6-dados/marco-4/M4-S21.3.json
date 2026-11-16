@@ -1,0 +1,71 @@
+{
+ "id": "M4-§21.3",
+ "secao": "§21 Definition of Done",
+ "requisito": "\"Ledger append-only funcionando.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-LG ledger: DELETE direto é sempre recusado",
+   "status": "passou",
+   "duracaoMs": 37,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/nayaraExternalAuditMatrixM4Group2.test.js",
+   "nome": "Ledger append-only (SQL cru, banco real): DELETE direto em finance.financial_entries é bloqueado pelo trigger de banco, não pelo service",
+   "status": "passou",
+   "duracaoMs": 41,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "L01",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-003",
+    "M4-§21.3",
+    "M4-G§18.3"
+   ],
+   "titulo": "Alterar o valor de um lançamento já realizado (SETTLED) é recusado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/finance/entries/74a7dfcc-58b6-491d-bc58-20f2de3a4f63",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "amount": 1
+   },
+   "esperado": {
+    "status": [
+     400,
+     409,
+     422
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_ENTRY_IMMUTABLE",
+   "ok": true,
+   "ms": 40,
+   "quando": "2026-11-11T01:35:04.242Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_ENTRY_IMMUTABLE",
+     "message": "Lançamento com status \"SETTLED\" não pode mais ser editado — ledger imutável (FIN-003). Use estorno.",
+     "traceId": "b26de6ad-abac-4267-8ff3-16d84f76bbb9"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

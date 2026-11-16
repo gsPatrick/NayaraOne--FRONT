@@ -1,0 +1,319 @@
+{
+ "id": "M5-A0252-a78538",
+ "requisito": "J10 | Falhas, carga, segurança e pentest.",
+ "quando": "2026-11-11T11:44:50.105Z",
+ "api": "6f1ddb34f634594643876c545fb2fbd474e76152",
+ "front": "c8ccff0",
+ "esteira": {
+  "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+  "dirty": false,
+  "inicio": "2026-11-11T11:15:20.502Z",
+  "fim": "2026-11-11T11:44:50.105Z",
+  "resultado": "VERDE",
+  "etapas": [
+   {
+    "numero": 1,
+    "nome": "lint",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 270976,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 2,
+    "nome": "typecheck",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 335088,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 3,
+    "nome": "migrations",
+    "status": "VERDE",
+    "motivo": "3 comando(s)",
+    "duracaoMs": 35295,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 4,
+    "nome": "contract_state_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 70348,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 5,
+    "nome": "requirements_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 54701,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 6,
+    "nome": "signature_adapter_contract_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 9863,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 7,
+    "nome": "signature_webhook_idempotency_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 39768,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 8,
+    "nome": "inspection_immutability_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 11488,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 9,
+    "nome": "key_delivery_gate_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 21228,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 10,
+    "nome": "deadline_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 29896,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 11,
+    "nome": "evidence_integrity_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 11812,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 12,
+    "nome": "multi_company_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 29162,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 13,
+    "nome": "security_scan",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 4786,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 14,
+    "nome": "deploy_DEV",
+    "status": "VERDE",
+    "motivo": "1 comando(s) (deploy local do artefato; o hook do servidor só em tag jur-release-*)",
+    "duracaoMs": 44026,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 15,
+    "nome": "deploy_LAB",
+    "status": "VERDE",
+    "motivo": "1 comando(s) (deploy local do artefato; o hook do servidor só em tag jur-release-*)",
+    "duracaoMs": 177728,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 16,
+    "nome": "failure_drills",
+    "status": "VERDE",
+    "motivo": "2 comando(s)",
+    "duracaoMs": 170612,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 17,
+    "nome": "pentest",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 452642,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 18,
+    "nome": "production_approval",
+    "status": "VERDE",
+    "motivo": "portão de produção liberado; fora de tag jur-release-* não há publicação nem aprovação a pedir; o CI não publica em produção",
+    "duracaoMs": 137,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   }
+  ]
+ },
+ "portao": {
+  "liberado": true,
+  "bloqueios": [],
+  "resumo": {
+   "etapasVerdes": 17,
+   "restore": [
+    {
+     "arquivo": "restore/drill-legal-restore-2026-11-11-6f1ddb3.json",
+     "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+     "dirty": false,
+     "exitCode": 0,
+     "aprovadas": 141,
+     "total": 141
+    }
+   ],
+   "pentest": {
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+    "rotas": 157,
+    "ataques": 2762,
+    "porGravidade": {
+     "critico": 0,
+     "alto": 0,
+     "medio": 0,
+     "baixo": 10
+    }
+   },
+   "testes": {
+    "pass": 313,
+    "fail": 0,
+    "skip": 0,
+    "todo": 0
+   }
+  }
+ },
+ "restore": {
+  "checkoutLimpo41addaa2": {
+   "commit": "41addaa2c37eac6c977e9fea0f90c648e42a56a4",
+   "dirty": false,
+   "exitCode": 0,
+   "aprovadas": 141,
+   "total": 141
+  },
+  "esteira": {
+   "arquivo": "drill-legal-restore-2026-11-11-6f1ddb3.json",
+   "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+   "dirty": false,
+   "exitCode": 0,
+   "aprovadas": 141,
+   "total": 141
+  }
+ },
+ "testes": [
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L07: adulterar o content_hash de uma ContractVersion direto no banco é REJEITADO pelo trigger append-only",
+   "status": "pass",
+   "ms": 138.048,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-002: assinatura que aponta hash diferente da versão é rejeitada e o contrato continua em SIGNING",
+   "status": "pass",
+   "ms": 3594.335,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery exige keysCount e termSignedByPersonId (JUR-TS-004 \"Chave cedo\")",
+   "status": "pass",
+   "ms": 166.142,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.guaranteeExpiry.test.js",
+   "nome": "JUR-TS-005: garantia já vencida também é alertada (não só \"prestes a vencer\")",
+   "status": "pass",
+   "ms": 54.67,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-06 JUR-TS-006/§11: correção de vistoria assinada cria revisão com itens copiados; o laudo original continua intacto e imutável",
+   "status": "pass",
+   "ms": 44.539,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-007: webhook de assinatura duplicado (mesmo id externo) gera uma única atualização, e SIGNED só com todas as assinaturas da versão",
+   "status": "pass",
+   "ms": 558.993,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-008: criar prazo crítico sem origem verificável é bloqueado (DEADLINE_SOURCE_REQUIRED, Guia §12) e nada é gravado; texto de origem sozinho não basta",
+   "status": "pass",
+   "ms": 87,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-009: prazo crítico vencido sem conclusão alerta o responsável, abre UMA ocorrência CRITICAL, publica legal.deadline.overdue e escala após 24 h",
+   "status": "pass",
+   "ms": 39.016,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-010: prova alterada — o hash diverge e a integridade falha (export adulterado e linha do banco reescrita)",
+   "status": "pass",
+   "ms": 18.427,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.failureDrills.test.js",
+   "nome": "Drill 4: duas instâncias do job em paralelo (2 conexões) sobre o mesmo prazo vencido: uma ocorrência, um evento, um escalonamento",
+   "status": "pass",
+   "ms": 51.453,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.carga.test.js",
+   "nome": "Carga: 20 prazos ao mesmo tempo no mesmo processo — 20 prazos, 20 tarefas 1:1, 20 eventos, origem e responsável em todos",
+   "status": "pass",
+   "ms": 312.092,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.pentest.test.js",
+   "nome": "pentest M5 (executor): nenhum achado crítico ou alto no banco descartável",
+   "status": "pass",
+   "ms": 122180.058,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.pentest.test.js",
+   "nome": "pentest M5 (núcleo): rotas enumeradas dos routers, todas com permissão e com id real para cada parâmetro",
+   "status": "pass",
+   "ms": 1468.379,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.meta.esteiraJuridico.test.js",
+   "nome": "Guia §17/§22 M5ES: failure_drills roda o drill de restore completo com relatório; pentest guarda o relatório; production_approval é o portão",
+   "status": "pass",
+   "ms": 1,
+   "commitDoTeste": "6f1ddb34"
+  }
+ ],
+ "nota": "J10: failure drills e carga do jurídico, pentest automatizado das rotas do jurídico e da cobrança e o restore, todos na esteira completa — execução COMPLETA da esteira do jurídico no commit 6f1ddb34 (árvore limpa: dirty false), 2026-11-11T11:15:20.502Z a 2026-11-11T11:44:50.105Z: 1 lint VERDE; 2 typecheck VERDE; 3 migrations VERDE; 4 contract_state_tests VERDE; 5 requirements_tests VERDE; 6 signature_adapter_contract_tests VERDE; 7 signature_webhook_idempotency_tests VERDE; 8 inspection_immutability_tests VERDE; 9 key_delivery_gate_tests VERDE; 10 deadline_tests VERDE; 11 evidence_integrity_tests VERDE; 12 multi_company_tests VERDE; 13 security_scan VERDE; 14 deploy_DEV VERDE; 15 deploy_LAB VERDE; 16 failure_drills VERDE; 17 pentest VERDE; 18 production_approval VERDE; resultado VERDE (evidencias/marco-5/esteira/m5es/esteira-juridico.{json,log}). Restore: drill de restore completo em checkout LIMPO de 41addaa2: 141/141 checagens, \"dirty\": false, exitCode 0 (evidencias/marco-5/restore-drill/drill-legal-restore-2026-11-11-41addaa.{json,log}); e de novo na esteira completa em 6f1ddb34 (etapa 16): 141/141, \"dirty\": false (evidencias/marco-5/esteira/m5es/evidencias/restore/drill-legal-restore-2026-11-11-6f1ddb3.json). O pentest humano independente é a demanda transversal X45-D058, do Patrick (não dado como feito)."
+}

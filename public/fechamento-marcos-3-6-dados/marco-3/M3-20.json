@@ -1,0 +1,83 @@
+{
+  "linha": "M3-20",
+  "capturadoEm": "2026-11-11T11:10:36.872Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "administrador define SLA médio em 5 h",
+      "pedido": "PUT /api/v1/settings/crm.ocorrencia.sla_horas.media",
+      "corpo": {
+        "value": 5
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "id": "7650f233-61c9-423f-9502-accca8e856c9",
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "key": "crm.ocorrencia.sla_horas.media",
+        "value": 5,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:36.306Z",
+        "created_at": "2026-11-11T11:10:36.306Z",
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:36.320Z"
+    },
+    {
+      "titulo": "ocorrência média nasce com SLA de 5 h e com responsável",
+      "pedido": "POST /api/v1/crm/occurrences",
+      "corpo": {
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "type": "COMPLAINT",
+        "severity": "MEDIUM",
+        "description": "Demora no retorno"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "id": "c6c7dcb0-81a5-4255-b035-a761ded1fd8f",
+        "lockVersion": 0,
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "opportunityId": null,
+        "messageId": null,
+        "type": "COMPLAINT",
+        "description": "Demora no retorno",
+        "severity": "MEDIUM",
+        "status": "OPEN",
+        "assignedToUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "slaDueAt": "2026-11-11T16:10:36.338Z",
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:36.343Z",
+        "created_at": "2026-11-11T11:10:36.343Z",
+        "escalatedAt": null,
+        "resolvedAt": null,
+        "resolutionNotes": null,
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:36.362Z"
+    },
+    {
+      "titulo": "responsável de fora da empresa é recusado",
+      "pedido": "POST /api/v1/crm/occurrences",
+      "corpo": {
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "type": "COMPLAINT",
+        "description": "x",
+        "assignedToUserId": "00000000-0000-4000-8000-000000000001"
+      },
+      "status": 422,
+      "codigo": "FEEDBACK_CASE_ASSIGNEE_INVALID",
+      "resposta": {
+        "message": "O responsável da ocorrência precisa ser um usuário ativo desta empresa."
+      },
+      "em": "2026-11-11T11:10:36.382Z"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+ "id": "M4-§21.8",
+ "secao": "§21 Definition of Done",
+ "requisito": "\"Comissões guardam rule_version_id.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM2 comissão calculada pelo Motor de Regras grava rule_version_id; nova versão não altera a antiga; banco exige a versão",
+   "status": "passou",
+   "duracaoMs": 193,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T42",
+   "tipo": "http",
+   "linhas": [
+    "M4-§14.2",
+    "M4-§21.8"
+   ],
+   "titulo": "Versões da regra de comissão (rule_version)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/commission-rule/versions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T01:35:13.087Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "90c6f137-0045-4c83-a150-a5e57502e768",
+      "versionNumber": 1,
+      "status": "PUBLISHED",
+      "components": {
+       "BROKER": 5,
+       "MANAGER": 2,
+       "CORRESPONDENT": 1
+      },
+      "base": "SOURCE_ENTRY_AMOUNT",
+      "effectiveFrom": "2026-11-11T01:35:13.034Z",
+      "effectiveUntil": null,
+      "current": true,
+      "publishedByName": "CI checker — tenant A",
+      "publishedAt": "2026-11-11T01:35:13.034Z"
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "HML-regraComissao-trilha",
+   "descricao": "Trilha de auditoria de regraComissao",
+   "metodo": "GET",
+   "rota": "/audit-log?entityId=54ce1656-3656-48ea-8f48-0f785d381621",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:08.477Z",
+   "duracaoMs": 161,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "fa6a8feb-89a8-4196-a1e8-20bbec7e66f0",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "userId": "33477648-c752-4bed-83cb-a04114224f4d",
+      "action": "finance.commission_rule.publish",
+      "entityType": "RuleVersion",
+      "entityId": "54ce1656-3656-48ea-8f48-0f785d381621",
+      "beforeJson": {
+       "base": "SOURCE_ENTRY_AMOUNT",
+       "ruleCode": "REG-FIN-002",
+       "components": {
+        "BROKER": 5
+       },
+       "description": null,
+       "effectiveFrom": "2026-10-20T16:44:19.349Z",
+       "versionNumber": 12,
+       "effectiveUntil": null
+      },
+      "afterJson": {
+       "base": "SOURCE_ENTRY_AMOUNT",
+       "ruleCode": "REG-FIN-002",
+       "components": {
+        "BROKER": 5
+       },
+       "description": null,
+       "effectiveFrom": "2026-10-20T16:44:37.329Z",
+       "versionNumber": 13,
+       "effectiveUntil": null
+      },
+      "reason": "Nova versão da regra de comissão (REG-FIN-002 v13) publicada.",
+      "occurredAt": "2026-10-20T16:44:38.088Z",
+      "sessionId": null,
+      "ipAddress": null,
+      "correlationId": null,
+      "ruleVersionId": null,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-20T16:44:38.088Z",
+      "updated_at": "2026-10-20T16:44:38.088Z",
+      "user_id": "33477648-c752-4bed-83cb-a04114224f4d"
+     }
+    ]
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:08.477Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q16",
+   "linhas": [
+    "M4-§14.2",
+    "M4-§21.8"
+   ],
+   "descricao": "Comissões com rule_version_id, base e percentual gravados",
+   "sql": "select id, component, base_amount, percentage, rule_version_id is not null as tem_versao, status from finance.commissions order by created_at",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "id": "88574c1f-3f25-45af-8c99-c4ce224a5dac",
+     "component": "BROKER",
+     "base_amount": "1000.00",
+     "percentage": "5.000000",
+     "tem_versao": true,
+     "status": "CANCELLED"
+    },
+    {
+     "id": "3dabea98-2015-42cc-ba77-d6099db7f3e7",
+     "component": "MANAGER",
+     "base_amount": "1000.00",
+     "percentage": "2.000000",
+     "tem_versao": true,
+     "status": "PENDING"
+    },
+    {
+     "id": "91c8f5d1-f30c-4b83-91bc-f23a4f57a5cc",
+     "component": "CORRESPONDENT",
+     "base_amount": "1000.00",
+     "percentage": "1.000000",
+     "tem_versao": true,
+     "status": "PENDING"
+    }
+   ],
+   "invariante": "todas com versão da regra",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.737Z"
+  }
+ ]
+}

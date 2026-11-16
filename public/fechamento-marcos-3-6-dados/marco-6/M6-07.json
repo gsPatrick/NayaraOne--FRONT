@@ -1,0 +1,353 @@
+{
+  "id": "M6-07",
+  "requisito": "Tabela daily_logs. \"Chave lógica project_id + work_date + shift_code\" (§6).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.daily_reports (src/models/DailyReport.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/diario: novo RDO",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-58: diário duplicado no mesmo turno bloqueia; turnos diferentes não bloqueiam",
+      "resultado": "passou",
+      "duracaoMs": 230,
+      "executadoEm": "2026-11-11T00:12:37.873Z"
+    },
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-20: correção de RDO é append-only — original permanece no banco após \"correção\"",
+      "resultado": "passou",
+      "duracaoMs": 283,
+      "executadoEm": "2026-11-11T00:12:38.156Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H050",
+      "H052"
+    ],
+    "resumo": [
+      "H050 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs → 201",
+      "H052 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-reports → 409 DAILY_REPORT_DUPLICATE"
+    ],
+    "dataHora": "2026-11-11T00:12:11.338Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H050",
+      "requisitos": [
+        "M6-34",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-20",
+        "M6-48",
+        "M6-73",
+        "M6-110",
+        "M6-98"
+      ],
+      "cenario": "Criar RDO (obra/data/turno, equipe com documento, serviços, foto com hash, materiais, ocorrências e bloqueios)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-logs",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reportDate": "2026-11-09",
+        "shiftCode": "MANHA",
+        "weather": "Ensolarado",
+        "workforceCount": 9,
+        "servicesPerformed": "Concretagem da sapata S3",
+        "occurrences": "Chuva rápida às 10h",
+        "blockages": "Bomba de concreto atrasou 40 min",
+        "evidenceFileIds": [
+          "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+        ],
+        "idempotencyKey": "rdo-c4fcd6",
+        "workers": [
+          {
+            "personId": "e683ff67-ec97-4add-9404-e21d862d69d5",
+            "role": "Armador",
+            "documentFileIds": [
+              "5f279065-01f6-4610-9100-7e3d01797f98"
+            ]
+          }
+        ],
+        "materials": [
+          {
+            "materialDescription": "Cimento CP-II",
+            "quantity": 12,
+            "unit": "saco"
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 337,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7fdbcbde-77f4-4aa3-8372-c8df19160180",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reportDate": "2026-11-09",
+          "shiftCode": "MANHA",
+          "weather": "Ensolarado",
+          "workforceCount": 9,
+          "occurrences": "Chuva rápida às 10h",
+          "blockages": "Bomba de concreto atrasou 40 min",
+          "servicesPerformed": "Concretagem da sapata S3",
+          "evidenceFileIds": [
+            "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+          ],
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "reportedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "clientLocalId": null,
+          "idempotencyKey": "rdo-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:11.317Z",
+          "created_at": "2026-11-11T00:12:11.317Z",
+          "supersedesId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:11.338Z"
+    },
+    {
+      "id": "H052",
+      "requisitos": [
+        "M6-58",
+        "M6-07",
+        "M6-83"
+      ],
+      "cenario": "NEGATIVO: segundo RDO na mesma obra/data/turno (outra captura)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/daily-reports",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reportDate": "2026-11-09",
+        "shiftCode": "MANHA",
+        "weather": "Ensolarado",
+        "workforceCount": 9,
+        "servicesPerformed": "Concretagem da sapata S3",
+        "occurrences": "Chuva rápida às 10h",
+        "blockages": "Bomba de concreto atrasou 40 min",
+        "evidenceFileIds": [
+          "4ce2ca20-9e94-4ad0-8e3c-783df4f93da1"
+        ],
+        "idempotencyKey": "rdo-dup-c4fcd6",
+        "workers": [],
+        "materials": []
+      },
+      "statusHttp": 409,
+      "codigoErro": "DAILY_REPORT_DUPLICATE",
+      "esperado": "409 DAILY_REPORT_DUPLICATE",
+      "conferiu": true,
+      "duracaoMs": 289,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "DAILY_REPORT_DUPLICATE",
+          "message": "Já existe um RDO para esta obra nesta data e turno.",
+          "traceId": "c15753f1-a31d-43e9-8069-02a8be60a9ba"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:11.667Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    },
+    {
+      "id": "C009",
+      "requisitos": [
+        "M6-20",
+        "M6-83",
+        "M6-07",
+        "M6-58"
+      ],
+      "descricao": "RDO: original preservado + correção (supersedes_id) e índice único (obra, data, turno)",
+      "sql": "SELECT (SELECT count(*) FROM construction.daily_reports WHERE id = $1)::int AS original, (SELECT count(*) FROM construction.daily_reports WHERE supersedes_id = $1)::int AS correcoes, (SELECT count(*) FROM pg_indexes WHERE schemaname = 'construction' AND tablename = 'daily_reports' AND indexdef ILIKE '%UNIQUE%' AND indexdef ILIKE '%shift_code%')::int AS indice_unico",
+      "resultado": [
+        {
+          "original": 1,
+          "correcoes": 1,
+          "indice_unico": 1
+        }
+      ],
+      "invariante": "original 1, correção 1, índice único presente",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.190Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.378Z"
+}

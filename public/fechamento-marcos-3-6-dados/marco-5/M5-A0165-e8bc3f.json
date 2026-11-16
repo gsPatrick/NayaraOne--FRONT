@@ -1,0 +1,192 @@
+{
+ "id": "M5-A0165-e8bc3f",
+ "secao": "P1 > 21. Definition of Done",
+ "linhaCaderno": 377,
+ "requisito": "☐ Contract versions imutáveis.",
+ "demandas": "M5-D003",
+ "implementacao": "trigger legal.contract_versions_block_update; ContractVersion sem update no serviço; número único (contract_id, version_number)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L07: adulterar o content_hash de uma ContractVersion direto no banco é REJEITADO pelo trigger append-only",
+   "status": "pass",
+   "ms": 138.048,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L09: \"reverter\" uma ContractVersion é impossível — nova versão nunca reescreve a anterior e número repetido é barrado pelo banco",
+   "status": "pass",
+   "ms": 134.754,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-014: aditivo não sobrescreve o contrato — cabeçalho, versões e hash intactos; versão não tem rota de edição e o banco recusa UPDATE",
+   "status": "pass",
+   "ms": 464.636,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-310",
+   "metodo": "PATCH",
+   "rota": "/legal/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro ROUTE_NOT_FOUND: Rota não encontrada.",
+   "quando": "2026-11-11T03:42:26.406Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0165-e8bc3f.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/adversarial.legal.test.js test/m5fech.contratos.adversariais.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-124, CT-310, CT-312, CT-321)"
+ },
+ "passos": [
+  {
+   "id": "CT-310",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-001: não existe rota de edição de versão (PATCH)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+   "corpoEnviado": {
+    "content": "adulterado"
+   },
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:26.406Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "ROUTE_NOT_FOUND",
+     "message": "Rota não encontrada.",
+     "traceId": "98dbec2f-3a62-481d-8f76-2e50d19b466a"
+    }
+   },
+   "req": [
+    "M5-A0149-775b31",
+    "M5-A0232-1c7fbc",
+    "M5-A0253-8388d0",
+    "M5-A0165-e8bc3f"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-312",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-001: UPDATE direto na versão APROVADA (role da aplicação, RLS) é recusado pelo banco",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "UPDATE legal.contract_versions SET content, content_hash WHERE id = versão aprovada",
+   "corpoEnviado": null,
+   "esperado": {
+    "erro": "SequelizeDatabaseError"
+   },
+   "status": "erro",
+   "codigo": "SequelizeDatabaseError",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:26.436Z",
+   "corpo": {
+    "error": {
+     "code": "SequelizeDatabaseError",
+     "message": "legal.contract_versions é append-only: UPDATE não é permitido (versão 1, contrato daaf3fcb-c3a1-4d73-93e6-d98e28f636d4)."
+    }
+   },
+   "req": [
+    "M5-A0149-775b31",
+    "M5-A0232-1c7fbc",
+    "M5-A0165-e8bc3f",
+    "M5-A0264-72ee37",
+    "M5-A0253-8388d0"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "servico"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-124",
+   "req": [
+    "M5-A0264-72ee37",
+    "M5-A0165-e8bc3f"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Guia §4: versão nasce DRAFT, com o arquivo armazenado dos bytes e hash = SHA-256 desses bytes (o valor enviado pelo cliente foi ignorado)",
+   "sql": "SELECT v.status, v.content_hash, encode(sha256(convert_to(v.content, 'UTF8')), 'hex') AS recalculado, v.document_file_id IS NOT NULL AS com_arquivo, f.checksum_sha256 AS hash_arquivo_armazenado FROM legal.contract_versions v JOIN people.files f ON f.id = v.content_file_id WHERE v.id = :id",
+   "resultado": [
+    {
+     "status": "DRAFT",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "recalculado": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "com_arquivo": true,
+     "hash_arquivo_armazenado": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.068Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-321",
+   "req": [
+    "M5-A0165-e8bc3f",
+    "M5-A0264-72ee37",
+    "M5-A0299-827218",
+    "M5-A0065-6f0a95"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "Versões 1, 2 e 3 preservadas com o hash original (append-only); nenhuma sobrescrita",
+   "sql": "SELECT version_number, content_hash, encode(sha256(convert_to(content, 'UTF8')), 'hex') AS recalculado FROM legal.contract_versions WHERE contract_id = :id ORDER BY version_number",
+   "resultado": [
+    {
+     "version_number": 1,
+     "content_hash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+     "recalculado": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9"
+    },
+    {
+     "version_number": 2,
+     "content_hash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+     "recalculado": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088"
+    },
+    {
+     "version_number": 3,
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "recalculado": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.803Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

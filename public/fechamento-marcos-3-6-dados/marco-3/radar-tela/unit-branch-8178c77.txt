@@ -1,0 +1,16 @@
+8178c77
+✔ m3 radar api: explainRadarMatch lê GET /radar/:id/matches/:propertyId/explain e devolve a explicação (2.265583ms)
+✔ m3 radar api: createRadar (POST) e updateRadar (PATCH) enviam obrigatórios, preferências, flexíveis e exclusões (0.772292ms)
+✔ m3 radar explicação: o score e cada critério aparecem com categoria, situação e peso em português (192.350583ms)
+✔ m3 radar explicação: linhas na ordem do livro (obrigatório, preferência, flexível, exclusão) (1.031042ms)
+✔ m3 radar explicação: imóvel fora do radar (obrigatório falhou) mostra não atendido e preferências ignoradas, score 0 (4.36975ms)
+✔ m3 radar explicação: exclusão que se aplica tira o imóvel e diz o motivo sem código (0.499542ms)
+✔ m3 radar explicação: o cartão do match mostra o score que a listagem já traz (radarMatch) (0.60625ms)
+✔ m3 radar explicação: estados de carregando, erro e vazio no padrão AsyncState (7.470959ms)
+✔ m3 radar formulário: preencher as quatro categorias na tela gera o criteriaJson que a API aceita (1299.12275ms)
+✔ m3 radar formulário: remover um item tira o critério do payload (51.532375ms)
+✔ m3 radar formulário: valor, peso e ponto inválidos são recusados no Front com o campo indicado (1.357375ms)
+✔ m3 radar formulário: a edição lê o radar salvo nas quatro categorias e devolve o mesmo payload (172.699583ms)
+ℹ tests 12
+ℹ pass 12
+ℹ fail 0

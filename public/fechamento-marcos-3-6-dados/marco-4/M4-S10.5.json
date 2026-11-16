@@ -1,0 +1,154 @@
+{
+ "id": "M4-§10.5",
+ "secao": "§10 Recebimentos",
+ "requisito": "\"Recebimento duplicado por webhook/extrato é bloqueado por fingerprint/idempotência.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.acceptance.batch2.test.js",
+   "nome": "M4-12 createBankTransaction bloqueia reimportação da mesma transação (externalTransactionId único)",
+   "status": "passou",
+   "duracaoMs": 18,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/finance.bankPaymentConfirmation.test.js",
+   "nome": "Callback duplicado (idempotência): reprocessar CONFIRMED duas vezes não liquida duas vezes",
+   "status": "passou",
+   "duracaoMs": 251,
+   "commitDoArquivo": "f8ad9c08"
+  },
+  {
+   "arquivo": "test/m4.extratoUnicidadePorConta.test.js",
+   "nome": "M4-G§10 toda linha grava o fingerprint do Guia (sha256 de conta, id externo, data, valor, sentido e descrição); o banco barra a mesma chave na mesma conta mesmo sem passar pelo serviço",
+   "status": "passou",
+   "duracaoMs": 81,
+   "commitDoArquivo": "9583e8d1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P33",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-019",
+    "M4-§10.5"
+   ],
+   "titulo": "Mesmo callback de novo (webhook duplicado): uma confirmação só",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/webhooks/bank-payment",
+   "cabecalhosEnviados": {
+    "x-webhook-signature": "sha256=4aa239…(assinatura HMAC calculada no envio)"
+   },
+   "corpoEnviado": {
+    "externalSubmissionId": "sandbox-payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+    "status": "CONFIRMED"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T01:35:08.622Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "received": true,
+     "processed": false,
+     "reason": "duplicate_event"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C11",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-007",
+    "M4-G§10",
+    "M4-§10.5"
+   ],
+   "titulo": "Reimporta o MESMO extrato: todas duplicadas, nenhuma transação nova (UNIQUE conta + fingerprint)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/import",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+    "csvText": "externalTransactionId,transactionDate,description,amount\nEXT-EX-0871300,2026-11-10,PIX recebido referencia externa,101.46\nEXT-FO-0871300,2026-11-10,PIX recebido ref 8ff509ab-299c-478d-b7c0-1f6373e1d9dd,202.46\nEXT-PR-0871300,2026-11-10,PIX recebido sem referencia,303.46\nEXT-AM-0871300,2026-11-10,PIX recebido valor repetido,404.46\nEXT-SEM-0871300,2026-11-10,Credito sem lancamento correspondente,505.46\nEXT-DV-0871300,2026-11-10,PIX recebido valor diferente,605.46\n"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 50,
+   "quando": "2026-11-11T01:35:11.063Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "imported": [],
+     "duplicates": [
+      {
+       "externalTransactionId": "EXT-EX-0871300",
+       "existingId": "94edf404-d379-497d-9177-bdc35f058458"
+      },
+      {
+       "externalTransactionId": "EXT-FO-0871300",
+       "existingId": "c08bbd0d-df65-4d73-b0e2-ecd80c656b88"
+      },
+      {
+       "externalTransactionId": "EXT-PR-0871300",
+       "existingId": "08314b06-c49b-4e49-93cb-c7c72c5f18eb"
+      },
+      {
+       "externalTransactionId": "EXT-AM-0871300",
+       "existingId": "7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e"
+      },
+      {
+       "externalTransactionId": "EXT-SEM-0871300",
+       "existingId": "be92f80c-48bc-4ab6-84b0-a7b0102d5e56"
+      },
+      {
+       "externalTransactionId": "EXT-DV-0871300",
+       "existingId": "cff6aa38-fd87-4f6d-b9b9-ea476c91c88f"
+      }
+     ],
+     "total": 6,
+     "statementImport": {
+      "id": "0cf73bfc-2506-495b-9469-4b685606de4d",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "periodStart": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "periodDeclared": false,
+      "closingBalance": null,
+      "linesTotal": 6,
+      "linesImported": 0,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:11.040Z"
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

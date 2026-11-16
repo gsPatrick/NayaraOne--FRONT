@@ -1,0 +1,54 @@
+{
+  "id": "M3-22",
+  "secao": "Matriz contratual",
+  "requisito": "NAY somente em leitura ou sugestão, sem inventar dados.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 153,
+      "casos": [
+        "nay_sem_permissao"
+      ],
+      "descricao": "NAY Comercial: perfil sem permissão de IA não executa o agente",
+      "metodo": "POST",
+      "rota": "/api/v1/ai/runs",
+      "perfil": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "corpoEnviado": {
+        "agentCode": "NAY_COMERCIAL",
+        "input": {
+          "opportunityId": "f5ebb76a-a180-4725-9ec7-3736e035e71d"
+        }
+      },
+      "status": 403,
+      "codigoErro": "PERMISSION_DENIED",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+          "details": {
+            "required": "ai:use"
+          },
+          "traceId": "e9854aab-6062-409d-92b7-92d5d89512e4"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.487Z"
+    }
+  ],
+  "consultasBanco": []
+}

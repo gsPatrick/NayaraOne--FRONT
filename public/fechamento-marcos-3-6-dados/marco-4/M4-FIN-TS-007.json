@@ -1,0 +1,376 @@
+{
+ "id": "M4-FIN-TS-007",
+ "secao": "§20 Testes adversariais",
+ "requisito": "FIN-TS-007: Extrato duplicado — uma bank_transaction.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-007: importação de extrato em lote (CSV) é idempotente — reimportar o MESMO arquivo não duplica",
+   "status": "passou",
+   "duracaoMs": 30,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.acceptance.batch2.test.js",
+   "nome": "M4-12 createBankTransaction bloqueia reimportação da mesma transação (externalTransactionId único)",
+   "status": "passou",
+   "duracaoMs": 18,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/m4.extratoUnicidadePorConta.test.js",
+   "nome": "M4-G§10 reimportar na MESMA conta continua deduplicando (201, 1 duplicada, 0 novas) e a linha avulsa com a mesma chave na mesma conta é 409 FINANCE_BANK_TRANSACTION_DUPLICATE; outra conta da mesma empresa aceita",
+   "status": "passou",
+   "duracaoMs": 218,
+   "commitDoArquivo": "9583e8d1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C11",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-007",
+    "M4-G§10",
+    "M4-§10.5"
+   ],
+   "titulo": "Reimporta o MESMO extrato: todas duplicadas, nenhuma transação nova (UNIQUE conta + fingerprint)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/import",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+    "csvText": "externalTransactionId,transactionDate,description,amount\nEXT-EX-0871300,2026-11-10,PIX recebido referencia externa,101.46\nEXT-FO-0871300,2026-11-10,PIX recebido ref 8ff509ab-299c-478d-b7c0-1f6373e1d9dd,202.46\nEXT-PR-0871300,2026-11-10,PIX recebido sem referencia,303.46\nEXT-AM-0871300,2026-11-10,PIX recebido valor repetido,404.46\nEXT-SEM-0871300,2026-11-10,Credito sem lancamento correspondente,505.46\nEXT-DV-0871300,2026-11-10,PIX recebido valor diferente,605.46\n"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 50,
+   "quando": "2026-11-11T01:35:11.063Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "imported": [],
+     "duplicates": [
+      {
+       "externalTransactionId": "EXT-EX-0871300",
+       "existingId": "94edf404-d379-497d-9177-bdc35f058458"
+      },
+      {
+       "externalTransactionId": "EXT-FO-0871300",
+       "existingId": "c08bbd0d-df65-4d73-b0e2-ecd80c656b88"
+      },
+      {
+       "externalTransactionId": "EXT-PR-0871300",
+       "existingId": "08314b06-c49b-4e49-93cb-c7c72c5f18eb"
+      },
+      {
+       "externalTransactionId": "EXT-AM-0871300",
+       "existingId": "7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e"
+      },
+      {
+       "externalTransactionId": "EXT-SEM-0871300",
+       "existingId": "be92f80c-48bc-4ab6-84b0-a7b0102d5e56"
+      },
+      {
+       "externalTransactionId": "EXT-DV-0871300",
+       "existingId": "cff6aa38-fd87-4f6d-b9b9-ea476c91c88f"
+      }
+     ],
+     "total": 6,
+     "statementImport": {
+      "id": "0cf73bfc-2506-495b-9469-4b685606de4d",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "periodStart": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "periodDeclared": false,
+      "closingBalance": null,
+      "linesTotal": 6,
+      "linesImported": 0,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:11.040Z"
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C12",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-007",
+    "M4-§21.6"
+   ],
+   "titulo": "Extrato da conta: exatamente 6 transações depois das duas importações",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/bank-transactions?bankAccountId=6a54ebaa-9479-4573-8cca-4f663e4a9452",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T01:35:11.092Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "94edf404-d379-497d-9177-bdc35f058458",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "externalTransactionId": "EXT-EX-0871300",
+      "fingerprint": "4434f84f4a78b16ccb472f5b57d148da5a3d9ff161e05fc98b86ab5c25ccee7d",
+      "amount": "101.46",
+      "transactionDate": "2026-11-10T15:00:00.000Z",
+      "description": "PIX recebido referencia externa",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:10.911Z",
+      "updated_at": "2026-11-11T01:35:10.911Z",
+      "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452"
+     },
+     {
+      "id": "c08bbd0d-df65-4d73-b0e2-ecd80c656b88",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "externalTransactionId": "EXT-FO-0871300",
+      "fingerprint": "fddaa43e1487e27f468f8261e668b5f459adb56bb48c1478935556a010ae2872",
+      "amount": "202.46",
+      "transactionDate": "2026-11-10T15:00:00.000Z",
+      "description": "PIX recebido ref 8ff509ab-299c-478d-b7c0-1f6373e1d9dd",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:10.921Z",
+      "updated_at": "2026-11-11T01:35:10.921Z",
+      "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452"
+     },
+     {
+      "id": "08314b06-c49b-4e49-93cb-c7c72c5f18eb",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "externalTransactionId": "EXT-PR-0871300",
+      "fingerprint": "b66c2acfda13154b5461ea79a4accd8803f9af48f1a5cab805ec7346938a580e",
+      "amount": "303.46",
+      "transactionDate": "2026-11-10T15:00:00.000Z",
+      "description": "PIX recebido sem referencia",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:10.928Z",
+      "updated_at": "2026-11-11T01:35:10.928Z",
+      "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452"
+     },
+     {
+      "id": "7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "externalTransactionId": "EXT-AM-0871300",
+      "fingerprint": "7cc4328a5bbcdb444a801bdd5dbb08448810f2acbf0222026578eb4496fe609a",
+      "amount": "404.46",
+      "transactionDate": "2026-11-10T15:00:00.000Z",
+      "description": "PIX recebido valor repetido",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:10.942Z",
+      "updated_at": "2026-11-11T01:35:10.942Z",
+      "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452"
+     },
+     {
+      "id": "be92f80c-48bc-4ab6-84b0-a7b0102d5e56",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "externalTransactionId": "EXT-SEM-0871300",
+      "fingerprint": "e65e3f3dfbcd96b9695949fed8c63745f7a17ca1a25367e3cb8644b83f899b09",
+      "amount": "505.46",
+      "transactionDate": "2026-11-10T15:00:00.000Z",
+      "description": "Credito sem lancamento correspondente",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:10.955Z",
+      "updated_at": "2026-11-11T01:35:10.955Z",
+      "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452"
+     },
+     {
+      "id": "cff6aa38-fd87-4f6d-b9b9-ea476c91c88f",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "externalTransactionId": "EXT-DV-0871300",
+      "fingerprint": "114b70670334051f6d1f8892305e8a6912c33cfd8c6871c188c5ecab894475ae",
+      "amount": "605.46",
+      "transactionDate": "2026-11-10T15:00:00.000Z",
+      "description": "PIX recebido valor diferente",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:10.965Z",
+      "updated_at": "2026-11-11T01:35:10.965Z",
+      "bank_account_id": "6a54ebaa-9479-4573-8cca-4f663e4a9452"
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C14b",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-007"
+   ],
+   "titulo": "Tenant B importa extrato do PRÓPRIO banco com um ID externo que por acaso é igual ao de uma linha do tenant A: deve importar normalmente (isolamento por conta/empresa)",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/import",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "d091c286-8cfa-46bf-91b1-59d1e4316252",
+    "csvText": "externalTransactionId,transactionDate,description,amount\nEXT-EX-0871300,2026-11-10,Credito no banco do tenant B,12.34\n"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 43,
+   "quando": "2026-11-11T01:35:11.251Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "imported": [
+      {
+       "id": "fb883df8-7272-4241-a173-0b9400fd5243",
+       "groupId": "128c5273-599f-44fd-a6ab-f64f993bdf60",
+       "companyId": "1f920550-3ff6-4a34-a820-624dae9def03",
+       "bankAccountId": "d091c286-8cfa-46bf-91b1-59d1e4316252",
+       "externalTransactionId": "EXT-EX-0871300",
+       "amount": "12.34",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "Credito no banco do tenant B",
+       "createdBy": "e0688863-2308-46a3-ad90-8b7a1e9ca467",
+       "updatedBy": "e0688863-2308-46a3-ad90-8b7a1e9ca467",
+       "updated_at": "2026-11-11T01:35:11.221Z",
+       "created_at": "2026-11-11T01:35:11.221Z",
+       "fingerprint": "f0ec5c7e4dfeb9fb3927f585c5583e1d1c1f1e12681c82f965ec59343b31eef4"
+      }
+     ],
+     "duplicates": [],
+     "total": 1,
+     "statementImport": {
+      "id": "f7a3a617-62e3-4d31-8a47-f6c68e867eea",
+      "groupId": "128c5273-599f-44fd-a6ab-f64f993bdf60",
+      "companyId": "1f920550-3ff6-4a34-a820-624dae9def03",
+      "bankAccountId": "d091c286-8cfa-46bf-91b1-59d1e4316252",
+      "periodStart": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "periodDeclared": false,
+      "closingBalance": null,
+      "linesTotal": 1,
+      "linesImported": 1,
+      "createdBy": "e0688863-2308-46a3-ad90-8b7a1e9ca467",
+      "created_at": "2026-11-11T01:35:11.226Z"
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "HML-extrato",
+   "descricao": "Leitura de extrato na homologação",
+   "metodo": "GET",
+   "rota": "/finance/bank-transactions",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:06.909Z",
+   "duracaoMs": 261,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "total": 80,
+    "porStatus": {
+     "sem status": 80
+    },
+    "amostra": [
+     {
+      "id": "dd378791-f886-4d2c-a105-802212571337",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "bankAccountId": "e2237964-047a-469b-a47f-e2624fe4628e",
+      "externalTransactionId": null,
+      "amount": "-456.78",
+      "transactionDate": "2026-10-26T01:24:52.145Z",
+      "description": null,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-26T01:24:52.914Z",
+      "updated_at": "2026-10-26T01:24:52.914Z",
+      "bank_account_id": "e2237964-047a-469b-a47f-e2624fe4628e"
+     },
+     {
+      "id": "9f3fc45f-7dd6-4ad4-9f7a-055717a10a09",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "bankAccountId": "2e9dc085-7d97-48e9-a60a-b029f8c95a66",
+      "externalTransactionId": null,
+      "amount": "-456.78",
+      "transactionDate": "2026-10-20T16:40:19.271Z",
+      "description": null,
+      "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "updatedBy": "33477648-c752-4bed-83cb-a04114224f4d",
+      "created_at": "2026-10-20T16:40:19.523Z",
+      "updated_at": "2026-10-20T16:40:19.523Z",
+      "bank_account_id": "2e9dc085-7d97-48e9-a60a-b029f8c95a66"
+     },
+     {
+      "id": "898a6b06-e481-45bf-9437-4d941d566be7",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "bankAccountId": "36736400-7806-4210-87a6-33b6fee7c165",
+      "externalTransactionId": "GRP-179251292363597847",
+      "amount": "100.00",
+      "transactionDate": "2026-10-20T16:15:24.654Z",
+      "description": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-10-20T16:15:24.654Z",
+      "updated_at": "2026-10-20T16:15:24.654Z",
+      "bank_account_id": "36736400-7806-4210-87a6-33b6fee7c165"
+     }
+    ]
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:06.909Z"
+  }
+ ],
+ "consultasBanco": []
+}

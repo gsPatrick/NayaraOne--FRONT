@@ -1,0 +1,1250 @@
+{
+  "geradoEm": "2026-11-12T10:20:57.893Z",
+  "arquivoDeTeste": "test/people.documentReplaceFile.http.test.js",
+  "chamadas": [
+    {
+      "em": "2026-11-12T10:20:55.510Z",
+      "requisicao": "POST /api/v1/people",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Troca HTTP 179447885426479805",
+        "allowDuplicate": true
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "3760a2e9-3e74-441a-a19b-43afded6916b",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personType": "PF",
+          "legalName": "Troca HTTP 179447885426479805",
+          "preferredName": null,
+          "taxIdNormalized": null,
+          "taxIdNormalizedHash": null,
+          "birthOrFoundationDate": null,
+          "status": "ACTIVE",
+          "mergedIntoId": null,
+          "riskFlagsJson": null,
+          "lockVersion": 0,
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:54.347Z",
+          "updated_at": "2026-11-12T10:20:54.347Z",
+          "deleted_at": null,
+          "merged_into_id": null,
+          "contacts": [],
+          "documents": [],
+          "roles": [],
+          "addresses": [],
+          "dataQuality": {
+            "score": 17,
+            "missing": [
+              {
+                "key": "taxId",
+                "label": "CPF/CNPJ informado"
+              },
+              {
+                "key": "contact",
+                "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+              },
+              {
+                "key": "address",
+                "label": "Ao menos um endereço cadastrado"
+              },
+              {
+                "key": "document",
+                "label": "Ao menos um documento anexado"
+              },
+              {
+                "key": "role",
+                "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+              }
+            ],
+            "revisao": []
+          },
+          "vinculo": {
+            "origem": "PROPRIA"
+          }
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:55.669Z",
+      "requisicao": "POST /api/v1/people/3760a2e9-3e74-441a-a19b-43afded6916b/documents/ingest",
+      "corpoEnviado": {
+        "fileName": "ir-2025.pdf",
+        "mimeType": "application/pdf",
+        "documentType": "IR",
+        "contentBase64": "eyJfX21vY2tPY3IiOnsiZmllbGRzIjp7Im5hbWUiOiJGdWxhbm8gZGUgVGFsIiwidGF4SWQiOiI1Mjk5ODIyNDcyNSIsImluY29tZSI6NTAwMH0sImNvbmZpZGVuY2UiOjAuOTV9fQ=="
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "document": {
+            "id": "56deeb09-45a3-4f9e-95a2-60184950bd39",
+            "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+            "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+            "personId": "3760a2e9-3e74-441a-a19b-43afded6916b",
+            "documentType": "IR",
+            "fileId": "fcc16f73-8ed6-4bbf-b46c-cec2ea15762d",
+            "versionNo": 1,
+            "verificationStatus": "PENDING",
+            "extractedDataJson": {
+              "fields": {
+                "name": "Fulano de Tal",
+                "taxId": "52998224725",
+                "income": 5000
+              },
+              "engines": {
+                "leitura": "LABORATORIO",
+                "antivirus": "LABORATORIO"
+              },
+              "illegible": false,
+              "confidence": 0.95,
+              "sourceFileId": "fcc16f73-8ed6-4bbf-b46c-cec2ea15762d",
+              "classification": {
+                "tipo": "IR",
+                "metodo": "DECLARADO",
+                "porNome": null,
+                "porTexto": null,
+                "declarado": "IR",
+                "pendencia": null,
+                "expressoes": []
+              },
+              "extractionMeta": {
+                "sandbox": true,
+                "documentType": "IR"
+              }
+            },
+            "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updated_at": "2026-11-12T10:20:55.634Z",
+            "created_at": "2026-11-12T10:20:55.634Z",
+            "issuedAt": null,
+            "expiresAt": null,
+            "verifiedBy": null,
+            "deletedBy": null,
+            "deleted_at": null
+          },
+          "fileId": "fcc16f73-8ed6-4bbf-b46c-cec2ea15762d",
+          "pendingTask": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:55.745Z",
+      "requisicao": "PATCH /api/v1/people/3760a2e9-3e74-441a-a19b-43afded6916b/documents/56deeb09-45a3-4f9e-95a2-60184950bd39",
+      "corpoEnviado": {
+        "verificationStatus": "VERIFIED"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "56deeb09-45a3-4f9e-95a2-60184950bd39",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personId": "3760a2e9-3e74-441a-a19b-43afded6916b",
+          "documentType": "IR",
+          "fileId": "fcc16f73-8ed6-4bbf-b46c-cec2ea15762d",
+          "versionNo": 1,
+          "issuedAt": null,
+          "expiresAt": null,
+          "verificationStatus": "VERIFIED",
+          "verifiedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "extractedDataJson": {
+            "fields": {
+              "name": "Fulano de Tal",
+              "taxId": "52998224725",
+              "income": 5000
+            },
+            "engines": {
+              "leitura": "LABORATORIO",
+              "antivirus": "LABORATORIO"
+            },
+            "illegible": false,
+            "confidence": 0.95,
+            "sourceFileId": "fcc16f73-8ed6-4bbf-b46c-cec2ea15762d",
+            "classification": {
+              "tipo": "IR",
+              "metodo": "DECLARADO",
+              "porNome": null,
+              "porTexto": null,
+              "declarado": "IR",
+              "pendencia": null,
+              "expressoes": []
+            },
+            "extractionMeta": {
+              "sandbox": true,
+              "documentType": "IR"
+            }
+          },
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:55.634Z",
+          "updated_at": "2026-11-12T10:20:55.684Z",
+          "deleted_at": null,
+          "person_id": "3760a2e9-3e74-441a-a19b-43afded6916b"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:55.867Z",
+      "requisicao": "POST /api/v1/files",
+      "corpoEnviado": {
+        "fileName": "ir-2025-retificada.pdf",
+        "mimeType": "application/pdf",
+        "contentBase64": "eyJfX21vY2tPY3IiOnsiZmllbGRzIjp7Im5hbWUiOiJGdWxhbm8gZGUgVGFsIiwidGF4SWQiOiI1Mjk5ODIyNDcyNSIsImluY29tZSI6OTEwMH0sImNvbmZpZGVuY2UiOjAuOTV9fQ==",
+        "category": "people-documents"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "classification": "INTERNAL",
+          "id": "1a59695f-3efe-4b04-9b4e-32605a974f38",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "storageKey": "people-documents/dd6f084d-2a06-467e-837f-eb6a8d5bad48/f2fbce7e-8284-401a-8a73-c85f19eedd34-ir-2025-retificada.pdf",
+          "fileName": "ir-2025-retificada.pdf",
+          "mimeType": "application/pdf",
+          "sizeBytes": 103,
+          "checksumSha256": "cf76ac6f469a2928ba1f20b1540723e07059bc35e5aece3a7ceb6e3ceb78cafe",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-12T10:20:55.809Z",
+          "uploadedByUserId": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updated_at": "2026-11-12T10:20:55.809Z",
+          "created_at": "2026-11-12T10:20:55.809Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.100Z",
+      "requisicao": "PATCH /api/v1/people/3760a2e9-3e74-441a-a19b-43afded6916b/documents/56deeb09-45a3-4f9e-95a2-60184950bd39",
+      "corpoEnviado": {
+        "fileId": "1a59695f-3efe-4b04-9b4e-32605a974f38"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "a964b2a2-fbfd-4939-a12f-a18dafedeea3",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personId": "3760a2e9-3e74-441a-a19b-43afded6916b",
+          "documentType": "IR",
+          "fileId": "1a59695f-3efe-4b04-9b4e-32605a974f38",
+          "versionNo": 2,
+          "issuedAt": null,
+          "expiresAt": null,
+          "verificationStatus": "PENDING",
+          "extractedDataJson": {
+            "fields": {
+              "name": "Fulano de Tal",
+              "taxId": "52998224725",
+              "income": 9100
+            },
+            "antivirus": {
+              "clean": true,
+              "engine": "sandbox",
+              "scannedAt": "2026-11-12T10:20:55.983Z",
+              "checksumSha256": "cf76ac6f469a2928ba1f20b1540723e07059bc35e5aece3a7ceb6e3ceb78cafe"
+            },
+            "illegible": false,
+            "confidence": 0.95,
+            "sourceFileId": "1a59695f-3efe-4b04-9b4e-32605a974f38",
+            "extractionMeta": {
+              "sandbox": true,
+              "documentType": "IR"
+            }
+          },
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updated_at": "2026-11-12T10:20:55.993Z",
+          "created_at": "2026-11-12T10:20:55.993Z",
+          "verifiedBy": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.147Z",
+      "requisicao": "GET /api/v1/people/3760a2e9-3e74-441a-a19b-43afded6916b/documents",
+      "corpoEnviado": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": "{\"success\":true,\"data\":[{\"id\":\"a964b2a2-fbfd-4939-a12f-a18dafedeea3\",\"groupId\":\"dd6f084d-2a06-467e-837f-eb6a8d5bad48\",\"companyId\":\"0fbd2b40-bf37-4769-ac27-78ed203f3788\",\"personId\":\"3760a2e9-3e74-441a-a19b-43afded6916b\",\"documentType\":\"IR\",\"fileId\":\"1a59695f-3efe-4b04-9b4e-32605a974f38\",\"versionNo\":2,\"issuedAt\":null,\"expiresAt\":null,\"verificationStatus\":\"PENDING\",\"verifiedBy\":null,\"extractedDataJson\":{\"fields\":{\"name\":\"Fulano de Tal\",\"taxId\":\"52998224725\",\"income\":9100},\"antivirus\":{\"clean\":true,\"engine\":\"sandbox\",\"scannedAt\":\"2026-11-12T10:20:55.983Z\",\"checksumSha256\":\"cf76ac6f469a2928ba1f20b1540723e07059bc35e5aece3a7ceb6e3ceb78cafe\"},\"illegible\":false,\"confidence\":0.95,\"sourceFileId\":\"1a59695f-3efe-4b04-9b4e-32605a974f38\",\"extractionMeta\":{\"sandbox\":true,\"documentType\":\"IR\"}},\"createdBy\":\"4f3b51d1-1454-468e-8580-7d361868cce2\",\"updatedBy\":\"4f3b51d1-1454-468e-8580-7d361868cce2\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:55.993Z\",\"updated_at\":\"2026-11-12T10:20:55.993Z\",\"deleted_at\":null,\"person_id\":\"3760a2e9-3e74-441a-a19b-43afded6916b\"},{\"id\":\"56deeb09-45a3-4f9e-95a2-60184950bd39\",\"groupId\":\"dd6f084d-2a06-467e-837f-eb6a8d5bad48\",\"companyId\":\"0fbd2b40-bf37-4769-ac27-78ed203f3788\",\"personId\":\"3760a2e9-3e74-441a-a19b-43afded6916b\",\"documentType\":\"IR\",\"fileId\":\"fcc16f73-8ed6-4bbf-b46c-cec2ea15762d\",\"versionNo\":1,\"issuedAt\":null,\"expiresAt\":null,\"verificationStatus\":\"VERIFIED\",\"verifiedBy\":\"4f3b51d1-1454-468e-8580-7d361868cce2\",\"extractedDataJson\":{\"fields\":{\"name\":\"Fulano de …"
+    },
+    {
+      "em": "2026-11-12T10:20:56.175Z",
+      "requisicao": "PATCH /api/v1/people/3760a2e9-3e74-441a-a19b-43afded6916b/documents/56deeb09-45a3-4f9e-95a2-60184950bd39",
+      "corpoEnviado": {
+        "fileId": "1a59695f-3efe-4b04-9b4e-32605a974f38",
+        "verificationStatus": "VERIFIED"
+      },
+      "status": 422,
+      "codigo": "PERSON_DOCUMENT_REPLACE_FILE_WITH_STATUS",
+      "resposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DOCUMENT_REPLACE_FILE_WITH_STATUS",
+          "message": "Ao trocar o arquivo, a nova versão nasce pendente. Troque o arquivo primeiro e confirme (verifique) a nova versão em seguida.",
+          "traceId": "e6f9bea2-7889-4dab-b861-530fc0a04904"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.284Z",
+      "requisicao": "PATCH /api/v1/people/3760a2e9-3e74-441a-a19b-43afded6916b/documents/a964b2a2-fbfd-4939-a12f-a18dafedeea3",
+      "corpoEnviado": {
+        "verificationStatus": "VERIFIED"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "a964b2a2-fbfd-4939-a12f-a18dafedeea3",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personId": "3760a2e9-3e74-441a-a19b-43afded6916b",
+          "documentType": "IR",
+          "fileId": "1a59695f-3efe-4b04-9b4e-32605a974f38",
+          "versionNo": 2,
+          "issuedAt": null,
+          "expiresAt": null,
+          "verificationStatus": "VERIFIED",
+          "verifiedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "extractedDataJson": {
+            "fields": {
+              "name": "Fulano de Tal",
+              "taxId": "52998224725",
+              "income": 9100
+            },
+            "antivirus": {
+              "clean": true,
+              "engine": "sandbox",
+              "scannedAt": "2026-11-12T10:20:55.983Z",
+              "checksumSha256": "cf76ac6f469a2928ba1f20b1540723e07059bc35e5aece3a7ceb6e3ceb78cafe"
+            },
+            "illegible": false,
+            "confidence": 0.95,
+            "sourceFileId": "1a59695f-3efe-4b04-9b4e-32605a974f38",
+            "extractionMeta": {
+              "sandbox": true,
+              "documentType": "IR"
+            }
+          },
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:55.993Z",
+          "updated_at": "2026-11-12T10:20:56.195Z",
+          "deleted_at": null,
+          "person_id": "3760a2e9-3e74-441a-a19b-43afded6916b"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.537Z",
+      "requisicao": "POST /api/v1/people",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Troca HTTP 179447885629489806",
+        "allowDuplicate": true
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "b237b3cd-9da0-4aec-92cf-662e244e87ea",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personType": "PF",
+          "legalName": "Troca HTTP 179447885629489806",
+          "preferredName": null,
+          "taxIdNormalized": null,
+          "taxIdNormalizedHash": null,
+          "birthOrFoundationDate": null,
+          "status": "ACTIVE",
+          "mergedIntoId": null,
+          "riskFlagsJson": null,
+          "lockVersion": 0,
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:56.307Z",
+          "updated_at": "2026-11-12T10:20:56.307Z",
+          "deleted_at": null,
+          "merged_into_id": null,
+          "contacts": [],
+          "documents": [],
+          "roles": [],
+          "addresses": [],
+          "dataQuality": {
+            "score": 17,
+            "missing": [
+              {
+                "key": "taxId",
+                "label": "CPF/CNPJ informado"
+              },
+              {
+                "key": "contact",
+                "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+              },
+              {
+                "key": "address",
+                "label": "Ao menos um endereço cadastrado"
+              },
+              {
+                "key": "document",
+                "label": "Ao menos um documento anexado"
+              },
+              {
+                "key": "role",
+                "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+              }
+            ],
+            "revisao": []
+          },
+          "vinculo": {
+            "origem": "PROPRIA"
+          }
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.634Z",
+      "requisicao": "POST /api/v1/people/b237b3cd-9da0-4aec-92cf-662e244e87ea/documents/ingest",
+      "corpoEnviado": {
+        "fileName": "ir-2025.pdf",
+        "mimeType": "application/pdf",
+        "documentType": "IR",
+        "contentBase64": "eyJfX21vY2tPY3IiOnsiZmllbGRzIjp7Im5hbWUiOiJGdWxhbm8gZGUgVGFsIiwidGF4SWQiOiI1Mjk5ODIyNDcyNSIsImluY29tZSI6NTAwMH0sImNvbmZpZGVuY2UiOjAuOTV9fQ=="
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "document": {
+            "id": "0aa9109d-6b0e-49b5-b4c0-a54e5d83e549",
+            "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+            "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+            "personId": "b237b3cd-9da0-4aec-92cf-662e244e87ea",
+            "documentType": "IR",
+            "fileId": "af5ce63e-2a6c-4100-921e-f2b5c450c4d5",
+            "versionNo": 1,
+            "verificationStatus": "PENDING",
+            "extractedDataJson": {
+              "fields": {
+                "name": "Fulano de Tal",
+                "taxId": "52998224725",
+                "income": 5000
+              },
+              "engines": {
+                "leitura": "LABORATORIO",
+                "antivirus": "LABORATORIO"
+              },
+              "illegible": false,
+              "confidence": 0.95,
+              "sourceFileId": "af5ce63e-2a6c-4100-921e-f2b5c450c4d5",
+              "classification": {
+                "tipo": "IR",
+                "metodo": "DECLARADO",
+                "porNome": null,
+                "porTexto": null,
+                "declarado": "IR",
+                "pendencia": null,
+                "expressoes": []
+              },
+              "extractionMeta": {
+                "sandbox": true,
+                "documentType": "IR"
+              }
+            },
+            "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updated_at": "2026-11-12T10:20:56.592Z",
+            "created_at": "2026-11-12T10:20:56.592Z",
+            "issuedAt": null,
+            "expiresAt": null,
+            "verifiedBy": null,
+            "deletedBy": null,
+            "deleted_at": null
+          },
+          "fileId": "af5ce63e-2a6c-4100-921e-f2b5c450c4d5",
+          "pendingTask": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.713Z",
+      "requisicao": "PATCH /api/v1/people/b237b3cd-9da0-4aec-92cf-662e244e87ea/documents/0aa9109d-6b0e-49b5-b4c0-a54e5d83e549",
+      "corpoEnviado": {
+        "verificationStatus": "VERIFIED"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "0aa9109d-6b0e-49b5-b4c0-a54e5d83e549",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personId": "b237b3cd-9da0-4aec-92cf-662e244e87ea",
+          "documentType": "IR",
+          "fileId": "af5ce63e-2a6c-4100-921e-f2b5c450c4d5",
+          "versionNo": 1,
+          "issuedAt": null,
+          "expiresAt": null,
+          "verificationStatus": "VERIFIED",
+          "verifiedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "extractedDataJson": {
+            "fields": {
+              "name": "Fulano de Tal",
+              "taxId": "52998224725",
+              "income": 5000
+            },
+            "engines": {
+              "leitura": "LABORATORIO",
+              "antivirus": "LABORATORIO"
+            },
+            "illegible": false,
+            "confidence": 0.95,
+            "sourceFileId": "af5ce63e-2a6c-4100-921e-f2b5c450c4d5",
+            "classification": {
+              "tipo": "IR",
+              "metodo": "DECLARADO",
+              "porNome": null,
+              "porTexto": null,
+              "declarado": "IR",
+              "pendencia": null,
+              "expressoes": []
+            },
+            "extractionMeta": {
+              "sandbox": true,
+              "documentType": "IR"
+            }
+          },
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:56.592Z",
+          "updated_at": "2026-11-12T10:20:56.648Z",
+          "deleted_at": null,
+          "person_id": "b237b3cd-9da0-4aec-92cf-662e244e87ea"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.848Z",
+      "requisicao": "POST /api/v1/files",
+      "corpoEnviado": {
+        "fileName": "ir-2025-retificada.pdf",
+        "mimeType": "application/pdf",
+        "contentBase64": "JVBERi0xLjQgZGlnaXRhbGl6YWNhbyBib3JyYWRhIHNlbSB0ZXh0bw==",
+        "category": "people-documents"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "classification": "INTERNAL",
+          "id": "d8ed6132-6a4e-4f59-bc37-48f5e1610761",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "storageKey": "people-documents/dd6f084d-2a06-467e-837f-eb6a8d5bad48/0904cdf7-43aa-44d4-bacc-b2741bb6fa11-ir-2025-retificada.pdf",
+          "fileName": "ir-2025-retificada.pdf",
+          "mimeType": "application/pdf",
+          "sizeBytes": 40,
+          "checksumSha256": "5bf088ef95573f584cdcff2cd04cd1705b8049582dc7c010234a70aa4e120b9e",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-12T10:20:56.776Z",
+          "uploadedByUserId": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updated_at": "2026-11-12T10:20:56.776Z",
+          "created_at": "2026-11-12T10:20:56.776Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.940Z",
+      "requisicao": "PATCH /api/v1/people/b237b3cd-9da0-4aec-92cf-662e244e87ea/documents/0aa9109d-6b0e-49b5-b4c0-a54e5d83e549",
+      "corpoEnviado": {
+        "fileId": "d8ed6132-6a4e-4f59-bc37-48f5e1610761"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "eb6fe9d0-aa14-4aeb-aad2-cd142d39d709",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personId": "b237b3cd-9da0-4aec-92cf-662e244e87ea",
+          "documentType": "IR",
+          "fileId": "d8ed6132-6a4e-4f59-bc37-48f5e1610761",
+          "versionNo": 2,
+          "issuedAt": null,
+          "expiresAt": null,
+          "verificationStatus": "PENDING",
+          "extractedDataJson": {
+            "fields": {},
+            "antivirus": {
+              "clean": true,
+              "engine": "sandbox",
+              "scannedAt": "2026-11-12T10:20:56.893Z",
+              "checksumSha256": "5bf088ef95573f584cdcff2cd04cd1705b8049582dc7c010234a70aa4e120b9e"
+            },
+            "illegible": true,
+            "confidence": 0,
+            "sourceFileId": "d8ed6132-6a4e-4f59-bc37-48f5e1610761",
+            "extractionMeta": {
+              "sandbox": true,
+              "documentType": "IR"
+            }
+          },
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updated_at": "2026-11-12T10:20:56.895Z",
+          "created_at": "2026-11-12T10:20:56.895Z",
+          "verifiedBy": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:56.972Z",
+      "requisicao": "PATCH /api/v1/people/b237b3cd-9da0-4aec-92cf-662e244e87ea/documents/eb6fe9d0-aa14-4aeb-aad2-cd142d39d709",
+      "corpoEnviado": {
+        "verificationStatus": "VERIFIED"
+      },
+      "status": 422,
+      "codigo": "PERSON_DOCUMENT_ILLEGIBLE",
+      "resposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DOCUMENT_ILLEGIBLE",
+          "message": "A leitura automática não conseguiu ler este documento. Recuse o documento e peça um arquivo legível antes de verificar.",
+          "traceId": "78806650-1aac-4710-b66a-c0d254fd04a5"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.047Z",
+      "requisicao": "GET /api/v1/people/b237b3cd-9da0-4aec-92cf-662e244e87ea/documents",
+      "corpoEnviado": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": "{\"success\":true,\"data\":[{\"id\":\"eb6fe9d0-aa14-4aeb-aad2-cd142d39d709\",\"groupId\":\"dd6f084d-2a06-467e-837f-eb6a8d5bad48\",\"companyId\":\"0fbd2b40-bf37-4769-ac27-78ed203f3788\",\"personId\":\"b237b3cd-9da0-4aec-92cf-662e244e87ea\",\"documentType\":\"IR\",\"fileId\":\"d8ed6132-6a4e-4f59-bc37-48f5e1610761\",\"versionNo\":2,\"issuedAt\":null,\"expiresAt\":null,\"verificationStatus\":\"PENDING\",\"verifiedBy\":null,\"extractedDataJson\":{\"fields\":{},\"antivirus\":{\"clean\":true,\"engine\":\"sandbox\",\"scannedAt\":\"2026-11-12T10:20:56.893Z\",\"checksumSha256\":\"5bf088ef95573f584cdcff2cd04cd1705b8049582dc7c010234a70aa4e120b9e\"},\"illegible\":true,\"confidence\":0,\"sourceFileId\":\"d8ed6132-6a4e-4f59-bc37-48f5e1610761\",\"extractionMeta\":{\"sandbox\":true,\"documentType\":\"IR\"}},\"createdBy\":\"4f3b51d1-1454-468e-8580-7d361868cce2\",\"updatedBy\":\"4f3b51d1-1454-468e-8580-7d361868cce2\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:56.895Z\",\"updated_at\":\"2026-11-12T10:20:56.895Z\",\"deleted_at\":null,\"person_id\":\"b237b3cd-9da0-4aec-92cf-662e244e87ea\"},{\"id\":\"0aa9109d-6b0e-49b5-b4c0-a54e5d83e549\",\"groupId\":\"dd6f084d-2a06-467e-837f-eb6a8d5bad48\",\"companyId\":\"0fbd2b40-bf37-4769-ac27-78ed203f3788\",\"personId\":\"b237b3cd-9da0-4aec-92cf-662e244e87ea\",\"documentType\":\"IR\",\"fileId\":\"af5ce63e-2a6c-4100-921e-f2b5c450c4d5\",\"versionNo\":1,\"issuedAt\":null,\"expiresAt\":null,\"verificationStatus\":\"VERIFIED\",\"verifiedBy\":\"4f3b51d1-1454-468e-8580-7d361868cce2\",\"extractedDataJson\":{\"fields\":{\"name\":\"Fulano de Tal\",\"taxId\":\"52998224725\",\"income\":5000},\"engines\":{\"leitura\"…"
+    },
+    {
+      "em": "2026-11-12T10:20:57.201Z",
+      "requisicao": "POST /api/v1/people",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Troca HTTP 179447885704733087",
+        "allowDuplicate": true
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "fcb0feb7-c2c1-4aad-9733-49a617d33ee8",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personType": "PF",
+          "legalName": "Troca HTTP 179447885704733087",
+          "preferredName": null,
+          "taxIdNormalized": null,
+          "taxIdNormalizedHash": null,
+          "birthOrFoundationDate": null,
+          "status": "ACTIVE",
+          "mergedIntoId": null,
+          "riskFlagsJson": null,
+          "lockVersion": 0,
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:57.060Z",
+          "updated_at": "2026-11-12T10:20:57.060Z",
+          "deleted_at": null,
+          "merged_into_id": null,
+          "contacts": [],
+          "documents": [],
+          "roles": [],
+          "addresses": [],
+          "dataQuality": {
+            "score": 17,
+            "missing": [
+              {
+                "key": "taxId",
+                "label": "CPF/CNPJ informado"
+              },
+              {
+                "key": "contact",
+                "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+              },
+              {
+                "key": "address",
+                "label": "Ao menos um endereço cadastrado"
+              },
+              {
+                "key": "document",
+                "label": "Ao menos um documento anexado"
+              },
+              {
+                "key": "role",
+                "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+              }
+            ],
+            "revisao": []
+          },
+          "vinculo": {
+            "origem": "PROPRIA"
+          }
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.309Z",
+      "requisicao": "POST /api/v1/people/fcb0feb7-c2c1-4aad-9733-49a617d33ee8/documents/ingest",
+      "corpoEnviado": {
+        "fileName": "ir-2025.pdf",
+        "mimeType": "application/pdf",
+        "documentType": "IR",
+        "contentBase64": "eyJfX21vY2tPY3IiOnsiZmllbGRzIjp7Im5hbWUiOiJGdWxhbm8gZGUgVGFsIiwidGF4SWQiOiI1Mjk5ODIyNDcyNSIsImluY29tZSI6NTAwMH0sImNvbmZpZGVuY2UiOjAuOTV9fQ=="
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "document": {
+            "id": "0694cd28-1f00-4599-b029-22b3371d9edc",
+            "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+            "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+            "personId": "fcb0feb7-c2c1-4aad-9733-49a617d33ee8",
+            "documentType": "IR",
+            "fileId": "517ad672-9558-4a11-88e7-e4c51b945b8d",
+            "versionNo": 1,
+            "verificationStatus": "PENDING",
+            "extractedDataJson": {
+              "fields": {
+                "name": "Fulano de Tal",
+                "taxId": "52998224725",
+                "income": 5000
+              },
+              "engines": {
+                "leitura": "LABORATORIO",
+                "antivirus": "LABORATORIO"
+              },
+              "illegible": false,
+              "confidence": 0.95,
+              "sourceFileId": "517ad672-9558-4a11-88e7-e4c51b945b8d",
+              "classification": {
+                "tipo": "IR",
+                "metodo": "DECLARADO",
+                "porNome": null,
+                "porTexto": null,
+                "declarado": "IR",
+                "pendencia": null,
+                "expressoes": []
+              },
+              "extractionMeta": {
+                "sandbox": true,
+                "documentType": "IR"
+              }
+            },
+            "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updated_at": "2026-11-12T10:20:57.241Z",
+            "created_at": "2026-11-12T10:20:57.241Z",
+            "issuedAt": null,
+            "expiresAt": null,
+            "verifiedBy": null,
+            "deletedBy": null,
+            "deleted_at": null
+          },
+          "fileId": "517ad672-9558-4a11-88e7-e4c51b945b8d",
+          "pendingTask": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.356Z",
+      "requisicao": "PATCH /api/v1/people/fcb0feb7-c2c1-4aad-9733-49a617d33ee8/documents/0694cd28-1f00-4599-b029-22b3371d9edc",
+      "corpoEnviado": {
+        "verificationStatus": "VERIFIED"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "0694cd28-1f00-4599-b029-22b3371d9edc",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personId": "fcb0feb7-c2c1-4aad-9733-49a617d33ee8",
+          "documentType": "IR",
+          "fileId": "517ad672-9558-4a11-88e7-e4c51b945b8d",
+          "versionNo": 1,
+          "issuedAt": null,
+          "expiresAt": null,
+          "verificationStatus": "VERIFIED",
+          "verifiedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "extractedDataJson": {
+            "fields": {
+              "name": "Fulano de Tal",
+              "taxId": "52998224725",
+              "income": 5000
+            },
+            "engines": {
+              "leitura": "LABORATORIO",
+              "antivirus": "LABORATORIO"
+            },
+            "illegible": false,
+            "confidence": 0.95,
+            "sourceFileId": "517ad672-9558-4a11-88e7-e4c51b945b8d",
+            "classification": {
+              "tipo": "IR",
+              "metodo": "DECLARADO",
+              "porNome": null,
+              "porTexto": null,
+              "declarado": "IR",
+              "pendencia": null,
+              "expressoes": []
+            },
+            "extractionMeta": {
+              "sandbox": true,
+              "documentType": "IR"
+            }
+          },
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:57.241Z",
+          "updated_at": "2026-11-12T10:20:57.317Z",
+          "deleted_at": null,
+          "person_id": "fcb0feb7-c2c1-4aad-9733-49a617d33ee8"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.372Z",
+      "requisicao": "POST /api/v1/files",
+      "corpoEnviado": {
+        "fileName": "virus.pdf",
+        "mimeType": "application/pdf",
+        "contentBase64": "WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo=",
+        "category": "people-documents"
+      },
+      "status": 422,
+      "codigo": "FILE_UPLOAD_MALWARE_DETECTED",
+      "resposta": {
+        "success": false,
+        "error": {
+          "code": "FILE_UPLOAD_MALWARE_DETECTED",
+          "message": "Arquivo rejeitado pelo antivírus: assinatura de malware detectada.",
+          "details": {
+            "signature": "EICAR-STANDARD-ANTIVIRUS-TEST-FILE"
+          },
+          "traceId": "7573c195-0d9f-4162-bfb4-e2c67c7e4092"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.411Z",
+      "requisicao": "PATCH /api/v1/people/fcb0feb7-c2c1-4aad-9733-49a617d33ee8/documents/0694cd28-1f00-4599-b029-22b3371d9edc",
+      "corpoEnviado": {
+        "fileId": "8c04ee8c-2be1-4e54-8851-069fff3140c5"
+      },
+      "status": 422,
+      "codigo": "PERSON_DOCUMENT_FILE_MALWARE_DETECTED",
+      "resposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DOCUMENT_FILE_MALWARE_DETECTED",
+          "message": "O arquivo novo foi rejeitado pelo antivírus: assinatura de malware detectada. A troca não foi feita e o documento original continua valendo.",
+          "details": {
+            "signature": "EICAR-STANDARD-ANTIVIRUS-TEST-FILE"
+          },
+          "traceId": "be8b89cf-2e1e-4001-9406-76c02ed4615e"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.439Z",
+      "requisicao": "PATCH /api/v1/people/fcb0feb7-c2c1-4aad-9733-49a617d33ee8/documents/0694cd28-1f00-4599-b029-22b3371d9edc",
+      "corpoEnviado": {
+        "fileId": "78311e44-5445-465f-82a8-b17edeec48cc"
+      },
+      "status": 422,
+      "codigo": "PERSON_DOCUMENT_FILE_NOT_SCANNED",
+      "resposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DOCUMENT_FILE_NOT_SCANNED",
+          "message": "O arquivo novo não pode ser examinado pelo antivírus (conteúdo indisponível) e não foi liberado antes. A troca não foi feita.",
+          "traceId": "16ccea55-351b-4efc-acad-67b31c449a15"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.480Z",
+      "requisicao": "GET /api/v1/people/fcb0feb7-c2c1-4aad-9733-49a617d33ee8/documents",
+      "corpoEnviado": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "0694cd28-1f00-4599-b029-22b3371d9edc",
+            "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+            "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+            "personId": "fcb0feb7-c2c1-4aad-9733-49a617d33ee8",
+            "documentType": "IR",
+            "fileId": "517ad672-9558-4a11-88e7-e4c51b945b8d",
+            "versionNo": 1,
+            "issuedAt": null,
+            "expiresAt": null,
+            "verificationStatus": "VERIFIED",
+            "verifiedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "extractedDataJson": {
+              "fields": {
+                "name": "Fulano de Tal",
+                "taxId": "52998224725",
+                "income": 5000
+              },
+              "engines": {
+                "leitura": "LABORATORIO",
+                "antivirus": "LABORATORIO"
+              },
+              "illegible": false,
+              "confidence": 0.95,
+              "sourceFileId": "517ad672-9558-4a11-88e7-e4c51b945b8d",
+              "classification": {
+                "tipo": "IR",
+                "metodo": "DECLARADO",
+                "porNome": null,
+                "porTexto": null,
+                "declarado": "IR",
+                "pendencia": null,
+                "expressoes": []
+              },
+              "extractionMeta": {
+                "sandbox": true,
+                "documentType": "IR"
+              }
+            },
+            "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "deletedBy": null,
+            "created_at": "2026-11-12T10:20:57.241Z",
+            "updated_at": "2026-11-12T10:20:57.317Z",
+            "deleted_at": null,
+            "person_id": "fcb0feb7-c2c1-4aad-9733-49a617d33ee8"
+          }
+        ]
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.615Z",
+      "requisicao": "POST /api/v1/people",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Troca HTTP 179447885748021344",
+        "allowDuplicate": true
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "886f4aee-0522-4f90-8895-5ffcdd2d153f",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personType": "PF",
+          "legalName": "Troca HTTP 179447885748021344",
+          "preferredName": null,
+          "taxIdNormalized": null,
+          "taxIdNormalizedHash": null,
+          "birthOrFoundationDate": null,
+          "status": "ACTIVE",
+          "mergedIntoId": null,
+          "riskFlagsJson": null,
+          "lockVersion": 0,
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:57.490Z",
+          "updated_at": "2026-11-12T10:20:57.490Z",
+          "deleted_at": null,
+          "merged_into_id": null,
+          "contacts": [],
+          "documents": [],
+          "roles": [],
+          "addresses": [],
+          "dataQuality": {
+            "score": 17,
+            "missing": [
+              {
+                "key": "taxId",
+                "label": "CPF/CNPJ informado"
+              },
+              {
+                "key": "contact",
+                "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+              },
+              {
+                "key": "address",
+                "label": "Ao menos um endereço cadastrado"
+              },
+              {
+                "key": "document",
+                "label": "Ao menos um documento anexado"
+              },
+              {
+                "key": "role",
+                "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+              }
+            ],
+            "revisao": []
+          },
+          "vinculo": {
+            "origem": "PROPRIA"
+          }
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.684Z",
+      "requisicao": "POST /api/v1/people/886f4aee-0522-4f90-8895-5ffcdd2d153f/documents/ingest",
+      "corpoEnviado": {
+        "fileName": "ir-2025.pdf",
+        "mimeType": "application/pdf",
+        "documentType": "IR",
+        "contentBase64": "eyJfX21vY2tPY3IiOnsiZmllbGRzIjp7Im5hbWUiOiJGdWxhbm8gZGUgVGFsIiwidGF4SWQiOiI1Mjk5ODIyNDcyNSIsImluY29tZSI6NTAwMH0sImNvbmZpZGVuY2UiOjAuOTV9fQ=="
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "document": {
+            "id": "7a8c9bc6-56d6-4461-bbfa-8be236b05e31",
+            "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+            "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+            "personId": "886f4aee-0522-4f90-8895-5ffcdd2d153f",
+            "documentType": "IR",
+            "fileId": "1e9ab559-dddb-4520-85f4-2156737e2830",
+            "versionNo": 1,
+            "verificationStatus": "PENDING",
+            "extractedDataJson": {
+              "fields": {
+                "name": "Fulano de Tal",
+                "taxId": "52998224725",
+                "income": 5000
+              },
+              "engines": {
+                "leitura": "LABORATORIO",
+                "antivirus": "LABORATORIO"
+              },
+              "illegible": false,
+              "confidence": 0.95,
+              "sourceFileId": "1e9ab559-dddb-4520-85f4-2156737e2830",
+              "classification": {
+                "tipo": "IR",
+                "metodo": "DECLARADO",
+                "porNome": null,
+                "porTexto": null,
+                "declarado": "IR",
+                "pendencia": null,
+                "expressoes": []
+              },
+              "extractionMeta": {
+                "sandbox": true,
+                "documentType": "IR"
+              }
+            },
+            "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updated_at": "2026-11-12T10:20:57.649Z",
+            "created_at": "2026-11-12T10:20:57.649Z",
+            "issuedAt": null,
+            "expiresAt": null,
+            "verifiedBy": null,
+            "deletedBy": null,
+            "deleted_at": null
+          },
+          "fileId": "1e9ab559-dddb-4520-85f4-2156737e2830",
+          "pendingTask": null
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.807Z",
+      "requisicao": "PATCH /api/v1/people/886f4aee-0522-4f90-8895-5ffcdd2d153f/documents/7a8c9bc6-56d6-4461-bbfa-8be236b05e31",
+      "corpoEnviado": {
+        "verificationStatus": "VERIFIED"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": {
+          "id": "7a8c9bc6-56d6-4461-bbfa-8be236b05e31",
+          "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+          "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+          "personId": "886f4aee-0522-4f90-8895-5ffcdd2d153f",
+          "documentType": "IR",
+          "fileId": "1e9ab559-dddb-4520-85f4-2156737e2830",
+          "versionNo": 1,
+          "issuedAt": null,
+          "expiresAt": null,
+          "verificationStatus": "VERIFIED",
+          "verifiedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "extractedDataJson": {
+            "fields": {
+              "name": "Fulano de Tal",
+              "taxId": "52998224725",
+              "income": 5000
+            },
+            "engines": {
+              "leitura": "LABORATORIO",
+              "antivirus": "LABORATORIO"
+            },
+            "illegible": false,
+            "confidence": 0.95,
+            "sourceFileId": "1e9ab559-dddb-4520-85f4-2156737e2830",
+            "classification": {
+              "tipo": "IR",
+              "metodo": "DECLARADO",
+              "porNome": null,
+              "porTexto": null,
+              "declarado": "IR",
+              "pendencia": null,
+              "expressoes": []
+            },
+            "extractionMeta": {
+              "sandbox": true,
+              "documentType": "IR"
+            }
+          },
+          "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+          "deletedBy": null,
+          "created_at": "2026-11-12T10:20:57.649Z",
+          "updated_at": "2026-11-12T10:20:57.697Z",
+          "deleted_at": null,
+          "person_id": "886f4aee-0522-4f90-8895-5ffcdd2d153f"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.818Z",
+      "requisicao": "PATCH /api/v1/people/886f4aee-0522-4f90-8895-5ffcdd2d153f/documents/7a8c9bc6-56d6-4461-bbfa-8be236b05e31",
+      "corpoEnviado": {
+        "fileId": "00000000-0000-4000-8000-000000000000"
+      },
+      "status": 400,
+      "codigo": "PERSON_DOCUMENT_FILE_NOT_FOUND",
+      "resposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DOCUMENT_FILE_NOT_FOUND",
+          "message": "O arquivo informado não existe ou não pertence a esta empresa.",
+          "traceId": "dcd306a7-93e1-46a1-8d7d-85ba85f72834"
+        }
+      }
+    },
+    {
+      "em": "2026-11-12T10:20:57.884Z",
+      "requisicao": "GET /api/v1/people/886f4aee-0522-4f90-8895-5ffcdd2d153f/documents",
+      "corpoEnviado": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "7a8c9bc6-56d6-4461-bbfa-8be236b05e31",
+            "groupId": "dd6f084d-2a06-467e-837f-eb6a8d5bad48",
+            "companyId": "0fbd2b40-bf37-4769-ac27-78ed203f3788",
+            "personId": "886f4aee-0522-4f90-8895-5ffcdd2d153f",
+            "documentType": "IR",
+            "fileId": "1e9ab559-dddb-4520-85f4-2156737e2830",
+            "versionNo": 1,
+            "issuedAt": null,
+            "expiresAt": null,
+            "verificationStatus": "VERIFIED",
+            "verifiedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "extractedDataJson": {
+              "fields": {
+                "name": "Fulano de Tal",
+                "taxId": "52998224725",
+                "income": 5000
+              },
+              "engines": {
+                "leitura": "LABORATORIO",
+                "antivirus": "LABORATORIO"
+              },
+              "illegible": false,
+              "confidence": 0.95,
+              "sourceFileId": "1e9ab559-dddb-4520-85f4-2156737e2830",
+              "classification": {
+                "tipo": "IR",
+                "metodo": "DECLARADO",
+                "porNome": null,
+                "porTexto": null,
+                "declarado": "IR",
+                "pendencia": null,
+                "expressoes": []
+              },
+              "extractionMeta": {
+                "sandbox": true,
+                "documentType": "IR"
+              }
+            },
+            "createdBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "updatedBy": "4f3b51d1-1454-468e-8580-7d361868cce2",
+            "deletedBy": null,
+            "created_at": "2026-11-12T10:20:57.649Z",
+            "updated_at": "2026-11-12T10:20:57.697Z",
+            "deleted_at": null,
+            "person_id": "886f4aee-0522-4f90-8895-5ffcdd2d153f"
+          }
+        ]
+      }
+    }
+  ]
+}

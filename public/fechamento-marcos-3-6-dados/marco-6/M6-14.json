@@ -1,0 +1,395 @@
+{
+  "id": "M6-14",
+  "requisito": "Tabela loss_records. \"Perda/quebra exige loss_record, motivo e aprovação conforme valor\" (§8).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.loss_records (src/models/LossRecord.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/materiais: registrar perda",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "M6-29: perda de material acima da alçada exige aprovação explícita",
+      "resultado": "passou",
+      "duracaoMs": 50,
+      "executadoEm": "2026-11-11T00:14:18.804Z"
+    },
+    {
+      "arquivo": "test/construction.siteReturns.test.js",
+      "nome": "M6-29/M6-99: perda aprovada entra no desperdício; o estorno (devolução da perda) é append-only e zera o desperdício",
+      "resultado": "passou",
+      "duracaoMs": 366,
+      "executadoEm": "2026-11-11T00:14:34.531Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H077",
+      "H085"
+    ],
+    "resumo": [
+      "H077 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/loss-records → 201",
+      "H085 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/loss-records → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:14.002Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H077",
+      "requisitos": [
+        "M6-14",
+        "M6-29"
+      ],
+      "cenario": "Perda de 8 sacos (R$ 308,00) dentro da alçada: aprovada automaticamente",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/loss-records",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "materialDescription": "Cimento empedrado",
+        "quantity": 8,
+        "estimatedValue": 308,
+        "reason": "Umidade no depósito",
+        "idempotencyKey": "loss-a-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 28,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "9bb26ea4-e15f-40f3-91ab-0ec761efb6ec",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "materialDescription": "Cimento empedrado",
+          "quantity": "8.000",
+          "estimatedValue": "308.00",
+          "reason": "Umidade no depósito",
+          "movementType": "LOSS",
+          "status": "APPROVED",
+          "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approvedAt": "2026-11-11T00:12:13.993Z",
+          "idempotencyKey": "loss-a-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:13.993Z",
+          "created_at": "2026-11-11T00:12:13.993Z",
+          "relatedLossRecordId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:14.002Z"
+    },
+    {
+      "id": "H085",
+      "requisitos": [
+        "M6-14",
+        "M6-53"
+      ],
+      "cenario": "Registros de perda da obra",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/loss-records",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 190,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "f832a821-7b80-4373-a390-7acfa3a8535c",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "materialDescription": "Vergalhão 10 mm",
+            "quantity": "40.000",
+            "estimatedValue": "5000.00",
+            "reason": "Furto no canteiro",
+            "movementType": "LOSS",
+            "relatedLossRecordId": null,
+            "status": "APPROVED",
+            "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "approvedAt": "2026-11-11T00:12:14.740Z",
+            "idempotencyKey": "loss-b-c4fcd6",
+            "lockVersion": 1,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:14.704Z",
+            "updated_at": "2026-11-11T00:12:14.740Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "approved_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "related_loss_record_id": null
+          },
+          {
+            "id": "59f2c1ad-de81-411f-a755-52a1697b9bd6",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "materialDescription": "Cimento empedrado",
+            "quantity": "8.000",
+            "estimatedValue": "308.00",
+            "reason": "Devolução de \"Cimento empedrado\" (perda original de 8 un.).",
+            "movementType": "RETURN",
+            "relatedLossRecordId": "9bb26ea4-e15f-40f3-91ab-0ec761efb6ec",
+            "status": "APPROVED",
+            "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "approvedAt": "2026-11-11T00:12:14.233Z",
+            "idempotencyKey": "loss-ret-c4fcd6",
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:14.233Z",
+            "updated_at": "2026-11-11T00:12:14.233Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "approved_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "related_loss_record_id": "9bb26ea4-e15f-40f3-91ab-0ec761efb6ec"
+          },
+          {
+            "id": "9bb26ea4-e15f-40f3-91ab-0ec761efb6ec",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "materialDescription": "Cimento empedrado",
+            "quantity": "8.000",
+            "estimatedValue": "308.00",
+            "reason": "Umidade no depósito",
+            "movementType": "LOSS",
+            "relatedLossRecordId": null,
+            "status": "APPROVED",
+            "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "approvedAt": "2026-11-11T00:12:13.993Z",
+            "idempotencyKey": "loss-a-c4fcd6",
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:13.993Z",
+            "updated_at": "2026-11-11T00:12:13.993Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "approved_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "related_loss_record_id": null
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:14.937Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    },
+    {
+      "id": "C013",
+      "requisitos": [
+        "M6-14",
+        "M6-29",
+        "M6-60"
+      ],
+      "descricao": "Perdas: LOSS original preservada + estorno RETURN vinculado; perda acima da alçada aprovada por pessoa",
+      "sql": "SELECT movement_type, status, quantity, estimated_value, related_loss_record_id IS NOT NULL AS estorno, approved_by_user_id IS NOT NULL AS aprovada_por_pessoa FROM construction.loss_records WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "movement_type": "LOSS",
+          "status": "APPROVED",
+          "quantity": "8.000",
+          "estimated_value": "308.00",
+          "estorno": false,
+          "aprovada_por_pessoa": true
+        },
+        {
+          "movement_type": "RETURN",
+          "status": "APPROVED",
+          "quantity": "8.000",
+          "estimated_value": "308.00",
+          "estorno": true,
+          "aprovada_por_pessoa": true
+        },
+        {
+          "movement_type": "LOSS",
+          "status": "APPROVED",
+          "quantity": "40.000",
+          "estimated_value": "5000.00",
+          "estorno": false,
+          "aprovada_por_pessoa": true
+        }
+      ],
+      "invariante": "2 LOSS + 1 RETURN vinculado",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.196Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.381Z"
+}

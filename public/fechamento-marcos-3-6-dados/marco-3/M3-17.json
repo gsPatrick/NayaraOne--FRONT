@@ -1,0 +1,64 @@
+{
+  "linha": "M3-17",
+  "capturadoEm": "2026-11-11T11:10:36.873Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "painel do gestor",
+      "pedido": "GET /api/v1/crm/dashboard",
+      "corpo": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "generatedAt": "2026-11-11T11:10:36.868Z",
+        "opportunities": {
+          "total": 5,
+          "open": 2,
+          "byStage": {
+            "LOST": 1,
+            "NEW": 1,
+            "NURTURE": 1,
+            "WON": 2
+          },
+          "closed": {
+            "won": 2,
+            "lost": 1,
+            "withdrawn": 1,
+            "total": 3
+          }
+        },
+        "conversionRate": 0.6667,
+        "topLostReasons": [
+          {
+            "reason": "CLIENT_GAVE_UP",
+            "total": 1,
+            "inEnum": true
+          }
+        ],
+        "proposals": {
+          "total": 2,
+          "byStatus": {
+            "ACCEPTED": 1,
+            "DRAFT": 1
+          },
+          "acceptedValue": 620000
+        },
+        "staleOpportunities": {
+          "count": 0,
+          "items": []
+        },
+        "avgTimeInStageByStageDays": {
+          "NEW": {
+            "avgDays": 0,
+            "total": 1
+          },
+          "NURTURE": {
+            "avgDays": 0,
+            "total": 1
+          }
+        }
+      },
+      "em": "2026-11-11T11:10:36.870Z"
+    }
+  ]
+}

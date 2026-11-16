@@ -1,0 +1,550 @@
+{
+ "id": "M5-A0103-9d1f1e",
+ "secao": "P1 > 14. Processos jurídicos",
+ "linhaCaderno": 246,
+ "requisito": "• Documentos e provas ligados por file_links/evidence.",
+ "demandas": "M5-D033",
+ "implementacao": "src/modules/legal/cases/legalCaseDocuments.service.js linkCaseDocument (people.file_links, related_entity_type LegalCase) + rotas POST/GET /legal/cases/:id/documents; src/modules/legal/cases/evidence-package.service.js assembleManifestFromContractAttachments inclui os documentos do processo; src/features/files/fileAccess.service.js LegalCase -> legal:read",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: documento ligado por file_links entra no dossiê automático com hash, nome, data e origem do arquivo; arquivo inexistente é 404 (§14/§16)",
+   "status": "pass",
+   "ms": 42.003,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JR rotas: partes, documentos e linha do tempo do processo pela API; sem legal:create 403; processo inexistente/de outra empresa 404 (§14)",
+   "status": "pass",
+   "ms": 665.604,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/files.accessControl.test.js",
+   "nome": "I2: cada entityType de file_links mapeado dá só a leitura do próprio módulo; tipo desconhecido fecha",
+   "status": "pass",
+   "ms": 136.79,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "AUD-016: createEvidencePackageFromContractAttachments inclui documento da versão, checklist satisfeito e mídia de vistoria — nada esquecido",
+   "status": "pass",
+   "ms": 98.718,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-P08",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=a2e83252-6304-44ea-ade0-d476a23ecb7a",
+   "quando": "2026-11-11T03:42:37.274Z"
+  },
+  {
+   "passo": "JR-P09",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=31c03d83-5460-4d0b-b4e6-76ecef5efeda",
+   "quando": "2026-11-11T03:42:37.300Z"
+  },
+  {
+   "passo": "JR-P10",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:37.309Z"
+  },
+  {
+   "passo": "JR-P11",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CASE_DOCUMENT_FILE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_DOCUMENT_FILE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_DOCUMENT_FILE_NOT_FOUND: Arquivo não encontrado.",
+   "quando": "2026-11-11T03:42:37.320Z"
+  },
+  {
+   "passo": "JR-P12",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:37.332Z"
+  },
+  {
+   "passo": "JR-E04",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/documents",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=99847dd2-b81b-4e52-888b-5219d9415ce5",
+   "quando": "2026-11-11T03:42:38.638Z"
+  },
+  {
+   "passo": "JR-E10",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-packages/auto",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=5c59bb26-ac0d-4a58-b47f-4b49699324c8",
+   "quando": "2026-11-11T03:42:38.774Z"
+  },
+  {
+   "passo": "JR-E01",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=b684c133-de9b-461e-bd47-84912b4c9ed1",
+   "quando": "2026-11-11T03:42:38.544Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0103-9d1f1e.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: antes o processo não tinha vínculo de documento por file_links (só pelo contrato). Criados o vínculo, as rotas e a inclusão no dossiê automático; testes em m5fech.juridico.processos/rotas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.processos.test.js test/m5fech.juridico.rotas.test.js test/files.accessControl.test.js test/marco5.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-P08, JR-P09, JR-P10, JR-P11, JR-P12, JR-P18, JR-E04, JR-E10, JR-E01)"
+ },
+ "passos": [
+  {
+   "id": "JR-P08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envia a petição inicial (arquivo fictício; SHA-256 calculado no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "peticao-mwbkpjpjaok7.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgUGV0acOnw6NvIGluaWNpYWwgZmljdMOtY2lhIG13YmtwanBqYW9rNw==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 45,
+   "quando": "2026-11-11T03:42:37.274Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "a2e83252-6304-44ea-ade0-d476a23ecb7a",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/b654f2d0-eaac-4ae6-a87b-0708fa1779bd-peticao-mwbkpjpjaok7.pdf",
+     "fileName": "peticao-mwbkpjpjaok7.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 49,
+     "checksumSha256": "952b2db5d8b3296a338c053c8a18e26780d725a7a475ccd90050c747214e75fc",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:37.249Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.249Z",
+     "created_at": "2026-11-11T03:42:37.249Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e",
+    "M5-A0113-48df89"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Liga a petição ao processo por people.file_links",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "corpoEnviado": {
+    "fileId": "a2e83252-6304-44ea-ade0-d476a23ecb7a",
+    "purpose": "PETITION"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T03:42:37.300Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "31c03d83-5460-4d0b-b4e6-76ecef5efeda",
+     "legalCaseId": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "fileId": "a2e83252-6304-44ea-ade0-d476a23ecb7a",
+     "purpose": "PETITION",
+     "fileName": "peticao-mwbkpjpjaok7.pdf",
+     "checksumSha256": "952b2db5d8b3296a338c053c8a18e26780d725a7a475ccd90050c747214e75fc",
+     "fileCreatedAt": "2026-11-11T03:42:37.249Z"
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não liga documento ao processo de A (processo não existe para B)",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "corpoEnviado": {
+    "fileId": "a2e83252-6304-44ea-ade0-d476a23ecb7a"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.309Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "9a062e4f-da25-424d-99a7-128dcb0e8c30"
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Arquivo inexistente não é ligado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "corpoEnviado": {
+    "fileId": "00000000-0000-4000-8000-000000000000"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_DOCUMENT_FILE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_DOCUMENT_FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:37.320Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_DOCUMENT_FILE_NOT_FOUND",
+     "message": "Arquivo não encontrado.",
+     "traceId": "d3604dc2-2110-421c-9006-90d3954849a6"
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Lista os documentos do processo com o SHA-256 do arquivo",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:37.332Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "31c03d83-5460-4d0b-b4e6-76ecef5efeda",
+      "legalCaseId": "f5959797-2ec3-4630-a457-21529e647cfe",
+      "fileId": "a2e83252-6304-44ea-ade0-d476a23ecb7a",
+      "purpose": "PETITION",
+      "fileName": "peticao-mwbkpjpjaok7.pdf",
+      "checksumSha256": "952b2db5d8b3296a338c053c8a18e26780d725a7a475ccd90050c747214e75fc",
+      "fileCreatedAt": "2026-11-11T03:42:37.249Z",
+      "linkedAt": "2026-11-11T03:42:37.296Z"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0103-9d1f1e"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Liga a foto original ao processo como prova",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/documents",
+   "corpoEnviado": {
+    "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+    "purpose": "EVIDENCE"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:38.638Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "99847dd2-b81b-4e52-888b-5219d9415ce5",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+     "purpose": "EVIDENCE",
+     "fileName": "foto-original-mwbkpkp8rgtk.pdf",
+     "checksumSha256": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "fileCreatedAt": "2026-11-11T03:42:38.561Z"
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e",
+    "M5-A0307-653b7c"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dossiê automático: todo documento ligado ao processo entra com arquivo, hash, origem, data e relação",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-packages/auto",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:38.774Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "5c59bb26-ac0d-4a58-b47f-4b49699324c8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "manifestJson": [
+      {
+       "hash": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+       "type": "CASE_DOCUMENT",
+       "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+       "source": "people.file_links",
+       "createdAt": "2026-11-11T03:42:38.561Z",
+       "description": "Documento do processo (EVIDENCE): foto-original-mwbkpkp8rgtk.pdf",
+       "referenceId": "99847dd2-b81b-4e52-888b-5219d9415ce5",
+       "originalName": "foto-original-mwbkpkp8rgtk.pdf"
+      }
+     ],
+     "packageHash": "6e86ce32c70af67f51733572a8216269f9d6db22c42da6123d96ee533f4280ed",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:38.766Z"
+    }
+   },
+   "req": [
+    "M5-A0114-596454",
+    "M5-A0207-e7daa6",
+    "M5-A0103-9d1f1e",
+    "M5-A0174-4f13e8"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: processo do dossiê",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "caseNumber": "DS-mwbkpkp8rgtk"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:38.544Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": null,
+     "escalationUserId": null,
+     "caseNumber": "DS-mwbkpkp8rgtk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.537Z",
+     "created_at": "2026-11-11T03:42:38.537Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-P18",
+   "req": [
+    "M5-A0102-1a6313",
+    "M5-A0103-9d1f1e",
+    "M5-A0106-ace96c"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "perfil": "A:leitura",
+   "descricao": "Processo gravado: número, órgão, classe, status, risco, estimado x confirmado, responsável, partes e documentos ligados",
+   "sql": "SELECT c.case_number, c.court, c.case_class, c.status, c.risk_level, c.estimated_amount, c.confirmed_amount, c.responsible_user_id IS NOT NULL AS tem_responsavel, (SELECT count(*) FROM legal.case_parties p WHERE p.legal_case_id = c.id) AS partes, (SELECT count(*) FROM people.file_links fl WHERE fl.related_entity_type = 'LegalCase' AND fl.related_entity_id = c.id) AS documentos FROM legal.legal_cases c WHERE c.id = :id",
+   "resultado": [
+    {
+     "case_number": "0001234-55.2026.8.26.mwbk",
+     "court": "1ª Vara Cível (fictícia)",
+     "case_class": "Despejo por falta de pagamento",
+     "status": "OPEN",
+     "risk_level": "HIGH",
+     "estimated_amount": "18500.75",
+     "confirmed_amount": "9000.00",
+     "tem_responsavel": true,
+     "partes": "1",
+     "documentos": "1"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.530Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

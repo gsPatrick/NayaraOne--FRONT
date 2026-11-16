@@ -1,0 +1,207 @@
+{
+ "id": "M5-A0116-245bce",
+ "secao": "P1 > 16. Cadeia de custódia / dossiê de provas",
+ "linhaCaderno": 278,
+ "requisito": "• Áudio/foto/vídeo não são regravados para 'melhorar prova'; versões derivadas ficam separadas.",
+ "demandas": "M5-D039",
+ "implementacao": "src/features/files/files.service.js uploadFile (sem processamento de mídia; cada envio é uma linha nova com seu SHA-256; nenhuma rota de edição/regravação de bytes)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR custódia: original preservado com SHA-256; versão derivada é outro arquivo e o original não muda; conteúdo que não bate com o hash é recusado (§16)",
+   "status": "pass",
+   "ms": 84.851,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E02",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=d6a25622-d956-4302-9b0f-faafa54380ad",
+   "quando": "2026-11-11T03:42:38.583Z"
+  },
+  {
+   "passo": "JR-E03",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=0f4d3c9b-39e5-4e0b-b6da-1661f0e2226e",
+   "quando": "2026-11-11T03:42:38.618Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0116-245bce.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: m5fech.juridico.custodia.test.js prova que a derivada é outro arquivo e o original segue byte a byte.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.custodia.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E02, JR-E03, JR-E05)"
+ },
+ "passos": [
+  {
+   "id": "JR-E02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envia a foto original da prova (SHA-256 calculado pelo servidor no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "foto-original-mwbkpkp8rgtk.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgRm90byBvcmlnaW5hbCBmaWN0w61jaWEgbXdia3BrcDhyZ3Rr",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 39,
+   "quando": "2026-11-11T03:42:38.583Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "d6a25622-d956-4302-9b0f-faafa54380ad",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/4ccb5fab-3cf8-41b4-bf6f-8598dc55e666-foto-original-mwbkpkp8rgtk.pdf",
+     "fileName": "foto-original-mwbkpkp8rgtk.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 45,
+     "checksumSha256": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:38.561Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.561Z",
+     "created_at": "2026-11-11T03:42:38.561Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0113-48df89",
+    "M5-A0307-653b7c",
+    "M5-A0116-245bce"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Versão derivada (recorte) é enviada como OUTRO arquivo; o original não é regravado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "foto-recorte-mwbkpkp8rgtk.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgRm90byBvcmlnaW5hbCBmaWN0w61jaWEgbXdia3BrcDhyZ3RrIChyZWNvcnRlIGNvbSBjb250cmFzdGUp",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 35,
+   "quando": "2026-11-11T03:42:38.618Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "0f4d3c9b-39e5-4e0b-b6da-1661f0e2226e",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/0cd50abb-d16d-45d9-bf91-ca18eb77e0d9-foto-recorte-mwbkpkp8rgtk.pdf",
+     "fileName": "foto-recorte-mwbkpkp8rgtk.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 69,
+     "checksumSha256": "3daa6d8205689ca30a3403f1d77cb167e0be7df0004ea6e001efe53cd712ac09",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:38.595Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.595Z",
+     "created_at": "2026-11-11T03:42:38.595Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0116-245bce"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-E05",
+   "req": [
+    "M5-A0113-48df89",
+    "M5-A0116-245bce",
+    "M5-A0259-51740a"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "perfil": "A:gestor",
+   "descricao": "Original e derivada são linhas separadas, cada uma com seu SHA-256; nenhuma foi apagada",
+   "sql": "SELECT id, file_name, checksum_sha256, size_bytes, deleted_at IS NULL AS ativo FROM people.files WHERE id IN (:a, :b) ORDER BY created_at",
+   "resultado": [
+    {
+     "id": "d6a25622-d956-4302-9b0f-faafa54380ad",
+     "file_name": "foto-original-mwbkpkp8rgtk.pdf",
+     "checksum_sha256": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "size_bytes": 45,
+     "ativo": true
+    },
+    {
+     "id": "0f4d3c9b-39e5-4e0b-b6da-1661f0e2226e",
+     "file_name": "foto-recorte-mwbkpkp8rgtk.pdf",
+     "checksum_sha256": "3daa6d8205689ca30a3403f1d77cb167e0be7df0004ea6e001efe53cd712ac09",
+     "size_bytes": 69,
+     "ativo": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.641Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

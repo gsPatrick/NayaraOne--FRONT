@@ -1,0 +1,373 @@
+{
+  "id": "M6-05",
+  "requisito": "Tabela obrigatória construction.budget_items (\"RLS e company_id obrigatórios\", §2).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.budget_lines (src/models/BudgetLine.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/orcamento: itens do orçamento",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "removeBudgetLine remove linha em DRAFT, mas recusa remover linha de orçamento já APPROVED",
+      "resultado": "passou",
+      "duracaoMs": 333,
+      "executadoEm": "2026-11-11T00:12:01.042Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-14: projectedMargin consegue ficar POSITIVA, ZERO e NEGATIVA conforme o desempenho de custo real (EAC), nunca mais travada em <= 0",
+      "resultado": "passou",
+      "duracaoMs": 2882,
+      "executadoEm": "2026-11-11T00:12:07.789Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-15: economyAmount/commissionAmount são calculados a partir da margem positiva e preservam o ruleVersionId usado",
+      "resultado": "passou",
+      "duracaoMs": 1018,
+      "executadoEm": "2026-11-11T00:12:08.807Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-1: createBudgetLine rejeita plannedAmount \"Infinity\" (categoria 14 do catálogo)",
+      "resultado": "passou",
+      "duracaoMs": 12,
+      "executadoEm": "2026-11-11T00:12:11.088Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-13: createBudgetLine recusa costCenterId que pertence a outra empresa",
+      "resultado": "passou",
+      "duracaoMs": 166,
+      "executadoEm": "2026-11-11T00:12:11.301Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-10: createBudget recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)",
+      "resultado": "passou",
+      "duracaoMs": 13,
+      "executadoEm": "2026-11-11T00:12:11.314Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-NOVO-11: createChangeOrder recusa quando o groupId do payload não bate com o groupId real da obra (mesma empresa, grupo diferente)",
+      "resultado": "passou",
+      "duracaoMs": 27,
+      "executadoEm": "2026-11-11T00:12:12.113Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H005",
+      "H014",
+      "H015"
+    ],
+    "resumo": [
+      "H005 POST /api/v1/construction/projects/5542dd9a-1eb8-48b2-bfa9-9ac0a97b7648/budget-lines → 201",
+      "H014 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines → 201",
+      "H015 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines → 201"
+    ],
+    "dataHora": "2026-11-11T00:11:59.901Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H005",
+      "requisitos": [
+        "M6-05"
+      ],
+      "cenario": "Criar item do orçamento (R$ 9.500,00)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/5542dd9a-1eb8-48b2-bfa9-9ac0a97b7648/budget-lines",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "budgetId": "0cedb126-1472-4079-a0dc-e95121341173",
+        "category": "Estrutura",
+        "plannedAmount": 9500
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 238,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "b79d7893-053a-4974-bd1c-3a5bb9aaaf7d",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "5542dd9a-1eb8-48b2-bfa9-9ac0a97b7648",
+          "budgetId": "0cedb126-1472-4079-a0dc-e95121341173",
+          "costCenterId": null,
+          "category": "Estrutura",
+          "description": null,
+          "plannedAmount": "9500.00",
+          "actualAmount": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:11:59.878Z",
+          "created_at": "2026-11-11T00:11:59.878Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:11:59.901Z"
+    },
+    {
+      "id": "H014",
+      "requisitos": [
+        "M6-05",
+        "M6-46"
+      ],
+      "cenario": "Item do orçamento: Fundação R$ 45.000,00",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+        "category": "Fundação",
+        "plannedAmount": 45000
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 31,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7f7fa67c-b907-4e63-9415-f541ad1fa01f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+          "costCenterId": null,
+          "category": "Fundação",
+          "description": null,
+          "plannedAmount": "45000.00",
+          "actualAmount": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:01.877Z",
+          "created_at": "2026-11-11T00:12:01.877Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:01.884Z"
+    },
+    {
+      "id": "H015",
+      "requisitos": [
+        "M6-05",
+        "M6-46"
+      ],
+      "cenario": "Item do orçamento: Alvenaria R$ 35.000,00",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+        "category": "Alvenaria",
+        "plannedAmount": 35000
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 286,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "e662137e-13ac-439b-a530-51d0835bce2f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+          "costCenterId": null,
+          "category": "Alvenaria",
+          "description": null,
+          "plannedAmount": "35000.00",
+          "actualAmount": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:02.147Z",
+          "created_at": "2026-11-11T00:12:02.147Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:02.170Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.376Z"
+}

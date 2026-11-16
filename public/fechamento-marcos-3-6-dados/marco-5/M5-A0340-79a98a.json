@@ -1,0 +1,849 @@
+{
+ "id": "M5-A0340-79a98a",
+ "secao": "(abertura 3)",
+ "linhaCaderno": 876,
+ "requisito": "• Encerramento bloqueia com obrigação crítica pendente.",
+ "demandas": "M5-D360;M5-D350;M5-D352;M5-D353;M5-D308",
+ "implementacao": "src/modules/legal/contracts/domain/contractClosureGate.js:29 collectContractClosurePendencies (cobrança aberta, caso de cobrança, troca de titularidade pendente, garantia ativa, saldo de caução, processos, prazos, notificações) usado por src/features/billing/closeout.service.js:63 closeoutContract e pelos caminhos jurídicos",
+ "tela": "Contratos > Locação (/painel/contratos/locacao)",
+ "testes": [
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: closeout bloqueia com cobrança em aberto e libera quando quitada",
+   "status": "pass",
+   "ms": 54.396,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: closeout bloqueia com transferência de utilidade pendente",
+   "status": "pass",
+   "ms": 18.044,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: closeout bloqueado por garantia ACTIVE pendente (gate único de encerramento)",
+   "status": "pass",
+   "ms": 93.695,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "gate único: pendência PENDING_UTILITY_TRANSFER bloqueia terminateContract",
+   "status": "pass",
+   "ms": 29.079,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "caminho \"closeout financeiro\" bloqueia com OPEN_BILLING",
+   "status": "pass",
+   "ms": 15.353,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "closeout usa a MESMA função do gate (checkCloseoutEligibility == collectContractClosurePendencies)",
+   "status": "pass",
+   "ms": 58.275,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.cobranca.test.js",
+   "nome": "fechamento M5 §12: pendência não some quando o contrato tenta encerrar — closeout bloqueado mantém obrigação, tarefa de titularidade e reembolso com o lançamento",
+   "status": "pass",
+   "ms": 102.176,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.http.test.js",
+   "nome": "fechamento M5 cobrança/HTTP: encerramento recusado (409 CLOSEOUT_BLOCKED) grava closeout.blocked e a auditoria mesmo com a transação da requisição desfeita",
+   "status": "pass",
+   "ms": 439.234,
+   "commitDoTeste": "fd18a57a"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-OB-35",
+   "metodo": "GET",
+   "rota": "/billing/contracts/64495aec-6e91-43ba-896d-dd8f0a168c7e/closeout-eligibility",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:34.369Z"
+  },
+  {
+   "passo": "LC-OB-36",
+   "metodo": "POST",
+   "rota": "/billing/contracts/64495aec-6e91-43ba-896d-dd8f0a168c7e/closeout",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "CLOSEOUT_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "CLOSEOUT_BLOCKED"
+   },
+   "resumo": "erro CLOSEOUT_BLOCKED: Não é possível encerrar a locação: 1 pendência(s) — transferência de consumo (água/luz/gás) pendente",
+   "quando": "2026-11-11T03:42:34.397Z"
+  },
+  {
+   "passo": "LC-EN-07",
+   "metodo": "GET",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout-eligibility",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:36.528Z"
+  },
+  {
+   "passo": "LC-EN-08",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "CLOSEOUT_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "CLOSEOUT_BLOCKED"
+   },
+   "resumo": "erro CLOSEOUT_BLOCKED: Não é possível encerrar a locação: 2 pendência(s) — cobrança em aberto, transferência de consumo (ág",
+   "quando": "2026-11-11T03:42:36.553Z"
+  },
+  {
+   "passo": "LC-EN-18",
+   "metodo": "GET",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout-eligibility",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:36.938Z"
+  },
+  {
+   "passo": "LC-EN-19",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=COMPLETED",
+   "quando": "2026-11-11T03:42:36.982Z"
+  },
+  {
+   "passo": "LC-EN-04",
+   "metodo": "POST",
+   "rota": "/billing/schedules",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=8d4bb8f8-ed7f-4057-b3cd-86e560e704a4",
+   "quando": "2026-11-11T03:42:36.483Z"
+  },
+  {
+   "passo": "LC-EN-05",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:36.499Z"
+  },
+  {
+   "passo": "LC-EN-06",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:36.514Z"
+  },
+  {
+   "passo": "LC-EN-13",
+   "metodo": "POST",
+   "rota": "/billing/schedules/8d4bb8f8-ed7f-4057-b3cd-86e560e704a4/payments",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PAID, id=8d4bb8f8-ed7f-4057-b3cd-86e560e704a4",
+   "quando": "2026-11-11T03:42:36.808Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0340-79a98a.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/billing.test.js test/legal.frente5.rules.test.js test/m5fech.locacao.cobranca.test.js test/m5fech.locacao.http.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-OB-35, LC-OB-36, LC-EN-07, LC-EN-08, LC-EN-18, LC-EN-19, LC-EN-04, LC-EN-05, LC-EN-06, LC-EN-13, LC-EN-09, LC-EN-10)"
+ },
+ "passos": [
+  {
+   "id": "LC-OB-35",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Elegibilidade de encerramento lista as trocas de titularidade pendentes (luz e gás)",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/contracts/64495aec-6e91-43ba-896d-dd8f0a168c7e/closeout-eligibility",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:34.369Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+     "eligible": false,
+     "reasons": [
+      {
+       "type": "PENDING_UTILITY_TRANSFER",
+       "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+       "ownershipTransferTaskIds": [
+        "e35a5c8a-6d1d-4a7e-8395-2b50e13506dc",
+        "f4809e56-31c9-45d9-b3d3-ad984dca4596"
+       ]
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a",
+    "M5-A0096-30165c"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-36",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Encerrar com troca de titularidade pendente é bloqueado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/contracts/64495aec-6e91-43ba-896d-dd8f0a168c7e/closeout",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409,
+    "codigo": "CLOSEOUT_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "CLOSEOUT_BLOCKED",
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T03:42:34.397Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "CLOSEOUT_BLOCKED",
+     "message": "Não é possível encerrar a locação: 1 pendência(s) — transferência de consumo (água/luz/gás) pendente.",
+     "details": {
+      "reasons": [
+       {
+        "type": "PENDING_UTILITY_TRANSFER",
+        "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+        "ownershipTransferTaskIds": [
+         "e35a5c8a-6d1d-4a7e-8395-2b50e13506dc",
+         "f4809e56-31c9-45d9-b3d3-ad984dca4596"
+        ]
+       }
+      ]
+     },
+     "traceId": "f9378206-97d2-427b-8c0d-8ec58942e07b"
+    }
+   },
+   "req": [
+    "M5-A0270-5f73bd",
+    "M5-A0340-79a98a",
+    "M5-A0096-30165c",
+    "M5-A0345-019723"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Elegibilidade: não elegível, com cobrança em aberto e troca de titularidade pendente",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout-eligibility",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:36.528Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "eligible": false,
+     "reasons": [
+      {
+       "type": "OPEN_BILLING",
+       "detail": "1 competência(s) de cobrança ainda em aberto.",
+       "billingScheduleIds": [
+        "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4"
+       ]
+      },
+      {
+       "type": "PENDING_UTILITY_TRANSFER",
+       "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+       "ownershipTransferTaskIds": [
+        "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+        "f6fb38d1-788e-4b42-a6cc-ccadc376d23f"
+       ]
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a",
+    "M5-A0096-30165c",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Encerrar com pendência crítica é bloqueado (CLOSEOUT_BLOCKED com os motivos)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409,
+    "codigo": "CLOSEOUT_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "CLOSEOUT_BLOCKED",
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:36.553Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "CLOSEOUT_BLOCKED",
+     "message": "Não é possível encerrar a locação: 2 pendência(s) — cobrança em aberto, transferência de consumo (água/luz/gás) pendente.",
+     "details": {
+      "reasons": [
+       {
+        "type": "OPEN_BILLING",
+        "detail": "1 competência(s) de cobrança ainda em aberto.",
+        "billingScheduleIds": [
+         "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4"
+        ]
+       },
+       {
+        "type": "PENDING_UTILITY_TRANSFER",
+        "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+        "ownershipTransferTaskIds": [
+         "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+         "f6fb38d1-788e-4b42-a6cc-ccadc376d23f"
+        ]
+       }
+      ]
+     },
+     "traceId": "40c3d014-ad4e-4dc1-ab3e-6fe88bf7b619"
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a",
+    "M5-A0096-30165c",
+    "M5-A0343-c56197",
+    "M5-A0345-019723",
+    "M5-A0342-a3762d"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Elegibilidade: sem pendências, elegível",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout-eligibility",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:36.938Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "eligible": true,
+     "reasons": []
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-19",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Encerramento concluído: o contrato vai de ACTIVE a CLOSED pelos gates jurídicos",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:36.982Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "COMPLETED",
+     "contractLifecycle": "CLOSED"
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0340-79a98a",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0345-019723",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Competência 2030-06 em aberto",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/schedules",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+    "period": "2030-06",
+    "dueDate": "2030-06-10",
+    "items": [
+     {
+      "componentType": "RENT",
+      "amount": 2500
+     }
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:36.483Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "period": "2030-06",
+     "dueDate": "2030-06-10",
+     "totalAmount": "2500.00",
+     "paidAmount": "0.00",
+     "balance": "2500.00",
+     "status": "OPEN",
+     "generatedAt": "2026-11-11T03:42:36.473Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:36.474Z",
+     "created_at": "2026-11-11T03:42:36.474Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação de água com troca de titularidade para o locatário",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+    "utilityType": "WATER",
+    "responsibleParty": "TENANT",
+    "provider": "Água Fictícia",
+    "accountNumber": "agua-8549432",
+    "transferRequired": true,
+    "transferFromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+    "transferToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:36.499Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "2ddaaa4e-c064-43ff-a901-fba5480c114b",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "utilityType": "WATER",
+      "responsibleParty": "TENANT",
+      "provider": "Água Fictícia",
+      "accountNumber": "agua-8549432",
+      "transferRequired": true,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": null,
+      "status": "TRANSFER_PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.492Z",
+      "created_at": "2026-11-11T03:42:36.492Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": {
+      "id": "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "2ddaaa4e-c064-43ff-a901-fba5480c114b",
+      "fromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+      "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.494Z",
+      "created_at": "2026-11-11T03:42:36.494Z",
+      "evidenceFileId": null,
+      "completedAt": null,
+      "dueDate": null,
+      "deletedBy": null,
+      "deleted_at": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0095-1df93e",
+    "M5-A0340-79a98a"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação de luz com troca de titularidade para o locatário",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+    "utilityType": "ELECTRICITY",
+    "responsibleParty": "TENANT",
+    "provider": "Energia Fictícia",
+    "accountNumber": "luz-8549432",
+    "transferRequired": true,
+    "transferFromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+    "transferToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:36.514Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "149f1bca-7361-4354-a6dc-f8c7710243f9",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "utilityType": "ELECTRICITY",
+      "responsibleParty": "TENANT",
+      "provider": "Energia Fictícia",
+      "accountNumber": "luz-8549432",
+      "transferRequired": true,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": null,
+      "status": "TRANSFER_PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.508Z",
+      "created_at": "2026-11-11T03:42:36.508Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": {
+      "id": "f6fb38d1-788e-4b42-a6cc-ccadc376d23f",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "149f1bca-7361-4354-a6dc-f8c7710243f9",
+      "fromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+      "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.509Z",
+      "created_at": "2026-11-11T03:42:36.509Z",
+      "evidenceFileId": null,
+      "completedAt": null,
+      "dueDate": null,
+      "deletedBy": null,
+      "deleted_at": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0095-1df93e",
+    "M5-A0340-79a98a"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Quita a competência 2030-06",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/schedules/8d4bb8f8-ed7f-4057-b3cd-86e560e704a4/payments",
+   "corpoEnviado": {
+    "amountPaid": 2500
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:36.808Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "period": "2030-06",
+     "dueDate": "2030-06-10",
+     "totalAmount": "2500.00",
+     "paidAmount": 2500,
+     "balance": 0,
+     "status": "PAID",
+     "generatedAt": "2026-11-11T03:42:36.473Z",
+     "lockVersion": 1,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:36.474Z",
+     "updated_at": "2026-11-11T03:42:36.802Z",
+     "deleted_at": null,
+     "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "items": [
+      {
+       "id": "0dae5c0e-5415-44cc-8e10-b0bc8deda584",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "billingScheduleId": "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4",
+       "componentType": "RENT",
+       "description": null,
+       "amount": "2500.00",
+       "lockVersion": 0,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "deletedBy": null,
+       "created_at": "2026-11-11T03:42:36.475Z",
+       "updated_at": "2026-11-11T03:42:36.475Z",
+       "deleted_at": null,
+       "billing_schedule_id": "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-EN-09",
+   "req": [
+    "M5-A0342-a3762d",
+    "M5-A0340-79a98a",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "perfil": "A:gestor",
+   "descricao": "Outbox: closeout.blocked gravado mesmo com a recusa 409 (motivos no payload)",
+   "sql": "SELECT event_type, payload_json FROM integration.outbox_events WHERE event_type = 'closeout.blocked' AND aggregate_id = :c",
+   "resultado": [
+    {
+     "event_type": "closeout.blocked",
+     "payload_json": {
+      "id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "pendingReasons": [
+       {
+        "type": "OPEN_BILLING",
+        "detail": "1 competência(s) de cobrança ainda em aberto.",
+        "billingScheduleIds": [
+         "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4"
+        ]
+       },
+       {
+        "type": "PENDING_UTILITY_TRANSFER",
+        "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+        "ownershipTransferTaskIds": [
+         "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+         "f6fb38d1-788e-4b42-a6cc-ccadc376d23f"
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:36.554Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-EN-10",
+   "req": [
+    "M5-A0340-79a98a"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "perfil": "A:gestor",
+   "descricao": "Trilha de auditoria do encerramento bloqueado",
+   "sql": "SELECT action, after_json->'reasons' AS motivos FROM audit.audit_log WHERE action = 'billing.closeout.blocked' AND entity_id = :c",
+   "resultado": [
+    {
+     "action": "billing.closeout.blocked",
+     "motivos": [
+      {
+       "type": "OPEN_BILLING",
+       "detail": "1 competência(s) de cobrança ainda em aberto.",
+       "billingScheduleIds": [
+        "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4"
+       ]
+      },
+      {
+       "type": "PENDING_UTILITY_TRANSFER",
+       "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+       "ownershipTransferTaskIds": [
+        "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+        "f6fb38d1-788e-4b42-a6cc-ccadc376d23f"
+       ]
+      }
+     ]
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:36.556Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

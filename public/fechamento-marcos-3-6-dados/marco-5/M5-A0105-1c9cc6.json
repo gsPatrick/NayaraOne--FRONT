@@ -1,0 +1,593 @@
+{
+ "id": "M5-A0105-1c9cc6",
+ "secao": "P1 > 14. Processos jurídicos",
+ "linhaCaderno": 250,
+ "requisito": "• Valores a receber ficam estimados e vinculados ao Financeiro somente quando juridicamente cabível.",
+ "demandas": "M5-D033;M5-D032",
+ "implementacao": "src/modules/legal/cases/legalCaseReceivables.service.js linkCaseReceivable (só o valor CONFIRMADO, com base jurídica SETTLEMENT/FINAL_JUDGMENT e referência, vira lançamento RECEIVABLE pelo serviço do Financeiro na mesma transação; vínculo em legal.case_receivables, append-only, um por processo; migration 20260101009998); rotas POST/GET /legal/cases/:id/receivables (legal:approve + finance:create); src/modules/legal/cases/legal-case.service.js updateLegalCase trava o confirmado depois do vínculo",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.versoesRecebivel.test.js",
+   "nome": "JR recebível do processo: estimativa nunca vira lançamento; o valor confirmado com base jurídica (acordo/sentença) vira UM recebível vinculado, e o confirmado não muda depois",
+   "status": "pass",
+   "ms": 256.977,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JR rotas: recebível do processo exige legal:approve E finance:create e só sai com valor confirmado; versões da notificação pela API",
+   "status": "pass",
+   "ms": 134.756,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.failureDrills.test.js",
+   "nome": "Drill 2: falha no vínculo do recebível depois do lançamento criado não deixa lançamento órfão; retry vincula uma vez e o 2º pedido é 409",
+   "status": "pass",
+   "ms": 196.928,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: valor estimado não vira recebível; valor confirmado fica separado do estimado (§14)",
+   "status": "pass",
+   "ms": 16.725,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-P13b",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED"
+   },
+   "resumo": "erro LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED: O processo não tem valor CONFIRMADO: estimativa processual não vira recebível.",
+   "quando": "2026-11-11T03:42:37.356Z"
+  },
+  {
+   "passo": "JR-P14",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=OPEN, id=f5959797-2ec3-4630-a457-21529e647cfe",
+   "quando": "2026-11-11T03:42:37.377Z"
+  },
+  {
+   "passo": "JR-P14b",
+   "metodo": "POST",
+   "rota": "/finance/result-centers",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=f91b5a22-7621-470c-a069-5c273e887210, code=RC-JR-mwbkpjpjaok7",
+   "quando": "2026-11-11T03:42:37.399Z"
+  },
+  {
+   "passo": "JR-P14c",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CASE_RECEIVABLE_BASIS_INVALID",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_RECEIVABLE_BASIS_INVALID"
+   },
+   "resumo": "erro LEGAL_CASE_RECEIVABLE_BASIS_INVALID: \"basis\" deve ser um de: SETTLEMENT, FINAL_JUDGMENT (base jurídica que torna o valor exigível).",
+   "quando": "2026-11-11T03:42:37.410Z"
+  },
+  {
+   "passo": "JR-P14d",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.417Z"
+  },
+  {
+   "passo": "JR-P14e",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=ebbe3161-751e-4709-993d-456ab1a57c6a",
+   "quando": "2026-11-11T03:42:37.442Z"
+  },
+  {
+   "passo": "JR-P14f",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_DUPLICATE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_DUPLICATE"
+   },
+   "resumo": "erro LEGAL_CASE_RECEIVABLE_DUPLICATE: Este processo já tem recebível vinculado ao Financeiro.",
+   "quando": "2026-11-11T03:42:37.453Z"
+  },
+  {
+   "passo": "JR-P14g",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_LOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_LOCKED"
+   },
+   "resumo": "erro LEGAL_CASE_RECEIVABLE_LOCKED: O valor confirmado já gerou recebível no Financeiro e não pode ser alterado aqui.",
+   "quando": "2026-11-11T03:42:37.466Z"
+  },
+  {
+   "passo": "JR-P14h",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:37.475Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0105-1c9cc6.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: vínculo processo -> Financeiro criado (antes não existia). DECISÃO registrada (o livro não lista o que é \"juridicamente cabível\"): o mais conservador — acordo homologado ou sentença transitada em julgado, referência obrigatória, um recebível por processo, valor confirmado travado depois do vínculo.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.versoesRecebivel.test.js test/m5fech.juridico.rotas.test.js test/m5fech.juridico.failureDrills.test.js test/m5fech.juridico.processos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-P13b, JR-P14, JR-P14b, JR-P14c, JR-P14d, JR-P14e, JR-P14f, JR-P14g, JR-P14h, JR-P19)"
+ },
+ "passos": [
+  {
+   "id": "JR-P13b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem valor CONFIRMADO, nada vai ao Financeiro: a estimativa não vira recebível",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "SETTLEMENT",
+    "basisReference": "Acordo fictício",
+    "dueAt": "2030-03-10"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.356Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+     "message": "O processo não tem valor CONFIRMADO: estimativa processual não vira recebível.",
+     "traceId": "ce43c8a0-f2ed-4920-a4bc-0b7a2663d31f"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0106-ace96c"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Valor confirmado (acordo) gravado separado do estimado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "corpoEnviado": {
+    "confirmedAmount": 9000
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:37.377Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "caseNumber": "0001234-55.2026.8.26.mwbk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "summary": "Processo fictício JR mwbkpjpjaok7",
+     "phase": "DISCOVERY",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "lockVersion": 2,
+     "legalHold": false,
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": "1ª Vara Cível (fictícia)",
+     "caseClass": "Despejo por falta de pagamento",
+     "estimatedAmount": "18500.75",
+     "confirmedAmount": "9000.00",
+     "riskLevel": "HIGH",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:37.153Z",
+     "updated_at": "2026-11-11T03:42:37.365Z",
+     "deleted_at": null,
+     "escalation_user_id": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "contract_id": null,
+     "property_id": null,
+     "responsible_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0106-ace96c"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: centro de resultado do Financeiro",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/result-centers",
+   "corpoEnviado": {
+    "code": "RC-JR-mwbkpjpjaok7",
+    "name": "Honorários e acordos mwbkpjpjaok7"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:37.399Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f91b5a22-7621-470c-a069-5c273e887210",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "code": "RC-JR-mwbkpjpjaok7",
+     "name": "Honorários e acordos mwbkpjpjaok7",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.383Z",
+     "created_at": "2026-11-11T03:42:37.383Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Base jurídica fora da lista (não cabível) é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "ESTIMATIVA",
+    "basisReference": "Acordo homologado fictício nº 77/2026",
+    "dueAt": "2030-03-10",
+    "resultCenterId": "f91b5a22-7621-470c-a069-5c273e887210"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_RECEIVABLE_BASIS_INVALID"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CASE_RECEIVABLE_BASIS_INVALID",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.410Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_RECEIVABLE_BASIS_INVALID",
+     "message": "\"basis\" deve ser um de: SETTLEMENT, FINAL_JUDGMENT (base jurídica que torna o valor exigível).",
+     "traceId": "af7b3806-41a5-47c0-b92f-08e89147a21c"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Vincular ao Financeiro exige legal:approve e finance:create: leitura recusada",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "SETTLEMENT",
+    "basisReference": "Acordo homologado fictício nº 77/2026",
+    "dueAt": "2030-03-10",
+    "resultCenterId": "f91b5a22-7621-470c-a069-5c273e887210"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:37.417Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:approve"
+     },
+     "traceId": "e4153e49-1e69-46c0-8c43-8a1d4942a77a"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14e",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Valor confirmado (acordo homologado) vira recebível vinculado ao processo no Financeiro",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "SETTLEMENT",
+    "basisReference": "Acordo homologado fictício nº 77/2026",
+    "dueAt": "2030-03-10",
+    "resultCenterId": "f91b5a22-7621-470c-a069-5c273e887210"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:37.442Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ebbe3161-751e-4709-993d-456ab1a57c6a",
+     "legalCaseId": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "financialEntryId": "d3a1a9a2-d89e-4657-9554-4c10194de475",
+     "basis": "SETTLEMENT",
+     "basisReference": "Acordo homologado fictício nº 77/2026",
+     "amount": "9000.00",
+     "createdAt": "2026-11-11T03:42:37.423Z",
+     "financialEntry": {
+      "id": "d3a1a9a2-d89e-4657-9554-4c10194de475",
+      "nature": "RECEIVABLE",
+      "amount": "9000.00",
+      "status": "PENDING",
+      "dueAt": "2030-03-11T02:59:00.000Z"
+     }
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0106-ace96c"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14f",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Segundo vínculo do mesmo processo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "SETTLEMENT",
+    "basisReference": "Acordo homologado fictício nº 77/2026",
+    "dueAt": "2030-03-10",
+    "resultCenterId": "f91b5a22-7621-470c-a069-5c273e887210"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_DUPLICATE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_DUPLICATE",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.453Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_RECEIVABLE_DUPLICATE",
+     "message": "Este processo já tem recebível vinculado ao Financeiro.",
+     "traceId": "6b4a6919-d5f3-4559-a5d1-b0f0e0e8b019"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14g",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Depois de vinculado, o valor confirmado não muda pelo processo",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "corpoEnviado": {
+    "confirmedAmount": 9500
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_LOCKED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_LOCKED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.466Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_RECEIVABLE_LOCKED",
+     "message": "O valor confirmado já gerou recebível no Financeiro e não pode ser alterado aqui.",
+     "traceId": "fe963785-1f3f-47df-a108-f5bd38284fdf"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14h",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Lista o recebível vinculado ao processo",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.475Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "ebbe3161-751e-4709-993d-456ab1a57c6a",
+      "legalCaseId": "f5959797-2ec3-4630-a457-21529e647cfe",
+      "financialEntryId": "d3a1a9a2-d89e-4657-9554-4c10194de475",
+      "basis": "SETTLEMENT",
+      "basisReference": "Acordo homologado fictício nº 77/2026",
+      "amount": "9000.00",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "createdAt": "2026-11-11T03:42:37.423Z"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0105-1c9cc6"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-P19",
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0106-ace96c"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "perfil": "A:gestor",
+   "descricao": "Recebível vinculado: lançamento RECEIVABLE com o valor CONFIRMADO (não o estimado), origem no processo e base jurídica em legal.case_receivables",
+   "sql": "SELECT r.basis, r.basis_reference, r.amount AS valor_vinculado, c.estimated_amount, c.confirmed_amount, e.nature, e.amount AS valor_lancamento, e.origin_ref FROM legal.case_receivables r JOIN legal.legal_cases c ON c.id = r.legal_case_id JOIN finance.financial_entries e ON e.id = r.financial_entry_id WHERE r.legal_case_id = :id",
+   "resultado": [
+    {
+     "basis": "SETTLEMENT",
+     "basis_reference": "Acordo homologado fictício nº 77/2026",
+     "valor_vinculado": "9000.00",
+     "estimated_amount": "18500.75",
+     "confirmed_amount": "9000.00",
+     "nature": "RECEIVABLE",
+     "valor_lancamento": "9000.00",
+     "origin_ref": "legal.legal_cases:f5959797-2ec3-4630-a457-21529e647cfe"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.532Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

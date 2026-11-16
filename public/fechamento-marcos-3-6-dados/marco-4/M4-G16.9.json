@@ -1,0 +1,68 @@
+{
+ "id": "M4-G§16.9",
+ "secao": "Guia §16 Testes iniciais",
+ "requisito": "\"Período fechado não pode ser alterado.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.closing.test.js",
+   "nome": "F02-C1b: mês fechado não recebe nem perde lançamento em nenhum caminho (criar, editar, baixar, baixa parcial, estornar)",
+   "status": "passou",
+   "duracaoMs": 125,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "F05",
+   "tipo": "http",
+   "linhas": [
+    "M4-§16.3",
+    "M4-FIN-TS-010",
+    "M4-G§16.9"
+   ],
+   "titulo": "Lançamento com competência no mês CLOSED: bloqueado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 50,
+    "description": "Lançamento no mês fechado",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "competenceMonth": "2071-05"
+   },
+   "esperado": {
+    "status": 409
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_PERIOD_CLOSED",
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T01:35:14.555Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_PERIOD_CLOSED",
+     "message": "A competência 05/2071 está fechada — nenhum lançamento pode entrar nela ou sair dela. Reabra o período (com justificativa) se a correção for mesmo necessária, ou lance o ajuste no período corrente com referência a 05/2071.",
+     "details": {
+      "referenceMonth": "2071-05"
+     },
+     "traceId": "0550793b-3de0-4f8a-9929-40422d506bdc"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

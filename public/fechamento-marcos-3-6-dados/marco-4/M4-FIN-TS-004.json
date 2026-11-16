@@ -1,0 +1,70 @@
+{
+ "id": "M4-FIN-TS-004",
+ "secao": "§20 Testes adversariais",
+ "requisito": "FIN-TS-004: Empresa errada — bloqueado.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.crossCompanyIsolation.test.js",
+   "nome": "FIN-TS-004: lançamento não pode usar bankAccount de outra empresa (mesmo do mesmo grupo) — erro de aplicação, não só RLS",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "35aaf028"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "E02",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-002",
+    "M4-FIN-TS-004",
+    "M4-G§16.4"
+   ],
+   "titulo": "Despesa da empresa A usando a conta bancária da empresa A2 (Construção/BB): bloqueada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 15,
+    "description": "Despesa A na conta de A2",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "bankAccountId": "e13a4a4f-0377-44d8-b556-e41035439c5f"
+   },
+   "esperado": {
+    "status": [
+     400,
+     403,
+     404,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T01:35:05.510Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+     "message": "Conta bancária não encontrada.",
+     "traceId": "4ee5d738-ac61-4b3f-ab11-371f3bf8f2a0"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

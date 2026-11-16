@@ -1,0 +1,319 @@
+{
+  "id": "M6-11",
+  "requisito": "Tabela obrigatória construction.measurement_items (\"RLS e company_id obrigatórios\", §2).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.measurement_items (src/models/MeasurementItem.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/medicoes: itens da medição e total",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-11 medição carrega itens (descrição/quantidade/preço unitário/total) e soma vira o total",
+      "resultado": "passou",
+      "duracaoMs": 62,
+      "executadoEm": "2026-11-11T00:13:50.184Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H086",
+      "H091"
+    ],
+    "resumo": [
+      "H086 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements → 201",
+      "H091 GET /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/items → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:15.109Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H086",
+      "requisitos": [
+        "M6-35",
+        "M6-10",
+        "M6-11",
+        "M6-49"
+      ],
+      "cenario": "Criar medição da Fundação (DRAFT) com itens",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+        "measuredPct": 100,
+        "measuredAt": "2026-11-09",
+        "idempotencyKey": "med-c4fcd6",
+        "items": [
+          {
+            "description": "Sapatas S1 a S8",
+            "quantity": 8,
+            "unitPrice": 4500
+          },
+          {
+            "description": "Vigas baldrame",
+            "quantity": 1,
+            "unitPrice": 6000
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 172,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "DRAFT",
+          "revisionNumber": 1,
+          "totalAmount": "42000.00",
+          "costCenterId": null,
+          "idempotencyKey": "med-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:15.103Z",
+          "created_at": "2026-11-11T00:12:15.011Z",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": null,
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:15.109Z"
+    },
+    {
+      "id": "H091",
+      "requisitos": [
+        "M6-11"
+      ],
+      "cenario": "Itens da medição (soma vira o total)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/items",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 145,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "0d246729-cea8-40cb-b5ee-705e0a7f3344",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "measurementId": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+            "description": "Sapatas S1 a S8",
+            "quantity": "8.0000",
+            "unitPrice": "4400.00",
+            "total": "35200.00",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "created_at": "2026-11-11T00:12:15.931Z",
+            "updated_at": "2026-11-11T00:12:15.931Z",
+            "measurement_id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44"
+          },
+          {
+            "id": "8e25bcfa-faf0-4a0f-a210-e0e86e862350",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "measurementId": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+            "description": "Vigas baldrame",
+            "quantity": "1.0000",
+            "unitPrice": "6000.00",
+            "total": "6000.00",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "created_at": "2026-11-11T00:12:15.960Z",
+            "updated_at": "2026-11-11T00:12:15.960Z",
+            "measurement_id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:16.149Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.380Z"
+}

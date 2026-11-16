@@ -1,0 +1,127 @@
+{
+  "id": "CRMX-008",
+  "secao": "Livro §2 Princípios",
+  "requisito": "Consentimento: comunicação respeita opt-in/opt-out e finalidade.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 25,
+      "casos": [
+        "consentimento_opt_out"
+      ],
+      "descricao": "Registra opt-out de WhatsApp para marketing",
+      "metodo": "POST",
+      "rota": "/api/v1/people/f6d6adbf-0670-4128-a50d-3896159d8e6a/consents",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "channel": "WHATSAPP",
+        "purpose": "MARKETING",
+        "status": "OPT_OUT"
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "5bb643df-b6be-4152-8812-06ba31283233",
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+          "channel": "WHATSAPP",
+          "purpose": "MARKETING",
+          "status": "OPT_OUT",
+          "recordedAt": "2026-11-11T00:16:21.258Z",
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updated_at": "2026-11-11T00:16:21.258Z",
+          "created_at": "2026-11-11T00:16:21.258Z"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:21.222Z"
+    },
+    {
+      "seq": 26,
+      "casos": [
+        "consentimento_opt_out"
+      ],
+      "descricao": "Histórico de consentimento por canal e finalidade",
+      "metodo": "GET",
+      "rota": "/api/v1/people/f6d6adbf-0670-4128-a50d-3896159d8e6a/consents",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "5bb643df-b6be-4152-8812-06ba31283233",
+            "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+            "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+            "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+            "channel": "WHATSAPP",
+            "purpose": "MARKETING",
+            "status": "OPT_OUT",
+            "recordedAt": "2026-11-11T00:16:21.258Z",
+            "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+            "created_at": "2026-11-11T00:16:21.258Z",
+            "updated_at": "2026-11-11T00:16:21.258Z",
+            "person_id": "f6d6adbf-0670-4128-a50d-3896159d8e6a"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:16:21.321Z"
+    },
+    {
+      "seq": 27,
+      "casos": [
+        "envio_bloqueado_opt_out"
+      ],
+      "descricao": "Envio OUTBOUND de marketing para quem pediu opt-out é bloqueado",
+      "metodo": "POST",
+      "rota": "/api/v1/messages",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+        "direction": "OUTBOUND",
+        "authorType": "EMPLOYEE",
+        "channel": "WHATSAPP",
+        "purpose": "MARKETING",
+        "body": "Promoção do mês"
+      },
+      "status": 422,
+      "codigoErro": "MESSAGE_BLOCKED_BY_CONSENT",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MESSAGE_BLOCKED_BY_CONSENT",
+          "message": "Envio bloqueado: a pessoa optou por não receber contato (opt-out) neste canal/finalidade, ou a finalidade exige opt-in explícito ausente.",
+          "details": {
+            "personId": "f6d6adbf-0670-4128-a50d-3896159d8e6a",
+            "channel": "WHATSAPP",
+            "purpose": "MARKETING"
+          },
+          "traceId": "29eb7a9e-dc61-450a-b40f-a359f6a2521d"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:21.376Z"
+    }
+  ],
+  "consultasBanco": []
+}

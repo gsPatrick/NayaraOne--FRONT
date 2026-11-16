@@ -1,0 +1,791 @@
+{
+ "id": "M5-A0278-2f8512",
+ "secao": "P2 > 21. Autochecagem obrigatória [tabela: Pergunta | Resposta exigida]",
+ "linhaCaderno": 833,
+ "requisito": "Está blindado? | SIM para brechas previsíveis do desenho.",
+ "demandas": "M5-D215",
+ "implementacao": "agregação dos requisitos M5-A0149-775b31 (linha 355), M5-A0150-1427b1 (linha 356), M5-A0151-ce90f9 (linha 357), M5-A0152-13d5a7 (linha 358), M5-A0153-4c96b0 (linha 359), M5-A0154-31578b (linha 360), M5-A0155-f65cd8 (linha 361), M5-A0156-d0fcff (linha 362), M5-A0157-aeca75 (linha 363), M5-A0158-4d694b (linha 364), M5-A0159-a8f148 (linha 365), M5-A0160-df7d81 (linha 366), M5-A0161-7c8ef5 (linha 367), M5-A0162-0d870b (linha 368), M5-A0163-9b1694 (linha 369)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L07: adulterar o content_hash de uma ContractVersion direto no banco é REJEITADO pelo trigger append-only",
+   "status": "pass",
+   "ms": 138.048,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-002: assinatura que aponta hash diferente da versão é rejeitada e o contrato continua em SIGNING",
+   "status": "pass",
+   "ms": 3594.335,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery exige keysCount e termSignedByPersonId (JUR-TS-004 \"Chave cedo\")",
+   "status": "pass",
+   "ms": 166.142,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.guaranteeExpiry.test.js",
+   "nome": "JUR-TS-005: garantia já vencida também é alertada (não só \"prestes a vencer\")",
+   "status": "pass",
+   "ms": 54.67,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-06 JUR-TS-006/§11: correção de vistoria assinada cria revisão com itens copiados; o laudo original continua intacto e imutável",
+   "status": "pass",
+   "ms": 44.539,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-007: webhook de assinatura duplicado (mesmo id externo) gera uma única atualização, e SIGNED só com todas as assinaturas da versão",
+   "status": "pass",
+   "ms": 558.993,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-008: criar prazo crítico sem origem verificável é bloqueado (DEADLINE_SOURCE_REQUIRED, Guia §12) e nada é gravado; texto de origem sozinho não basta",
+   "status": "pass",
+   "ms": 87,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-009: prazo crítico vencido sem conclusão alerta o responsável, abre UMA ocorrência CRITICAL, publica legal.deadline.overdue e escala após 24 h",
+   "status": "pass",
+   "ms": 39.016,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-010: prova alterada — o hash diverge e a integridade falha (export adulterado e linha do banco reescrita)",
+   "status": "pass",
+   "ms": 18.427,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-310",
+   "metodo": "PATCH",
+   "rota": "/legal/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro ROUTE_NOT_FOUND: Rota não encontrada.",
+   "quando": "2026-11-11T03:42:26.406Z"
+  },
+  {
+   "passo": "CT-201",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH"
+   },
+   "resumo": "erro LEGAL_SIGNATURE_HASH_MISMATCH: O hash do documento assinado não corresponde ao hash da versão do contrato enviada para assinatura.",
+   "quando": "2026-11-11T03:42:25.422Z"
+  },
+  {
+   "passo": "CT-111",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_REQUIREMENTS_PENDING: Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos",
+   "quando": "2026-11-11T03:42:24.526Z"
+  },
+  {
+   "passo": "LC-CH-02",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_BLOCKED: Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada conc",
+   "quando": "2026-11-11T03:42:32.031Z"
+  },
+  {
+   "passo": "LC-GA-22",
+   "metodo": "PATCH",
+   "rota": "/legal/guarantees/7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=ACTIVE, id=7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+   "quando": "2026-11-11T03:42:30.917Z"
+  },
+  {
+   "passo": "LC-VI-26",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE"
+   },
+   "resumo": "erro LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE: Esta vistoria já tem assinatura registrada e ficou imutável — itens e mídia não podem mais ser alter",
+   "quando": "2026-11-11T03:42:31.487Z"
+  },
+  {
+   "passo": "CT-205",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:25.485Z"
+  },
+  {
+   "passo": "JR-D02",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "resumo": "erro DEADLINE_SOURCE_REQUIRED: Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jur",
+   "quando": "2026-11-11T03:42:37.618Z"
+  },
+  {
+   "passo": "JR-D33",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=f1dd4cb0-3f92-40e4-979a-b59d282a9148, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:38.298Z"
+  },
+  {
+   "passo": "JR-E35",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=33e5ae18-7e2f-4c1b-9372-117bb7a32051",
+   "quando": "2026-11-11T03:42:39.071Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0278-2f8512.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/adversarial.legal.test.js test/m5fech.contratos.adversariais.test.js test/m5fech.contratos.checklist.test.js test/legal.keyDeliveries.test.js test/legal.guaranteeExpiry.test.js test/m45.cadernoM5Gaps.test.js test/m5fech.juridico.adversariais.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-310, CT-201, CT-111, LC-CH-02, LC-GA-22, LC-VI-26, CT-205, JR-D02, JR-D33, JR-E35)"
+ },
+ "passos": [
+  {
+   "id": "CT-310",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-001: não existe rota de edição de versão (PATCH)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+   "corpoEnviado": {
+    "content": "adulterado"
+   },
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:26.406Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "ROUTE_NOT_FOUND",
+     "message": "Rota não encontrada.",
+     "traceId": "98dbec2f-3a62-481d-8f76-2e50d19b466a"
+    }
+   },
+   "req": [
+    "M5-A0149-775b31",
+    "M5-A0232-1c7fbc",
+    "M5-A0253-8388d0",
+    "M5-A0165-e8bc3f"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-201",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-002: webhook com hash diferente do da versão é rejeitado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "abababababababababababababababababababababababababababababababab"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH"
+   },
+   "status": 409,
+   "codigo": "LEGAL_SIGNATURE_HASH_MISMATCH",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:25.422Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_SIGNATURE_HASH_MISMATCH",
+     "message": "O hash do documento assinado não corresponde ao hash da versão do contrato enviada para assinatura.",
+     "traceId": "ab6b9db4-0822-4941-9b2a-a26d421de10f"
+    }
+   },
+   "req": [
+    "M5-A0150-1427b1",
+    "M5-A0233-5d1840",
+    "M5-A0302-11ebaa"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-111",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DRAFT -> LEGAL_REVIEW (do Guia §3) com documento obrigatório faltante: bloqueado pelo gate da etapa LEGAL_REVIEW",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.526Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENTS_PENDING",
+     "message": "Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização); Vistoria de entrada do imóvel; Comprovação de titularidade do imóvel; Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "details": {
+      "stage": "LEGAL_REVIEW",
+      "missingRequirementCodes": [
+       "LEASE_PF_PJ_DOCS",
+       "LEASE_GUARANTEE",
+       "LEASE_INSPECTION",
+       "LEASE_OWNERSHIP",
+       "LEASE_OBLIGATIONS"
+      ],
+      "pending": [
+       {
+        "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+        "requirementCode": "LEASE_PF_PJ_DOCS",
+        "description": "Documentos PF/PJ das partes (locador/locatário).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+        "requirementCode": "LEASE_GUARANTEE",
+        "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+        "requirementCode": "LEASE_INSPECTION",
+        "description": "Vistoria de entrada do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+        "requirementCode": "LEASE_OWNERSHIP",
+        "description": "Comprovação de titularidade do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+        "requirementCode": "LEASE_OBLIGATIONS",
+        "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+        "requiredStage": "LEGAL_REVIEW"
+       }
+      ]
+     },
+     "traceId": "ce96c271-463c-448b-8f14-54948101e1a2"
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0151-ce90f9",
+    "M5-A0234-075757",
+    "M5-A0255-a0f196",
+    "M5-A0322-89a1d9",
+    "M5-A0196-8a7471",
+    "M5-A0002-dc355e"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Chave cedo: contrato ainda em DRAFT (sem assinatura) bloqueia a entrega",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:32.031Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_BLOCKED",
+     "message": "Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada concluída.",
+     "traceId": "87a69070-37a8-4b79-99f9-9bf4c81fab0c"
+    }
+   },
+   "req": [
+    "M5-A0145-146a2f",
+    "M5-A0079-456494",
+    "M5-A0080-157e61",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-22",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fiança vencendo em 10 dias (dentro da janela de alerta)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/guarantees/7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+   "corpoEnviado": {
+    "endsAt": "2026-11-21"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:30.917Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7604e9f1-a6fc-4a58-a6fb-eae3d2d703d3",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "GUARANTOR",
+     "guarantorPersonId": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884",
+     "value": null,
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": "2026-11-21",
+     "lockVersion": 1,
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": [
+      "354d417e-e631-4d1b-b2eb-5d1facda27ab"
+     ],
+     "acceptanceFileId": "f15e9382-df6d-46a5-9333-b2e7b299ea7e",
+     "acceptedAt": "2026-01-02T00:00:00.000Z",
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:30.109Z",
+     "updated_at": "2026-11-11T03:42:30.906Z",
+     "deleted_at": null,
+     "contract_id": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guarantor_person_id": "a61f4cd8-0802-46f9-a82a-ceb6f6e6a884"
+    }
+   },
+   "req": [
+    "M5-A0320-0f6afb",
+    "M5-A0153-4c96b0"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-26",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Vistoria assinada: item novo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/items",
+   "corpoEnviado": {
+    "itemName": "Área — acréscimo",
+    "condition": "GOOD"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:31.487Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_IMMUTABLE_AFTER_SIGNATURE",
+     "message": "Esta vistoria já tem assinatura registrada e ficou imutável — itens e mídia não podem mais ser alterados.",
+     "traceId": "dadbb7f4-3440-4147-9dee-53bd850e7e1f"
+    }
+   },
+   "req": [
+    "M5-A0090-d03b23",
+    "M5-A0237-3d4204",
+    "M5-A0256-42d414",
+    "M5-A0268-8ec039",
+    "M5-A0009-e79a24",
+    "M5-A0154-31578b"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-205",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Primeira assinatura confirmada com o hash da versão",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T03:42:25.485Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "signature": {
+      "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+      "signedAt": "2026-11-11T03:42:25.469Z",
+      "status": "SIGNED",
+      "externalSignatureId": "sbx-sig-ae7beb6c48f75b88",
+      "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+      "signatureMethod": "ELECTRONIC",
+      "evidenceFileId": null,
+      "collectedByUserId": null,
+      "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+      "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+      "signerEmail": null,
+      "evidenceJson": {
+       "providerCode": "signature-sandbox",
+       "simulated": true,
+       "signedAtProvider": "2026-11-11T03:42:25.471Z",
+       "authMethod": "SANDBOX_SIMULATED",
+       "documentSha256": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "receivedAt": "2026-11-11T03:42:25.471Z"
+      },
+      "evidenceComplete": true,
+      "evidenceType": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": null,
+      "created_at": "2026-11-11T03:42:25.223Z",
+      "updated_at": "2026-11-11T03:42:25.471Z",
+      "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+     },
+     "contractTransitioned": false,
+     "alreadyProcessed": false
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0069-ea344f"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico sem origem é bloqueado (JUR-TS-008)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.605Z",
+    "criticality": "CRITICAL",
+    "responsibleUserId": null
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.618Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "DEADLINE_SOURCE_REQUIRED",
+     "message": "Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jurídico precisa de uma origem verificável.",
+     "traceId": "60b1eca8-18d9-49d0-8f7b-986dd3966bae"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0107-dce0a2",
+    "M5-A0156-d0fcff",
+    "M5-A0238-193275",
+    "M5-A0258-4d0dd8",
+    "M5-A0206-d4f5e0",
+    "M5-A0218-5853eb"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D33",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Prazo crítico que já nasce vencido, com responsável",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Recurso mwbkpk2qm6ml",
+    "dueAt": "2026-11-09T03:42:38.265Z",
+    "criticality": "CRITICAL",
+    "sourceDocument": "Acórdão fictício",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T03:42:38.298Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f1dd4cb0-3f92-40e4-979a-b59d282a9148",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Recurso mwbkpk2qm6ml",
+     "dueAt": "2026-11-09T03:42:38.265Z",
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": "Acórdão fictício",
+     "sourceEvent": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "criticality": "CRITICAL",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.286Z",
+     "created_at": "2026-11-11T03:42:38.283Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "32107b97-c3a0-4b73-97b5-189e09a5f28f",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0110-29f58b",
+    "M5-A0157-aeca75",
+    "M5-A0229-87c693",
+    "M5-A0139-b9fb17"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E35",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: prova enviada (SHA-256 gravado no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "prova-integridade-mwbkpkp8rgtk.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgUHJvdmEgZGUgaW50ZWdyaWRhZGUgbXdia3BrcDhyZ3Rr",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 38,
+   "quando": "2026-11-11T03:42:39.071Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "33e5ae18-7e2f-4c1b-9372-117bb7a32051",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/323df61a-78bc-4f56-aebb-10f3ea7fd0af-prova-integridade-mwbkpkp8rgtk.pdf",
+     "fileName": "prova-integridade-mwbkpkp8rgtk.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 42,
+     "checksumSha256": "2a733708e99272b317b91836b8ee206231324a4bc4b592f744a9a2af33464499",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:39.049Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:39.049Z",
+     "created_at": "2026-11-11T03:42:39.049Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7",
+    "M5-A0113-48df89"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

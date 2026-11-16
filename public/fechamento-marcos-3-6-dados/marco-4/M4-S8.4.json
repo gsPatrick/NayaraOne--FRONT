@@ -1,0 +1,220 @@
+{
+ "id": "M4-§8.4",
+ "secao": "§8 Fluxo de pagamento",
+ "requisito": "\"4. Cria payment_intent + snapshot/hash + idempotency_key.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-07 approvePaymentIntent recusa quando o lançamento mudou depois do snapshot (hash divergente)",
+   "status": "passou",
+   "duracaoMs": 21,
+   "commitDoArquivo": "fa15be9f"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "B3: duas criações SIMULTÂNEAS de intenção para o mesmo lançamento — a 2ª espera o lock; o índice único barra a duplicata",
+   "status": "passou",
+   "duracaoMs": 1551,
+   "commitDoArquivo": "7dd7af78"
+  },
+  {
+   "arquivo": "test/m4.intencaoChaveIdempotencia.test.js",
+   "nome": "M4-§8.4 a intenção nasce com idempotency_key estável e única (POST /finance/payment-intents e /finance/payments/prepare), gravada no banco",
+   "status": "passou",
+   "duracaoMs": 4252,
+   "commitDoArquivo": "fe494632"
+  },
+  {
+   "arquivo": "test/m4.intencaoChaveIdempotencia.test.js",
+   "nome": "M4-§8.4 o envio ao banco reaproveita a MESMA chave da criação (o adapter recebe essa chave) e a intenção cancelada mantém a sua",
+   "status": "passou",
+   "duracaoMs": 1674,
+   "commitDoArquivo": "fe494632"
+  },
+  {
+   "arquivo": "test/m4.intencaoChaveIdempotencia.test.js",
+   "nome": "M4-§8.4 intenção antiga sem chave (criada antes da correção) recebe no envio ao banco o mesmo formato de sempre (payment-intent:<id>)",
+   "status": "passou",
+   "duracaoMs": 982,
+   "commitDoArquivo": "fe494632"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P21-1",
+   "tipo": "http",
+   "linhas": [
+    "M4-§8.4",
+    "M4-G§3",
+    "M4-G§15.3"
+   ],
+   "titulo": "Duplo clique: duas criações SIMULTÂNEAS de intenção para o mesmo lançamento (requisição 1/2) — uma só nasce",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38"
+   },
+   "esperado": {
+    "status": [
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 125,
+   "quando": "2026-11-11T01:35:07.305Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "reconciliationAttempts": 0,
+     "id": "da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "idempotencyKey": "payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+     "snapshotJson": {
+      "dueAt": "2026-11-13T01:35:07.127Z",
+      "amount": "1200.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento ao fornecedor 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "d47169ea87874322c1555b7b75a2ca3590cca5cb92094ef36d58ee3c93412777",
+     "status": "PENDING",
+     "approvalRequestId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:07.236Z",
+     "created_at": "2026-11-11T01:35:07.236Z",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciledAt": null,
+     "reconciledEntryId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P53",
+   "tipo": "http",
+   "linhas": [
+    "M4-§8.4",
+    "M4-G§14.2"
+   ],
+   "titulo": "Intenção do pagamento manual (snapshot inclui o comprovante)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "c00ac98d-d753-48e5-841c-1fff9212d58b"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 40,
+   "quando": "2026-11-11T01:35:09.632Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "reconciliationAttempts": 0,
+     "id": "2e0e7657-b8d6-475e-8339-22e76fa3b781",
+     "idempotencyKey": "payment-intent:2e0e7657-b8d6-475e-8339-22e76fa3b781",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "c00ac98d-d753-48e5-841c-1fff9212d58b",
+     "snapshotJson": {
+      "dueAt": "2026-11-13T01:35:09.411Z",
+      "amount": "310.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento manual com comprovante 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "c00ac98d-d753-48e5-841c-1fff9212d58b",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "2df30945ab5f76407da1b2d2cf34f7d3507ba678398339a384099f5ce1dba614",
+     "status": "PENDING",
+     "approvalRequestId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:09.608Z",
+     "created_at": "2026-11-11T01:35:09.608Z",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciledAt": null,
+     "reconciledEntryId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

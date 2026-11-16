@@ -1,0 +1,149 @@
+{
+ "id": "M5-A0223-1ad197",
+ "secao": "P2 > 15. Eventos",
+ "linhaCaderno": 703,
+ "requisito": "• contract.signed",
+ "demandas": "M5-D018;M5-D042",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js:474 contract.signed",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-07 §18: eventos mínimos com o nome do Caderno — contract.created, contract.requirement.missing, contract.version.approved, contract.sent_for_signature, contract.signed, evidence.package.created",
+   "status": "pass",
+   "ms": 322.789,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-007: webhook de assinatura duplicado (mesmo id externo) gera uma única atualização, e SIGNED só com todas as assinaturas da versão",
+   "status": "pass",
+   "ms": 558.993,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-210",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-902c25d73e267f69/webhook",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:25.572Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0223-1ad197.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m45.cadernoM5Gaps.test.js test/m5fech.contratos.adversariais.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-211, CT-210)"
+ },
+ "passos": [
+  {
+   "id": "CT-210",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Última assinatura obrigatória da versão: contrato vira SIGNED automaticamente",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-902c25d73e267f69/webhook",
+   "corpoEnviado": {
+    "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 51,
+   "quando": "2026-11-11T03:42:25.572Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "signature": {
+      "id": "bde0ac1f-a166-41f5-ac2f-0f569771d38f",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+      "signedAt": "2026-11-11T03:42:25.531Z",
+      "status": "SIGNED",
+      "externalSignatureId": "sbx-sig-902c25d73e267f69",
+      "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+      "signatureMethod": "ELECTRONIC",
+      "evidenceFileId": null,
+      "collectedByUserId": null,
+      "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+      "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+      "signerEmail": null,
+      "evidenceJson": {
+       "providerCode": "signature-sandbox",
+       "simulated": true,
+       "signedAtProvider": "2026-11-11T03:42:25.533Z",
+       "authMethod": "SANDBOX_SIMULATED",
+       "documentSha256": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "receivedAt": "2026-11-11T03:42:25.533Z"
+      },
+      "evidenceComplete": true,
+      "evidenceType": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": null,
+      "created_at": "2026-11-11T03:42:25.229Z",
+      "updated_at": "2026-11-11T03:42:25.533Z",
+      "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010"
+     },
+     "contractTransitioned": true,
+     "alreadyProcessed": false
+    }
+   },
+   "req": [
+    "M5-A0056-103e8b",
+    "M5-A0073-185af0",
+    "M5-A0130-37a2d4",
+    "M5-A0223-1ad197"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-211",
+   "req": [
+    "M5-A0056-103e8b",
+    "M5-A0130-37a2d4",
+    "M5-A0223-1ad197"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "perfil": "A:leitura",
+   "descricao": "Contrato SIGNED e evento contract.signed com a versão e o hash assinados",
+   "sql": "SELECT c.status, e.payload_json->>'contractVersionId' AS versao, e.payload_json->>'contentHash' AS hash FROM legal.contracts c LEFT JOIN integration.outbox_events e ON e.aggregate_id = c.id AND e.event_type = 'contract.signed' WHERE c.id = :id",
+   "resultado": [
+    {
+     "status": "SIGNED",
+     "versao": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.574Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

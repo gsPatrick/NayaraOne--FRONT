@@ -1,0 +1,300 @@
+{
+  "id": "M6-101",
+  "requisito": "Componente NAY Obras (mesmo limite de §10: resume, compara cronograma, projeta custo, detecta ausência de diário/documentos, sugere análise visual com confirmação humana).",
+  "secaoDoLivro": "IA NAY §4 Componentes: \"NAY Obras — progresso, custos, diário, qualidade e pós-obra\"",
+  "implementacao": "nayObras.service.js; rotas /nay-summary e /nay-summary/post-obra; agente NAY_OBRAS (Marco 9)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>: card NAY Obras",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.nayObras.test.js",
+      "nome": "GAP 1 — summarizeProject detecta dias úteis sem RDO (missingDailyReportDays > 0)",
+      "resultado": "passou",
+      "duracaoMs": 875,
+      "executadoEm": "2026-11-11T00:14:13.814Z"
+    },
+    {
+      "arquivo": "test/construction.nayObras.test.js",
+      "nome": "GAP 2 — visualAnalysisSuggestions aparece no resumo quando não há foto recente de RDO",
+      "resultado": "passou",
+      "duracaoMs": 276,
+      "executadoEm": "2026-11-11T00:14:14.581Z"
+    },
+    {
+      "arquivo": "test/construction.nayObras.test.js",
+      "nome": "GAP 1 — workersWithoutDocuments conta DailyWorker sem documentFileIds",
+      "resultado": "passou",
+      "duracaoMs": 490,
+      "executadoEm": "2026-11-11T00:14:14.305Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H131",
+      "H132",
+      "H175",
+      "H176"
+    ],
+    "resumo": [
+      "H131 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary → 200",
+      "H132 GET /api/v1/construction/projects/617092a6-2036-4b67-802d-9e2dd8068a9b/nay-summary → 200",
+      "H175 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary → 200",
+      "H176 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary/post-obra → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:24.726Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H131",
+      "requisitos": [
+        "M6-108",
+        "M6-101"
+      ],
+      "cenario": "NAY Obras da obra principal aponta os dias úteis sem RDO (a tarefa foi para o responsável)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 48,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "component": "NAY Obras",
+          "generatedAt": "2026-11-11T00:12:24.724Z",
+          "summary": {
+            "physicalProgressPct": 50,
+            "plannedProgressPct": 100,
+            "scheduleDelayDays": 0,
+            "baselineBudget": 86000,
+            "projectedTotalCost": 3234,
+            "projectedMargin": 82766,
+            "measurementsByStatus": {
+              "SUPERSEDED": 1,
+              "PAYABLE": 2
+            },
+            "wastagePct": 5.81,
+            "recurrenceByRootCause": [
+              {
+                "cause": "CRITICAL",
+                "count": 1
+              },
+              {
+                "cause": "LOW",
+                "count": 1
+              },
+              {
+                "cause": "HIGH",
+                "count": 1
+              },
+              {
+                "cause": "Umidade no depósito",
+                "count": 1
+              },
+              {
+                "cause": "Furto no canteiro",
+                "count": 1
+              }
+            ],
+            "missingDailyReportDays": 9,
+            "workersWithoutDocuments": 0
+          },
+          "visualAnalysisSuggestions": [
+            {
+              "type": "NONCONFORMITY_WITHOUT_AFTER_EVIDENCE",
+              "message": "2 não conformidade(s) aberta(s) sem evidência \"depois\" anexada. Considere nova inspeção visual para confirmar correção — sugestão baseada em metadados, pendente de confirmação humana.",
+              "referenceEntity": "construction.nonconformities",
+              "referenceId": null,
+              "ageDays": null
+            }
+          ],
+          "risks": [
+            "Desperdício de material acima de 5% do orçamento (5.81%).",
+            "Existe valor pendente de pagamento: 56200."
+          ],
+          "decisionsMade": []
+        }
+      },
+      "dataHora": "2026-11-11T00:12:24.726Z"
+    },
+    {
+      "id": "H132",
+      "requisitos": [
+        "M6-74",
+        "M6-101"
+      ],
+      "cenario": "NAY Obras da obra atrasada (risco de atraso apontado, sem decisão)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/617092a6-2036-4b67-802d-9e2dd8068a9b/nay-summary",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 31,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "component": "NAY Obras",
+          "generatedAt": "2026-11-11T00:12:24.755Z",
+          "summary": {
+            "physicalProgressPct": 0,
+            "plannedProgressPct": 0,
+            "scheduleDelayDays": 2,
+            "baselineBudget": 0,
+            "projectedTotalCost": 0,
+            "projectedMargin": 0,
+            "measurementsByStatus": {},
+            "wastagePct": null,
+            "recurrenceByRootCause": [],
+            "missingDailyReportDays": 10,
+            "workersWithoutDocuments": 0
+          },
+          "visualAnalysisSuggestions": [
+            {
+              "type": "NO_DAILY_REPORT_PHOTO",
+              "message": "Nenhum RDO desta obra tem foto anexada (evidenceFileIds vazio). Considere registrar evidência visual no próximo diário — sugestão baseada em metadados, pendente de confirmação humana.",
+              "referenceEntity": "construction.daily_reports",
+              "referenceId": null,
+              "ageDays": null
+            }
+          ],
+          "risks": [
+            "Obra atrasada em 2 dia(s) em relação ao prazo planejado."
+          ],
+          "decisionsMade": []
+        }
+      },
+      "dataHora": "2026-11-11T00:12:24.757Z"
+    },
+    {
+      "id": "H175",
+      "requisitos": [
+        "M6-101",
+        "M6-27",
+        "M6-90"
+      ],
+      "cenario": "NAY Obras: resumo de andamento, riscos e cronograma (decisionsMade sempre vazio)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 44,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "component": "NAY Obras",
+          "generatedAt": "2026-11-11T00:12:28.757Z",
+          "summary": {
+            "physicalProgressPct": 50,
+            "plannedProgressPct": 100,
+            "scheduleDelayDays": 0,
+            "baselineBudget": 86000,
+            "projectedTotalCost": 3234,
+            "projectedMargin": 82766,
+            "measurementsByStatus": {
+              "SUPERSEDED": 1,
+              "PAYABLE": 2
+            },
+            "wastagePct": 5.81,
+            "recurrenceByRootCause": [
+              {
+                "cause": "HIGH",
+                "count": 1
+              },
+              {
+                "cause": "LOW",
+                "count": 1
+              },
+              {
+                "cause": "CRITICAL",
+                "count": 1
+              },
+              {
+                "cause": "Umidade no depósito",
+                "count": 1
+              },
+              {
+                "cause": "Furto no canteiro",
+                "count": 1
+              }
+            ],
+            "missingDailyReportDays": 9,
+            "workersWithoutDocuments": 0
+          },
+          "visualAnalysisSuggestions": [],
+          "risks": [
+            "Desperdício de material acima de 5% do orçamento (5.81%).",
+            "Existe valor pendente de pagamento: 61600."
+          ],
+          "decisionsMade": []
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.759Z"
+    },
+    {
+      "id": "H176",
+      "requisitos": [
+        "M6-101",
+        "M6-27",
+        "M6-64",
+        "M6-90"
+      ],
+      "cenario": "NAY Obras pós-obra: resumo sem atribuir culpa nem desconto",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary/post-obra",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 81,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "component": "NAY Obras",
+          "generatedAt": "2026-11-11T00:12:28.797Z",
+          "summary": {
+            "totalCases": 2,
+            "openCases": 1,
+            "closedCases": 1,
+            "avgResolutionHours": 0,
+            "totalLaborCost": 1300,
+            "totalMaterialCost": 210,
+            "totalWarrantyCost": 1510,
+            "casesByEscalationLevel": {
+              "NONE": 1,
+              "WARNING": 0,
+              "CRITICAL": 0,
+              "OVERDUE": 1
+            },
+            "totalWarrantyActions": 1,
+            "updatedAt": "2026-11-11T00:12:28.797Z"
+          },
+          "risks": [
+            "1 caso(s) de garantia com SLA vencido (OVERDUE)."
+          ],
+          "decisionsMade": []
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.840Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.462Z"
+}

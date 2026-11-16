@@ -1,0 +1,122 @@
+{
+ "id": "M4-§5.12",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.commissions — \"Direito de comissão.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM2 comissão calculada pelo Motor de Regras grava rule_version_id; nova versão não altera a antiga; banco exige a versão",
+   "status": "passou",
+   "duracaoMs": 193,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T46",
+   "tipo": "http",
+   "linhas": [
+    "M4-§14.2",
+    "M4-G§11",
+    "M4-§5.12"
+   ],
+   "titulo": "Comissão do corretor nasce do fato gerador com ruleVersionId, base e percentual da regra",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "3d3d0645-f19e-4982-a04a-51813387630c",
+    "sourceEntryId": "700ff4f4-4cd0-4c9f-81ec-75a6333203ae",
+    "component": "BROKER",
+    "installmentsCount": 2,
+    "firstDueAt": "2026-11-16T01:35:13.270Z",
+    "idempotencyKey": "m4-com-0871300",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 102,
+   "quando": "2026-11-11T01:35:13.372Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "88574c1f-3f25-45af-8c99-c4ce224a5dac",
+      "lockVersion": 0,
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "opportunityId": null,
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "beneficiaryUserId": "3d3d0645-f19e-4982-a04a-51813387630c",
+      "baseAmount": "1000.00",
+      "percentage": "5.000000",
+      "totalAmount": "50.00",
+      "ruleVersionId": "90c6f137-0045-4c83-a150-a5e57502e768",
+      "sourceEntryId": "700ff4f4-4cd0-4c9f-81ec-75a6333203ae",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4-com-0871300",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updated_at": "2026-11-11T01:35:13.337Z",
+      "created_at": "2026-11-11T01:35:13.337Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "7a31cbc4-e52e-4711-9f96-9ea4bebfd3e1",
+       "lockVersion": 0,
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "commissionId": "88574c1f-3f25-45af-8c99-c4ce224a5dac",
+       "installmentNumber": 1,
+       "amount": "25.00",
+       "dueAt": "2026-11-16T01:35:13.270Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:13.341Z",
+       "created_at": "2026-11-11T01:35:13.341Z"
+      },
+      {
+       "id": "cb3d84c1-052e-413d-82e7-dca4f3ed41d9",
+       "lockVersion": 0,
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "commissionId": "88574c1f-3f25-45af-8c99-c4ce224a5dac",
+       "installmentNumber": 2,
+       "amount": "25.00",
+       "dueAt": "2026-12-16T01:35:13.270Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:13.347Z",
+       "created_at": "2026-11-11T01:35:13.347Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

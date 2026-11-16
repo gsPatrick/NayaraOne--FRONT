@@ -1,0 +1,182 @@
+{
+ "id": "M4-FIN-002",
+ "secao": "§2 Princípios",
+ "requisito": "FIN-002 Conta segregada: \"movimentação cruzada exige transferência formal.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.crossCompanyIsolation.test.js",
+   "nome": "FIN-TS-004: lançamento não pode usar bankAccount de outra empresa (mesmo do mesmo grupo) — erro de aplicação, não só RLS",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "35aaf028"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-IC2 pedido nasce sem lançamentos; quem pede não aprova; outra pessoa aprova e cria os dois lados",
+   "status": "passou",
+   "duracaoMs": 143,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "E02",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-002",
+    "M4-FIN-TS-004",
+    "M4-G§16.4"
+   ],
+   "titulo": "Despesa da empresa A usando a conta bancária da empresa A2 (Construção/BB): bloqueada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 15,
+    "description": "Despesa A na conta de A2",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "bankAccountId": "e13a4a4f-0377-44d8-b556-e41035439c5f"
+   },
+   "esperado": {
+    "status": [
+     400,
+     403,
+     404,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T01:35:05.510Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+     "message": "Conta bancária não encontrada.",
+     "traceId": "4ee5d738-ac61-4b3f-ab11-371f3bf8f2a0"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "IC04",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-002"
+   ],
+   "titulo": "Transferência para a própria empresa: recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/intercompany-transfers",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "toCompanyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+    "amount": 7500,
+    "reason": "Rateio administrativo da obra 0871300",
+    "evidenceFileId": "ff8c40c3-73e5-429c-91e0-456d26315738",
+    "fromBankAccountId": "3069537d-ce7a-44b3-bfdc-533045eaeff1",
+    "toBankAccountId": "8932ee54-7849-45db-b410-0d058c045b95"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_INTERCOMPANY_SAME_COMPANY"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_INTERCOMPANY_SAME_COMPANY",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T01:35:14.043Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_INTERCOMPANY_SAME_COMPANY",
+     "message": "A empresa de origem e a de destino precisam ser diferentes.",
+     "traceId": "088b5111-f091-47e3-b747-698028d35ae3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "IC09",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-016",
+    "M4-FIN-002"
+   ],
+   "titulo": "Transferência com lado de saída (A) e lado de entrada (A2) vinculados",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/intercompany-transfers",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T01:35:14.206Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "444500d3-9bb5-45d4-928e-584f576a2523",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "fromCompanyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "toCompanyId": "213c5901-9715-45c1-95f6-02140a54efd3",
+      "amount": "7500.00",
+      "reason": "Rateio administrativo da obra 0871300",
+      "status": "PENDING",
+      "fromEntryId": "7251bc99-0104-42e1-9ed2-39c40a4c0b2e",
+      "toEntryId": "1edecbad-b72a-49af-973a-92441a969d71",
+      "evidenceFileId": "ff8c40c3-73e5-429c-91e0-456d26315738",
+      "fromBankAccountId": "3069537d-ce7a-44b3-bfdc-533045eaeff1",
+      "toBankAccountId": "e13a4a4f-0377-44d8-b556-e41035439c5f",
+      "requestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "approvedAt": "2026-11-11T01:35:14.166Z",
+      "rejectedByUserId": null,
+      "rejectedAt": null,
+      "rejectionReason": null,
+      "reconciledAt": null,
+      "reconciledByUserId": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "created_at": "2026-11-11T01:35:14.099Z",
+      "updated_at": "2026-11-11T01:35:14.167Z",
+      "from_company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "to_company_id": "213c5901-9715-45c1-95f6-02140a54efd3",
+      "from_entry_id": "7251bc99-0104-42e1-9ed2-39c40a4c0b2e",
+      "to_entry_id": "1edecbad-b72a-49af-973a-92441a969d71"
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

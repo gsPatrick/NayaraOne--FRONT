@@ -1,0 +1,744 @@
+{
+  "id": "M6-22",
+  "requisito": "\"Custo realizado vem de Financeiro/Estoque, evitando dupla digitação.\" \"Não duplicar custo em Financeiro/Obra.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §2; Guia do Marcelo (Obras) §15",
+  "implementacao": "budgetLines.service.js (actualAmount nunca editável); projectHealth.service.js (actualFinancialCost do Financeiro, consumedInventoryCost do Estoque); base CAIXA/COMPETENCIA do custo financeiro em costBasis.js (parâmetro da empresa construction.custo_realizado.base, padrão CAIXA)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/orcamento: coluna \"Realizado\" só leitura, vinda do Financeiro/Estoque",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-22: actualAmount não pode ser editado nem em orçamento ainda DRAFT (nunca via UPDATE direto)",
+      "resultado": "passou",
+      "duracaoMs": 42,
+      "executadoEm": "2026-11-11T00:12:00.472Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-42: consumedInventoryCost soma o custo real de saídas de estoque vinculadas à obra (OUT - RETURN)",
+      "resultado": "passou",
+      "duracaoMs": 1751,
+      "executadoEm": "2026-11-11T00:12:04.909Z"
+    },
+    {
+      "arquivo": "test/construction.siteReturns.test.js",
+      "nome": "M6-28/M6-60: devolução REUSABLE do canteiro devolve o saldo e abate o custo consumido da obra; reenvio não estorna duas vezes",
+      "resultado": "passou",
+      "duracaoMs": 1108,
+      "executadoEm": "2026-11-11T00:14:33.060Z"
+    },
+    {
+      "arquivo": "test/construction.costBasis.test.js",
+      "nome": "M6-42/M6-22: CAIXA (padrão) não conta medição aprovada a pagar; COMPETENCIA conta os R$ 61.600,00 no custo, na projeção e na margem",
+      "resultado": "passou",
+      "duracaoMs": 1407,
+      "executadoEm": "2026-11-11T00:12:28.264Z"
+    },
+    {
+      "arquivo": "test/construction.costBasis.test.js",
+      "nome": "M6-42: depois do pagamento a medição não é contada duas vezes (CAIXA e COMPETENCIA convergem)",
+      "resultado": "passou",
+      "duracaoMs": 1103,
+      "executadoEm": "2026-11-11T00:12:31.260Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H016",
+      "H062",
+      "H064",
+      "H069",
+      "H072",
+      "H105",
+      "H106",
+      "H107",
+      "H108",
+      "H109",
+      "H110",
+      "H112"
+    ],
+    "resumo": [
+      "H016 PATCH /api/v1/construction/budget-lines/7f7fa67c-b907-4e63-9415-f541ad1fa01f → 400 BUDGET_LINE_ACTUAL_AMOUNT_READONLY",
+      "H062 POST /api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/receive → 200",
+      "H064 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health → 200",
+      "H069 POST /api/v1/construction/material-requests/0bd1aca3-7d8c-44f9-a153-84602d867de9/receive → 200",
+      "H072 POST /api/v1/construction/material-requests/849dff1e-2afe-4932-80b0-f1982b181ed5/receive → 200",
+      "H105 GET /api/v1/construction/settings/cost-basis → 200",
+      "H106 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health → 200",
+      "H107 PUT /api/v1/construction/settings/cost-basis → 403 PERMISSION_DENIED",
+      "H108 PUT /api/v1/construction/settings/cost-basis → 400 CONSTRUCTION_COST_BASIS_INVALID",
+      "H109 PUT /api/v1/construction/settings/cost-basis → 200",
+      "H110 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health → 200",
+      "H112 PUT /api/v1/construction/settings/cost-basis → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:02.617Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-custo-realizado.spec.js",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "iniciadoEm": "2026-11-11T00:12:48Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "0. obra com medição aprovada de R$ 12.000,00 a pagar; em CAIXA o custo realizado é 0 — CAIXA 0"
+        },
+        {
+          "ok": true,
+          "passo": "1. login pela tela"
+        },
+        {
+          "ok": true,
+          "passo": "2. card \"Custo realizado das obras\" mostra a base vigente Caixa (padrão)"
+        },
+        {
+          "ok": true,
+          "passo": "3. escolher Competência e salvar pela tela grava o parâmetro — COMPETENCIA"
+        },
+        {
+          "ok": true,
+          "passo": "4. Saúde da obra em COMPETENCIA conta a medição aprovada a pagar no custo realizado — 12000"
+        },
+        {
+          "ok": true,
+          "passo": "5. voltar para Caixa pela tela restaura o cálculo anterior — 0"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H016",
+      "requisitos": [
+        "M6-22"
+      ],
+      "cenario": "NEGATIVO: digitar custo realizado (actualAmount) direto no item do orçamento",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/budget-lines/7f7fa67c-b907-4e63-9415-f541ad1fa01f",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "actualAmount": 999
+      },
+      "statusHttp": 400,
+      "codigoErro": "BUDGET_LINE_ACTUAL_AMOUNT_READONLY",
+      "esperado": "400 BUDGET_LINE_ACTUAL_AMOUNT_READONLY",
+      "conferiu": true,
+      "duracaoMs": 447,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "BUDGET_LINE_ACTUAL_AMOUNT_READONLY",
+          "message": "\"actualAmount\" não pode ser editado diretamente — custo realizado só é populado automaticamente via integração com Financeiro/Estoque.",
+          "traceId": "8f1ef263-a7f4-46e6-b864-7cfbc6467b51"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:02.617Z"
+    },
+    {
+      "id": "H062",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77",
+        "M6-85",
+        "M6-22",
+        "M6-98"
+      ],
+      "cenario": "Recebimento integra o Estoque: saída real do almoxarifado para a obra (OUT)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/receive",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "sourceLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 196,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "48814203-8d2a-473e-ac75-919769662592",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "40.000",
+          "unit": "UN",
+          "status": "RECEIVED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "receivedAt": "2026-11-11T00:12:12.114Z",
+          "lockVersion": 1,
+          "idempotencyKey": "mr-a-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:12.094Z",
+          "updated_at": "2026-11-11T00:12:12.114Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.300Z"
+    },
+    {
+      "id": "H064",
+      "requisitos": [
+        "M6-42",
+        "M6-22",
+        "M6-85"
+      ],
+      "cenario": "Custo consumido do Estoque na obra depois do recebimento (40 × R$ 38,50 = R$ 1.540,00)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 226,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "baselineBudget": 86000,
+          "approvedChanges": 6000,
+          "committedCost": 80000,
+          "actualFinancialCost": 0,
+          "consumedInventoryCost": 1540,
+          "forecastToComplete": 84460,
+          "projectedTotalCost": 86000,
+          "projectedMargin": 0,
+          "marginPct": 0,
+          "minMarginPct": 10,
+          "belowMinMargin": true,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "economyAmount": 0,
+          "commissionAmount": 0,
+          "costBasis": {
+            "base": "CAIXA",
+            "paidFinancialCost": 0,
+            "openPayablesCost": 0,
+            "pendingApprovedMeasurementsCost": 0,
+            "includedInActualFinancialCost": false
+          },
+          "updatedAt": "2026-11-11T00:12:12.473Z",
+          "kpis": {
+            "physicalProgressPct": 0,
+            "plannedProgressPct": 100,
+            "scheduleProgressPct": 12.28,
+            "progressVsScheduleGapPct": -12.28,
+            "scheduleDelayDays": 0,
+            "isOverdue": false,
+            "payablePendingTotal": 0,
+            "measurementsByStatus": {},
+            "wastagePct": 0,
+            "recurrenceByRootCause": []
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.547Z"
+    },
+    {
+      "id": "H069",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77",
+        "M6-85",
+        "M6-22",
+        "M6-98"
+      ],
+      "cenario": "Recebimento integra o Estoque: saída real do almoxarifado para a obra (OUT)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/0bd1aca3-7d8c-44f9-a153-84602d867de9/receive",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "sourceLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 185,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "0bd1aca3-7d8c-44f9-a153-84602d867de9",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "5.000",
+          "unit": "UN",
+          "status": "RECEIVED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "receivedAt": "2026-11-11T00:12:13.229Z",
+          "lockVersion": 1,
+          "idempotencyKey": "mr-b-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:13.198Z",
+          "updated_at": "2026-11-11T00:12:13.229Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.396Z"
+    },
+    {
+      "id": "H072",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77",
+        "M6-85",
+        "M6-22",
+        "M6-98"
+      ],
+      "cenario": "Recebimento integra o Estoque: saída real do almoxarifado para a obra (OUT)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/849dff1e-2afe-4932-80b0-f1982b181ed5/receive",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "sourceLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 241,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "849dff1e-2afe-4932-80b0-f1982b181ed5",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "3.000",
+          "unit": "UN",
+          "status": "RECEIVED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "receivedAt": "2026-11-11T00:12:13.695Z",
+          "lockVersion": 1,
+          "idempotencyKey": "mr-c-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:13.505Z",
+          "updated_at": "2026-11-11T00:12:13.695Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.754Z"
+    },
+    {
+      "id": "H105",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "cenario": "Base do custo realizado vigente: CAIXA (padrão, nada gravado)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/settings/cost-basis",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 64,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "key": "construction.custo_realizado.base",
+          "base": "CAIXA",
+          "default": "CAIXA",
+          "options": [
+            "CAIXA",
+            "COMPETENCIA"
+          ],
+          "configured": false,
+          "updatedAt": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:17.964Z"
+    },
+    {
+      "id": "H106",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "cenario": "Saúde da obra em CAIXA: medições aprovadas a pagar aparecem em costBasis.pendingApprovedMeasurementsCost, fora do custo realizado",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 136,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "baselineBudget": 86000,
+          "approvedChanges": 6000,
+          "committedCost": 80000,
+          "actualFinancialCost": 0,
+          "consumedInventoryCost": 1617,
+          "forecastToComplete": 1617,
+          "projectedTotalCost": 3234,
+          "projectedMargin": 82766,
+          "marginPct": 96.24,
+          "minMarginPct": 10,
+          "belowMinMargin": false,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "economyAmount": 82766,
+          "commissionAmount": 1655.32,
+          "costBasis": {
+            "base": "CAIXA",
+            "paidFinancialCost": 0,
+            "openPayablesCost": 56200,
+            "pendingApprovedMeasurementsCost": 56200,
+            "includedInActualFinancialCost": false
+          },
+          "updatedAt": "2026-11-11T00:12:18.094Z",
+          "kpis": {
+            "physicalProgressPct": 50,
+            "plannedProgressPct": 100,
+            "scheduleProgressPct": 12.28,
+            "progressVsScheduleGapPct": 37.72,
+            "scheduleDelayDays": 0,
+            "isOverdue": false,
+            "payablePendingTotal": 56200,
+            "measurementsByStatus": {
+              "SUPERSEDED": 1,
+              "PAYABLE": 2
+            },
+            "wastagePct": 5.81,
+            "recurrenceByRootCause": [
+              {
+                "cause": "Umidade no depósito",
+                "count": 1
+              },
+              {
+                "cause": "Furto no canteiro",
+                "count": 1
+              }
+            ]
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:18.100Z"
+    },
+    {
+      "id": "H107",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "cenario": "NEGATIVO: perfil sem construction:approve muda a base do custo realizado",
+      "metodo": "PUT",
+      "rota": "/api/v1/construction/settings/cost-basis",
+      "perfil": "Equipe de campo da Empresa A (só construction:create/read)",
+      "corpoEnviado": {
+        "base": "COMPETENCIA"
+      },
+      "statusHttp": 403,
+      "codigoErro": "PERMISSION_DENIED",
+      "esperado": "403",
+      "conferiu": true,
+      "duracaoMs": 12,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+          "details": {
+            "required": "construction:approve"
+          },
+          "traceId": "eacae85d-22a8-4b65-ae24-3a3e5e4a656d"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:18.112Z"
+    },
+    {
+      "id": "H108",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "cenario": "NEGATIVO: base desconhecida",
+      "metodo": "PUT",
+      "rota": "/api/v1/construction/settings/cost-basis",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "base": "REGIME_X"
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_COST_BASIS_INVALID",
+      "esperado": "400 CONSTRUCTION_COST_BASIS_INVALID",
+      "conferiu": true,
+      "duracaoMs": 27,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_COST_BASIS_INVALID",
+          "message": "\"base\" deve ser CAIXA ou COMPETENCIA.",
+          "details": {
+            "options": [
+              "CAIXA",
+              "COMPETENCIA"
+            ]
+          },
+          "traceId": "273b62b0-4cd5-4844-b957-bf37b7a3702a"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:18.139Z"
+    },
+    {
+      "id": "H109",
+      "requisitos": [
+        "M6-42",
+        "M6-22",
+        "M6-23"
+      ],
+      "cenario": "Mudar a base para COMPETENCIA (dicionário de parâmetros, auditado)",
+      "metodo": "PUT",
+      "rota": "/api/v1/construction/settings/cost-basis",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "base": "COMPETENCIA"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 155,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "key": "construction.custo_realizado.base",
+          "base": "COMPETENCIA",
+          "default": "CAIXA",
+          "options": [
+            "CAIXA",
+            "COMPETENCIA"
+          ],
+          "configured": true,
+          "updatedAt": "2026-11-11T00:12:18.285Z"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:18.294Z"
+    },
+    {
+      "id": "H110",
+      "requisitos": [
+        "M6-42",
+        "M6-22",
+        "M6-23"
+      ],
+      "cenario": "Saúde da obra em COMPETENCIA: as medições aprovadas a pagar entram no custo realizado, no custo projetado e na margem",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 66,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "baselineBudget": 86000,
+          "approvedChanges": 6000,
+          "committedCost": 80000,
+          "actualFinancialCost": 56200,
+          "consumedInventoryCost": 1617,
+          "forecastToComplete": 57817,
+          "projectedTotalCost": 115634,
+          "projectedMargin": -29634,
+          "marginPct": -34.46,
+          "minMarginPct": 10,
+          "belowMinMargin": true,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "economyAmount": 0,
+          "commissionAmount": 0,
+          "costBasis": {
+            "base": "COMPETENCIA",
+            "paidFinancialCost": 0,
+            "openPayablesCost": 56200,
+            "pendingApprovedMeasurementsCost": 56200,
+            "includedInActualFinancialCost": true
+          },
+          "updatedAt": "2026-11-11T00:12:18.359Z",
+          "kpis": {
+            "physicalProgressPct": 50,
+            "plannedProgressPct": 100,
+            "scheduleProgressPct": 12.28,
+            "progressVsScheduleGapPct": 37.72,
+            "scheduleDelayDays": 0,
+            "isOverdue": false,
+            "payablePendingTotal": 56200,
+            "measurementsByStatus": {
+              "SUPERSEDED": 1,
+              "PAYABLE": 2
+            },
+            "wastagePct": 5.81,
+            "recurrenceByRootCause": [
+              {
+                "cause": "Umidade no depósito",
+                "count": 1
+              },
+              {
+                "cause": "Furto no canteiro",
+                "count": 1
+              }
+            ]
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:18.360Z"
+    },
+    {
+      "id": "H112",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "cenario": "Voltar a base para CAIXA",
+      "metodo": "PUT",
+      "rota": "/api/v1/construction/settings/cost-basis",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "base": "CAIXA"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 198,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "key": "construction.custo_realizado.base",
+          "base": "CAIXA",
+          "default": "CAIXA",
+          "options": [
+            "CAIXA",
+            "COMPETENCIA"
+          ],
+          "configured": true,
+          "updatedAt": "2026-11-11T00:12:18.731Z"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:18.758Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C010",
+      "requisitos": [
+        "M6-28",
+        "M6-60",
+        "M6-85",
+        "M6-22"
+      ],
+      "descricao": "Almoxarifado: saldo = soma dos movimentos; saídas da obra e devoluções (RETURN) com custo histórico",
+      "sql": "SELECT b.quantity_on_hand AS saldo, (SELECT coalesce(sum(CASE WHEN movement_type IN ('IN','RETURN') THEN quantity WHEN movement_type IN ('OUT','LOSS') THEN -quantity ELSE 0 END),0) FROM inventory.inventory_movements WHERE inventory_item_id = $1) AS soma_movimentos, (SELECT coalesce(sum(quantity),0) FROM inventory.inventory_movements WHERE project_id = $3 AND movement_type = 'OUT') AS saida_para_obra, (SELECT coalesce(sum(quantity),0) FROM inventory.inventory_movements WHERE project_id = $3 AND movement_type = 'RETURN') AS devolvido FROM inventory.stock_balances b WHERE b.inventory_item_id = $1 AND b.location_id = $2",
+      "resultado": [
+        {
+          "saldo": "263.000000",
+          "soma_movimentos": "263.0000",
+          "saida_para_obra": "48.0000",
+          "devolvido": "11.0000"
+        }
+      ],
+      "invariante": "saldo 263 = 300 − 48 + 11 (LOST não volta); saldo igual à soma dos movimentos",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.192Z"
+    },
+    {
+      "id": "C022",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "descricao": "Parâmetro construction.custo_realizado.base: gravações auditadas com antes/depois (CAIXA → COMPETENCIA → CAIXA)",
+      "sql": "SELECT a.action, a.before_json->'value' AS antes, a.after_json->'value' AS depois FROM audit.audit_log a JOIN core.tenant_settings s ON s.id = a.entity_id WHERE s.key = 'construction.custo_realizado.base' AND s.company_id = $1 ORDER BY a.occurred_at",
+      "resultado": [
+        {
+          "action": "settings.create",
+          "antes": null,
+          "depois": "COMPETENCIA"
+        },
+        {
+          "action": "settings.update",
+          "antes": "COMPETENCIA",
+          "depois": "CAIXA"
+        }
+      ],
+      "invariante": "settings.create (antes vazio → COMPETENCIA) e settings.update (COMPETENCIA → CAIXA)",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.208Z"
+    },
+    {
+      "id": "C023",
+      "requisitos": [
+        "M6-42",
+        "M6-22"
+      ],
+      "descricao": "Custo realizado medido ao vivo pela API: CAIXA 0 × COMPETENCIA 56200; o banco confere o valor em aberto das medições aprovadas",
+      "sql": "SELECT coalesce(sum(f.amount), 0) AS medicoes_aprovadas_a_pagar FROM construction.stage_measurements m JOIN construction.project_stages s ON s.id = m.project_stage_id JOIN finance.financial_entries f ON f.id = m.payable_financial_entry_id WHERE s.project_id = $1 AND m.status = 'PAYABLE' AND f.status = 'PENDING'",
+      "resultado": [
+        {
+          "medicoes_aprovadas_a_pagar": "56200.00"
+        }
+      ],
+      "invariante": "COMPETENCIA − CAIXA = valor em aberto das medições aprovadas (nenhum outro lançamento da obra em aberto naquele momento)",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.211Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.397Z"
+}

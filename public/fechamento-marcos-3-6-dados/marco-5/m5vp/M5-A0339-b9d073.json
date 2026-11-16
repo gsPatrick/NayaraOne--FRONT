@@ -1,0 +1,63 @@
+{
+ "id": "M5-A0339-b9d073",
+ "linhaCaderno": 875,
+ "requisito": "• Conta paga pela imobiliária gera reimbursement receivable.",
+ "correcao": "pagamento pela imobiliária (COMPANY) no \"Quem pagou\" (Front UtilityPaymentModal/PAID_BY_LABELS) gera o reembolso; texto \"pago pelo locador / pelo locatário / pela imobiliária, a cobrar do ...\" (API obligations/utilityPayment.service.js reimbursementDescription; Front paidByPhrase)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.obrigacoes.test.js",
+   "nome": "M5-A0346/§12: o pagamento é de um vencimento, com comprovante; repetir o mesmo vencimento não gera segundo reembolso (com ou sem Idempotency-Key)",
+   "status": "pass",
+   "ms": 376.59,
+   "commitDoTeste": "38897d8d",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  },
+  {
+   "arquivo": "NayaraOne--FRONT/test/m5vp.uatLocacao.test.mjs",
+   "nome": "UAT-C08: 'Quem pagou' oferece Locatário, Locador e Imobiliária (COMPANY) e o modal de pagamento usa essa lista",
+   "status": "pass",
+   "ms": 3.011,
+   "commitDoTeste": "d401fa9",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  },
+  {
+   "arquivo": "NayaraOne--FRONT/test/m5vp.uatLocacao.test.mjs",
+   "nome": "Texto do pagamento: concordância para todos os pagadores — nunca 'por o'",
+   "status": "pass",
+   "ms": 0.756,
+   "commitDoTeste": "d401fa9",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  }
+ ],
+ "uatCobranca": {
+  "quando": "2026-11-12T09:43:23.292Z",
+  "resultado": "15/15",
+  "passos": [
+   {
+    "id": "UAT-C08",
+    "label": "a tela permite registrar a conta paga pela IMOBILIÁRIA (livro: conta paga pela imobiliária gera reembolso)",
+    "ok": true,
+    "detail": "opções de \"Quem pagou\": Locatário, Locador, Imobiliária"
+   },
+   {
+    "id": "UAT-C09",
+    "label": "pagamento pela imobiliária gera o recebível de reembolso no Financeiro (R$ 180,00 a cobrar do locatário, texto com concordância)",
+    "ok": true,
+    "detail": "PX\nReembolso de água pago pela imobiliária, a cobrar do locatário.\nSem conta bancária vinculada\n\t\nA receber\tR$ 180,00\t12/11/2026\t\nPendente\n\t"
+   }
+  ]
+ },
+ "medidoEm": "2026-11-12T11:01:40.813Z"
+}

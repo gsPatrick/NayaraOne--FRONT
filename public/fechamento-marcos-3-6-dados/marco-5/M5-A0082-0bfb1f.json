@@ -1,0 +1,901 @@
+{
+ "id": "M5-A0082-0bfb1f",
+ "secao": "P1 > 10. Entrega de chaves",
+ "linhaCaderno": 191,
+ "requisito": "• Exigir documentos e garantias válidos.",
+ "demandas": "M5-D024;M5-D021",
+ "implementacao": "src/modules/legal/leasing/keyDeliveryGates.js assertKeyDeliveryRequirements (requirements.service assertRequirementsSatisfied(contractId, 'KEY_DELIVERY'): checklist da etapa pelo Motor de Regras REG-JUR-001, fail closed) (documentos) + src/modules/legal/leasing/key-delivery.service.js:319 (garantia ACTIVE e vigente)",
+ "tela": "Contratos > Entrega de chaves (/painel/contratos/entrega-chaves, /painel/contratos/entrega-chaves/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.chavesLivro.test.js",
+   "nome": "fechamento M5 §10/JUR-005/Guia §11: checklist da etapa KEY_DELIVERY (Motor de Regras) pendente bloqueia a entrega; dispensado ou satisfeito, libera",
+   "status": "pass",
+   "ms": 307.831,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery bloqueia garantia com endsAt vencido mesmo com status ainda ACTIVE (A04)",
+   "status": "pass",
+   "ms": 353.135,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery bloqueia quando existe garantia cadastrada mas nenhuma ACTIVE",
+   "status": "pass",
+   "ms": 223.066,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/nayaraExternalAuditR3.test.js",
+   "nome": "R3-3: garantia ACTIVE com startsAt no FUTURO bloqueia a entrega de chaves",
+   "status": "pass",
+   "ms": 158.853,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery libera normalmente com garantia ACTIVE válida",
+   "status": "pass",
+   "ms": 210.369,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-CH-12",
+   "metodo": "POST",
+   "rota": "/legal/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=e7a28140-4773-44bb-b117-9d3f0401d97e",
+   "quando": "2026-11-11T03:42:32.957Z"
+  },
+  {
+   "passo": "LC-CH-13",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_GUARANTEE_INVALID: Não é possível liberar as chaves: existem garantias cadastradas para o contrato, mas nenhuma está at",
+   "quando": "2026-11-11T03:42:32.977Z"
+  },
+  {
+   "passo": "LC-CH-14",
+   "metodo": "POST",
+   "rota": "/legal/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=38f84a8e-3b3a-4920-80ae-92aac5bc7eb2",
+   "quando": "2026-11-11T03:42:33.054Z"
+  },
+  {
+   "passo": "LC-CH-39",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING: Não é possível entregar as chaves: o checklist da entrega ainda tem pendências. Não é possível avanç",
+   "quando": "2026-11-11T03:42:33.179Z"
+  },
+  {
+   "passo": "LC-CH-40",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/745cda57-4629-4234-96ac-edef2b865bbc",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=SATISFIED, id=745cda57-4629-4234-96ac-edef2b865bbc",
+   "quando": "2026-11-11T03:42:33.235Z"
+  },
+  {
+   "passo": "LC-CH-23",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=RELEASED, id=9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+   "quando": "2026-11-11T03:42:33.282Z"
+  },
+  {
+   "passo": "LC-CH-P6A",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=812727a0-e282-4c50-9fd1-1f7e0b7a787a",
+   "quando": "2026-11-11T03:42:32.904Z"
+  },
+  {
+   "passo": "LC-CH-P6B",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=97f6b889-0c98-4f6f-95ab-132ae886ae68",
+   "quando": "2026-11-11T03:42:33.010Z"
+  },
+  {
+   "passo": "LC-CH-P7",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=ac32cd39-4b78-40f0-9cb7-1ece9501bf61",
+   "quando": "2026-11-11T03:42:33.215Z"
+  },
+  {
+   "passo": "LC-CH-36",
+   "metodo": "POST",
+   "rota": "/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/key-delivery",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=RELEASED, id=372750c1-c70d-41b3-aeed-94e13b53e926",
+   "quando": "2026-11-11T03:42:33.656Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0082-0bfb1f.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado (2ª onda): além das garantias (vencida/futura/não ACTIVE bloqueia, LC-CH-13), os documentos e exigências do checklist são reconferidos na entrega (LC-CH-39). Teste novo \"checklist da etapa KEY_DELIVERY\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.chavesLivro.test.js test/legal.keyDeliveries.test.js test/nayaraExternalAuditR3.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-CH-12, LC-CH-13, LC-CH-14, LC-CH-38, LC-CH-39, LC-CH-40, LC-CH-23, LC-CH-P6A, LC-CH-P6B, LC-CH-P7, LC-CH-36)"
+ },
+ "passos": [
+  {
+   "id": "LC-CH-12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Seguro-fiança cadastrado já vencido (status ainda ACTIVE)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "INSURANCE",
+    "value": 38400,
+    "providerName": "Seguradora Fictícia",
+    "policyNumber": "CH-A-8549432",
+    "policyFileId": "812727a0-e282-4c50-9fd1-1f7e0b7a787a",
+    "premiumInstallments": [
+     {
+      "number": 1,
+      "dueDate": "2026-02-01",
+      "amount": 900
+     }
+    ],
+    "startsAt": "2025-01-01",
+    "endsAt": "2026-11-10",
+    "renewalDueAt": "2026-11-10",
+    "status": "ACTIVE"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 53,
+   "quando": "2026-11-11T03:42:32.957Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "e7a28140-4773-44bb-b117-9d3f0401d97e",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "guaranteeType": "INSURANCE",
+     "guarantorPersonId": null,
+     "value": "38400.00",
+     "status": "ACTIVE",
+     "startsAt": "2025-01-01",
+     "endsAt": "2026-11-10",
+     "policyFileId": "812727a0-e282-4c50-9fd1-1f7e0b7a787a",
+     "providerName": "Seguradora Fictícia",
+     "policyNumber": "CH-A-8549432",
+     "premiumInstallments": [
+      {
+       "amount": 900,
+       "number": 1,
+       "paidAt": null,
+       "status": "PENDING",
+       "dueDate": "2026-02-01"
+      }
+     ],
+     "renewalDueAt": "2026-11-10",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:32.924Z",
+     "created_at": "2026-11-11T03:42:32.924Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "annualPremium": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0082-0bfb1f",
+    "M5-A0153-4c96b0"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Garantia vencida bloqueia a entrega mesmo com status ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID",
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:32.977Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID",
+     "message": "Não é possível liberar as chaves: existem garantias cadastradas para o contrato, mas nenhuma está ativa e dentro da vigência.",
+     "traceId": "c9fcd785-24ec-4173-bfa4-822e065dbbba"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0082-0bfb1f",
+    "M5-A0153-4c96b0",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Garantia vigente (seguro-fiança renovado, com todos os dados) cadastrada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "INSURANCE",
+    "value": 38400,
+    "providerName": "Seguradora Fictícia",
+    "policyNumber": "CH-B-8549432",
+    "policyFileId": "97f6b889-0c98-4f6f-95ab-132ae886ae68",
+    "premiumInstallments": [
+     {
+      "number": 1,
+      "dueDate": "2026-02-01",
+      "amount": 900
+     }
+    ],
+    "startsAt": "2026-01-01",
+    "endsAt": "2029-12-31",
+    "renewalDueAt": "2029-11-30"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:33.054Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "38f84a8e-3b3a-4920-80ae-92aac5bc7eb2",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "guaranteeType": "INSURANCE",
+     "guarantorPersonId": null,
+     "value": "38400.00",
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": "2029-12-31",
+     "policyFileId": "97f6b889-0c98-4f6f-95ab-132ae886ae68",
+     "providerName": "Seguradora Fictícia",
+     "policyNumber": "CH-B-8549432",
+     "premiumInstallments": [
+      {
+       "amount": 900,
+       "number": 1,
+       "paidAt": null,
+       "status": "PENDING",
+       "dueDate": "2026-02-01"
+      }
+     ],
+     "renewalDueAt": "2029-11-30",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:33.028Z",
+     "created_at": "2026-11-11T03:42:33.028Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "annualPremium": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0082-0bfb1f"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-38",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: o checklist do contrato ganha uma exigência da etapa KEY_DELIVERY ainda pendente (comprovante das chaves)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "ContractRequirement.create({ requiredStage: KEY_DELIVERY, status: PENDING })",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 3,
+   "quando": "2026-11-11T03:42:33.154Z",
+   "corpo": {
+    "result": {
+     "id": "745cda57-4629-4234-96ac-edef2b865bbc"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0082-0bfb1f",
+    "M5-A0303-33ee80",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-CH-39",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exigência da etapa KEY_DELIVERY pendente bloqueia a entrega (checklist reconferido na hora)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:33.179Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING",
+     "message": "Não é possível entregar as chaves: o checklist da entrega ainda tem pendências. Não é possível avançar para a etapa de entrega de chaves: faltam documentos obrigatórios — Relação das chaves e controles conferida.",
+     "details": {
+      "stage": "KEY_DELIVERY",
+      "missingRequirementCodes": [
+       "LEASE_KEYS_8549432"
+      ],
+      "pending": [
+       {
+        "id": "745cda57-4629-4234-96ac-edef2b865bbc",
+        "requirementCode": "LEASE_KEYS_8549432",
+        "description": "Relação das chaves e controles conferida",
+        "requiredStage": "KEY_DELIVERY"
+       }
+      ]
+     },
+     "traceId": "44160495-b8eb-452f-ae39-f971af72f72d"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0082-0bfb1f",
+    "M5-A0303-33ee80",
+    "M5-A0205-eaae4a",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-40",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exigência satisfeita com o documento",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/745cda57-4629-4234-96ac-edef2b865bbc",
+   "corpoEnviado": {
+    "satisfiedByFileId": "ac32cd39-4b78-40f0-9cb7-1ece9501bf61"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:33.235Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "745cda57-4629-4234-96ac-edef2b865bbc",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "requirementCode": "LEASE_KEYS_8549432",
+     "description": "Relação das chaves e controles conferida",
+     "requirementType": "KEYS",
+     "status": "SATISFIED",
+     "satisfiedByFileId": "ac32cd39-4b78-40f0-9cb7-1ece9501bf61",
+     "satisfiedAt": "2026-11-11T03:42:33.229Z",
+     "waivedReason": null,
+     "requiredStage": "KEY_DELIVERY",
+     "ruleVersionId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:33.152Z",
+     "updated_at": "2026-11-11T03:42:33.229Z",
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0082-0bfb1f"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-23",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Com contrato SIGNED, vistoria de entrada assinada pelas duas partes, garantia vigente, quantidade/identificação e termo assinado: chaves entregues",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:33.282Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:33.273Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 3,
+     "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+     "photosRequired": false,
+     "photosFileIds": null,
+     "termType": null,
+     "termSignedAt": "2026-11-11T03:42:33.270Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "termEvidenceSha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE CHAVES\n\nContrato: LOC-2026-0011 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 3 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta principal e 1 controle do portão\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos não obrigatórias nesta entrega: o estado do imóvel já está registrado na vistoria de entrada assinada pelo locador e pelo locatário.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "da8df6e2b75492cf06008258719f23535f5778962d635126425de8afb5a326c3",
+     "photoPolicy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:32.004Z",
+     "updated_at": "2026-11-11T03:42:33.274Z",
+     "deleted_at": null,
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0226-43d13b",
+    "M5-A0136-e672e2",
+    "M5-A0079-456494",
+    "M5-A0080-157e61",
+    "M5-A0081-9fbe36",
+    "M5-A0082-0bfb1f",
+    "M5-A0083-ed53e0",
+    "M5-A0084-c60910",
+    "M5-A0085-d2ec3a",
+    "M5-A0086-fda035",
+    "M5-A0145-146a2f",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-P6A",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: apólice A (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "apolice-A.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "QXDDs2xpY2UgQSA4NTQ5NDMy",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 49,
+   "quando": "2026-11-11T03:42:32.904Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "812727a0-e282-4c50-9fd1-1f7e0b7a787a",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/a10b3447-c2df-45b4-b73f-f7c4f64feed1-apolice-A.pdf",
+     "fileName": "apolice-A.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 18,
+     "checksumSha256": "85ab1811a0afb59100bb72d3fd639aa23b3aa6139111a708c67a7bdf7cf03aa6",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:32.869Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:32.870Z",
+     "created_at": "2026-11-11T03:42:32.870Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0082-0bfb1f"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-P6B",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: apólice B (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "apolice-B.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "QXDDs2xpY2UgQiA4NTQ5NDMy",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T03:42:33.010Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "97f6b889-0c98-4f6f-95ab-132ae886ae68",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/7c6c5fad-a070-41fe-825e-0261e4231e67-apolice-B.pdf",
+     "fileName": "apolice-B.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 18,
+     "checksumSha256": "9ce5254c8b91425fe7b82390879fe952b39bebbe8064d08cee3a4c1360649c92",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:32.990Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:32.991Z",
+     "created_at": "2026-11-11T03:42:32.991Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0082-0bfb1f"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-P7",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Relação das chaves conferida (arquivo fictício)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "relacao-chaves.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "UmVsYcOnw6NvIDg1NDk0MzI=",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:33.215Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "ac32cd39-4b78-40f0-9cb7-1ece9501bf61",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/b85a7006-f452-421a-aa61-f2ac3babb400-relacao-chaves.pdf",
+     "fileName": "relacao-chaves.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 17,
+     "checksumSha256": "80930d4db03e71dac0401bbde5f32ae7c418030efe58bf62c5954711b96264a8",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:33.195Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:33.196Z",
+     "created_at": "2026-11-11T03:42:33.196Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0082-0bfb1f"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-36",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "POST /contracts/:id/key-delivery (rota literal do Guia §14) com todos os gates cumpridos: chaves entregues (RELEASED)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/add2a103-b849-4a37-b865-6ee3269c9d55/key-delivery",
+   "corpoEnviado": {
+    "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:33.656Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "372750c1-c70d-41b3-aeed-94e13b53e926",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:33.649Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 3,
+     "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+     "photosRequired": false,
+     "photosFileIds": null,
+     "termType": null,
+     "termSignedAt": "2026-11-11T03:42:33.644Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "termEvidenceSha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE CHAVES\n\nContrato: LOC-2026-0011 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 3 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta principal e 1 controle do portão\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos não obrigatórias nesta entrega: o estado do imóvel já está registrado na vistoria de entrada assinada pelo locador e pelo locatário.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "da8df6e2b75492cf06008258719f23535f5778962d635126425de8afb5a326c3",
+     "photoPolicy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:33.635Z",
+     "updated_at": "2026-11-11T03:42:33.649Z",
+     "deleted_at": null,
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0205-eaae4a",
+    "M5-A0216-061071",
+    "M5-A0080-157e61",
+    "M5-A0081-9fbe36",
+    "M5-A0082-0bfb1f",
+    "M5-A0083-ed53e0",
+    "M5-A0085-d2ec3a",
+    "M5-A0086-fda035"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

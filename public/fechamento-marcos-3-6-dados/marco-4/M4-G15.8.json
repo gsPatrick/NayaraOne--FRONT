@@ -1,0 +1,292 @@
+{
+ "id": "M4-G§15.8",
+ "secao": "Guia §15 APIs mínimas",
+ "requisito": "\"POST /finance/reconciliation/:id/confirm\" — Confirmar match.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.httpRoutes.test.js",
+   "nome": "GAP fechado via HTTP: autoReconcileSuggestion concilia sozinho um match EXATO, pela rota",
+   "status": "passou",
+   "duracaoMs": 170,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/m4.officialRoutes.guia15.test.js",
+   "nome": "Guia §15 POST /finance/reconciliation/:id/confirm: EXATO confirma o candidato do topo (201) e sai da fila; AMBÍGUO/PROVÁVEL exige escolher o lançamento (409); candidato inelegível 409; sem finance:reconcile é 403",
+   "status": "passou",
+   "duracaoMs": 378,
+   "commitDoArquivo": "76cb9777"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C40",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.2",
+    "M4-§5.9",
+    "M4-G§15.8"
+   ],
+   "titulo": "Humano confirma o match FORTE (vínculo banco x lançamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/reconciliations",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "8ff509ab-299c-478d-b7c0-1f6373e1d9dd",
+    "bankTransactionId": "c08bbd0d-df65-4d73-b0e2-ecd80c656b88"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 57,
+   "quando": "2026-11-11T01:35:11.706Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "25cc0fca-d78b-491b-8e94-1bd716696aea",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "8ff509ab-299c-478d-b7c0-1f6373e1d9dd",
+     "bankTransactionId": "c08bbd0d-df65-4d73-b0e2-ecd80c656b88",
+     "matchedAt": "2026-11-11T01:35:11.669Z",
+     "matchedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "matchMethod": "MANUAL",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:11.669Z",
+     "created_at": "2026-11-11T01:35:11.669Z",
+     "matchGroupId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O12",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.8"
+   ],
+   "titulo": "Lançamento para confirmar pela rota oficial",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "717.17",
+    "description": "Confirmação oficial 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+    "dueAt": "2026-11-10T12:00:00-03:00"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T01:35:18.377Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "397817d0-fc81-4565-b737-530728011b19",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "717.17",
+     "description": "Confirmação oficial 0871300",
+     "dueAt": "2026-11-10T15:00:00.000Z",
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:18.355Z",
+     "created_at": "2026-11-11T01:35:18.355Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O13",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.8"
+   ],
+   "titulo": "Extrato com a transação a confirmar",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/import",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+    "csvText": "externalTransactionId,transactionDate,description,amount\nEXT-OF-0871300,2026-11-10,PIX confirmacao oficial ref 397817d0-fc81-4565-b737-530728011b19,717.17\n"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 52,
+   "quando": "2026-11-11T01:35:18.431Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "imported": [
+      {
+       "id": "25115333-3384-4f9e-90f7-ec1abe11ca52",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-OF-0871300",
+       "amount": "717.17",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "PIX confirmacao oficial ref 397817d0-fc81-4565-b737-530728011b19",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:18.390Z",
+       "created_at": "2026-11-11T01:35:18.390Z",
+       "fingerprint": "75919742e6bf4148df6e9fdf6bb38ae288dd5eb21cf49e58b0bbd37664d3b01d"
+      }
+     ],
+     "duplicates": [],
+     "total": 1,
+     "statementImport": {
+      "id": "3c4d38c2-93e4-4749-80dc-02cbd10fd7c8",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "periodStart": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "periodDeclared": false,
+      "closingBalance": null,
+      "linesTotal": 1,
+      "linesImported": 1,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:18.394Z"
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O14",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.8",
+    "M4-§11.2"
+   ],
+   "titulo": "POST /finance/reconciliation/:id/confirm: humano confirma o match sugerido",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/reconciliation/25115333-3384-4f9e-90f7-ec1abe11ca52/confirm",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "397817d0-fc81-4565-b737-530728011b19"
+   },
+   "esperado": {
+    "status": [
+     200,
+     201
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 71,
+   "quando": "2026-11-11T01:35:18.503Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "reconciliation": {
+      "id": "27dfb0a0-df5b-4245-93f3-a6995879cd5e",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "financialEntryId": "397817d0-fc81-4565-b737-530728011b19",
+      "bankTransactionId": "25115333-3384-4f9e-90f7-ec1abe11ca52",
+      "matchedAt": "2026-11-11T01:35:18.461Z",
+      "matchedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "matchMethod": "MANUAL_CHOICE",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updated_at": "2026-11-11T01:35:18.461Z",
+      "created_at": "2026-11-11T01:35:18.461Z",
+      "matchGroupId": null
+     },
+     "finalClass": "STRONG",
+     "confirmedCandidate": {
+      "financialEntryId": "397817d0-fc81-4565-b737-530728011b19",
+      "score": 1,
+      "class": "STRONG",
+      "reasons": [
+       "Valor igual",
+       "Referência do lançamento citada no extrato",
+       "Mesma conta bancária",
+       "Data dentro da janela de tolerância"
+      ]
+     },
+     "method": "HUMAN_CONFIRMED",
+     "matchMethod": "MANUAL_CHOICE"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

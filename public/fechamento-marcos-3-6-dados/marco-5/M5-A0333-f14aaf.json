@@ -1,0 +1,254 @@
+{
+ "id": "M5-A0333-f14aaf",
+ "secao": "(abertura 3)",
+ "linhaCaderno": 865,
+ "requisito": "• Fonte indisponível = PENDING_SOURCE, nunca percentual inventado.",
+ "demandas": "M5-D322;M5-D320",
+ "implementacao": "src/features/billing/rentAdjustment.service.js:42 — fonte indisponível grava PENDING_SOURCE com raw/applied/new NULL",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: reajuste sem fonte de índice disponível vira PENDING_SOURCE sem inventar percentual",
+   "status": "pass",
+   "ms": 25.075,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.indexAdapters.test.js",
+   "nome": "billing IGPM: modo manual nunca tenta rede (fetch não é chamado) e retorna indisponível",
+   "status": "pass",
+   "ms": 79.026,
+   "commitDoTeste": "831caac8"
+  },
+  {
+   "arquivo": "test/billing.indexAdapters.test.js",
+   "nome": "billing IPCA: falha de rede ao consultar IBGE nunca lança exceção, retorna indisponível",
+   "status": "pass",
+   "ms": 0.59,
+   "commitDoTeste": "831caac8"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-RJ-03",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING_SOURCE, id=d844a533-967c-4fcc-9d08-194554dbf138",
+   "quando": "2026-11-11T03:42:35.150Z"
+  },
+  {
+   "passo": "LC-RJ-04",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING_SOURCE, id=07922011-c7a2-4b82-8961-89f5270c9082",
+   "quando": "2026-11-11T03:42:35.173Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0333-f14aaf.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/billing.test.js test/billing.indexAdapters.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-RJ-03, LC-RJ-04, LC-RJ-09)"
+ },
+ "passos": [
+  {
+   "id": "LC-RJ-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Índice sem fonte (INPC): reajuste fica PENDING_SOURCE, sem percentual nem aluguel novo",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "INPC",
+    "period": "2030-01",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:35.150Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "d844a533-967c-4fcc-9d08-194554dbf138",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+     "indexCode": "INPC",
+     "period": "2030-01",
+     "rawIndexValue": null,
+     "appliedPercentage": null,
+     "oldRentAmount": "2500.00",
+     "newRentAmount": null,
+     "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+     "status": "PENDING_SOURCE",
+     "appliedAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:35.142Z",
+     "created_at": "2026-11-11T03:42:35.142Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0333-f14aaf",
+    "M5-A0332-29fd72",
+    "M5-A0343-c56197",
+    "M5-A0345-019723",
+    "M5-A0342-a3762d"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "IGP-M em modo manual (adapter da FGV sem rede): PENDING_SOURCE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "IGPM",
+    "period": "2030-02",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:35.173Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "07922011-c7a2-4b82-8961-89f5270c9082",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+     "indexCode": "IGPM",
+     "period": "2030-02",
+     "rawIndexValue": null,
+     "appliedPercentage": null,
+     "oldRentAmount": "2500.00",
+     "newRentAmount": null,
+     "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+     "status": "PENDING_SOURCE",
+     "appliedAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:35.165Z",
+     "created_at": "2026-11-11T03:42:35.165Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0332-29fd72",
+    "M5-A0333-f14aaf",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-RJ-09",
+   "req": [
+    "M5-A0332-29fd72",
+    "M5-A0333-f14aaf",
+    "M5-A0327-22b135"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "perfil": "A:gestor",
+   "descricao": "Registro completo: index_code, period, raw, applied, old, new, rule_version e status",
+   "sql": "SELECT ra.index_code, ra.period, ra.raw_index_value, ra.applied_percentage, ra.old_rent_amount, ra.new_rent_amount, ra.status, r.code AS regra, rv.version_number FROM finance.rent_adjustments ra LEFT JOIN core.rule_versions rv ON rv.id = ra.rule_version_id LEFT JOIN core.rules r ON r.id = rv.rule_id WHERE ra.contract_id = :c ORDER BY ra.period",
+   "resultado": [
+    {
+     "index_code": "INPC",
+     "period": "2030-01",
+     "raw_index_value": null,
+     "applied_percentage": null,
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": null,
+     "status": "PENDING_SOURCE",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    },
+    {
+     "index_code": "IGPM",
+     "period": "2030-02",
+     "raw_index_value": null,
+     "applied_percentage": null,
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": null,
+     "status": "PENDING_SOURCE",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    },
+    {
+     "index_code": "IPCA",
+     "period": "2030-03",
+     "raw_index_value": "4.500000",
+     "applied_percentage": "4.500000",
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": "2612.50",
+     "status": "APPLIED",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    },
+    {
+     "index_code": "IPCA",
+     "period": "2030-04",
+     "raw_index_value": "4.500000",
+     "applied_percentage": "3.000000",
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": "2575.00",
+     "status": "APPLIED",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:35.220Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

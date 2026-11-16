@@ -1,0 +1,918 @@
+{
+ "id": "M5-A0303-33ee80",
+ "secao": "P1 > 2. Princípios constitucionais [tabela: Código | Princípio | Regra]",
+ "linhaCaderno": 31,
+ "requisito": "JUR-005 | Entrega de chaves bloqueável | Somente após condições, vistoria, assinatura e documentos previstos.",
+ "demandas": "M5-D024;M5-D025",
+ "implementacao": "src/modules/legal/leasing/key-delivery.service.js:319 releaseKeyDelivery (contrato SIGNED/ACTIVE, vistoria de entrada do contrato assinada por LANDLORD e TENANT, garantia ACTIVE e vigente, keysCount, termSignedByPersonId parte do contrato, fotos pela política do servidor); rota POST /api/v1/legal/key-deliveries/:id/release (legal:deliverKeys); src/modules/legal/leasing/keyDeliveryGates.js assertKeyDeliveryRequirements (requirements.service assertRequirementsSatisfied(contractId, 'KEY_DELIVERY'): checklist da etapa pelo Motor de Regras REG-JUR-001, fail closed); via assinada do termo (keyDeliveryGates.resolveTermEvidence)",
+ "tela": "Contratos > Entrega de chaves (/painel/contratos/entrega-chaves, /painel/contratos/entrega-chaves/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.chavesLivro.test.js",
+   "nome": "fechamento M5 §10/JUR-005/Guia §11: checklist da etapa KEY_DELIVERY (Motor de Regras) pendente bloqueia a entrega; dispensado ou satisfeito, libera",
+   "status": "pass",
+   "ms": 307.831,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.chavesLivro.test.js",
+   "nome": "fechamento M5 §10: assinatura do termo de entrega exige a via assinada (arquivo da empresa) e guarda o SHA-256 dela",
+   "status": "pass",
+   "ms": 197.903,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.chaves.test.js",
+   "nome": "fechamento M5 §10/JUR-TS-004: contrato fora de SIGNED/ACTIVE bloqueia a entrega mesmo com vistoria assinada e garantia válida; SIGNED libera",
+   "status": "pass",
+   "ms": 106.945,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.chaves.test.js",
+   "nome": "fechamento M5 §10/JUR-005: vistoria de entrada assinada de OUTRO contrato do mesmo imóvel não libera as chaves; vistoria do imóvel sem contrato continua valendo",
+   "status": "pass",
+   "ms": 225.176,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.acceptance.test.js",
+   "nome": "M5-22/M5-23 releaseKeyDelivery bloqueia sem vistoria de entrada, libera e registra quem/quando após concluída",
+   "status": "pass",
+   "ms": 662.391,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery exige keysCount e termSignedByPersonId (JUR-TS-004 \"Chave cedo\")",
+   "status": "pass",
+   "ms": 166.142,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-CH-02",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_BLOCKED: Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada conc",
+   "quando": "2026-11-11T03:42:32.031Z"
+  },
+  {
+   "passo": "LC-CH-03",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_BLOCKED: Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada conc",
+   "quando": "2026-11-11T03:42:32.732Z"
+  },
+  {
+   "passo": "LC-CH-07",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED: Não é possível liberar as chaves: a vistoria de entrada está concluída mas falta(m) a assinatura de ",
+   "quando": "2026-11-11T03:42:32.787Z"
+  },
+  {
+   "passo": "LC-CH-10",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED: Não é possível liberar as chaves: a vistoria de entrada está concluída mas falta(m) a assinatura de ",
+   "quando": "2026-11-11T03:42:32.842Z"
+  },
+  {
+   "passo": "LC-CH-13",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_GUARANTEE_INVALID: Não é possível liberar as chaves: existem garantias cadastradas para o contrato, mas nenhuma está at",
+   "quando": "2026-11-11T03:42:32.977Z"
+  },
+  {
+   "passo": "LC-CH-39",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING: Não é possível entregar as chaves: o checklist da entrega ainda tem pendências. Não é possível avanç",
+   "quando": "2026-11-11T03:42:33.179Z"
+  },
+  {
+   "passo": "LC-CH-41",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_TERM_EVIDENCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_TERM_EVIDENCE_REQUIRED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_TERM_EVIDENCE_REQUIRED: Anexe a via do termo de entrega assinada pelo recebedor (\"termEvidenceFileId\") — a entrega exige a a",
+   "quando": "2026-11-11T03:42:33.246Z"
+  },
+  {
+   "passo": "LC-CH-23",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=RELEASED, id=9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+   "quando": "2026-11-11T03:42:33.282Z"
+  },
+  {
+   "passo": "LC-EN-02",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/05621526-8875-4a0d-8345-569a4a3e6085/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_BLOCKED: Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada conc",
+   "quando": "2026-11-11T03:42:36.464Z"
+  },
+  {
+   "passo": "LC-CH-15",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_VALIDATION"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_VALIDATION: \"keysCount\" (quantidade de chaves/controles entregues) é obrigatório e deve ser maior que zero.",
+   "quando": "2026-11-11T03:42:33.064Z"
+  },
+  {
+   "passo": "LC-CH-16",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_VALIDATION"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_VALIDATION: \"termSignedByPersonId\" é obrigatório — a liberação de chaves exige assinatura do termo de entrega.",
+   "quando": "2026-11-11T03:42:33.076Z"
+  },
+  {
+   "passo": "LC-CH-28",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED: Não é possível liberar as chaves: a política exige fotos obrigatórias e nenhuma foi informada (\"phot",
+   "quando": "2026-11-11T03:42:33.370Z"
+  },
+  {
+   "passo": "LC-CH-33",
+   "metodo": "POST",
+   "rota": "/contracts/8b1445eb-e823-4584-9fb3-92f5fcf2d789/key-delivery",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "resumo": "erro LEGAL_KEY_DELIVERY_BLOCKED: Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada conc",
+   "quando": "2026-11-11T03:42:33.613Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0303-33ee80.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado (2ª onda): somente após condições (contrato SIGNED/ACTIVE, garantia), vistoria assinada, assinatura (termo com via assinada) e documentos previstos (checklist KEY_DELIVERY). Testes novos m5fech.locacao.chavesLivro.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.chavesLivro.test.js test/m5fech.locacao.chaves.test.js test/marco5.acceptance.test.js test/legal.keyDeliveries.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-CH-02, LC-CH-03, LC-CH-07, LC-CH-10, LC-CH-13, LC-CH-39, LC-CH-41, LC-CH-23, LC-EN-02, LC-CH-15, LC-CH-16, LC-CH-38, LC-CH-28, LC-CH-33)"
+ },
+ "passos": [
+  {
+   "id": "LC-CH-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Chave cedo: contrato ainda em DRAFT (sem assinatura) bloqueia a entrega",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:32.031Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_BLOCKED",
+     "message": "Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada concluída.",
+     "traceId": "87a69070-37a8-4b79-99f9-9bf4c81fab0c"
+    }
+   },
+   "req": [
+    "M5-A0145-146a2f",
+    "M5-A0079-456494",
+    "M5-A0080-157e61",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Contrato SIGNED sem vistoria de entrada bloqueia a entrega",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T03:42:32.732Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_BLOCKED",
+     "message": "Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada concluída.",
+     "traceId": "f40e284c-766a-42e9-8c76-ba48b9681f10"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0081-9fbe36",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Vistoria concluída mas sem assinatura bloqueia a entrega",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED",
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:32.787Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED",
+     "message": "Não é possível liberar as chaves: a vistoria de entrada está concluída mas falta(m) a assinatura de LANDLORD e TENANT.",
+     "traceId": "502ed4b9-6b99-4906-832c-43fb6065b39b"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0081-9fbe36",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Só o locador assinou: falta o locatário, entrega bloqueada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED",
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:32.842Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_INSPECTION_NOT_SIGNED",
+     "message": "Não é possível liberar as chaves: a vistoria de entrada está concluída mas falta(m) a assinatura de TENANT.",
+     "traceId": "b9015d08-af21-4390-990d-09b81e4955cc"
+    }
+   },
+   "req": [
+    "M5-A0081-9fbe36",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Garantia vencida bloqueia a entrega mesmo com status ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID",
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:32.977Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_GUARANTEE_INVALID",
+     "message": "Não é possível liberar as chaves: existem garantias cadastradas para o contrato, mas nenhuma está ativa e dentro da vigência.",
+     "traceId": "c9fcd785-24ec-4173-bfa4-822e065dbbba"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0082-0bfb1f",
+    "M5-A0153-4c96b0",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-39",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exigência da etapa KEY_DELIVERY pendente bloqueia a entrega (checklist reconferido na hora)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:33.179Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_REQUIREMENTS_PENDING",
+     "message": "Não é possível entregar as chaves: o checklist da entrega ainda tem pendências. Não é possível avançar para a etapa de entrega de chaves: faltam documentos obrigatórios — Relação das chaves e controles conferida.",
+     "details": {
+      "stage": "KEY_DELIVERY",
+      "missingRequirementCodes": [
+       "LEASE_KEYS_8549432"
+      ],
+      "pending": [
+       {
+        "id": "745cda57-4629-4234-96ac-edef2b865bbc",
+        "requirementCode": "LEASE_KEYS_8549432",
+        "description": "Relação das chaves e controles conferida",
+        "requiredStage": "KEY_DELIVERY"
+       }
+      ]
+     },
+     "traceId": "44160495-b8eb-452f-ae39-f971af72f72d"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0082-0bfb1f",
+    "M5-A0303-33ee80",
+    "M5-A0205-eaae4a",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-41",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem a via assinada do termo de entrega a entrega é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_TERM_EVIDENCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_TERM_EVIDENCE_REQUIRED",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:33.246Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_TERM_EVIDENCE_REQUIRED",
+     "message": "Anexe a via do termo de entrega assinada pelo recebedor (\"termEvidenceFileId\") — a entrega exige a assinatura do termo.",
+     "traceId": "31876747-d3e7-4daf-88ad-59cb40c628e9"
+    }
+   },
+   "req": [
+    "M5-A0303-33ee80",
+    "M5-A0085-d2ec3a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-23",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Com contrato SIGNED, vistoria de entrada assinada pelas duas partes, garantia vigente, quantidade/identificação e termo assinado: chaves entregues",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:33.282Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9f7e16df-3b09-4060-a9f8-966c4b0f18c4",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspectionId": null,
+     "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "deliveredByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deliveredAt": "2026-11-11T03:42:33.273Z",
+     "status": "RELEASED",
+     "notes": null,
+     "keysCount": 3,
+     "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+     "photosRequired": false,
+     "photosFileIds": null,
+     "termType": null,
+     "termSignedAt": "2026-11-11T03:42:33.270Z",
+     "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140",
+     "termEvidenceSha256": "43e589a93cc20658c4d0d7b045580a0a861d1dbb2690bd83a7d114cf54ea02af",
+     "termSignatureMethod": "MANUAL_EVIDENCE",
+     "termText": "TERMO DE ENTREGA DE CHAVES\n\nContrato: LOC-2026-0011 — Locação residencial (início em 31/12/2025)\nImóvel: Apartamento Fictício Locação 8549432\nRecebedor das chaves: Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato\nQuantidade entregue: 3 chaves/controles\nIdentificação das chaves/controles: 2 chaves da porta principal e 1 controle do portão\nVistoria de entrada: concluída em 11/11/2026 e assinada pelo locador e pelo locatário.\nFotos não obrigatórias nesta entrega: o estado do imóvel já está registrado na vistoria de entrada assinada pelo locador e pelo locatário.\n\nAssinado por Locatário Fictício Locação 8549432 (documento não cadastrado) — Locatário(a) no contrato em 11/11/2026 às 00:42 (horário de Brasília).",
+     "termVersion": "KD-TERM-v3",
+     "termHash": "da8df6e2b75492cf06008258719f23535f5778962d635126425de8afb5a326c3",
+     "photoPolicy": "NOT_REQUIRED_LEASE_CHECKIN_SIGNED",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:32.004Z",
+     "updated_at": "2026-11-11T03:42:33.274Z",
+     "deleted_at": null,
+     "contract_id": "add2a103-b849-4a37-b865-6ee3269c9d55",
+     "inspection_id": null,
+     "delivered_to_person_id": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "delivered_by_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0226-43d13b",
+    "M5-A0136-e672e2",
+    "M5-A0079-456494",
+    "M5-A0080-157e61",
+    "M5-A0081-9fbe36",
+    "M5-A0082-0bfb1f",
+    "M5-A0083-ed53e0",
+    "M5-A0084-c60910",
+    "M5-A0085-d2ec3a",
+    "M5-A0086-fda035",
+    "M5-A0145-146a2f",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Vistoria de entrada assinada de outro contrato do mesmo imóvel não serve: entrega bloqueada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/05621526-8875-4a0d-8345-569a4a3e6085/release",
+   "corpoEnviado": {
+    "keysCount": 2,
+    "keysIdentification": "2 chaves",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "c223bfbd-087c-4fd2-a825-b0f093d3c753"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:36.464Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_BLOCKED",
+     "message": "Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada concluída.",
+     "traceId": "b701eb47-9800-4b14-aaa5-77c103116491"
+    }
+   },
+   "req": [
+    "M5-A0257-fbc50c",
+    "M5-A0081-9fbe36",
+    "M5-A0303-33ee80"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem quantidade de chaves/controles a entrega é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_VALIDATION",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:33.064Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_VALIDATION",
+     "message": "\"keysCount\" (quantidade de chaves/controles entregues) é obrigatório e deve ser maior que zero.",
+     "traceId": "0a43efa0-60bc-4525-bf45-1fedfffc1396"
+    }
+   },
+   "req": [
+    "M5-A0083-ed53e0",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem assinatura do termo de entrega a entrega é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/9f7e16df-3b09-4060-a9f8-966c4b0f18c4/release",
+   "corpoEnviado": {
+    "keysCount": 3
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_KEY_DELIVERY_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_KEY_DELIVERY_VALIDATION",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:33.076Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_VALIDATION",
+     "message": "\"termSignedByPersonId\" é obrigatório — a liberação de chaves exige assinatura do termo de entrega.",
+     "traceId": "8216abd6-62ba-475b-a5cf-d9ab1be193b5"
+    }
+   },
+   "req": [
+    "M5-A0085-d2ec3a",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-38",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: o checklist do contrato ganha uma exigência da etapa KEY_DELIVERY ainda pendente (comprovante das chaves)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "ContractRequirement.create({ requiredStage: KEY_DELIVERY, status: PENDING })",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 3,
+   "quando": "2026-11-11T03:42:33.154Z",
+   "corpo": {
+    "result": {
+     "id": "745cda57-4629-4234-96ac-edef2b865bbc"
+    }
+   },
+   "req": [
+    "M5-A0079-456494",
+    "M5-A0082-0bfb1f",
+    "M5-A0303-33ee80",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-CH-28",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Imóvel usado sem fotos: a política do servidor exige fotos e bloqueia",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/key-deliveries/99665bc7-76c7-40c4-a720-c1a85aeec85f/release",
+   "corpoEnviado": {
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED",
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:33.370Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_PHOTOS_REQUIRED",
+     "message": "Não é possível liberar as chaves: a política exige fotos obrigatórias e nenhuma foi informada (\"photosFileIds\").",
+     "traceId": "bfab85eb-a811-4c23-a627-6672b0d82c17"
+    }
+   },
+   "req": [
+    "M5-A0084-c60910",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CH-33",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "POST /contracts/:id/key-delivery (rota literal do Guia §14) com contrato em DRAFT: bloqueado pelo mesmo gate",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/8b1445eb-e823-4584-9fb3-92f5fcf2d789/key-delivery",
+   "corpoEnviado": {
+    "deliveredToPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "keysCount": 3,
+    "keysIdentification": "2 chaves da porta principal e 1 controle do portão",
+    "termSignedByPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+    "termEvidenceFileId": "30b59ea6-d8d9-49dc-a839-19f3e0836140"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_KEY_DELIVERY_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_KEY_DELIVERY_BLOCKED",
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:33.613Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_KEY_DELIVERY_BLOCKED",
+     "message": "Não é possível liberar as chaves: contrato precisa estar assinado/ativo e a vistoria de entrada concluída.",
+     "traceId": "9713eb6c-ab15-48d2-8a0c-255b2bc72928"
+    }
+   },
+   "req": [
+    "M5-A0216-061071",
+    "M5-A0080-157e61",
+    "M5-A0303-33ee80",
+    "M5-A0152-13d5a7",
+    "M5-A0169-3c5062",
+    "M5-A0235-78e7ee",
+    "M5-A0257-fbc50c",
+    "M5-A0269-4941b1",
+    "M5-A0205-eaae4a"
+   ],
+   "modulo": "22-locacao-chaves",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

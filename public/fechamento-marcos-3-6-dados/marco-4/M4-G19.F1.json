@@ -1,0 +1,88 @@
+{
+ "id": "M4-G§19.F1",
+ "secao": "Guia §19 Sprints",
+ "requisito": "Sprint F1: \"Plano de contas, centros, entries, installments.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-01 cria hierarquia de contas, vincula lançamento e filtra a listagem por conta contábil",
+   "status": "passou",
+   "duracaoMs": 106,
+   "commitDoArquivo": "fa15be9f"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N11",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.6",
+    "M4-G§19.F1"
+   ],
+   "titulo": "Histórico de versões da conta (append-only): duas versões",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/chart-of-accounts/490c2c5b-8aa8-46f2-a9b1-48fd7660dd78/versions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T01:35:01.664Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "aeeee8ca-348a-4c3e-bfda-c284eb9a5146",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "chartOfAccountId": "490c2c5b-8aa8-46f2-a9b1-48fd7660dd78",
+      "versionNumber": 1,
+      "code": "3.1-0871300",
+      "name": "Manutenção predial (analítica)",
+      "accountType": "EXPENSE",
+      "parentAccountId": "a665c8cd-fd4c-4afa-8b5c-19be8fb26d56",
+      "isActive": true,
+      "changeReason": "Versão inicial.",
+      "effectiveFrom": "2026-11-11T01:35:01.236Z",
+      "effectiveUntil": "2026-11-11T01:35:01.583Z",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:01.241Z"
+     },
+     {
+      "id": "c43875d8-d7bd-4807-818d-e53f9ecb75df",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "chartOfAccountId": "490c2c5b-8aa8-46f2-a9b1-48fd7660dd78",
+      "versionNumber": 2,
+      "code": "3.1-0871300",
+      "name": "Manutenção predial e reparos (analítica)",
+      "accountType": "EXPENSE",
+      "parentAccountId": "a665c8cd-fd4c-4afa-8b5c-19be8fb26d56",
+      "isActive": true,
+      "changeReason": "Conta alterada.",
+      "effectiveFrom": "2026-11-11T01:35:01.583Z",
+      "effectiveUntil": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:01.594Z"
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

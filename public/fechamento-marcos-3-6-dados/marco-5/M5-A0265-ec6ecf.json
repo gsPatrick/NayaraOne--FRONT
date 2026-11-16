@@ -1,0 +1,246 @@
+{
+ "id": "M5-A0265-ec6ecf",
+ "secao": "P2 > 20. Definition of Done do Marcelo",
+ "linhaCaderno": 804,
+ "requisito": "☐ Requirements engine integrado ao Motor de Regras.",
+ "demandas": "M5-D012;M5-D013",
+ "implementacao": "src/modules/legal/contracts/application/requirementRules.service.js evaluateRule('REG-JUR-001') com versão publicada/vigente em core.rule_versions; publishRequirementRules (nova versão, anterior fechada)",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.modelosAditivos.test.js",
+   "nome": "§7/Guia §20: checklist pelo Motor de Regras (REG-JUR-001) com as características das partes — PJ e parte representada mudam a lista; nova versão da regra muda a lista",
+   "status": "pass",
+   "ms": 353.503,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.maquinaTipos.test.js",
+   "nome": "Guia §5: exigência com etapa SIGNING não bloqueia a revisão jurídica, só o envio para assinatura",
+   "status": "pass",
+   "ms": 297.494,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-502",
+   "metodo": "POST",
+   "rota": "/legal/contracts/820592b9-bd8e-44ef-89c1-022613553bf8/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 7 item(ns)",
+   "quando": "2026-11-11T03:42:28.841Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0265-ec6ecf.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.modelosAditivos.test.js \"§7/Guia §20: checklist pelo Motor de Regras (REG-JUR-001) com as características das partes — PJ e parte representada mudam a lista; nova versão da regra muda a lista\"; test/m5fech.contratos.maquinaTipos.test.js \"Guia §5: exigência com etapa SIGNING não bloqueia a revisão jurídica, só o envio para assinatura\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.modelosAditivos.test.js test/m5fech.contratos.maquinaTipos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-502, CT-515)"
+ },
+ "passos": [
+  {
+   "id": "CT-502",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checklist de locação gerado pelo Motor de Regras com as características das partes (PJ e representada)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/820592b9-bd8e-44ef-89c1-022613553bf8/requirements/generate",
+   "corpoEnviado": {
+    "hasRepresentedParty": false
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 94,
+   "quando": "2026-11-11T03:42:28.841Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "55d56b7f-f29a-40c9-badf-3e90c8e867b9",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+      "requirementCode": "LEASE_PF_PJ_DOCS",
+      "description": "Documentos PF/PJ das partes (locador/locatário).",
+      "requirementType": "PF_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.762Z",
+      "created_at": "2026-11-11T03:42:28.762Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "0b7325cc-b2e7-4ab0-941b-9951c624fd90",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+      "requirementCode": "LEASE_PJ_DOCS",
+      "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+      "requirementType": "PJ_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.766Z",
+      "created_at": "2026-11-11T03:42:28.766Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "277e211f-7ad3-4d34-8056-486476171c62",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+      "requirementCode": "LEASE_GUARANTEE",
+      "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+      "requirementType": "GUARANTEE",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.768Z",
+      "created_at": "2026-11-11T03:42:28.768Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "fc37ace7-0fce-40dc-8d68-27811b8370fd",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+      "requirementCode": "LEASE_POWER_OF_ATTORNEY",
+      "description": "Procuração, quando alguma parte for representada por terceiro.",
+      "requirementType": "POWER_OF_ATTORNEY",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.771Z",
+      "created_at": "2026-11-11T03:42:28.771Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "66e251d1-712d-48ce-a21c-d282701ae366",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+      "requirementCode": "LEASE_INSPECTION",
+      "description": "Vistoria de entrada do imóvel.",
+      "requirementType": "INSPECTION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.774Z",
+      "created_at": "2026-11-11T03:42:28.774Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "c462ad9a-b7a4-4592-9bf1-1d7f833a44d9",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+      "requirementCode": "LEASE_OWNERSHIP",
+      "description": "Comprovação de titularidade do imóvel.",
+      "requirementType": "OWNERSHIP_PROOF",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.778Z",
+      "created_at": "2026-11-11T03:42:28.778Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "fa14b18e-29f3-4ef3-9830-4e2fa37ee5b3",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+      "requirementCode": "LEASE_OBLIGATIONS",
+      "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+      "requirementType": "OBLIGATIONS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:28.789Z",
+      "created_at": "2026-11-11T03:42:28.789Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0313-498938",
+    "M5-A0066-b6c17a",
+    "M5-A0265-ec6ecf"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-515",
+   "req": [
+    "M5-A0066-b6c17a",
+    "M5-A0265-ec6ecf"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "A:leitura",
+   "descricao": "Checklist pelo Motor de Regras: cada exigência guarda a versão PUBLICADA da regra REG-JUR-001 que a gerou (política versionada em core.rule_versions)",
+   "sql": "SELECT DISTINCT r.code, v.status, v.version_number, q.required_stage FROM legal.contract_requirements q JOIN core.rule_versions v ON v.id = q.rule_version_id JOIN core.rules r ON r.id = v.rule_id WHERE q.contract_id = :id",
+   "resultado": [
+    {
+     "code": "REG-JUR-001",
+     "status": "PUBLISHED",
+     "version_number": 1,
+     "required_stage": "LEGAL_REVIEW"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.137Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

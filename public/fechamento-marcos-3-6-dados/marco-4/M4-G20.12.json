@@ -1,0 +1,149 @@
+{
+ "id": "M4-G§20.12",
+ "secao": "Guia §20 DoD do Marcelo",
+ "requisito": "\"Runbooks de banco fora do ar, pagamento incerto e estorno.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-PAY-05 resposta INCERTA do banco seguida da confirmação real: o pagamento é registrado no ledger exatamente uma vez",
+   "status": "passou",
+   "duracaoMs": 218,
+   "commitDoArquivo": "8ca398b6"
+  },
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-PAY-06 depois de uma resposta INCERTA, não se abre um segundo pagamento para o mesmo lançamento",
+   "status": "passou",
+   "duracaoMs": 271,
+   "commitDoArquivo": "8ca398b6"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P45",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-018",
+    "M4-G§20.12"
+   ],
+   "titulo": "Lançamento continua PENDING depois da resposta incerta",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/entries/a0583875-57a1-4351-ad4a-b6e3b1bca42d",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 29,
+   "quando": "2026-11-11T01:35:09.307Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "a0583875-57a1-4351-ad4a-b6e3b1bca42d",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "640.00",
+     "description": "Pagamento com banco incerto 0871300",
+     "dueAt": "2026-11-13T01:35:08.678Z",
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 0,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:08.713Z",
+     "updated_at": "2026-11-11T01:35:08.713Z",
+     "bank_account_id": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "P46",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§20.12"
+   ],
+   "titulo": "Com pagamento incerto em trânsito, não se abre segundo pagamento para o mesmo lançamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "a0583875-57a1-4351-ad4a-b6e3b1bca42d"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "FINANCE_PAYMENT_INTENT_ALREADY_OPEN"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_ALREADY_OPEN",
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T01:35:09.329Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_ALREADY_OPEN",
+     "message": "Já existe uma intenção de pagamento em aberto para este lançamento.",
+     "details": {
+      "existingId": "b0562a5e-9bf3-4834-b646-e2e9959ad4df"
+     },
+     "traceId": "95e18894-d8a9-4435-8f50-c3bbbb0e73d5"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

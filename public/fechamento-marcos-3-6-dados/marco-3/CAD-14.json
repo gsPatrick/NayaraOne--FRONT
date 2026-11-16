@@ -1,0 +1,758 @@
+{
+ "id": "CAD-14",
+ "meta": {
+  "geradoEm": "2026-11-11T09:25:32.895Z",
+  "inicioCaptura": "2026-11-11T09:24:54.065Z",
+  "ambiente": "API local ligada a um PostgreSQL descartável criado do zero pelas migrations (RLS FORCE, papel de runtime sem BYPASSRLS), antivírus ClamAV real. Nada foi gravado na homologação.",
+  "commitApi": "119c0fb2",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "leituraImoveis": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "config": "Empresa A — administrador de Configurações (settings:read e settings:update)"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 64,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Oportunidade do cliente",
+   "metodo": "POST",
+   "rota": "/api/v1/opportunities",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "personId": "a997e052-770b-4181-8cee-278e426a82e9",
+    "stage": "NEW",
+    "nextAction": "Enviar opções",
+    "nextActionDueAt": "2026-11-13T09:25:12.091Z"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c85fe970-0836-411b-8ecd-60e53aeb9128",
+     "lockVersion": 0,
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "personId": "a997e052-770b-4181-8cee-278e426a82e9",
+     "propertyId": null,
+     "ownerUserId": null,
+     "stage": "NEW",
+     "temperature": null,
+     "expectedValue": null,
+     "nextAction": "Enviar opções",
+     "nextActionDueAt": "2026-11-13T09:25:12.091Z",
+     "wonReason": null,
+     "lostReason": null,
+     "withdrawnReason": null,
+     "closedAt": null,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:12.136Z",
+     "created_at": "2026-11-11T09:25:12.136Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:12.091Z"
+  },
+  {
+   "seq": 65,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Cria imóvel (endereço completo)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "title": "Imóvel M3IM mwbwy4ccc5cn",
+    "internalCode": "IM-mwbwy4ccc5cn",
+    "propertyType": "RESIDENTIAL",
+    "addressLine": "Rua Fictícia mwbwy4ccc5cn, 10",
+    "city": "Campinas",
+    "state": "SP",
+    "zipCode": "13010-000"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "publicId": "4a07688f-c7e3-425f-9e9a-f4cb30f13934",
+     "lockVersion": 0,
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "title": "Imóvel M3IM mwbwy4ccc5cn",
+     "internalCode": "IM-mwbwy4ccc5cn",
+     "propertyType": "RESIDENTIAL",
+     "addressId": null,
+     "registryNumber": null,
+     "registryOffice": null,
+     "latitude": null,
+     "longitude": null,
+     "addressLine": "Rua Fictícia mwbwy4ccc5cn, 10",
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": "13010-000",
+     "areaTotalM2": null,
+     "description": null,
+     "bedrooms": null,
+     "parkingSpots": null,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:12.466Z",
+     "created_at": "2026-11-11T09:25:12.466Z",
+     "descriptionPublic": null,
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    },
+    "meta": {
+     "similarPropertyWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T09:25:12.444Z"
+  },
+  {
+   "seq": 66,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Cria imóvel (endereço completo)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "title": "Imóvel M3IM mwbwy4sitqlh",
+    "internalCode": "IM-mwbwy4sitqlh",
+    "propertyType": "RESIDENTIAL",
+    "addressLine": "Rua Fictícia mwbwy4sitqlh, 10",
+    "city": "Campinas",
+    "state": "SP",
+    "zipCode": "13010-000"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "b97897ca-054d-48f2-8c1a-4d906532e167",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "publicId": "5f2a568d-6be1-4810-849e-9aa6df0bd990",
+     "lockVersion": 0,
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "title": "Imóvel M3IM mwbwy4sitqlh",
+     "internalCode": "IM-mwbwy4sitqlh",
+     "propertyType": "RESIDENTIAL",
+     "addressId": null,
+     "registryNumber": null,
+     "registryOffice": null,
+     "latitude": null,
+     "longitude": null,
+     "addressLine": "Rua Fictícia mwbwy4sitqlh, 10",
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": "13010-000",
+     "areaTotalM2": null,
+     "description": null,
+     "bedrooms": null,
+     "parkingSpots": null,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:13.071Z",
+     "created_at": "2026-11-11T09:25:13.071Z",
+     "descriptionPublic": null,
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    },
+    "meta": {
+     "similarPropertyWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T09:25:13.026Z"
+  },
+  {
+   "seq": 67,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Cria imóvel (endereço completo)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "title": "Imóvel M3IM mwbwy54zv5o3",
+    "internalCode": "IM-mwbwy54zv5o3",
+    "propertyType": "RESIDENTIAL",
+    "addressLine": "Rua Fictícia mwbwy54zv5o3, 10",
+    "city": "Campinas",
+    "state": "SP",
+    "zipCode": "13010-000"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "51d8681d-8cdd-46bf-a5a1-91027076b9f7",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "publicId": "767aaccb-e3c9-4a34-9660-183419b7c0b4",
+     "lockVersion": 0,
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "title": "Imóvel M3IM mwbwy54zv5o3",
+     "internalCode": "IM-mwbwy54zv5o3",
+     "propertyType": "RESIDENTIAL",
+     "addressId": null,
+     "registryNumber": null,
+     "registryOffice": null,
+     "latitude": null,
+     "longitude": null,
+     "addressLine": "Rua Fictícia mwbwy54zv5o3, 10",
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": "13010-000",
+     "areaTotalM2": null,
+     "description": null,
+     "bedrooms": null,
+     "parkingSpots": null,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:13.646Z",
+     "created_at": "2026-11-11T09:25:13.646Z",
+     "descriptionPublic": null,
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    },
+    "meta": {
+     "similarPropertyWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T09:25:13.475Z"
+  },
+  {
+   "seq": 68,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Administrador define 3 dias de validade para o link",
+   "metodo": "PUT",
+   "rota": "/api/v1/settings/crm.cart.link_expiration_days",
+   "perfil": "Empresa A — administrador de Configurações (settings:read e settings:update)",
+   "corpoEnviado": {
+    "value": 3
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c041c33a-39fb-498d-afc1-4aba9db3a70f",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "key": "crm.cart.link_expiration_days",
+     "value": 3,
+     "createdBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "updatedBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:24:04.096Z",
+     "updated_at": "2026-11-11T09:25:15.022Z",
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:14.894Z"
+  },
+  {
+   "seq": 69,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Cria o carrinho sem data: vale o parâmetro (3 dias)",
+   "metodo": "POST",
+   "rota": "/api/v1/opportunities/c85fe970-0836-411b-8ecd-60e53aeb9128/carts",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "propertyIds": [
+     "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+     "b97897ca-054d-48f2-8c1a-4d906532e167"
+    ]
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c1b6c88c-9663-4065-8be8-23c62f39c32d",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "opportunityId": "c85fe970-0836-411b-8ecd-60e53aeb9128",
+     "currentVersion": 1,
+     "status": "ACTIVE",
+     "expiresAt": "2026-11-14T09:25:15.045Z",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:15.045Z",
+     "created_at": "2026-11-11T09:25:15.045Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.029Z"
+  },
+  {
+   "seq": 70,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Volta ao padrão (7 dias)",
+   "metodo": "PUT",
+   "rota": "/api/v1/settings/crm.cart.link_expiration_days",
+   "perfil": "Empresa A — administrador de Configurações (settings:read e settings:update)",
+   "corpoEnviado": {
+    "value": 7
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c041c33a-39fb-498d-afc1-4aba9db3a70f",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "key": "crm.cart.link_expiration_days",
+     "value": 7,
+     "createdBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "updatedBy": "4c0bbcc6-1148-4774-a30c-abe7b83f4f9f",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:24:04.096Z",
+     "updated_at": "2026-11-11T09:25:15.073Z",
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.053Z"
+  },
+  {
+   "seq": 71,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Data de expiração no passado é recusada",
+   "metodo": "POST",
+   "rota": "/api/v1/opportunities/c85fe970-0836-411b-8ecd-60e53aeb9128/carts",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "propertyIds": [
+     "6f7afc98-7f93-4e4d-8850-5330e70f2137"
+    ],
+    "expiresAt": "2026-11-10T09:25:15.079Z"
+   },
+   "status": 400,
+   "codigoErro": "CART_VALIDATION",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "CART_VALIDATION",
+     "message": "O campo \"expiresAt\" deve ser uma data futura, em até 90 dias.",
+     "traceId": "f23fb659-7d89-490b-b307-f7ad4786bbb1"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.079Z"
+  },
+  {
+   "seq": 72,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Nova versão do carrinho (sem a casa 2)",
+   "metodo": "PATCH",
+   "rota": "/api/v1/carts/c1b6c88c-9663-4065-8be8-23c62f39c32d/items",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "propertyIds": [
+     "6f7afc98-7f93-4e4d-8850-5330e70f2137"
+    ]
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c1b6c88c-9663-4065-8be8-23c62f39c32d",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "opportunityId": "c85fe970-0836-411b-8ecd-60e53aeb9128",
+     "currentVersion": 2,
+     "status": "ACTIVE",
+     "expiresAt": "2026-11-14T09:25:15.045Z",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "created_at": "2026-11-11T09:25:15.045Z",
+     "updated_at": "2026-11-11T09:25:15.113Z"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.097Z"
+  },
+  {
+   "seq": 73,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Gera o link público",
+   "metodo": "POST",
+   "rota": "/api/v1/carts/c1b6c88c-9663-4065-8be8-23c62f39c32d/share-link",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "token": "[segredo omitido]"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.118Z"
+  },
+  {
+   "seq": 74,
+   "casos": [
+    "carrinho"
+   ],
+   "descricao": "Cliente abre o link (sem login)",
+   "metodo": "GET",
+   "rota": "/api/v1/crm/carts/public/[token do link omitido]",
+   "perfil": "sem login (rota pública)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "cartId": "c1b6c88c-9663-4065-8be8-23c62f39c32d",
+     "version": 2,
+     "expiresAt": "2026-11-14T09:25:15.045Z",
+     "properties": [
+      {
+       "id": "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+       "title": "Imóvel M3IM mwbwy4ccc5cn",
+       "propertyType": "RESIDENTIAL",
+       "city": "Campinas",
+       "state": "SP",
+       "bedrooms": null,
+       "parkingSpots": null,
+       "areaTotalM2": null,
+       "offer": null,
+       "photos": []
+      }
+     ]
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.132Z"
+  },
+  {
+   "seq": 75,
+   "casos": [
+    "carrinho_clique"
+   ],
+   "descricao": "Clique num imóvel do carrinho",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/carts/public/[token do link omitido]/properties/6f7afc98-7f93-4e4d-8850-5330e70f2137/click",
+   "perfil": "sem login (rota pública)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "acknowledged": true
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.434Z"
+  },
+  {
+   "seq": 76,
+   "casos": [
+    "carrinho_clique"
+   ],
+   "descricao": "Clique num imóvel de fora do carrinho é recusado",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/carts/public/[token do link omitido]/properties/51d8681d-8cdd-46bf-a5a1-91027076b9f7/click",
+   "perfil": "sem login (rota pública)",
+   "corpoEnviado": "sem corpo",
+   "status": 404,
+   "codigoErro": "CART_PROPERTY_NOT_IN_CART",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "CART_PROPERTY_NOT_IN_CART",
+     "message": "Este imóvel não está no carrinho.",
+     "traceId": "4cd63878-5c7d-4680-af02-efdaae90f877"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.462Z"
+  },
+  {
+   "seq": 77,
+   "casos": [
+    "carrinho_clique"
+   ],
+   "descricao": "Clique num imóvel só da versão anterior é recusado",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/carts/public/[token do link omitido]/properties/b97897ca-054d-48f2-8c1a-4d906532e167/click",
+   "perfil": "sem login (rota pública)",
+   "corpoEnviado": "sem corpo",
+   "status": 404,
+   "codigoErro": "CART_PROPERTY_NOT_IN_CART",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "CART_PROPERTY_NOT_IN_CART",
+     "message": "Este imóvel não está no carrinho.",
+     "traceId": "a15bcb83-3a48-4d01-9e10-0d958bfc9a8c"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.472Z"
+  },
+  {
+   "seq": 78,
+   "casos": [
+    "carrinho_tela"
+   ],
+   "descricao": "Tela do carrinho: versões, link, status e rastreio",
+   "metodo": "GET",
+   "rota": "/api/v1/opportunities/c85fe970-0836-411b-8ecd-60e53aeb9128/carts",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "c1b6c88c-9663-4065-8be8-23c62f39c32d",
+      "opportunityId": "c85fe970-0836-411b-8ecd-60e53aeb9128",
+      "status": "ACTIVE",
+      "expiresAt": "2026-11-14T09:25:15.045Z",
+      "currentVersion": 2,
+      "createdAt": "2026-11-11T09:25:15.045Z",
+      "shareLink": {
+       "token": "[segredo omitido]",
+       "createdAt": "2026-11-11T09:25:15.130Z"
+      },
+      "versions": [
+       {
+        "versionNumber": 1,
+        "createdAt": "2026-11-11T09:25:15.047Z",
+        "properties": [
+         {
+          "id": "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+          "title": "Imóvel M3IM mwbwy4ccc5cn",
+          "internalCode": "IM-mwbwy4ccc5cn",
+          "city": "Campinas",
+          "state": "SP"
+         },
+         {
+          "id": "b97897ca-054d-48f2-8c1a-4d906532e167",
+          "title": "Imóvel M3IM mwbwy4sitqlh",
+          "internalCode": "IM-mwbwy4sitqlh",
+          "city": "Campinas",
+          "state": "SP"
+         }
+        ]
+       },
+       {
+        "versionNumber": 2,
+        "createdAt": "2026-11-11T09:25:15.112Z",
+        "properties": [
+         {
+          "id": "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+          "title": "Imóvel M3IM mwbwy4ccc5cn",
+          "internalCode": "IM-mwbwy4ccc5cn",
+          "city": "Campinas",
+          "state": "SP"
+         }
+        ]
+       }
+      ],
+      "tracking": {
+       "views": 1,
+       "clicks": 1,
+       "lastViewedAt": "2026-11-11T09:25:15.143Z",
+       "lastClickedAt": "2026-11-11T09:25:15.447Z",
+       "clicksByProperty": {
+        "6f7afc98-7f93-4e4d-8850-5330e70f2137": 1
+       },
+       "viewsByVersion": {
+        "2": 1
+       }
+      }
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T09:25:15.480Z"
+  },
+  {
+   "seq": 79,
+   "casos": [
+    "carrinho_clique"
+   ],
+   "descricao": "Clique depois de vencido é recusado e não registra nada",
+   "metodo": "POST",
+   "rota": "/api/v1/crm/carts/public/[token do link omitido]/properties/6f7afc98-7f93-4e4d-8850-5330e70f2137/click",
+   "perfil": "sem login (rota pública)",
+   "corpoEnviado": "sem corpo",
+   "status": 422,
+   "codigoErro": "CART_SHARE_LINK_EXPIRED",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "CART_SHARE_LINK_EXPIRED",
+     "message": "Este link de carrinho expirou ou foi revogado.",
+     "traceId": "ca817aba-54cb-4850-8099-3b4fc3a31817"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:15.495Z"
+  },
+  {
+   "seq": 80,
+   "casos": [
+    "carrinho_tela"
+   ],
+   "descricao": "Tela do carrinho depois de vencido: status EXPIRED",
+   "metodo": "GET",
+   "rota": "/api/v1/opportunities/c85fe970-0836-411b-8ecd-60e53aeb9128/carts",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "c1b6c88c-9663-4065-8be8-23c62f39c32d",
+      "opportunityId": "c85fe970-0836-411b-8ecd-60e53aeb9128",
+      "status": "EXPIRED",
+      "expiresAt": "2026-11-11T09:24:15.493Z",
+      "currentVersion": 2,
+      "createdAt": "2026-11-11T09:25:15.045Z",
+      "shareLink": {
+       "token": "[segredo omitido]",
+       "createdAt": "2026-11-11T09:25:15.130Z"
+      },
+      "versions": [
+       {
+        "versionNumber": 1,
+        "createdAt": "2026-11-11T09:25:15.047Z",
+        "properties": [
+         {
+          "id": "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+          "title": "Imóvel M3IM mwbwy4ccc5cn",
+          "internalCode": "IM-mwbwy4ccc5cn",
+          "city": "Campinas",
+          "state": "SP"
+         },
+         {
+          "id": "b97897ca-054d-48f2-8c1a-4d906532e167",
+          "title": "Imóvel M3IM mwbwy4sitqlh",
+          "internalCode": "IM-mwbwy4sitqlh",
+          "city": "Campinas",
+          "state": "SP"
+         }
+        ]
+       },
+       {
+        "versionNumber": 2,
+        "createdAt": "2026-11-11T09:25:15.112Z",
+        "properties": [
+         {
+          "id": "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+          "title": "Imóvel M3IM mwbwy4ccc5cn",
+          "internalCode": "IM-mwbwy4ccc5cn",
+          "city": "Campinas",
+          "state": "SP"
+         }
+        ]
+       }
+      ],
+      "tracking": {
+       "views": 1,
+       "clicks": 1,
+       "lastViewedAt": "2026-11-11T09:25:15.143Z",
+       "lastClickedAt": "2026-11-11T09:25:15.447Z",
+       "clicksByProperty": {
+        "6f7afc98-7f93-4e4d-8850-5330e70f2137": 1
+       },
+       "viewsByVersion": {
+        "2": 1
+       }
+      }
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T09:25:15.503Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "carrinho_clique"
+   ],
+   "descricao": "Vence o prazo do link (simulação de tempo no banco descartável, nunca na homologação)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "UPDATE crm.carts SET expires_at = now() - interval '1 minute' WHERE id = $1",
+   "parametros": [
+    "c1b6c88c-9663-4065-8be8-23c62f39c32d"
+   ],
+   "resultado": {
+    "linhasAfetadas": 1
+   },
+   "dataHora": "2026-11-11T09:25:15.495Z"
+  },
+  {
+   "casos": [
+    "carrinho_clique",
+    "carrinho_tela"
+   ],
+   "descricao": "Rastreio gravado (crm.cart_events): uma visualização e um clique válidos",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "SELECT event_type, property_id, version_number FROM crm.cart_events WHERE cart_id = $1 ORDER BY occurred_at",
+   "parametros": [
+    "c1b6c88c-9663-4065-8be8-23c62f39c32d"
+   ],
+   "resultado": [
+    {
+     "event_type": "VIEWED",
+     "property_id": null,
+     "version_number": 2
+    },
+    {
+     "event_type": "PROPERTY_CLICKED",
+     "property_id": "6f7afc98-7f93-4e4d-8850-5330e70f2137",
+     "version_number": 2
+    }
+   ],
+   "dataHora": "2026-11-11T09:25:15.503Z"
+  }
+ ]
+}

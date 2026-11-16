@@ -1,0 +1,1012 @@
+{
+ "id": "M4-FIN-TS-006",
+ "secao": "§20 Testes adversariais",
+ "requisito": "FIN-TS-006: Recebimento parcial — saldo/comissão conforme regra.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-06 duas baixas parciais fecham o lançamento: soma bate no centavo e o amount original nunca muda",
+   "status": "passou",
+   "duracaoMs": 265,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM3 pagamento da comissão proporcional ao valor efetivamente recebido",
+   "status": "passou",
+   "duracaoMs": 396,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/m4.settlePartialIdempotency.test.js",
+   "nome": "FIN-004 settle-partial: R$ 0,30 em duas baixas (0,10 e 0,20): saldo 0,20 após a primeira, 0,00 e SETTLED após a segunda; a chave fica gravada na filha",
+   "status": "passou",
+   "duracaoMs": 498,
+   "commitDoArquivo": "76cb9777"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "REC-02",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-006",
+    "M4-§10.1"
+   ],
+   "titulo": "1ª baixa parcial de R$ 0,10 (MFA verificado pelo autenticador; chave de idempotência)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/5514e0b1-b405-40eb-ab42-f7c0137021b2/settle-partial",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-rec-0871300-b1"
+   },
+   "corpoEnviado": {
+    "partialAmount": "0.10",
+    "idempotencyKey": "m4-rec-0871300-b1"
+   },
+   "esperado": {
+    "status": 200,
+    "conteudo": "saldo restante 0.20"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "saldo restante 0.20",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 97,
+   "quando": "2026-11-11T01:35:02.697Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "5514e0b1-b405-40eb-ab42-f7c0137021b2",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "0.30",
+      "description": "ACEITE-M4 recebível fictício de teste (duas baixas) 0871300",
+      "dueAt": "2026-11-10T15:00:00.000Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PARTIALLY_SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 1,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:02.556Z",
+      "updated_at": "2026-11-11T01:35:02.639Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "settlement": {
+      "id": "561e55a0-6026-45ed-bc81-75f22bc63f9f",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+      "contractId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "0.10",
+      "description": "Baixa parcial de R$ 0,10 — ACEITE-M4 recebível fictício de teste (duas baixas) 0871300",
+      "dueAt": "2026-11-10T15:00:00.000Z",
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T01:35:02.632Z",
+      "status": "SETTLED",
+      "idempotencyKey": "baixa-parcial:7b97b796f10b4d077227d8b8e3602b2d090a08b78d850797f714fadbb2584da6",
+      "reversalOfEntryId": null,
+      "parentEntryId": "5514e0b1-b405-40eb-ab42-f7c0137021b2",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updated_at": "2026-11-11T01:35:02.632Z",
+      "created_at": "2026-11-11T01:35:02.632Z",
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyCompensatedEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     },
+     "remainingAmount": "0.20",
+     "classificationPending": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "HML-REC-06",
+   "descricao": "Relatório semanal de saúde (efeito no relatório)",
+   "metodo": "GET",
+   "rota": "/finance/reports/weekly-health",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:01.091Z",
+   "duracaoMs": 256,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "success": true,
+    "data": {
+     "generatedAt": "2026-11-11T01:33:00.959Z",
+     "windowEndsAt": "2026-11-18T03:00:00.000Z",
+     "payablePending": {
+      "count": 433,
+      "total": 1461151.3
+     },
+     "receivablePending": {
+      "count": 72,
+      "total": 4031544.58
+     },
+     "projectedNetBalance": 2570393.28,
+     "overdue": {
+      "payable": {
+       "count": 104,
+       "total": 286097.37
+      },
+      "receivable": {
+       "count": 35,
+       "total": 4007247.29
+      },
+      "total": 4293344.66
+     },
+     "dueNextSevenDays": {
+      "payable": {
+       "count": 4,
+       "total": 1380.4
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     "dueNext30Days": {
+      "payable": {
+       "count": 12,
+       "total": 78186.72
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     "dueNext60Days": {
+      "payable": {
+       "count": 18,
+       "total": 80860.08
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      }
+     },
+     "thirdPartyFunds": {
+      "count": 25,
+      "total": 15353,
+      "basis": "PENDING",
+      "label": "Dinheiro de terceiros em aberto (previsto)",
+      "description": "Soma dos lançamentos de dinheiro de terceiro (cauções etc.) ainda pendentes. Não é o que já está retido em caixa."
+     },
+     "delinquencyRatio": 0.78,
+     "pendingReconciliations": {
+      "count": 48,
+      "total": 14189.87
+     },
+     "provisionedCommissions": {
+      "count": 1,
+      "total": 500
+     },
+     "pendingOwnerRepasses": {
+      "count": 33,
+      "total": 20350
+     },
+     "openHighRiskAnomalies": 37,
+     "freeCash": {
+      "grossBankBalance": 37572.67,
+      "thirdPartyHeld": 18500,
+      "thirdPartyHeldBasis": "SETTLED",
+      "thirdPartyHeldLabel": "Dinheiro de terceiros retido em caixa (realizado)",
+      "thirdPartyHeldDescription": "Dinheiro de terceiro já recebido e ainda não devolvido; é o que sai do saldo bancário para chegar ao caixa livre. Difere do total em aberto, que é previsto.",
+      "value": 19072.67
+     },
+     "marginBySector": [
+      {
+       "resultCenterId": null,
+       "revenueRealized": 40000,
+       "costsAttributed": 18259.58,
+       "margin": 21740.42
+      },
+      {
+       "resultCenterId": "241ff6f9-aa07-4ae0-a70e-995187dcc44e",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "b58c914f-835d-420f-8a1a-e59416cf63b5",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "e81ea5b4-b0f3-4536-90b7-7b9038629d45",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "5697fca1-a993-425d-af51-89bf2f1717f1",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "f65f6c82-aece-4c74-8b39-c438a63fdd16",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "bf713551-107f-48f3-981b-015873acbf60",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "cba8770b-594a-4429-8146-c7fe964fc817",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "daca1cfd-72b7-4007-9725-a1023125891e",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "db35c7a6-b1cd-40ee-89d9-5d21181bf27a",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "43c4ce4f-1b1e-4805-b987-b59213f2696d",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "5fe55592-879a-4ae7-8b5a-5d5255b0ca53",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "c84d5620-356b-476d-95be-1caf83977c91",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "03b2b8fe-e056-45f3-8f5c-e6c7786169fb",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "c3e8ae75-5859-4f6c-9c87-617e6f0fd529",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "ec17a643-b217-4bb7-b8c6-0f860da058e6",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "5bc099bb-c5bd-4564-9086-e4e2b7558aa6",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "11bcbebd-00fd-484f-9f21-93473096d719",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "2e93427d-cf3c-4dff-9a6b-c54d5760f225",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "cb28e708-b3f9-453c-8e31-da67e28cf90c",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "a33c3d14-f945-4ff1-8728-48a3bc1221b0",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "364e7f6a-b9b3-497d-a2ec-23cdc6dac910",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "2b14beed-4ff6-42e8-a0bd-879b8e82917b",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "3239e86f-7bd7-4ab1-bb25-89deebd100c5",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "d17bdb5e-e9da-437f-b00b-83fcb3c2e7c7",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "fd2e87b6-810c-4798-9667-f48e8eac2f0e",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "30138ab6-8d96-4c26-a996-59309db383b8",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "cbbdbc14-9c30-4dbb-839a-6d730a966f40",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "02bfe7b2-78ed-443f-bc37-4142ec6249b6",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "5a2a460b-a303-4d86-9ff1-08ce72d3b78c",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "24c6b3ba-2ab3-4aaf-b55b-93bdd028ee13",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "6369caa7-3fc8-4e67-b2f1-4ad55334332a",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "d75b5144-ec29-4300-92ae-5ad5ae282e99",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "859be91c-f346-4160-a840-2eca6d403632",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "0119f3aa-babd-4931-a676-47ec6ea43ce7",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "b2a5ed64-400e-4ffd-9b6b-f69ef6903f6b",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "b578de04-6a44-43a0-9779-22632ae83bbc",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "6b2e3fec-d9e8-478a-ab4b-1c55f6771eed",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "af5e822c-16a4-420c-8ee4-6278430a926f",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "e533ec6c-a5e8-468b-a587-d5bdec48d216",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "fca060cf-d47f-4aca-86c3-d37e111f79d4",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "739246f9-17be-4857-9ed0-e06716ae9350",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "29888ac5-0538-4161-be16-db98142ec98d",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "ced84651-6e86-4003-91ec-a6a39c37880f",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "f64e5b12-30ed-4dec-a089-561f5386a8eb",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "0ca399c0-1bfe-48cd-9787-409b102a9fe7",
+       "revenueRealized": 68000,
+       "costsAttributed": 0,
+       "margin": 68000
+      },
+      {
+       "resultCenterId": "353e1f32-28bb-4660-9c9e-db5b58664fc0",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "dd91a740-cba0-490d-a219-b24201ca9a62",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "9af9b732-c98c-48fc-be78-19faf1777ced",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "e340eeec-7f7e-4a54-8b57-4a470b03926f",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "58d71dde-87cc-4e4e-bb1a-bd7b65d9556d",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "889d38cd-d586-41d6-9745-e3eacc77d25c",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "52d64d32-22a5-4057-8859-493f6a0afd60",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "f57e3018-0411-4638-a0b2-01a24a78638f",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "436901bb-6919-4ed1-b24b-d2c180fa255e",
+       "revenueRealized": 5000,
+       "costsAttributed": 0,
+       "margin": 5000
+      },
+      {
+       "resultCenterId": "a7df1b20-3fc8-43c9-b5b5-b2d588e625a3",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "4af48c39-cfb6-44cb-89ad-5cf9ea7756e5",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "44cae615-21a9-4512-b108-4405ecb42301",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "be3a79c5-e7d2-4f6d-97ae-7382d156489a",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "7888c005-3df6-4108-b9b6-01a47f496180",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "b031f20e-49fa-4eac-9242-2e49393522fa",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "b78b938f-8331-4d11-92ea-a9b1fd47c9a9",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "df020d6a-6550-404a-85e4-c7362a2ca82d",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "dc4a9cb0-b819-4a77-955c-ba4cb68afcf7",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "8141379e-2c50-4bdb-baa9-7719a245030d",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "60019019-b67b-44bb-987a-c8e16191ced1",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "55635c61-8c2f-48d3-90f6-1b933b57da44",
+       "revenueRealized": 600,
+       "costsAttributed": 0,
+       "margin": 600
+      },
+      {
+       "resultCenterId": "7b6e6b88-e637-4b18-a68c-78cde7ebd794",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "7c8d3321-509d-4d4a-82b3-3dac3726c182",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "88a86f8f-6c1b-4252-8647-32840f9e4248",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "49ae600f-08fb-4eb8-9c97-ec521f64fc76",
+       "revenueRealized": 2000,
+       "costsAttributed": 0,
+       "margin": 2000
+      },
+      {
+       "resultCenterId": "745a9d21-4c75-48ec-a662-7e61802f0452",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "4afb2e75-4b4d-427a-b19c-a1c0823b0b7c",
+       "revenueRealized": 5000,
+       "costsAttributed": 0,
+       "margin": 5000
+      },
+      {
+       "resultCenterId": "758062e6-0fe3-4ffe-8a12-25ec440e7d35",
+       "revenueRealized": 2000,
+       "costsAttributed": 0,
+       "margin": 2000
+      },
+      {
+       "resultCenterId": "bf60d9ea-7590-4e21-999e-6570893854e0",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "1d9af099-9847-4ea1-b79b-9e5e61a90dc7",
+       "revenueRealized": 2500,
+       "costsAttributed": 0,
+       "margin": 2500
+      },
+      {
+       "resultCenterId": "17012288-a410-4c82-b53a-2699349f07fb",
+       "revenueRealized": 5000,
+       "costsAttributed": 0,
+       "margin": 5000
+      },
+      {
+       "resultCenterId": "c52f20f9-1263-48e6-a5cc-d266e18a2e84",
+       "revenueRealized": 2000,
+       "costsAttributed": 0,
+       "margin": 2000
+      },
+      {
+       "resultCenterId": "afd99c80-2d0a-4716-be82-15e3042188e1",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "0bb7d5c6-527a-4654-a1b4-013a2ce37410",
+       "revenueRealized": 5000,
+       "costsAttributed": 0,
+       "margin": 5000
+      },
+      {
+       "resultCenterId": "215a64f8-026d-4217-ad2b-80ea9449daa0",
+       "revenueRealized": 2000,
+       "costsAttributed": 0,
+       "margin": 2000
+      },
+      {
+       "resultCenterId": "f081839f-c4ba-49dd-a94e-8b97ffecddaf",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "5ecb0e71-3ae6-4ff7-8222-fe11ad511205",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "4f75798c-9788-4824-bd29-41b2f43a040c",
+       "revenueRealized": 5000,
+       "costsAttributed": 0,
+       "margin": 5000
+      },
+      {
+       "resultCenterId": "ba5860b0-b956-467c-a62a-6a03630763a5",
+       "revenueRealized": 2000,
+       "costsAttributed": 0,
+       "margin": 2000
+      },
+      {
+       "resultCenterId": "1a3b5df5-6e4f-4aa8-a834-8154401e685b",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "8e576446-1197-4d38-8460-6ac2741e53c6",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "5a3e0569-3a95-48b8-b4c0-631d64b66f7a",
+       "revenueRealized": 500,
+       "costsAttributed": 0,
+       "margin": 500
+      },
+      {
+       "resultCenterId": "9213f144-7016-484a-8e6a-4fac1a892574",
+       "revenueRealized": 0.6,
+       "costsAttributed": 0,
+       "margin": 0.6
+      }
+     ],
+     "breathingNeed": {
+      "value": 268405.1,
+      "excludesFreeCashBalance": false
+     }
+    }
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:01.091Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q02",
+   "linhas": [
+    "M4-§10.3",
+    "M4-FIN-TS-006"
+   ],
+   "descricao": "Recebível de R$ 0,30: pai, baixas filhas e saldo = valor − Σ baixas SETTLED",
+   "sql": "select p.id, p.amount, p.status, p.settled_at, (select count(*) from finance.financial_entries f where f.parent_entry_id = p.id and f.status = 'SETTLED')::int as baixas, (select coalesce(sum(f.amount),0) from finance.financial_entries f where f.parent_entry_id = p.id and f.status = 'SETTLED') as baixado, p.amount - (select coalesce(sum(f.amount),0) from finance.financial_entries f where f.parent_entry_id = p.id and f.status = 'SETTLED') as saldo from finance.financial_entries p where p.id = :id",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "id": "5514e0b1-b405-40eb-ab42-f7c0137021b2",
+     "amount": "0.30",
+     "status": "SETTLED",
+     "settled_at": "2026-11-11T01:35:02.906Z",
+     "baixas": 2,
+     "baixado": "0.30",
+     "saldo": "0.00"
+    }
+   ],
+   "invariante": "valor 0,30; 2 baixas; saldo 0,00; status SETTLED",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.676Z"
+  }
+ ],
+ "recebivelHomologacao": {
+  "pai": {
+   "id": "66dc9aa8-2928-4eba-84eb-6e0a3a227780",
+   "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+   "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+   "bankAccountId": null,
+   "costCenterId": null,
+   "resultCenterId": "9213f144-7016-484a-8e6a-4fac1a892574",
+   "contractId": null,
+   "constructionProjectId": null,
+   "chartOfAccountId": null,
+   "chartOfAccountVersionId": null,
+   "originRef": null,
+   "isThirdPartyFunds": false,
+   "thirdPartyReference": null,
+   "thirdPartyOriginEntryId": null,
+   "thirdPartyHolderPersonId": null,
+   "settlementMethod": null,
+   "settlementEvidenceFileId": null,
+   "settlementReason": null,
+   "settlementEvidenceAttachedBy": null,
+   "settlementEvidenceAttachedAt": null,
+   "thirdPartyReleaseType": null,
+   "thirdPartyCompensatedEntryId": null,
+   "entryType": "CREDIT",
+   "nature": "RECEIVABLE",
+   "amount": "0.30",
+   "description": "ACEITE-M9 recebivel ficticio de teste (duas baixas)",
+   "dueAt": "2026-11-15T00:00:00.000Z",
+   "competenceMonth": "2026-11",
+   "settledAt": "2026-11-10T22:16:54.527Z",
+   "status": "SETTLED",
+   "idempotencyKey": null,
+   "reversalOfEntryId": null,
+   "parentEntryId": null,
+   "requiresManualReview": false,
+   "manualReviewReason": null,
+   "manualReviewClearedAt": null,
+   "manualReviewClearedBy": null,
+   "lockVersion": 2,
+   "createdBy": "33477648-c752-4bed-83cb-a04114224f4d",
+   "updatedBy": "5b4e1b22-01a6-4e2a-8e9b-55a0f19bfc91",
+   "created_at": "2026-11-10T22:15:44.047Z",
+   "updated_at": "2026-11-10T22:16:54.527Z",
+   "bank_account_id": null,
+   "cost_center_id": null,
+   "result_center_id": "9213f144-7016-484a-8e6a-4fac1a892574",
+   "contract_id": null,
+   "chart_of_account_id": null,
+   "construction_project_id": null
+  },
+  "filhas": [
+   {
+    "id": "7a70a676-a1fb-45c7-8eb6-0ca402341563",
+    "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+    "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+    "bankAccountId": null,
+    "costCenterId": null,
+    "resultCenterId": "9213f144-7016-484a-8e6a-4fac1a892574",
+    "contractId": null,
+    "constructionProjectId": null,
+    "chartOfAccountId": null,
+    "chartOfAccountVersionId": null,
+    "originRef": null,
+    "isThirdPartyFunds": false,
+    "thirdPartyReference": null,
+    "thirdPartyOriginEntryId": null,
+    "thirdPartyHolderPersonId": null,
+    "settlementMethod": null,
+    "settlementEvidenceFileId": null,
+    "settlementReason": null,
+    "settlementEvidenceAttachedBy": null,
+    "settlementEvidenceAttachedAt": null,
+    "thirdPartyReleaseType": null,
+    "thirdPartyCompensatedEntryId": null,
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "0.10",
+    "description": "Baixa parcial de R$ 0,10 — ACEITE-M9 recebivel ficticio de teste (duas baixas)",
+    "dueAt": "2026-11-15T00:00:00.000Z",
+    "competenceMonth": "2026-11",
+    "settledAt": "2026-11-10T22:16:27.325Z",
+    "status": "SETTLED",
+    "idempotencyKey": null,
+    "reversalOfEntryId": null,
+    "parentEntryId": "66dc9aa8-2928-4eba-84eb-6e0a3a227780",
+    "requiresManualReview": false,
+    "manualReviewReason": null,
+    "manualReviewClearedAt": null,
+    "manualReviewClearedBy": null,
+    "lockVersion": 0,
+    "createdBy": "5b4e1b22-01a6-4e2a-8e9b-55a0f19bfc91",
+    "updatedBy": "5b4e1b22-01a6-4e2a-8e9b-55a0f19bfc91",
+    "created_at": "2026-11-10T22:16:27.325Z",
+    "updated_at": "2026-11-10T22:16:27.325Z",
+    "bank_account_id": null,
+    "cost_center_id": null,
+    "result_center_id": "9213f144-7016-484a-8e6a-4fac1a892574",
+    "contract_id": null,
+    "chart_of_account_id": null,
+    "construction_project_id": null
+   },
+   {
+    "id": "db91d718-a591-4276-9dc4-6dec71ca86e8",
+    "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+    "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+    "bankAccountId": null,
+    "costCenterId": null,
+    "resultCenterId": "9213f144-7016-484a-8e6a-4fac1a892574",
+    "contractId": null,
+    "constructionProjectId": null,
+    "chartOfAccountId": null,
+    "chartOfAccountVersionId": null,
+    "originRef": null,
+    "isThirdPartyFunds": false,
+    "thirdPartyReference": null,
+    "thirdPartyOriginEntryId": null,
+    "thirdPartyHolderPersonId": null,
+    "settlementMethod": null,
+    "settlementEvidenceFileId": null,
+    "settlementReason": null,
+    "settlementEvidenceAttachedBy": null,
+    "settlementEvidenceAttachedAt": null,
+    "thirdPartyReleaseType": null,
+    "thirdPartyCompensatedEntryId": null,
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "0.20",
+    "description": "Baixa parcial de R$ 0,20 — ACEITE-M9 recebivel ficticio de teste (duas baixas)",
+    "dueAt": "2026-11-15T00:00:00.000Z",
+    "competenceMonth": "2026-11",
+    "settledAt": "2026-11-10T22:16:54.524Z",
+    "status": "SETTLED",
+    "idempotencyKey": null,
+    "reversalOfEntryId": null,
+    "parentEntryId": "66dc9aa8-2928-4eba-84eb-6e0a3a227780",
+    "requiresManualReview": false,
+    "manualReviewReason": null,
+    "manualReviewClearedAt": null,
+    "manualReviewClearedBy": null,
+    "lockVersion": 0,
+    "createdBy": "5b4e1b22-01a6-4e2a-8e9b-55a0f19bfc91",
+    "updatedBy": "5b4e1b22-01a6-4e2a-8e9b-55a0f19bfc91",
+    "created_at": "2026-11-10T22:16:54.524Z",
+    "updated_at": "2026-11-10T22:16:54.524Z",
+    "bank_account_id": null,
+    "cost_center_id": null,
+    "result_center_id": "9213f144-7016-484a-8e6a-4fac1a892574",
+    "contract_id": null,
+    "chart_of_account_id": null,
+    "construction_project_id": null
+   }
+  ],
+  "saldos": [
+   {
+    "momento": "antes da primeira baixa",
+    "baixado": "0.00",
+    "saldoRestante": "0.30",
+    "statusDoPai": "PENDING"
+   },
+   {
+    "momento": "após a baixa 7a70a676-a1fb-45c7-8eb6-0ca402341563 (0.10) em 2026-11-10T22:16:27.325Z",
+    "baixado": "0.10",
+    "saldoRestante": "0.20",
+    "statusDoPai": "PARTIALLY_SETTLED"
+   },
+   {
+    "momento": "após a baixa db91d718-a591-4276-9dc4-6dec71ca86e8 (0.20) em 2026-11-10T22:16:54.524Z",
+    "baixado": "0.30",
+    "saldoRestante": "0.00",
+    "statusDoPai": "SETTLED"
+   }
+  ]
+ }
+}

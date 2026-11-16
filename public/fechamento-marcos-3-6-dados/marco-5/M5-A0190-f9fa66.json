@@ -1,0 +1,420 @@
+{
+ "id": "M5-A0190-f9fa66",
+ "secao": "P2 > 1. Ordem exata de implementação",
+ "linhaCaderno": 435,
+ "requisito": "11. legal_deadlines + escalonamento.",
+ "demandas": "M5-D035;M5-D036;M5-D037;M5-D220",
+ "implementacao": "agregação dos requisitos M5-A0107-dce0a2 (linha 257), M5-A0108-eed49f (linha 259), M5-A0109-d70c4e (linha 261), M5-A0110-29f58b (linha 263), M5-A0111-b4013c (linha 265), M5-A0112-210dba (linha 267), M5-A0049-9aa2d7 (linha 103)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-008: criar prazo crítico sem origem verificável é bloqueado (DEADLINE_SOURCE_REQUIRED, Guia §12) e nada é gravado; texto de origem sozinho não basta",
+   "status": "pass",
+   "ms": 87,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazosLivro.test.js",
+   "nome": "JR prazo livro: due_at no fuso de São Paulo — só a data vence às 23:59 de Brasília, hora sem fuso é hora de Brasília, ISO com fuso é respeitado e data inexistente é 400",
+   "status": "pass",
+   "ms": 109.703,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-009: prazo crítico vencido sem conclusão alerta o responsável, abre UMA ocorrência CRITICAL, publica legal.deadline.overdue e escala após 24 h",
+   "status": "pass",
+   "ms": 39.016,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazos.test.js",
+   "nome": "JR prazo: concluir exige evidência ou nota com texto; evidência de outra empresa/inexistente é recusada (§15 \"Conclusão exige evidência/nota\")",
+   "status": "pass",
+   "ms": 39.972,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.prazos.test.js",
+   "nome": "JR prazo: remarcar sem motivo é 400; com motivo a auditoria preserva o vencimento anterior e a justificativa (§15)",
+   "status": "pass",
+   "ms": 25.604,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.legal_deadlines: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 0.443,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-D02",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "resumo": "erro DEADLINE_SOURCE_REQUIRED: Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jur",
+   "quando": "2026-11-11T03:42:37.618Z"
+  },
+  {
+   "passo": "JR-D06",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=70785ddb-efe1-4fd5-aaef-db3b4ff26c6f, criticality=MEDIUM",
+   "quando": "2026-11-11T03:42:37.742Z"
+  },
+  {
+   "passo": "JR-D33",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=f1dd4cb0-3f92-40e4-979a-b59d282a9148, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:38.298Z"
+  },
+  {
+   "passo": "JR-D19",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED",
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED: Concluir um prazo exige uma evidência anexada ou uma nota (com texto) explicando o que foi feito.",
+   "quando": "2026-11-11T03:42:37.932Z"
+  },
+  {
+   "passo": "JR-D15",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CHANGE_REASON_REQUIRED: Mudar o vencimento de um prazo exige informar o motivo da mudança.",
+   "quando": "2026-11-11T03:42:37.898Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0190-f9fa66.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.adversariais.test.js test/m5fech.juridico.prazosLivro.test.js test/m5fech.juridico.prazos.test.js test/m5fech.meta.tabelasDoLivro.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-D02, JR-D06, JR-D33, JR-D19, JR-D15, MT-T20-SQL)"
+ },
+ "passos": [
+  {
+   "id": "JR-D02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico sem origem é bloqueado (JUR-TS-008)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.605Z",
+    "criticality": "CRITICAL",
+    "responsibleUserId": null
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.618Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "DEADLINE_SOURCE_REQUIRED",
+     "message": "Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jurídico precisa de uma origem verificável.",
+     "traceId": "60b1eca8-18d9-49d0-8f7b-986dd3966bae"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0107-dce0a2",
+    "M5-A0156-d0fcff",
+    "M5-A0238-193275",
+    "M5-A0258-4d0dd8",
+    "M5-A0206-d4f5e0",
+    "M5-A0218-5853eb"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR pelo maker (legal:create): prazo MEDIUM sem responsável próprio (vale o do processo), só com a data (vence 23:59 de Brasília) e origem por EVENTO real",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Réplica mwbkpk2qm6ml",
+    "dueAt": "2030-01-01",
+    "sourceEventId": "f88dd3ab-4640-40b3-8456-7941ca704408",
+    "sourceEvent": "Juntada de contestação (evento fictício)"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T03:42:37.742Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Réplica mwbkpk2qm6ml",
+     "dueAt": "2030-01-02T02:59:00.000Z",
+     "sourceFileId": null,
+     "sourceEventId": "f88dd3ab-4640-40b3-8456-7941ca704408",
+     "sourceEventType": "OUTBOX_EVENT",
+     "sourceDocument": null,
+     "sourceEvent": "Juntada de contestação (evento fictício)",
+     "responsibleUserId": null,
+     "criticality": "MEDIUM",
+     "status": "PENDING",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updatedBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "updated_at": "2026-11-11T03:42:37.734Z",
+     "created_at": "2026-11-11T03:42:37.731Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "222092e9-2d96-4e8b-8bf7-e88483972d23",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0218-5853eb",
+    "M5-A0108-eed49f"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D33",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Prazo crítico que já nasce vencido, com responsável",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Recurso mwbkpk2qm6ml",
+    "dueAt": "2026-11-09T03:42:38.265Z",
+    "criticality": "CRITICAL",
+    "sourceDocument": "Acórdão fictício",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T03:42:38.298Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f1dd4cb0-3f92-40e4-979a-b59d282a9148",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "description": "Recurso mwbkpk2qm6ml",
+     "dueAt": "2026-11-09T03:42:38.265Z",
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": "Acórdão fictício",
+     "sourceEvent": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "criticality": "CRITICAL",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.286Z",
+     "created_at": "2026-11-11T03:42:38.283Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "32107b97-c3a0-4b73-97b5-189e09a5f28f",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0110-29f58b",
+    "M5-A0157-aeca75",
+    "M5-A0229-87c693",
+    "M5-A0139-b9fb17"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D19",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CONCLUIR sem evidência nem nota é recusado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "status": "DONE"
+   },
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED"
+   },
+   "status": 422,
+   "codigo": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:37.932Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CONCLUSION_PROOF_REQUIRED",
+     "message": "Concluir um prazo exige uma evidência anexada ou uma nota (com texto) explicando o que foi feito.",
+     "traceId": "c7479bc5-ed78-4582-9d26-06ebab997bf3"
+    }
+   },
+   "req": [
+    "M5-A0111-b4013c",
+    "M5-A0146-95ccfc"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REMARCAR sem justificativa é recusado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "dueAt": "2026-12-01T03:42:37.884Z"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:37.898Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+     "message": "Mudar o vencimento de um prazo exige informar o motivo da mudança.",
+     "traceId": "1bfdd3c5-f42d-4925-9eab-01b134e5ceb6"
+    }
+   },
+   "req": [
+    "M5-A0112-210dba"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "MT-T20-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.legal_deadlines existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.legal_deadlines' AS tabela_do_livro, to_regclass('legal.legal_deadlines') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.legal_deadlines') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.legal_deadlines",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.618Z",
+   "req": [
+    "M5-A0049-9aa2d7"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

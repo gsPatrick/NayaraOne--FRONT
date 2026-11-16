@@ -1,0 +1,194 @@
+{
+  "id": "CRM-TS-002",
+  "secao": "Livro §19 Adversariais",
+  "requisito": "Merge errado: CPFs conflitantes → bloqueado.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 22,
+      "casos": [
+        "merge_conflito"
+      ],
+      "descricao": "Pessoa com CPF A",
+      "metodo": "POST",
+      "rota": "/api/v1/people",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Conflito Um mwbdc8mt0kr7",
+        "taxIdNormalized": "63596834589"
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "85da4cbe-8b98-43e5-8691-5407da500c42",
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "personType": "PF",
+          "legalName": "Conflito Um mwbdc8mt0kr7",
+          "preferredName": null,
+          "taxIdNormalized": "63596834589",
+          "taxIdNormalizedHash": "4d52e82a0583e1992c0a81a162a3154e9fb282b902fb0de819bbe84e3a5a4431",
+          "birthOrFoundationDate": null,
+          "status": "ACTIVE",
+          "mergedIntoId": null,
+          "riskFlagsJson": null,
+          "lockVersion": 0,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:16:20.907Z",
+          "updated_at": "2026-11-11T00:16:20.907Z",
+          "deleted_at": null,
+          "merged_into_id": null,
+          "contacts": [],
+          "documents": [],
+          "roles": [],
+          "addresses": [],
+          "dataQuality": {
+            "score": 33,
+            "missing": [
+              {
+                "key": "contact",
+                "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+              },
+              {
+                "key": "address",
+                "label": "Ao menos um endereço cadastrado"
+              },
+              {
+                "key": "document",
+                "label": "Ao menos um documento anexado"
+              },
+              {
+                "key": "role",
+                "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+              }
+            ]
+          }
+        },
+        "meta": {
+          "similarPersonWarnings": []
+        }
+      },
+      "dataHora": "2026-11-11T00:16:20.891Z"
+    },
+    {
+      "seq": 23,
+      "casos": [
+        "merge_conflito"
+      ],
+      "descricao": "Pessoa com CPF B",
+      "metodo": "POST",
+      "rota": "/api/v1/people",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Conflito Dois mwbdc8mt0kr7",
+        "taxIdNormalized": "52975210841"
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "66ecfabc-56a1-4e18-8130-8a44f5288031",
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "personType": "PF",
+          "legalName": "Conflito Dois mwbdc8mt0kr7",
+          "preferredName": null,
+          "taxIdNormalized": "52975210841",
+          "taxIdNormalizedHash": "35f235c7cbdfbe1fabcf1206a7c3299daf9add1201355b5c4a1597d22bcc1382",
+          "birthOrFoundationDate": null,
+          "status": "ACTIVE",
+          "mergedIntoId": null,
+          "riskFlagsJson": null,
+          "lockVersion": 0,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:16:21.028Z",
+          "updated_at": "2026-11-11T00:16:21.028Z",
+          "deleted_at": null,
+          "merged_into_id": null,
+          "contacts": [],
+          "documents": [],
+          "roles": [],
+          "addresses": [],
+          "dataQuality": {
+            "score": 33,
+            "missing": [
+              {
+                "key": "contact",
+                "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+              },
+              {
+                "key": "address",
+                "label": "Ao menos um endereço cadastrado"
+              },
+              {
+                "key": "document",
+                "label": "Ao menos um documento anexado"
+              },
+              {
+                "key": "role",
+                "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+              }
+            ]
+          }
+        },
+        "meta": {
+          "similarPersonWarnings": []
+        }
+      },
+      "dataHora": "2026-11-11T00:16:20.995Z"
+    },
+    {
+      "seq": 24,
+      "casos": [
+        "merge_conflito"
+      ],
+      "descricao": "Merge de CPFs diferentes é bloqueado",
+      "metodo": "POST",
+      "rota": "/api/v1/people/85da4cbe-8b98-43e5-8691-5407da500c42/merge",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "absorbedId": "66ecfabc-56a1-4e18-8130-8a44f5288031"
+      },
+      "status": 422,
+      "codigoErro": "PERSON_MERGE_CONFLICT",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_MERGE_CONFLICT",
+          "message": "Conflito de identidade: as duas pessoas têm documentos (CPF/CNPJ) preenchidos e diferentes entre si.",
+          "details": {
+            "canonicalTaxId": "63596834589",
+            "absorbedTaxId": "52975210841"
+          },
+          "traceId": "88c7e918-5f67-4974-9c20-5b61f3697743"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:21.197Z"
+    }
+  ],
+  "consultasBanco": []
+}

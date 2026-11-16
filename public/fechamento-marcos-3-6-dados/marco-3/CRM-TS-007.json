@@ -1,0 +1,52 @@
+{
+  "id": "CRM-TS-007",
+  "secao": "Livro §19 Adversariais",
+  "requisito": "Lead no next action: open sem tarefa → bloqueado.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 93,
+      "casos": [
+        "oportunidade_sem_proxima_acao"
+      ],
+      "descricao": "Oportunidade aberta sem próxima ação: bloqueada",
+      "metodo": "POST",
+      "rota": "/api/v1/crm/opportunities",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+        "stage": "NEW"
+      },
+      "status": 422,
+      "codigoErro": "OPPORTUNITY_NEXT_ACTION_REQUIRED",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "OPPORTUNITY_NEXT_ACTION_REQUIRED",
+          "message": "Oportunidades em estágio ativo exigem \"nextAction\" e \"nextActionDueAt\" preenchidos.",
+          "details": {
+            "stage": "NEW"
+          },
+          "traceId": "c0040b53-15fe-459f-90f1-55b7d247b1bf"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:25.183Z"
+    }
+  ],
+  "consultasBanco": []
+}

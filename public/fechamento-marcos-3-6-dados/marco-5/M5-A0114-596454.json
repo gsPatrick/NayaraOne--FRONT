@@ -1,0 +1,251 @@
+{
+ "id": "M5-A0114-596454",
+ "secao": "P1 > 16. Cadeia de custódia / dossiê de provas",
+ "linhaCaderno": 274,
+ "requisito": "• Manifesto do dossiê lista arquivos, hashes, origem, datas, relações e versão.",
+ "demandas": "M5-D038",
+ "implementacao": "src/modules/legal/cases/evidence-package.service.js normalizeManifest + :56 fileMetadata + :61 resolveFileItem + :146 assembleManifestFromContractAttachments (item: type, description, referenceId = relação, hash, fileId, originalName, createdAt, source = origem, version = versão do documento)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR dossiê: item com fileId usa hash, nome e data do servidor (o hash do chamador é ignorado); arquivo inexistente é 400; pacote antigo de 4 campos mantém o hash (§16/Guia §13)",
+   "status": "pass",
+   "ms": 17.726,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: documento ligado por file_links entra no dossiê automático com hash, nome, data e origem do arquivo; arquivo inexistente é 404 (§14/§16)",
+   "status": "pass",
+   "ms": 42.003,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "AUD-016: createEvidencePackageFromContractAttachments inclui documento da versão, checklist satisfeito e mídia de vistoria — nada esquecido",
+   "status": "pass",
+   "ms": 98.718,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E09",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-package",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "quando": "2026-11-11T03:42:38.755Z"
+  },
+  {
+   "passo": "JR-E10",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-packages/auto",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=5c59bb26-ac0d-4a58-b47f-4b49699324c8",
+   "quando": "2026-11-11T03:42:38.774Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0114-596454.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: o manifesto só tinha tipo, descrição, referência e hash; passou a levar arquivo, nome original, data, origem e versão (do servidor, nunca do cliente), mantendo o hash dos pacotes antigos.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.custodia.test.js test/m5fech.juridico.processos.test.js test/marco5.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E09, JR-E10, JR-E12)"
+ },
+ "passos": [
+  {
+   "id": "JR-E09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Gera dossiê (POST /legal/cases/:id/evidence-package): o item com fileId leva hash, nome, data e origem do SERVIDOR; o hash enviado pelo cliente é ignorado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-package",
+   "corpoEnviado": {
+    "manifestItems": [
+     {
+      "type": "PHOTO",
+      "description": "Foto original do dano",
+      "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+      "hash": "hash-inventado-pelo-cliente"
+     },
+     {
+      "type": "NOTE",
+      "description": "Nota do perito (sem arquivo)"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T03:42:38.755Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c2c501d7-6d10-4577-80c7-fb33b2f48390",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "manifestJson": [
+      {
+       "hash": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+       "type": "PHOTO",
+       "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+       "source": "people.files",
+       "createdAt": "2026-11-11T03:42:38.561Z",
+       "description": "Foto original do dano",
+       "referenceId": null,
+       "originalName": "foto-original-mwbkpkp8rgtk.pdf"
+      },
+      {
+       "hash": null,
+       "type": "NOTE",
+       "description": "Nota do perito (sem arquivo)",
+       "referenceId": null
+      }
+     ],
+     "packageHash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:38.744Z"
+    }
+   },
+   "req": [
+    "M5-A0219-23235a",
+    "M5-A0114-596454",
+    "M5-A0207-e7daa6",
+    "M5-A0174-4f13e8",
+    "M5-A0272-9dda58",
+    "M5-A0113-48df89",
+    "M5-A0231-5a2c1a",
+    "M5-A0141-07d730",
+    "M5-A0273-a39e38"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dossiê automático: todo documento ligado ao processo entra com arquivo, hash, origem, data e relação",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-packages/auto",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:38.774Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "5c59bb26-ac0d-4a58-b47f-4b49699324c8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "manifestJson": [
+      {
+       "hash": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+       "type": "CASE_DOCUMENT",
+       "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+       "source": "people.file_links",
+       "createdAt": "2026-11-11T03:42:38.561Z",
+       "description": "Documento do processo (EVIDENCE): foto-original-mwbkpkp8rgtk.pdf",
+       "referenceId": "99847dd2-b81b-4e52-888b-5219d9415ce5",
+       "originalName": "foto-original-mwbkpkp8rgtk.pdf"
+      }
+     ],
+     "packageHash": "6e86ce32c70af67f51733572a8216269f9d6db22c42da6123d96ee533f4280ed",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:38.766Z"
+    }
+   },
+   "req": [
+    "M5-A0114-596454",
+    "M5-A0207-e7daa6",
+    "M5-A0103-9d1f1e",
+    "M5-A0174-4f13e8"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-E12",
+   "req": [
+    "M5-A0114-596454",
+    "M5-A0207-e7daa6",
+    "M5-A0141-07d730",
+    "M5-A0231-5a2c1a",
+    "M5-A0273-a39e38"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "perfil": "A:gestor",
+   "descricao": "Manifesto gravado (JSONB) com hash do servidor, nome, data, origem e relação; package_hash SHA-256; eventos evidence.package.created",
+   "sql": "SELECT p.id, p.package_hash, jsonb_array_length(p.manifest_json) AS itens, p.manifest_json->0->>'hash' AS hash_item, f.checksum_sha256 AS hash_arquivo, p.manifest_json->0->>'originalName' AS nome, p.manifest_json->0->>'createdAt' AS data, p.manifest_json->0->>'source' AS origem, (SELECT array_agg(o.event_type ORDER BY o.event_type) FROM integration.outbox_events o WHERE o.aggregate_id = p.id) AS eventos FROM legal.evidence_packages p JOIN people.files f ON f.id = :file WHERE p.id IN (:a, :b) ORDER BY p.created_at",
+   "resultado": [
+    {
+     "id": "c2c501d7-6d10-4577-80c7-fb33b2f48390",
+     "package_hash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d",
+     "itens": 2,
+     "hash_item": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "hash_arquivo": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "nome": "foto-original-mwbkpkp8rgtk.pdf",
+     "data": "2026-11-11T03:42:38.561Z",
+     "origem": "people.files",
+     "eventos": [
+      "evidence.package.created",
+      "legal.evidence_package.created"
+     ]
+    },
+    {
+     "id": "5c59bb26-ac0d-4a58-b47f-4b49699324c8",
+     "package_hash": "6e86ce32c70af67f51733572a8216269f9d6db22c42da6123d96ee533f4280ed",
+     "itens": 1,
+     "hash_item": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "hash_arquivo": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "nome": "foto-original-mwbkpkp8rgtk.pdf",
+     "data": "2026-11-11T03:42:38.561Z",
+     "origem": "people.file_links",
+     "eventos": [
+      "evidence.package.created",
+      "legal.evidence_package.created"
+     ]
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.783Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

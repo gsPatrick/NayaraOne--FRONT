@@ -1,0 +1,252 @@
+{
+ "id": "M5-A0253-8388d0",
+ "secao": "P2 > 19. O que Marcelo NÃO pode improvisar",
+ "linhaCaderno": 788,
+ "requisito": "❌ Não editar versão aprovada/assinada.",
+ "demandas": "M5-D003;M5-D005",
+ "implementacao": "trigger legal.contract_versions_block_update; sem rota de edição de versão",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L07: adulterar o content_hash de uma ContractVersion direto no banco é REJEITADO pelo trigger append-only",
+   "status": "pass",
+   "ms": 138.048,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L09: \"reverter\" uma ContractVersion é impossível — nova versão nunca reescreve a anterior e número repetido é barrado pelo banco",
+   "status": "pass",
+   "ms": 134.754,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-014: aditivo não sobrescreve o contrato — cabeçalho, versões e hash intactos; versão não tem rota de edição e o banco recusa UPDATE",
+   "status": "pass",
+   "ms": 464.636,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-310",
+   "metodo": "PATCH",
+   "rota": "/legal/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro ROUTE_NOT_FOUND: Rota não encontrada.",
+   "quando": "2026-11-11T03:42:26.406Z"
+  },
+  {
+   "passo": "CT-329b",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE"
+   },
+   "resumo": "erro LEGAL_CONTRACT_VERSION_NOT_EDITABLE: Contrato em \"SIGNED\" não recebe nova versão: a alteração de contrato assinado é feita por aditivo.",
+   "quando": "2026-11-11T03:42:27.234Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0253-8388d0.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Versão aprovada/assinada não é editada (gatilho append-only); contrato assinado não recebe versão nova (CT-329b) e o cabeçalho não é reescrito a partir de APPROVED (CT-215).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/adversarial.legal.test.js test/m5fech.contratos.adversariais.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-310, CT-312, CT-321, CT-215, CT-329b)"
+ },
+ "passos": [
+  {
+   "id": "CT-310",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-001: não existe rota de edição de versão (PATCH)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/contract-versions/9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+   "corpoEnviado": {
+    "content": "adulterado"
+   },
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "ROUTE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:26.406Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "ROUTE_NOT_FOUND",
+     "message": "Rota não encontrada.",
+     "traceId": "98dbec2f-3a62-481d-8f76-2e50d19b466a"
+    }
+   },
+   "req": [
+    "M5-A0149-775b31",
+    "M5-A0232-1c7fbc",
+    "M5-A0253-8388d0",
+    "M5-A0165-e8bc3f"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-312",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-001: UPDATE direto na versão APROVADA (role da aplicação, RLS) é recusado pelo banco",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "UPDATE legal.contract_versions SET content, content_hash WHERE id = versão aprovada",
+   "corpoEnviado": null,
+   "esperado": {
+    "erro": "SequelizeDatabaseError"
+   },
+   "status": "erro",
+   "codigo": "SequelizeDatabaseError",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:26.436Z",
+   "corpo": {
+    "error": {
+     "code": "SequelizeDatabaseError",
+     "message": "legal.contract_versions é append-only: UPDATE não é permitido (versão 1, contrato daaf3fcb-c3a1-4d73-93e6-d98e28f636d4)."
+    }
+   },
+   "req": [
+    "M5-A0149-775b31",
+    "M5-A0232-1c7fbc",
+    "M5-A0165-e8bc3f",
+    "M5-A0264-72ee37",
+    "M5-A0253-8388d0"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "CT-215",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-001: mesmo com MFA (camada de serviço), valor do contrato ATIVO não é reescrito — a alteração é por aditivo",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "contractsService.correctContractData(contratoAtivo, { totalValue: 9999, reason })",
+   "corpoEnviado": null,
+   "esperado": {
+    "erro": "LEGAL_CONTRACT_TERMS_LOCKED_USE_ADDENDUM"
+   },
+   "status": "erro",
+   "codigo": "LEGAL_CONTRACT_TERMS_LOCKED_USE_ADDENDUM",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:25.690Z",
+   "corpo": {
+    "error": {
+     "code": "LEGAL_CONTRACT_TERMS_LOCKED_USE_ADDENDUM",
+     "message": "Contrato ACTIVE: totalValue não podem ser reescritos — registre a alteração por aditivo."
+    }
+   },
+   "req": [
+    "M5-A0299-827218",
+    "M5-A0253-8388d0"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "CT-329b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Guia §4 assertEditableState: contrato assinado não recebe versão nova (alteração por aditivo)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "corpoEnviado": {
+    "content": "Tentativa de reescrever o assinado",
+    "documentFileId": "f0c1314d-0dc8-416b-836f-b8a100f26b71"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE",
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:27.234Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_VERSION_NOT_EDITABLE",
+     "message": "Contrato em \"SIGNED\" não recebe nova versão: a alteração de contrato assinado é feita por aditivo.",
+     "traceId": "d9bec599-9088-414e-9690-30469699a894"
+    }
+   },
+   "req": [
+    "M5-A0198-b2f16a",
+    "M5-A0299-827218",
+    "M5-A0253-8388d0"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-321",
+   "req": [
+    "M5-A0165-e8bc3f",
+    "M5-A0264-72ee37",
+    "M5-A0299-827218",
+    "M5-A0065-6f0a95"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "Versões 1, 2 e 3 preservadas com o hash original (append-only); nenhuma sobrescrita",
+   "sql": "SELECT version_number, content_hash, encode(sha256(convert_to(content, 'UTF8')), 'hex') AS recalculado FROM legal.contract_versions WHERE contract_id = :id ORDER BY version_number",
+   "resultado": [
+    {
+     "version_number": 1,
+     "content_hash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+     "recalculado": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9"
+    },
+    {
+     "version_number": 2,
+     "content_hash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+     "recalculado": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088"
+    },
+    {
+     "version_number": 3,
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "recalculado": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.803Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

@@ -1,0 +1,316 @@
+{
+ "id": "M4-FIN-013",
+ "secao": "§2 Princípios",
+ "requisito": "FIN-013 Fraude visível: \"Anomalia gera bloqueio/alerta quando aplicável.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-21 pagamento 3x acima da média histórica da conta é flagado, notifica o financeiro e trava a liquidação",
+   "status": "passou",
+   "duracaoMs": 176,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "antifraude: estorno frequente abre AnomalyCase (nunca bloqueia o estorno em si); conciliação manual recorrente só sinaliza",
+   "status": "passou",
+   "duracaoMs": 99,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.antifraudeValorForaDoPadrao.test.js",
+   "nome": "M4-§17.5 valor fora do padrão: PAYABLE de 30.000 numa conta com histórico de 100 nasce retido para revisão e abre caso AMOUNT_OUTLIER HIGH em GET /finance/anomaly-cases; valor dentro do padrão não retém",
+   "status": "passou",
+   "duracaoMs": 1661,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H30",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-013",
+    "M4-§5.19",
+    "M4-G§1.14"
+   ],
+   "titulo": "Casos de anomalia da empresa (troca de favorecido, confirmação pós-fechamento etc.)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/anomaly-cases",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 95,
+   "quando": "2026-11-11T01:35:16.653Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "fa32467d-eefe-4a5f-9fe0-cd0b6256b3bb",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "POST_CLOSING_BANK_CONFIRMATION",
+      "riskLevel": "MEDIUM",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "733070b0-488f-41d9-8c85-699b4adb6a85",
+      "reason": "Confirmação do banco chegou depois do fechamento de 2072-05 — liquidado no período corrente com referência ao período original (Caderno §16).",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T01:35:15.760Z",
+      "updated_at": "2026-11-11T01:35:15.760Z",
+      "createdAt": "2026-11-11T01:35:15.760Z",
+      "updatedAt": "2026-11-11T01:35:15.760Z",
+      "caseTypeLabel": "Confirmação do banco após o fechamento",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "733070b0-488f-41d9-8c85-699b4adb6a85",
+       "description": "Pagamento confirmado após o fechamento 0871300",
+       "amount": "420.00",
+       "status": "SETTLED"
+      }
+     },
+     {
+      "id": "cd99d38d-6605-43c2-8cde-76ae37197852",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "RECURRING_MANUAL_RECONCILIATION",
+      "riskLevel": "MEDIUM",
+      "relatedEntityType": null,
+      "relatedEntityId": null,
+      "reason": "Conciliação manual recorrente: 3 conciliações feitas à mão nos últimos 30 dias (limiar 3). Vale revisar a qualidade dos dados do extrato e dos lançamentos, que o motor de sugestão não está casando sozinho.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:11.843Z",
+      "updated_at": "2026-11-11T01:35:11.843Z",
+      "createdAt": "2026-11-11T01:35:11.843Z",
+      "updatedAt": "2026-11-11T01:35:11.843Z",
+      "caseTypeLabel": "Conciliação manual recorrente",
+      "resolvedByName": null,
+      "relatedEntry": null
+     },
+     {
+      "id": "52e1cf23-f503-4ba9-a2a5-82fc6a0f60b7",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "AMOUNT_OUTLIER",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+      "reason": "Primeiro pagamento desta conta bancária já no valor de 25000.00 (limite FIN-005 para conta sem histórico: 10000.00).",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T01:35:10.274Z",
+      "updated_at": "2026-11-11T01:35:10.274Z",
+      "createdAt": "2026-11-11T01:35:10.274Z",
+      "updatedAt": "2026-11-11T01:35:10.274Z",
+      "caseTypeLabel": "Valor fora do padrão",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+       "description": "Pagamento alto na conta nova 0871300",
+       "amount": "25000.00",
+       "status": "PENDING"
+      }
+     },
+     {
+      "id": "a98bf931-270d-4570-a178-c23a5b5f001f",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "BENEFICIARY_CHANGED",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "416a15cd-40b3-4308-95df-d5be124d6d61",
+      "reason": "A conta bancária do favorecido foi trocada depois da criação do lançamento. As aprovações anteriores foram invalidadas e o pagamento exige revisão manual antes de ser liquidado.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:09.933Z",
+      "updated_at": "2026-11-11T01:35:09.933Z",
+      "createdAt": "2026-11-11T01:35:09.933Z",
+      "updatedAt": "2026-11-11T01:35:09.933Z",
+      "caseTypeLabel": "Conta bancária do favorecido trocada",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "416a15cd-40b3-4308-95df-d5be124d6d61",
+       "description": "Pagamento com troca de favorecido 0871300",
+       "amount": "980.00",
+       "status": "PENDING"
+      }
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H32",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.2",
+    "M4-FIN-013"
+   ],
+   "titulo": "Liberação da revisão manual por quem aprova (finance:approve + MFA recente), com nota",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/entries/416a15cd-40b3-4308-95df-d5be124d6d61/clear-manual-review",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "reviewNote": "Conferido com o fornecedor por telefone: a conta nova é legítima (teste da captura)."
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 58,
+   "quando": "2026-11-11T01:35:16.736Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "416a15cd-40b3-4308-95df-d5be124d6d61",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "0e2b0be3-01c0-4c68-ae13-133803e1243f",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "980.00",
+     "description": "Pagamento com troca de favorecido 0871300",
+     "dueAt": "2026-11-13T01:35:09.766Z",
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": "Beneficiário alterado após a criação do lançamento (conta bancária redirecionada) — revisão manual obrigatória antes de liquidar.",
+     "manualReviewClearedAt": "2026-11-11T01:35:16.716Z",
+     "manualReviewClearedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "lockVersion": 2,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "created_at": "2026-11-11T01:35:09.781Z",
+     "updated_at": "2026-11-11T01:35:16.716Z",
+     "bank_account_id": "0e2b0be3-01c0-4c68-ae13-133803e1243f",
+     "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "HML-anomalias-trilha",
+   "descricao": "Trilha de auditoria de anomalias",
+   "metodo": "GET",
+   "rota": "/audit-log?entityId=31e89975-bd1b-41d6-a1fe-6aea1a7c9fe7",
+   "perfil": "admin",
+   "status": 200,
+   "codigoErro": "não se aplica (sucesso)",
+   "dataHora": "2026-11-11T01:33:09.306Z",
+   "duracaoMs": 143,
+   "requisicao": "sem corpo",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "46f6eaff-6522-47f4-9c2b-4a8f822d3da8",
+      "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+      "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+      "userId": "a657944e-985f-4563-bb71-47417b45fbf6",
+      "action": "finance.anomaly_case.create",
+      "entityType": "AnomalyCase",
+      "entityId": "31e89975-bd1b-41d6-a1fe-6aea1a7c9fe7",
+      "beforeJson": null,
+      "afterJson": {
+       "id": "31e89975-bd1b-41d6-a1fe-6aea1a7c9fe7",
+       "reason": "39 estornos nos últimos 30 dias — acima do limiar configurado.",
+       "status": "OPEN",
+       "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+       "caseType": "FREQUENT_REVERSAL",
+       "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32",
+       "createdBy": "a657944e-985f-4563-bb71-47417b45fbf6",
+       "riskLevel": "HIGH",
+       "updatedBy": "a657944e-985f-4563-bb71-47417b45fbf6",
+       "created_at": "2026-10-28T17:05:37.176Z",
+       "resolvedAt": null,
+       "resolvedBy": null,
+       "updated_at": "2026-10-28T17:05:37.176Z",
+       "resolutionNote": null,
+       "relatedEntityId": "4b6a0669-18ce-43ea-b624-da2784c8beab",
+       "relatedEntityType": "FinancialEntry"
+      },
+      "reason": "Caso de anomalia aberto (HIGH): 39 estornos nos últimos 30 dias — acima do limiar configurado.",
+      "occurredAt": "2026-10-28T17:05:37.179Z",
+      "sessionId": null,
+      "ipAddress": null,
+      "correlationId": "b89732bc-2e44-4f31-a469-85cd78d13911",
+      "ruleVersionId": null,
+      "createdBy": "a657944e-985f-4563-bb71-47417b45fbf6",
+      "updatedBy": "a657944e-985f-4563-bb71-47417b45fbf6",
+      "created_at": "2026-10-28T17:05:37.179Z",
+      "updated_at": "2026-10-28T17:05:37.179Z",
+      "user_id": "a657944e-985f-4563-bb71-47417b45fbf6"
+     }
+    ]
+   },
+   "ambiente": "homologação publicada (somente leitura)",
+   "quando": "2026-11-11T01:33:09.306Z"
+  }
+ ],
+ "consultasBanco": []
+}

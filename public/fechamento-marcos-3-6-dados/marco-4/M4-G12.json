@@ -1,0 +1,278 @@
+{
+ "id": "M4-G§12",
+ "secao": "Guia §12 Fechamento mensal",
+ "requisito": "closePeriod: sem pendência de conciliação, terceiros conferidos, extratos completos, snapshot, REVIEW, aprovação, CLOSED, finance.period.closed",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F02-6: controle positivo — com tudo conferido o período vai a REVIEW, fecha em CLOSED e grava snapshot íntegro",
+   "status": "passou",
+   "duracaoMs": 105,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F02-7: o snapshot do fechamento é imutável no banco (UPDATE e DELETE recusados)",
+   "status": "passou",
+   "duracaoMs": 47,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.closing.test.js",
+   "nome": "F02-C6c: snapshot do fechamento recusa TRUNCATE (trigger de instrução no banco)",
+   "status": "passou",
+   "duracaoMs": 6,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "F01",
+   "tipo": "http",
+   "linhas": [
+    "M4-§16.2",
+    "M4-G§12"
+   ],
+   "titulo": "Pré-condições do fechamento de 2071-05 (extratos, conciliação, terceiros, comissões/repasses)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/period-closures/2071-05/preconditions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 41,
+   "quando": "2026-11-11T01:35:14.318Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "closure": null,
+     "status": "OPEN",
+     "preconditions": {
+      "referenceMonth": "2071-05",
+      "allOk": false,
+      "items": [
+       {
+        "code": "BANK_STATEMENTS_IMPORTED",
+        "label": "Extratos bancários importados",
+        "ok": true,
+        "count": 0,
+        "detail": "0 conta(s) movimentada(s) no mês, todas com extrato importado.",
+        "bankAccountIds": []
+       },
+       {
+        "code": "RECONCILIATION_PENDINGS",
+        "label": "Pendências de conciliação classificadas",
+        "ok": true,
+        "count": 0,
+        "detail": "Todas as transações de extrato do mês e todos os movimentos de caixa bancários do mês estão conciliados.",
+        "unreconciledStatementLines": 0,
+        "unreconciledEntryIds": []
+       },
+       {
+        "code": "CLASSIFICATION_PENDINGS",
+        "label": "Excedentes classificados",
+        "ok": true,
+        "count": 0,
+        "detail": "Nenhum valor excedente aguardando classificação no mês."
+       },
+       {
+        "code": "PAYMENTS_IN_TRANSIT",
+        "label": "Nenhum pagamento em trânsito no banco",
+        "ok": true,
+        "count": 0,
+        "detail": "Nenhuma intenção de pagamento do mês aguardando resposta do banco.",
+        "paymentIntentIds": []
+       },
+       {
+        "code": "THIRD_PARTY_CASH_CHECKED",
+        "label": "Caixa de terceiros conferido",
+        "ok": false,
+        "count": 1,
+        "detail": "Conferência ainda não registrada. Saldo de terceiros no fim do mês: R$ 1.650,00 (no mês: recebido R$ 0,00, devolvido R$ 0,00).",
+        "thirdParty": {
+         "received": "0.00",
+         "released": "0.00",
+         "net": "0.00",
+         "balanceAtMonthEnd": "1650.00",
+         "monthCashCount": 0,
+         "competenceEntriesCount": 0,
+         "fingerprint": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce"
+        }
+       },
+       {
+        "code": "COMMISSIONS_REPASSES_REVIEWED",
+        "label": "Comissões e repasses revisados",
+        "ok": false,
+        "count": 1,
+        "detail": "Revisão ainda não registrada. Mês com 0 repasse(s) (0 pendente(s)) e 0 parcela(s) de comissão (0 pendente(s)).",
+        "commissions": {
+         "repassesCount": 0,
+         "repassesPending": 0,
+         "commissionInstallmentsCount": 0,
+         "commissionInstallmentsPending": 0
+        }
+       }
+      ],
+      "thirdParty": {
+       "received": "0.00",
+       "released": "0.00",
+       "net": "0.00",
+       "balanceAtMonthEnd": "1650.00",
+       "monthCashCount": 0,
+       "competenceEntriesCount": 0,
+       "fingerprint": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce"
+      },
+      "commissionsFingerprint": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a"
+     },
+     "snapshot": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "F04",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.10",
+    "M4-G§20.9",
+    "M4-G§12"
+   ],
+   "titulo": "Histórico de fechamentos: mês CLOSED com retrato (snapshot), autor e aprovador",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/period-closures?referenceMonth=2071-05",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 39,
+   "quando": "2026-11-11T01:35:14.540Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "b301ccb0-2eb7-40fc-aa6e-8653a9f487f7",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "referenceMonth": "2071-05",
+      "status": "CLOSED",
+      "thirdPartyCheckedAt": "2026-11-11T01:35:14.350Z",
+      "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "thirdPartyCheckNote": "Caixa de terceiros conferido contra o extrato (captura do Marco 4)",
+      "thirdPartyBalanceAtCheck": "1650.00",
+      "commissionsReviewedAt": "2026-11-11T01:35:14.380Z",
+      "commissionsReviewedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "commissionsReviewNote": "Comissões e repasses revisados (captura do Marco 4)",
+      "commissionsFingerprintAtReview": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+      "currentSnapshotId": "2f3ba80f-5911-456a-96c7-1338cd723e9d",
+      "reviewRequestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "reviewRequestedAt": "2026-11-11T01:35:14.413Z",
+      "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+      "returnedToOpenAt": null,
+      "returnedToOpenByUserId": null,
+      "returnToOpenReason": null,
+      "closedAt": "2026-11-11T01:35:14.454Z",
+      "closedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "reopenedAt": null,
+      "reopenedByUserId": null,
+      "reopenReason": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "created_at": "2026-11-11T01:35:14.345Z",
+      "updated_at": "2026-11-11T01:35:14.454Z",
+      "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3"
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O18",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.10",
+    "M4-G§12"
+   ],
+   "titulo": "POST /finance/periods/2073-05/close: pedido de fechamento pelo caminho literal",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/periods/2073-05/close",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": [
+     200,
+     201
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 79,
+   "quando": "2026-11-11T01:35:18.686Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "25f18f7e-01a5-4a8c-addf-74ddeb91c9aa",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "referenceMonth": "2073-05",
+     "status": "REVIEW",
+     "thirdPartyCheckedAt": "2026-11-11T01:35:18.550Z",
+     "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "thirdPartyCheckNote": "Conferido (captura)",
+     "thirdPartyBalanceAtCheck": "1650.00",
+     "commissionsReviewedAt": "2026-11-11T01:35:18.583Z",
+     "commissionsReviewedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "commissionsReviewNote": "Conferido (captura)",
+     "commissionsFingerprintAtReview": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+     "currentSnapshotId": null,
+     "reviewRequestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "reviewRequestedAt": "2026-11-11T01:35:18.648Z",
+     "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": null,
+     "closedByUserId": null,
+     "reopenedAt": null,
+     "reopenedByUserId": null,
+     "reopenReason": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:18.543Z",
+     "updated_at": "2026-11-11T01:35:18.648Z",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

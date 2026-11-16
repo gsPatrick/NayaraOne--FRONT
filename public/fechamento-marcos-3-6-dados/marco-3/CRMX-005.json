@@ -1,0 +1,97 @@
+{
+  "linha": "CRMX-005",
+  "capturadoEm": "2026-11-11T11:10:36.871Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "reabrir mantém o motivo da perda",
+      "pedido": "PATCH /api/v1/opportunities/5727631c-fdc7-45a1-9aed-27d99ff77e03",
+      "corpo": {
+        "stage": "NURTURE",
+        "nextAction": "Recontato",
+        "nextActionDueAt": "2027-01-10T11:10:34.442Z"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "id": "5727631c-fdc7-45a1-9aed-27d99ff77e03",
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "propertyId": null,
+        "ownerUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "stage": "NURTURE",
+        "temperature": null,
+        "expectedValue": null,
+        "closedAt": null,
+        "lostReason": "COMPETITOR",
+        "wonReason": null,
+        "withdrawnReason": null,
+        "nextAction": "Recontato",
+        "nextActionDueAt": "2027-01-10T11:10:34.442Z",
+        "lockVersion": 2,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "deletedBy": null,
+        "created_at": "2026-11-11T11:10:33.865Z",
+        "updated_at": "2026-11-11T11:10:34.450Z",
+        "deleted_at": null,
+        "person_id": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "property_id": null,
+        "owner_user_id": "edd0c6db-c042-4e74-a649-523867044483"
+      },
+      "em": "2026-11-11T11:10:34.460Z"
+    },
+    {
+      "titulo": "nova perda sem motivo no pedido é recusada",
+      "pedido": "PATCH /api/v1/opportunities/5727631c-fdc7-45a1-9aed-27d99ff77e03",
+      "corpo": {
+        "stage": "LOST"
+      },
+      "status": 422,
+      "codigo": "OPPORTUNITY_OUTCOME_REASON_REQUIRED",
+      "resposta": {
+        "message": "Marcar como perdida (LOST) exige o motivo em \"lostReason\" (um de: PRICE_TOO_HIGH, COMPETITOR, FINANCING_DENIED, LOCATION, OTHER, CLIENT_GAVE_UP, NO_RESPONSE, CHANGED_MIND)."
+      },
+      "em": "2026-11-11T11:10:34.497Z"
+    },
+    {
+      "titulo": "linha do tempo com o motivo de cada desfecho",
+      "pedido": "GET /api/v1/opportunities/5727631c-fdc7-45a1-9aed-27d99ff77e03/timeline?types=STAGE_CHANGE",
+      "corpo": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": [
+        {
+          "type": "STAGE_CHANGE",
+          "id": "1e2ea4ac-9913-4e44-bef5-0925866d79f7",
+          "occurredAt": "2026-11-11T11:10:34.455Z",
+          "actorUserId": "edd0c6db-c042-4e74-a649-523867044483",
+          "data": {
+            "fromStage": "LOST",
+            "toStage": "NURTURE",
+            "reason": "Oportunidade movida de \"LOST\" para \"NURTURE\".",
+            "wonReason": null,
+            "lostReason": null,
+            "withdrawnReason": null
+          }
+        },
+        {
+          "type": "STAGE_CHANGE",
+          "id": "6fc6890d-7622-4c65-ac0d-145360b38386",
+          "occurredAt": "2026-11-11T11:10:34.425Z",
+          "actorUserId": "edd0c6db-c042-4e74-a649-523867044483",
+          "data": {
+            "fromStage": "NEW",
+            "toStage": "LOST",
+            "reason": "Oportunidade movida de \"NEW\" para \"LOST\".",
+            "wonReason": null,
+            "lostReason": "COMPETITOR",
+            "withdrawnReason": null
+          }
+        }
+      ],
+      "em": "2026-11-11T11:10:35.012Z"
+    }
+  ]
+}

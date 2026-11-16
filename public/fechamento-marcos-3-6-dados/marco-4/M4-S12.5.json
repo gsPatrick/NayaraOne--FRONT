@@ -1,0 +1,480 @@
+{
+ "id": "M4-§12.5",
+ "secao": "§12 Repasses",
+ "requisito": "\"Repasse pago cria ledger e evento próprio.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-RP2 aprovação por outra pessoa, confirmação só com pagamento liquidado e comprovante",
+   "status": "passou",
+   "duracaoMs": 507,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/marco4.acceptance.test.js",
+   "nome": "FIN-TS-015: repasse gera exatamente UM lançamento a pagar (na aprovação) e a confirmação não cria nenhum outro",
+   "status": "passou",
+   "duracaoMs": 233,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-02 repasse: dedução sem motivo é recusada (serviço e CHECK no banco); com motivo grava, e o pagamento publica finance.owner_repass.completed",
+   "status": "passou",
+   "duracaoMs": 149,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "MFA-10",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5"
+   ],
+   "titulo": "Aprovar repasse sem verificação recente: recusado",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses/00000000-0000-4000-8000-000000000000/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T01:34:35.316Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Esta ação exige verificação MFA recente. Verifique seu código em \"/users/me/mfa/verify\" e tente novamente.",
+     "traceId": "3c53961c-0d7e-4e0c-b165-96c36beb8ab0"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T28",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5"
+   ],
+   "titulo": "Quem criou não paga antes da aprovação: pagar repasse PENDING é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses/f79e16fb-a3db-4320-b9e5-daf743655f93/pay",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_OWNER_REPASSE_NOT_APPROVED",
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T01:35:12.545Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_OWNER_REPASSE_NOT_APPROVED",
+     "message": "Só é possível confirmar o pagamento de um repasse APROVADO (atual: \"PENDING\").",
+     "traceId": "940d35e9-fc94-41ea-8498-e92590fd4539"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T29",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5",
+    "M4-G§19.F6"
+   ],
+   "titulo": "Aprovação do repasse por outra pessoa com MFA recente (conta do titular e centro de custo)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses/f79e16fb-a3db-4320-b9e5-daf743655f93/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 67,
+   "quando": "2026-11-11T01:35:12.613Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "repasse": {
+      "id": "f79e16fb-a3db-4320-b9e5-daf743655f93",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+      "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+      "grossAmount": "1500.00",
+      "deductionsAmount": "150.00",
+      "netAmount": "1350.00",
+      "financialEntryId": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "paidAt": null,
+      "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+      "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc",
+      "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "approvedAt": "2026-11-11T01:35:12.591Z",
+      "confirmedByUserId": null,
+      "paymentEvidenceFileId": null,
+      "paymentSettlementMethod": null,
+      "referenceMonth": "2026-11",
+      "status": "APPROVED",
+      "idempotencyKey": "m4-rep-0871300",
+      "lockVersion": 1,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "created_at": "2026-11-11T01:35:12.406Z",
+      "updated_at": "2026-11-11T01:35:12.591Z",
+      "property_id": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+      "owner_person_id": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+      "contract_id": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "bank_account_id": "c0a1d652-fa63-4251-90a1-56c3baf423c4"
+     },
+     "financialEntry": {
+      "id": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "resultCenterId": null,
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "DEBIT",
+      "nature": "PAYABLE",
+      "amount": "1350.00",
+      "description": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "owner-repasse:f79e16fb-a3db-4320-b9e5-daf743655f93",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": true,
+      "thirdPartyReference": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": "OWNER_REPASSE",
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "updated_at": "2026-11-11T01:35:12.584Z",
+      "created_at": "2026-11-11T01:35:12.584Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T29-a",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5"
+   ],
+   "titulo": "Pagar repasse antes do pagamento confirmado: recusado (nunca presume sucesso)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses/f79e16fb-a3db-4320-b9e5-daf743655f93/pay",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409,
+    "codigo": "FINANCE_OWNER_REPASSE_PAYMENT_NOT_CONFIRMED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_OWNER_REPASSE_PAYMENT_NOT_CONFIRMED",
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T01:35:12.638Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_OWNER_REPASSE_PAYMENT_NOT_CONFIRMED",
+     "message": "O pagamento do repasse ainda não foi confirmado: o lançamento a pagar precisa estar liquidado (confirmação do banco ou baixa manual com comprovante aprovado).",
+     "details": {
+      "financialEntryId": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "entryStatus": "PENDING"
+     },
+     "traceId": "93d71cf2-1a59-4978-92db-7831bc2dc270"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T29-e",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5"
+   ],
+   "titulo": "Execução do pagamento do repasse com comprovante (MFA recente)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/68e8399a-0e98-4a79-9fa4-eede5ef8ae40/execute",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "settlementEvidenceFileId": "19fd34ef-8dbb-4263-af27-c388f396a380",
+    "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado."
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 68,
+   "quando": "2026-11-11T01:35:12.891Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "intent": {
+      "statusMessage": null,
+      "id": "68e8399a-0e98-4a79-9fa4-eede5ef8ae40",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "financialEntryId": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "snapshotJson": {
+       "dueAt": null,
+       "amount": "1350.00",
+       "nature": "PAYABLE",
+       "status": "PENDING",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "entryType": "DEBIT",
+       "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+       "description": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+       "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+       "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+       "resultCenterId": null,
+       "chartOfAccountId": null,
+       "financialEntryId": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+       "isThirdPartyFunds": true,
+       "thirdPartyReference": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026"
+      },
+      "snapshotHash": "610291de1943176a0b9db303636fb18cd9ff30b379337525a99b00be766b6559",
+      "status": "EXECUTED",
+      "bankAccountId": null,
+      "beneficiarySnapshot": null,
+      "paymentMethod": null,
+      "idempotencyKey": "payment-intent:68e8399a-0e98-4a79-9fa4-eede5ef8ae40",
+      "externalSubmissionId": null,
+      "externalStatus": null,
+      "submittedAt": null,
+      "failedAt": null,
+      "failureReason": null,
+      "approvalRequestId": null,
+      "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "approvedAt": "2026-11-11T01:35:12.799Z",
+      "executedAt": "2026-11-11T01:35:12.869Z",
+      "cancelledAt": null,
+      "cancelReason": null,
+      "uncertainSince": null,
+      "lastReconciledAt": null,
+      "reconciliationAttempts": 0,
+      "reconciledAt": null,
+      "reconciledEntryId": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:12.736Z",
+      "updated_at": "2026-11-11T01:35:12.869Z",
+      "financial_entry_id": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "approval_request_id": null
+     },
+     "entry": {
+      "id": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "resultCenterId": null,
+      "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": true,
+      "thirdPartyReference": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": "MANUAL_WITH_EVIDENCE",
+      "settlementEvidenceFileId": "19fd34ef-8dbb-4263-af27-c388f396a380",
+      "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado.",
+      "settlementEvidenceAttachedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "settlementEvidenceAttachedAt": "2026-11-11T01:35:12.678Z",
+      "thirdPartyReleaseType": "OWNER_REPASSE",
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "DEBIT",
+      "nature": "PAYABLE",
+      "amount": "1350.00",
+      "description": "Repasse ao proprietário Proprietário fictício 0871300 — período 11/2026",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T01:35:12.858Z",
+      "status": "SETTLED",
+      "idempotencyKey": "owner-repasse:f79e16fb-a3db-4320-b9e5-daf743655f93",
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 2,
+      "createdBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:12.584Z",
+      "updated_at": "2026-11-11T01:35:12.858Z",
+      "bank_account_id": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+      "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "result_center_id": null,
+      "contract_id": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T30",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5",
+    "M4-G§14.8"
+   ],
+   "titulo": "Pagamento do repasse: cria o movimento de saída e o evento próprio",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses/f79e16fb-a3db-4320-b9e5-daf743655f93/pay",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T01:35:12.933Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f79e16fb-a3db-4320-b9e5-daf743655f93",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+     "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+     "grossAmount": "1500.00",
+     "deductionsAmount": "150.00",
+     "netAmount": "1350.00",
+     "financialEntryId": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+     "paidAt": "2026-11-11T01:35:12.858Z",
+     "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+     "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc",
+     "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "approvedAt": "2026-11-11T01:35:12.591Z",
+     "confirmedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "paymentEvidenceFileId": "19fd34ef-8dbb-4263-af27-c388f396a380",
+     "paymentSettlementMethod": "MANUAL_WITH_EVIDENCE",
+     "referenceMonth": "2026-11",
+     "status": "PAID",
+     "idempotencyKey": "m4-rep-0871300",
+     "lockVersion": 2,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:12.406Z",
+     "updated_at": "2026-11-11T01:35:12.906Z",
+     "property_id": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+     "owner_person_id": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+     "contract_id": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "bank_account_id": "c0a1d652-fa63-4251-90a1-56c3baf423c4"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q18",
+   "linhas": [
+    "M4-§12.5"
+   ],
+   "descricao": "Repasses: bruto, descontos com motivo, líquido e status",
+   "sql": "select id, gross_amount, deductions_amount, deductions_reason, net_amount, status, reference_month from finance.owner_repasses order by created_at",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "id": "f79e16fb-a3db-4320-b9e5-daf743655f93",
+     "gross_amount": "1500.00",
+     "deductions_amount": "150.00",
+     "deductions_reason": "Taxa de administração de 10% prevista no contrato de administração",
+     "net_amount": "1350.00",
+     "status": "PAID",
+     "reference_month": "2026-11"
+    }
+   ],
+   "invariante": "há repasse PAID",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.741Z"
+  }
+ ]
+}

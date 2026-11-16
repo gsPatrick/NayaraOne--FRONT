@@ -1,0 +1,126 @@
+{
+  "id": "M6-87",
+  "requisito": "DoD: delivery gate.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §13 Definition of Done; Guia do Marcelo (Obras) §16",
+  "implementacao": "projects.service.js#deliverProject",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>: Entregar obra",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.delivery.test.js",
+      "nome": "delivery: deliverProject BLOQUEIA entrega quando há não conformidade CRITICAL/OPEN vinculada ao projeto",
+      "resultado": "passou",
+      "duracaoMs": 449,
+      "executadoEm": "2026-11-11T00:12:51.154Z"
+    },
+    {
+      "arquivo": "test/construction.delivery.test.js",
+      "nome": "delivery: deliverProject entrega obra FINAL_INSPECTION sem pendência crítica e avança direto para WARRANTY",
+      "resultado": "passou",
+      "duracaoMs": 243,
+      "executadoEm": "2026-11-11T00:12:50.706Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H136",
+      "H142"
+    ],
+    "resumo": [
+      "H136 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/deliver → 409 PROJECT_DELIVERY_BLOCKED_BY_CRITICAL_NONCONFORMITY",
+      "H142 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/deliver → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:25.010Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H136",
+      "requisitos": [
+        "M6-25",
+        "M6-39",
+        "M6-65",
+        "M6-87",
+        "M6-51"
+      ],
+      "cenario": "NEGATIVO: entregar com NC CRÍTICA aberta (gate de entrega)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/deliver",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 409,
+      "codigoErro": "PROJECT_DELIVERY_BLOCKED_BY_CRITICAL_NONCONFORMITY",
+      "esperado": "409 PROJECT_DELIVERY_BLOCKED_BY_CRITICAL_NONCONFORMITY",
+      "conferiu": true,
+      "duracaoMs": 12,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PROJECT_DELIVERY_BLOCKED_BY_CRITICAL_NONCONFORMITY",
+          "message": "Não é possível entregar a obra: existe(m) não conformidade(s) CRÍTICA(S) em aberto vinculada(s) a este projeto.",
+          "traceId": "32878f4a-493a-43e8-ad78-7cc8f24169bf"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:25.010Z"
+    },
+    {
+      "id": "H142",
+      "requisitos": [
+        "M6-25",
+        "M6-39",
+        "M6-79",
+        "M6-18",
+        "M6-87",
+        "M6-51",
+        "M6-98"
+      ],
+      "cenario": "Entregar a obra sem pendência crítica: DELIVERED e em seguida WARRANTY (publica project.delivered)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/deliver",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 29,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "unitId": null,
+          "name": "Residencial Captura M6 c4fcd6 — Torre A",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": "86000.00",
+          "startsAt": "2026-10-01T00:00:00.000Z",
+          "endsAtPlanned": "2027-08-31T00:00:00.000Z",
+          "code": "OBRA-2026-0002",
+          "actualEndDate": "2026-11-11",
+          "costCenterId": null,
+          "status": "WARRANTY",
+          "lockVersion": 10,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.264Z",
+          "updated_at": "2026-11-11T00:12:26.096Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "unit_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.102Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.454Z"
+}

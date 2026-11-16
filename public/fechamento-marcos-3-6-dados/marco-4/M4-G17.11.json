@@ -1,0 +1,268 @@
+{
+ "id": "M4-G§17.11",
+ "secao": "Guia §17 CI/CD",
+ "requisito": "Etapa \"multi_company_tests\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.crossCompanyIsolation.test.js",
+   "nome": "FIN-TS-020: financial_entries é isolado por EMPRESA — outra empresa do mesmo grupo nunca vê o lançamento",
+   "status": "passou",
+   "duracaoMs": 74,
+   "commitDoArquivo": "35aaf028"
+  },
+  {
+   "arquivo": "test/ciTwoTenantsFinanceLegal.test.js",
+   "nome": "CI dois tenants (Financeiro): tenant B não lê o lançamento de A nem decide a aprovação de A (404)",
+   "status": "passou",
+   "duracaoMs": 988,
+   "commitDoArquivo": "9ef507fb"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: os 17 estágios do Guia §17 com os nomes literais e na ordem do livro no estagios.json e no workflow",
+   "status": "passou",
+   "duracaoMs": 17,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: cada estágio tem comando e os testes exigidos existem de fato nos arquivos do estágio",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: estágio de banco recusa rodar fora do banco descartável",
+   "status": "passou",
+   "duracaoMs": 100,
+   "commitDoArquivo": "3e3d2e05"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "E06",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§20.2",
+    "M4-G§17.11"
+   ],
+   "titulo": "Tenant B tenta alterar lançamento do tenant A: 404",
+   "perfil": "B:gestor",
+   "metodo": "PATCH",
+   "rota": "/finance/entries/ba171275-3afc-46af-b3ae-f80708f01d38",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "description": "invasão"
+   },
+   "esperado": {
+    "status": 404
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "FINANCE_ENTRY_NOT_FOUND",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T01:35:06.358Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_ENTRY_NOT_FOUND",
+     "message": "Lançamento financeiro não encontrado.",
+     "traceId": "71722eea-81d0-4874-8c80-1a2948fb1e45"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q09",
+   "linhas": [
+    "M4-FIN-001",
+    "M4-G§17.11"
+   ],
+   "descricao": "RLS ligada e forçada nas tabelas do Financeiro (exceto a tabela de roteamento do webhook bancário, que só guarda id externo -> empresa para o callback público achar o tenant)",
+   "sql": "select c.relname, c.relrowsecurity, c.relforcerowsecurity from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'finance' and c.relkind = 'r' and c.relname not like '%provider_routing' order by 1",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "relname": "anomaly_cases",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "approval_requests",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "approval_steps",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_accounts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_statement_entries",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_statement_imports",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_transactions",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "billing_schedule_items",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "billing_schedules",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "budgets_forecasts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "chart_of_account_versions",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "chart_of_accounts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "collection_cadence_steps",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "collection_cases",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "commission_installments",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "commissions",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "cost_centers",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "financial_entries",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "guaranteed_rent_contracts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "intercompany_transfers",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "owner_repasses",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "ownership_transfer_tasks",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "payment_intents",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "period_closure_snapshots",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "period_closures",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "reconciliations",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "rent_adjustments",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "rent_advances",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "result_centers",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "tax_documents",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "utility_accounts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "utility_obligations",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "utility_reimbursements",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    }
+   ],
+   "invariante": "todas com relrowsecurity e relforcerowsecurity",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.719Z"
+  }
+ ]
+}

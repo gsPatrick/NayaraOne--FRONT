@@ -1,0 +1,259 @@
+{
+ "id": "M5-A0118-0dd094",
+ "secao": "P1 > 16. Cadeia de custódia / dossiê de provas",
+ "linhaCaderno": 282,
+ "requisito": "• Legal hold bloqueia descarte.",
+ "demandas": "M5-D034",
+ "implementacao": "src/modules/legal/cases/legal-case.service.js setLegalHold (motivo obrigatório) + :150 assertNotOnLegalHold; src/features/core-governance/data-quality/legalHold.guard.js heldIds/assertNotOnHold (processo com legal_hold conta como retido; descarte 409 GOV_HOLD_BLOCKS_DISPOSAL)",
+ "tela": "Contratos > Processos > detalhe do processo (/painel/contratos/processos/[id]) — prazos, dossiês e exportação",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR legal hold: processo em hold bloqueia descarte (409 GOV_HOLD_BLOCKS_DISPOSAL) e mudança de status; liberado, a checagem passa (§16)",
+   "status": "pass",
+   "ms": 19.026,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/auditoriaNayara.marco5.coverage.test.js",
+   "nome": "legal hold: ativar exige motivo; ativo bloqueia mudança de status/fase mas não de campos informativos",
+   "status": "pass",
+   "ms": 77.703,
+   "commitDoTeste": "1d4a4ed0"
+  },
+  {
+   "arquivo": "test/marco9/governanca/m9d912.disposicao.test.js",
+   "nome": "m9d912 pedido de exclusão do titular sobre dado em hold é recusado (pessoa, contrato, processo ou arquivo dela) e o dado segue",
+   "status": "pass",
+   "ms": 58.547,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E27",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/legal-hold",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED: Um motivo é obrigatório para ativar a retenção legal (legal hold).",
+   "quando": "2026-11-11T03:42:38.970Z"
+  },
+  {
+   "passo": "JR-E28",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/legal-hold",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=OPEN, id=b684c133-de9b-461e-bd47-84912b4c9ed1",
+   "quando": "2026-11-11T03:42:38.986Z"
+  },
+  {
+   "passo": "JR-E29",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CASE_ON_LEGAL_HOLD",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_ON_LEGAL_HOLD"
+   },
+   "resumo": "erro LEGAL_CASE_ON_LEGAL_HOLD: Este processo está em legal hold (retenção legal) desde 11/11/2026 00:42:38 (Brasília) — motivo: \"Preserva",
+   "quando": "2026-11-11T03:42:38.993Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0118-0dd094.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.custodia.test.js test/auditoriaNayara.marco5.coverage.test.js test/marco9/governanca/m9d912.disposicao.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E27, JR-E28, JR-E29, JR-E30)"
+ },
+ "passos": [
+  {
+   "id": "JR-E27",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Legal hold sem motivo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/legal-hold",
+   "corpoEnviado": {
+    "legalHold": true
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:38.970Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED",
+     "message": "Um motivo é obrigatório para ativar a retenção legal (legal hold).",
+     "traceId": "5bb99f8d-00a1-4034-8770-51d05108ee37"
+    }
+   },
+   "req": [
+    "M5-A0118-0dd094"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E28",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Ativa o legal hold do processo",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/legal-hold",
+   "corpoEnviado": {
+    "legalHold": true,
+    "reason": "Preservação por litígio fictício"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:38.986Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": null,
+     "caseNumber": "DS-mwbkpkp8rgtk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "summary": null,
+     "phase": null,
+     "escalationUserId": null,
+     "lockVersion": 1,
+     "legalHold": true,
+     "legalHoldReason": "Preservação por litígio fictício",
+     "legalHoldSetBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "legalHoldSetAt": "2026-11-11T03:42:38.978Z",
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:38.537Z",
+     "updated_at": "2026-11-11T03:42:38.978Z",
+     "deleted_at": null,
+     "escalation_user_id": null,
+     "contract_id": null,
+     "property_id": null,
+     "responsible_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0118-0dd094",
+    "M5-A0308-e51f55"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E29",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Em hold, encerrar o processo é bloqueado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1",
+   "corpoEnviado": {
+    "status": "CLOSED"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_ON_LEGAL_HOLD"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CASE_ON_LEGAL_HOLD",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:38.993Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_ON_LEGAL_HOLD",
+     "message": "Este processo está em legal hold (retenção legal) desde 2026-11-11T03:42:38.978Z — motivo: \"Preservação por litígio fictício\". Remova o hold antes de alterar status/fase.",
+     "traceId": "37adbc32-1402-442f-a036-2dff91c95877"
+    }
+   },
+   "req": [
+    "M5-A0118-0dd094"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E30",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Em hold, o descarte do processo é recusado pela trava jurídica (quem apaga/anonimiza/descarta pergunta aqui)",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "legalHold.assertNotOnHold('LEGAL_CASE', processo, tx, tenant)",
+   "corpoEnviado": null,
+   "esperado": {
+    "erro": "GOV_HOLD_BLOCKS_DISPOSAL"
+   },
+   "status": "erro",
+   "codigo": "GOV_HOLD_BLOCKS_DISPOSAL",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:39.000Z",
+   "corpo": {
+    "error": {
+     "code": "GOV_HOLD_BLOCKS_DISPOSAL",
+     "message": "Este registro está sob retenção legal e não pode ser apagado ou anonimizado."
+    }
+   },
+   "req": [
+    "M5-A0118-0dd094",
+    "M5-A0308-e51f55",
+    "M5-A0259-51740a"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "servico"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

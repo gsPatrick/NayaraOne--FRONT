@@ -1,0 +1,76 @@
+{
+ "id": "M4-G§7",
+ "secao": "Guia §7 Confirmação e ledger",
+ "requisito": "confirmPayment: só CONFIRMED cria ledger; lock; idempotente; evento finance.payment.completed",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/finance.bankPaymentConfirmation.test.js",
+   "nome": "FIN-TS-019: callback CONFIRMED do banco libera o ledger (liquida o lançamento)",
+   "status": "passou",
+   "duracaoMs": 367,
+   "commitDoArquivo": "f8ad9c08"
+  },
+  {
+   "arquivo": "test/finance.bankPaymentConfirmation.test.js",
+   "nome": "Callback duplicado (idempotência): reprocessar CONFIRMED duas vezes não liquida duas vezes",
+   "status": "passou",
+   "duracaoMs": 251,
+   "commitDoArquivo": "f8ad9c08"
+  },
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-01 eventos mínimos do Guia §14 com o nome literal: payment.prepared/approved/completed/reversed, receipt.completed, reconciliation.completed, anomaly.opened",
+   "status": "passou",
+   "duracaoMs": 511,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P31",
+   "tipo": "http",
+   "linhas": [
+    "M4-§8.9",
+    "M4-G§7",
+    "M4-G§14.4"
+   ],
+   "titulo": "Callback CONFIRMED assinado (HMAC): a confirmação efetiva cria o movimento realizado",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/webhooks/bank-payment",
+   "cabecalhosEnviados": {
+    "x-webhook-signature": "sha256=4aa239…(assinatura HMAC calculada no envio)"
+   },
+   "corpoEnviado": {
+    "externalSubmissionId": "sandbox-payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+    "status": "CONFIRMED"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 260,
+   "quando": "2026-11-11T01:35:08.562Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "received": true,
+     "processed": true
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

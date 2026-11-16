@@ -1,0 +1,113 @@
+{
+ "id": "M4-FIN-007",
+ "secao": "§2 Princípios",
+ "requisito": "FIN-007 Competência x caixa: \"Registrar competência e realização separadamente.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-03 competência explícita diferente do mês de vencimento é gravada exatamente como informada",
+   "status": "passou",
+   "duracaoMs": 93,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-03 sem competência informada, deriva do mês de vencimento; sem vencimento, do mês de criação",
+   "status": "passou",
+   "duracaoMs": 87,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "X05",
+   "tipo": "http",
+   "linhas": [
+    "M4-§10.1",
+    "M4-FIN-007"
+   ],
+   "titulo": "Baixa integral antes do vencimento: realização (settledAt) separada da competência e do vencimento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/74a7dfcc-58b6-491d-bc58-20f2de3a4f63/settle",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-ant-0871300"
+   },
+   "corpoEnviado": {
+    "idempotencyKey": "m4-ant-0871300"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 150,
+   "quando": "2026-11-11T01:35:04.202Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "74a7dfcc-58b6-491d-bc58-20f2de3a4f63",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "250.00",
+     "description": "Recebível antecipado 0871300",
+     "dueAt": "2026-12-11T01:35:03.835Z",
+     "competenceMonth": "2026-12",
+     "settledAt": "2026-11-11T01:35:04.131Z",
+     "status": "SETTLED",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:03.990Z",
+     "updated_at": "2026-11-11T01:35:04.131Z",
+     "bank_account_id": null,
+     "cost_center_id": null,
+     "result_center_id": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

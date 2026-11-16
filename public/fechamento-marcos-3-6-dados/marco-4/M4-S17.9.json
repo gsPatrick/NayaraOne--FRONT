@@ -1,0 +1,370 @@
+{
+ "id": "M4-§17.9",
+ "secao": "§17 Antifraude",
+ "requisito": "Risco \"Exportação financeira massiva\" → controle \"MFA + auditoria + limite\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-05 exportação financeira: acima do limite é recusada inteira (nunca truncada); dentro do limite gera CSV e grava auditoria com hash",
+   "status": "passou",
+   "duracaoMs": 22,
+   "commitDoArquivo": "6ea03ed1"
+  },
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-06 exportação financeira via HTTP real: a rota antiga responde 410 GOV_EXPORT_MOVED (sem finance:read, 403); MFA, finalidade e expiração são do POST /exports (M9-D822)",
+   "status": "passou",
+   "duracaoMs": 82,
+   "commitDoArquivo": "6ea03ed1"
+  },
+  {
+   "arquivo": "test/marco9/governanca/m9d822.http.test.js",
+   "nome": "m9d822 HIGH sem MFA recente devolve 403 MFA_STEP_UP_REQUIRED e o pedido fica BLOCKED",
+   "status": "passou",
+   "duracaoMs": 219,
+   "commitDoArquivo": "fb562068"
+  },
+  {
+   "arquivo": "test/marco9/governanca/m9d822.http.test.js",
+   "nome": "m9d822 exportação HIGH real: 202, job READY, URL assinada, arquivo, auditoria de download e 410 depois da expiração",
+   "status": "passou",
+   "duracaoMs": 441,
+   "commitDoArquivo": "fb562068"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "MFA-06",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.9"
+   ],
+   "titulo": "Exportação financeira governada sem verificação recente do MFA: bloqueada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/exports",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-exp-sem-mfa-1794360874937"
+   },
+   "corpoEnviado": {
+    "resourceType": "finance.entries",
+    "format": "csv",
+    "purpose": "AUDITORIA",
+    "justification": "Conferência mensal do financeiro pela auditoria (captura do Marco 4)",
+    "filter": {}
+   },
+   "esperado": {
+    "status": [
+     400,
+     403,
+     409,
+     422
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "ok": true,
+   "ms": 315,
+   "quando": "2026-11-11T01:34:35.253Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Confirme o código de verificação para continuar.",
+     "details": {
+      "blockReason": "MFA",
+      "exportJobId": "89aae294-81a2-4641-ad34-8a6601919116"
+     },
+     "traceId": "e74c7115-6f5a-443c-b184-daaf7812b06f"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H50",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.9"
+   ],
+   "titulo": "Rota antiga de exportação não gera arquivo (410): exportação só pelo fluxo governado",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/exports/entries?competenceMonth=2030-01",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 410,
+    "codigo": "GOV_EXPORT_MOVED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 410,
+   "codigo": "GOV_EXPORT_MOVED",
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T01:35:17.467Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GOV_EXPORT_MOVED",
+     "message": "Esta exportação agora é pedida por POST /exports, com finalidade e justificativa.",
+     "traceId": "606f852c-1fed-4545-8215-3fb8eea91c2b"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H51",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.9"
+   ],
+   "titulo": "Catálogo de exportação: finance.entries com colunas, classificação, finalidades e limite",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/exports/catalog",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T01:35:17.485Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "resources": [
+      {
+       "code": "finance.entries",
+       "label": "Lançamentos financeiros",
+       "formats": [
+        "CSV",
+        "XLSX",
+        "PDF"
+       ],
+       "permission": "finance:read",
+       "fixedLayout": false,
+       "columns": [
+        {
+         "key": "id",
+         "label": "Id",
+         "classification": "HIGH"
+        },
+        {
+         "key": "competenceMonth",
+         "label": "Competência",
+         "classification": "HIGH"
+        },
+        {
+         "key": "nature",
+         "label": "Natureza",
+         "classification": "HIGH"
+        },
+        {
+         "key": "entryType",
+         "label": "Tipo",
+         "classification": "HIGH"
+        },
+        {
+         "key": "status",
+         "label": "Situação",
+         "classification": "HIGH"
+        },
+        {
+         "key": "amount",
+         "label": "Valor",
+         "classification": "HIGH"
+        },
+        {
+         "key": "dueAt",
+         "label": "Vencimento",
+         "classification": "HIGH"
+        },
+        {
+         "key": "settledAt",
+         "label": "Liquidação",
+         "classification": "HIGH"
+        },
+        {
+         "key": "description",
+         "label": "Descrição",
+         "classification": "RESTRICTED"
+        },
+        {
+         "key": "isThirdPartyFunds",
+         "label": "Dinheiro de terceiros",
+         "classification": "HIGH"
+        }
+       ]
+      }
+     ],
+     "purposes": [
+      "AUDITORIA",
+      "OPERACAO",
+      "JURIDICO",
+      "CONTABIL",
+      "CLIENTE_SOLICITOU",
+      "OUTRA"
+     ],
+     "justificationMin": 20,
+     "formats": [
+      "CSV",
+      "XLSX",
+      "PDF"
+     ]
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H52",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.9"
+   ],
+   "titulo": "Exportação sem Idempotency-Key: recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/exports",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "resourceType": "finance.entries",
+    "format": "csv",
+    "purpose": "AUDITORIA",
+    "justification": "Conferência mensal do financeiro pela auditoria (captura do Marco 4)",
+    "filter": {}
+   },
+   "esperado": {
+    "status": 400
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "GOV_IDEMPOTENCY_KEY_REQUIRED",
+   "ok": true,
+   "ms": 30,
+   "quando": "2026-11-11T01:35:17.516Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GOV_IDEMPOTENCY_KEY_REQUIRED",
+     "message": "Envie o cabeçalho Idempotency-Key.",
+     "traceId": "efb705e3-946f-4ad8-8016-fe4c723279ee"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H53",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.9",
+    "M4-G§20.13"
+   ],
+   "titulo": "Exportação de lançamentos com finalidade, justificativa e MFA recente: pedido aprovado e auditado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/exports",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-exp-0871300"
+   },
+   "corpoEnviado": {
+    "resourceType": "finance.entries",
+    "format": "csv",
+    "purpose": "AUDITORIA",
+    "justification": "Conferência mensal do financeiro pela auditoria (captura do Marco 4)",
+    "filter": {}
+   },
+   "esperado": {
+    "status": [
+     200,
+     201,
+     202
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 202,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 126,
+   "quando": "2026-11-11T01:35:17.643Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "exportJobId": "37519237-4b16-4d9d-bc15-8d65361ba6ab",
+     "status": "APPROVED"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H54",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.9"
+   ],
+   "titulo": "Perfil sem governance:dlp:export não exporta",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/exports",
+   "cabecalhosEnviados": {
+    "Idempotency-Key": "m4-exp-l-0871300"
+   },
+   "corpoEnviado": {
+    "resourceType": "finance.entries",
+    "format": "csv",
+    "purpose": "AUDITORIA",
+    "justification": "tentativa sem permissão de exportação",
+    "filter": {}
+   },
+   "esperado": {
+    "status": 403
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T01:35:17.661Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "governance:dlp:export"
+     },
+     "traceId": "68544ca1-ff32-487e-bc24-2ce2e8fc3228"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

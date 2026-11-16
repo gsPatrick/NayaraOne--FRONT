@@ -1,0 +1,541 @@
+{
+ "arquivo": "test/m3cb.carteira.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-11T12:49:44.680Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:44.719Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:44.975Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/properties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.017Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/visits",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.053Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.201Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/proposals",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.236Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities/22abd02f-008d-458d-9018-c238529f7e6c/carts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.282Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/radar",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.324Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/feedback-cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.430Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities/22abd02f-008d-458d-9018-c238529f7e6c/tasks",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.669Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.702Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.951Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/properties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:45.997Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/visits",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.043Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.112Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/proposals",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.158Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities/304b1266-180f-4816-a555-543aca05f212/carts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.205Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/radar",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.253Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/feedback-cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.287Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities/304b1266-180f-4816-a555-543aca05f212/tasks",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.317Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.386Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.407Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.435Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.451Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.463Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/proposals",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.478Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/proposals",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.493Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/radar",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.513Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/radar",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.535Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/feedback-cases",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.549Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/feedback-cases",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.563Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits?opportunityId=304b1266-180f-4816-a555-543aca05f212",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.586Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits/d7925b96-1d49-46e4-b0d9-3da1cb5dd2f4",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "VISIT_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.600Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/visits/d7925b96-1d49-46e4-b0d9-3da1cb5dd2f4",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "VISIT_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.618Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages/c797e819-16dc-4260-8b9c-97a37e62ba65",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "MESSAGE_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.638Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/messages/c797e819-16dc-4260-8b9c-97a37e62ba65/status",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "MESSAGE_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.656Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/proposals/8c8773f4-b812-43b6-ad69-bdf0242392fe",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "PROPOSAL_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.673Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/crm/proposals/8c8773f4-b812-43b6-ad69-bdf0242392fe/status",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "PROPOSAL_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.692Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/carts/9cd47196-a2c2-4141-9a77-d1e596ecf02f/items",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "CART_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.705Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/carts/9cd47196-a2c2-4141-9a77-d1e596ecf02f/share-link",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "CART_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.724Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/radar/be09d9c6-b5bd-448b-9eb0-c2ae43d93414",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "RADAR_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.752Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/radar/be09d9c6-b5bd-448b-9eb0-c2ae43d93414/matches",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "RADAR_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.768Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/radars/be09d9c6-b5bd-448b-9eb0-c2ae43d93414/matches",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "RADAR_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.784Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/feedback-cases/93aa8530-cb86-4527-b338-9afd0a47091b",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "FEEDBACK_CASE_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.803Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/tasks/a931f03c-d457-44f8-882c-fa5e0fdb7955",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_TASK_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.828Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits/9ba90909-d832-48d6-9d69-6fb15f30db2c",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.854Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/proposals/063ee0e8-29b8-41dd-ba69-7915808b84a1",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.880Z",
+   "metodo": "PATCH",
+   "caminho": "/api/v1/carts/03ab10ee-e27b-4391-b5bb-c1e6a7406b04/items",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.906Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages/c797e819-16dc-4260-8b9c-97a37e62ba65",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.925Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits/d7925b96-1d49-46e4-b0d9-3da1cb5dd2f4",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:46.939Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/visits",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.971Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.986Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/proposals",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:46.998Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/radar",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:47.013Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/radars",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:47.026Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/feedback-cases",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:47.039Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/crm/occurrences",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:47.063Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/visits?opportunityId=304b1266-180f-4816-a555-543aca05f212",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:47.087Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/dashboard?ownerUserId=3f6766f7-e479-4050-941d-a07ca492ea60",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:47.107Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/crm/dashboard",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:47.174Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages/d663d2df-c2e8-45de-adbf-eb19dfa93c2b",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:47.191Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages/d663d2df-c2e8-45de-adbf-eb19dfa93c2b",
+   "perfil": "A:checker",
+   "status": 404,
+   "codigo": "MESSAGE_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:47.244Z",
+   "metodo": "PUT",
+   "caminho": "/api/v1/settings/crm.carteira.registro_sem_oportunidade",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:47.256Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages/d663d2df-c2e8-45de-adbf-eb19dfa93c2b",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "MESSAGE_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:47.270Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:47.284Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:47.313Z",
+   "metodo": "PUT",
+   "caminho": "/api/v1/settings/crm.carteira.registro_sem_oportunidade",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "SETTING_INVALID_VALUE"
+  }
+ ]
+}

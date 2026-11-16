@@ -1,0 +1,2531 @@
+{
+ "id": "M5-A0177-7266b1",
+ "secao": "P1 > 21. Definition of Done",
+ "linhaCaderno": 401,
+ "requisito": "☐ RLS/permissões verdes.",
+ "demandas": "M5-D044;X45-D027",
+ "implementacao": "RLS FORCE (legal.legal_cases, case_parties, legal_deadlines, evidence_packages, evidence_package_access_log, notices, notice_versions, case_receivables, people.file_links) + requirePermission nas rotas do Jurídico (inclusive legal:evidence:export e legal:approve+finance:create no recebível)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/auditoriaNayara.marco5.coverage.test.js",
+   "nome": "dossiê: outra empresa não enxerga o processo jurídico, o pacote de evidências nem seu log de acesso (RLS)",
+   "status": "pass",
+   "ms": 21.096,
+   "commitDoTeste": "1d4a4ed0"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L13: prazo jurídico de outro tenant não pode ser lido nem \"empurrado\" para o futuro",
+   "status": "pass",
+   "ms": 69.161,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L14: exportar/visualizar dossiê de um caso de outro tenant falha e NÃO deixa rastro na cadeia de custódia do dono",
+   "status": "pass",
+   "ms": 27.94,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/ciTwoTenantsFinanceLegal.test.js",
+   "nome": "CI dois tenants (Jurídico): tenant B não lê nem altera o contrato de A (404), e o contrato segue intacto",
+   "status": "pass",
+   "ms": 70.427,
+   "commitDoTeste": "9ef507fb"
+  },
+  {
+   "arquivo": "test/ciTwoTenantsFinanceLegal.test.js",
+   "nome": "CI dois tenants (Jurídico): maker cria contrato; leitura recebe 403 ao criar e consegue ler",
+   "status": "pass",
+   "ms": 64.724,
+   "commitDoTeste": "9ef507fb"
+  },
+  {
+   "arquivo": "test/legal.crossCompanyIsolation.test.js",
+   "nome": "JUR-013: legal.contracts — outra empresa não enxerga nem edita o contrato via SELECT/UPDATE direto",
+   "status": "pass",
+   "ms": 79.905,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JR rotas: partes, documentos e linha do tempo do processo pela API; sem legal:create 403; processo inexistente/de outra empresa 404 (§14)",
+   "status": "pass",
+   "ms": 665.604,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JUR-TS-011: exportar dossiê sem a permissão específica legal:evidence:export é negado (403 PERMISSION_DENIED, inclusive só com legal:read) sem registro EXPORTED; outra empresa/inexistente 404; com a permissão a DLP ainda exige finalidade e MFA (classe HIGH)",
+   "status": "pass",
+   "ms": 133.609,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JR rotas: recebível do processo exige legal:approve E finance:create e só sai com valor confirmado; versões da notificação pela API",
+   "status": "pass",
+   "ms": 134.756,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.pentest.test.js",
+   "nome": "Pentest JR: processo não aceita responsável/escalonamento de outra empresa (criar e atualizar), nem contrato de outra empresa; tipos errados são 400",
+   "status": "pass",
+   "ms": 124.01,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.pentest.test.js",
+   "nome": "Pentest JR: notificação não aceita arquivo nem destinatário de outra empresa (criação, nova versão e evidência de entrega); objeto no lugar de texto é 400",
+   "status": "pass",
+   "ms": 49.008,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.pentest.test.js",
+   "nome": "Pentest JR: dossiê, recebível e prazo com objeto no lugar de texto/uuid ({\"$gt\":\"\"}) respondem 400, nunca 500; arquivo de outra empresa no manifesto é recusado",
+   "status": "pass",
+   "ms": 47.611,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "Pentest JR (HTTP): objeto no lugar de texto/uuid no dossiê ({\"$gt\":\"\"}) é 400 com o código do Jurídico, nunca 500",
+   "status": "pass",
+   "ms": 26.263,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-R17",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "B:gestor",
+   "status": 422,
+   "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT",
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT"
+   },
+   "resumo": "erro LEGAL_CASE_USER_NOT_IN_TENANT: \"responsibleUserId\": o usuário informado não tem vínculo ativo com esta empresa.",
+   "quando": "2026-11-11T03:42:40.103Z"
+  },
+  {
+   "passo": "JR-R18",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT",
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT"
+   },
+   "resumo": "erro LEGAL_CASE_USER_NOT_IN_TENANT: \"escalationUserId\": o usuário informado não tem vínculo ativo com esta empresa.",
+   "quando": "2026-11-11T03:42:40.111Z"
+  },
+  {
+   "passo": "JR-R20",
+   "metodo": "POST",
+   "rota": "/legal/notices",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_NOTICE_FILE_NOT_FOUND: \"contentFileId\": o arquivo informado não existe nesta empresa.",
+   "quando": "2026-11-11T03:42:40.165Z"
+  },
+  {
+   "passo": "JR-R21",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/evidence-package",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_VALIDATION"
+   },
+   "resumo": "erro LEGAL_EVIDENCE_PACKAGE_VALIDATION: Item do manifesto: \"type\" com tipo inválido.",
+   "quando": "2026-11-11T03:42:40.173Z"
+  },
+  {
+   "passo": "JR-R22",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CASE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_VALIDATION"
+   },
+   "resumo": "erro LEGAL_CASE_VALIDATION: \"status\" deve ser um de: OPEN, SUSPENDED, CLOSED, ARCHIVED, CANCELLED.",
+   "quando": "2026-11-11T03:42:40.182Z"
+  },
+  {
+   "passo": "JR-N14c",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/delivery-evidence",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_NOTICE_FILE_NOT_FOUND: \"deliveryEvidenceFileId\": o arquivo informado não existe nesta empresa.",
+   "quando": "2026-11-11T03:42:39.395Z"
+  },
+  {
+   "passo": "JR-P03",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.171Z"
+  },
+  {
+   "passo": "JR-P10",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:37.309Z"
+  },
+  {
+   "passo": "JR-P14d",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.417Z"
+  },
+  {
+   "passo": "JR-P17",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/timeline",
+   "perfil": "B:leitura",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:37.526Z"
+  },
+  {
+   "passo": "JR-D05",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.666Z"
+  },
+  {
+   "passo": "JR-D07",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:37.751Z"
+  },
+  {
+   "passo": "JR-D13",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.872Z"
+  },
+  {
+   "passo": "JR-D28",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_DEADLINE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_DEADLINE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_DEADLINE_NOT_FOUND: Prazo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:38.059Z"
+  },
+  {
+   "passo": "JR-N08e",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/versions",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:39.286Z"
+  },
+  {
+   "passo": "JR-R04",
+   "metodo": "GET",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:40.041Z"
+  },
+  {
+   "passo": "JR-R05",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:40.048Z"
+  },
+  {
+   "passo": "JR-R06",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/755101b8-b958-47f6-99fa-b83781227d0d",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_DEADLINE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_DEADLINE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_DEADLINE_NOT_FOUND: Prazo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:40.056Z"
+  },
+  {
+   "passo": "JR-R07",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/87a79842-b7f3-4180-ab1f-65ff07fdb2ed",
+   "perfil": "B:leitura",
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_EVIDENCE_PACKAGE_NOT_FOUND: Pacote de evidências não encontrado.",
+   "quando": "2026-11-11T03:42:40.063Z"
+  },
+  {
+   "passo": "JR-R08",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/legal-hold",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:40.070Z"
+  },
+  {
+   "passo": "JR-R12",
+   "metodo": "GET",
+   "rota": "/legal/deadlines",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "esperado": {
+    "status": 401
+   },
+   "resumo": "erro MISSING_ACCESS_TOKEN: Token de acesso ausente.",
+   "quando": "2026-11-11T03:42:40.087Z"
+  },
+  {
+   "passo": "JR-R13",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/legal-hold",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:40.094Z"
+  },
+  {
+   "passo": "JR-D17",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.920Z"
+  },
+  {
+   "passo": "JR-D21",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.950Z"
+  },
+  {
+   "passo": "JR-D29",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.065Z"
+  },
+  {
+   "passo": "JR-D32d",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.226Z"
+  },
+  {
+   "passo": "JR-E08",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-package",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.729Z"
+  },
+  {
+   "passo": "JR-E15",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_EVIDENCE_PACKAGE_NOT_FOUND: Pacote de evidências não encontrado.",
+   "quando": "2026-11-11T03:42:38.806Z"
+  },
+  {
+   "passo": "JR-E33",
+   "metodo": "GET",
+   "rota": "/files/365b01d9-d1a8-424a-aa04-5479ce551358",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "FILE_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro FILE_NOT_FOUND: Arquivo não encontrado.",
+   "quando": "2026-11-11T03:42:39.033Z"
+  },
+  {
+   "passo": "JR-N05",
+   "metodo": "POST",
+   "rota": "/legal/notices",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:39.233Z"
+  },
+  {
+   "passo": "JR-N10",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/approve",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:39.307Z"
+  },
+  {
+   "passo": "JR-N14b",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "B:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=7316a869-a5dc-4653-aa50-2d2ecac731e8",
+   "quando": "2026-11-11T03:42:39.383Z"
+  },
+  {
+   "passo": "JR-N17",
+   "metodo": "GET",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_NOTICE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_NOTICE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_NOTICE_NOT_FOUND: Notificação não encontrada.",
+   "quando": "2026-11-11T03:42:39.465Z"
+  },
+  {
+   "passo": "JR-Y16",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/summary",
+   "perfil": "B:leitura",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:39.913Z"
+  },
+  {
+   "passo": "JR-Y17",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "esperado": {
+    "status": 401
+   },
+   "resumo": "erro MISSING_ACCESS_TOKEN: Token de acesso ausente.",
+   "quando": "2026-11-11T03:42:39.918Z"
+  },
+  {
+   "passo": "JR-R01",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "quando": "2026-11-11T03:42:39.936Z"
+  },
+  {
+   "passo": "JR-R01b",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=6857ce0d-17c7-47b4-91b7-328dcd6bf171",
+   "quando": "2026-11-11T03:42:39.984Z"
+  },
+  {
+   "passo": "JR-R02",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/deadlines",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=755101b8-b958-47f6-99fa-b83781227d0d, criticality=MEDIUM",
+   "quando": "2026-11-11T03:42:40.016Z"
+  },
+  {
+   "passo": "JR-R03",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/evidence-packages",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=87a79842-b7f3-4180-ab1f-65ff07fdb2ed",
+   "quando": "2026-11-11T03:42:40.033Z"
+  },
+  {
+   "passo": "JR-R09",
+   "metodo": "GET",
+   "rota": "/legal/deadlines",
+   "perfil": "B:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 0 item(ns)",
+   "quando": "2026-11-11T03:42:40.076Z"
+  },
+  {
+   "passo": "JR-R11",
+   "metodo": "GET",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=OPEN, id=8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "quando": "2026-11-11T03:42:40.083Z"
+  },
+  {
+   "passo": "JR-R19",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "B:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=0d71aeed-63c4-4285-90a0-223f075b7b03",
+   "quando": "2026-11-11T03:42:40.155Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0177-7266b1.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/auditoriaNayara.marco5.coverage.test.js test/adversarial.legal.test.js test/ciTwoTenantsFinanceLegal.test.js test/legal.crossCompanyIsolation.test.js test/m5fech.juridico.rotas.test.js test/m5fech.juridico.pentest.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-R17, JR-R18, JR-R20, JR-R21, JR-R22, JR-N14c, JR-P03, JR-P10, JR-P14d, JR-P17, JR-D05, JR-D07, JR-D13, JR-D28, JR-N08e, JR-R04, JR-R05, JR-R06, JR-R07, JR-R08, JR-R10, JR-R12, JR-R13, JR-R14, JR-R15, JR-R16, JR-D17, JR-D21, JR-D29, JR-D32d, JR-E08, JR-E15, JR-E33, JR-N05, JR-N10, JR-N14b, JR-N17, JR-Y16, JR-Y17, JR-R01, JR-R01b, JR-R02, JR-R03, JR-R09, JR-R11, JR-R19)"
+ },
+ "passos": [
+  {
+   "id": "JR-R17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não grava processo com responsável/escalonamento que é usuário da empresa A",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+    "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44"
+   },
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT"
+   },
+   "status": 422,
+   "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:40.103Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_USER_NOT_IN_TENANT",
+     "message": "\"responsibleUserId\": o usuário informado não tem vínculo ativo com esta empresa.",
+     "traceId": "19277c52-0c17-4a86-ac35-fe7b8187ca18"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant A também não aponta o escalonamento para usuário da empresa B (atualização)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "corpoEnviado": {
+    "escalationUserId": "3648aa6d-f187-4930-9c09-50cc645b4c2d"
+   },
+   "esperado": {
+    "status": 422,
+    "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT"
+   },
+   "status": 422,
+   "codigo": "LEGAL_CASE_USER_NOT_IN_TENANT",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:40.111Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_USER_NOT_IN_TENANT",
+     "message": "\"escalationUserId\": o usuário informado não tem vínculo ativo com esta empresa.",
+     "traceId": "8fe5b466-98c7-4d65-816f-875c7a012335"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R20",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Notificação da empresa A com arquivo da empresa B é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/notices",
+   "corpoEnviado": {
+    "legalCaseId": "8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+    "channel": "EMAIL",
+    "contentFileId": "0d71aeed-63c4-4285-90a0-223f075b7b03"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND"
+   },
+   "status": 400,
+   "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:40.165Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_NOTICE_FILE_NOT_FOUND",
+     "message": "\"contentFileId\": o arquivo informado não existe nesta empresa.",
+     "traceId": "9f408db5-8022-4d13-bb7e-ce357a1d724f"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1",
+    "M5-A0148-c670b7",
+    "M5-A0100-a24518"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R21",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dossiê com objeto no lugar de texto/uuid ({\"$gt\":\"\"}): 400, nunca 500",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/evidence-package",
+   "corpoEnviado": {
+    "manifestItems": [
+     {
+      "type": {
+       "$gt": ""
+      },
+      "description": {
+       "$gt": ""
+      },
+      "fileId": {
+       "$gt": ""
+      },
+      "hash": {
+       "$gt": ""
+      }
+     }
+    ]
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_VALIDATION",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:40.173Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_EVIDENCE_PACKAGE_VALIDATION",
+     "message": "Item do manifesto: \"type\" com tipo inválido.",
+     "traceId": "aacf9f8c-bbe0-4bc7-bc8d-2bacc8a0cfa6"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R22",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Processo com status em objeto ({\"$gt\":\"\"}): 400, nunca 500",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "corpoEnviado": {
+    "status": {
+     "$gt": ""
+    }
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CASE_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:40.182Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_VALIDATION",
+     "message": "\"status\" deve ser um de: OPEN, SUSPENDED, CLOSED, ARCHIVED, CANCELLED.",
+     "traceId": "c5f5e1ca-b9c2-427e-9f95-599b0bd69619"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N14c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Evidência de entrega com arquivo da empresa B é recusada (pentest M5)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/delivery-evidence",
+   "corpoEnviado": {
+    "deliveryEvidenceFileId": "7316a869-a5dc-4653-aa50-2d2ecac731e8"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND"
+   },
+   "status": 400,
+   "codigo": "LEGAL_NOTICE_FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:39.395Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_NOTICE_FILE_NOT_FOUND",
+     "message": "\"deliveryEvidenceFileId\": o arquivo informado não existe nesta empresa.",
+     "traceId": "970504b8-b63a-4926-b236-a9f01ca039de"
+    }
+   },
+   "req": [
+    "M5-A0100-a24518",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Perfil só de leitura não cria processo",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:37.171Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "c1f65be7-9e51-4555-9013-6190e5c8b10f"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não liga documento ao processo de A (processo não existe para B)",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/documents",
+   "corpoEnviado": {
+    "fileId": "a2e83252-6304-44ea-ade0-d476a23ecb7a"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.309Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "9a062e4f-da25-424d-99a7-128dcb0e8c30"
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P14d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Vincular ao Financeiro exige legal:approve e finance:create: leitura recusada",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "SETTLEMENT",
+    "basisReference": "Acordo homologado fictício nº 77/2026",
+    "dueAt": "2030-03-10",
+    "resultCenterId": "f91b5a22-7621-470c-a069-5c273e887210"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:37.417Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:approve"
+     },
+     "traceId": "e4153e49-1e69-46c0-8c43-8a1d4942a77a"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não lê a linha do tempo do processo de A",
+   "perfil": "B:leitura",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/timeline",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:37.526Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "d856537f-9942-4031-a835-bf1576930e51"
+    }
+   },
+   "req": [
+    "M5-A0104-c10a98",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR por perfil só de leitura é recusado",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "x",
+    "dueAt": "2026-11-16T03:42:37.660Z",
+    "sourceDocument": "x"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:37.666Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "86a08c1b-e482-478d-a136-83bb01fe4765"
+    }
+   },
+   "req": [
+    "M5-A0218-5853eb",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não cria prazo no processo de A",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "x",
+    "dueAt": "2026-11-16T03:42:37.742Z",
+    "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.751Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "3f147334-b0f9-45be-9dd9-b909ffd9e87a"
+    }
+   },
+   "req": [
+    "M5-A0218-5853eb",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "ATRIBUIR pelo maker (sem legal:update) é recusado",
+   "perfil": "A:maker",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/70785ddb-efe1-4fd5-aaef-db3b4ff26c6f",
+   "corpoEnviado": {
+    "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:37.872Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "db7f2f48-1b48-4324-b1fe-0ce707b59eb5"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D28",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não conclui prazo de A",
+   "perfil": "B:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "status": "DONE",
+    "conclusionNote": "x"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_DEADLINE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_DEADLINE_NOT_FOUND",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:38.059Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_NOT_FOUND",
+     "message": "Prazo jurídico não encontrado.",
+     "traceId": "d0c21b18-682c-451d-893f-68fb3e99685b"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N08e",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Maker (sem legal:update) não cria versão",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/versions",
+   "corpoEnviado": {
+    "content": "x",
+    "reason": "x"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:39.286Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "fa1c2680-ebee-49ae-a498-c70964d99311"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não lê o processo de A",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:40.041Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "c5bd15ca-dee7-40d2-bfdd-33ef5eafccaf"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1",
+    "M5-A0148-c670b7"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não altera o processo de A",
+   "perfil": "B:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "corpoEnviado": {
+    "summary": "invasão"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:40.048Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "025db5e5-4a54-455e-94a2-58e81566d861"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não remarca o prazo de A",
+   "perfil": "B:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/755101b8-b958-47f6-99fa-b83781227d0d",
+   "corpoEnviado": {
+    "dueAt": "2027-02-09T03:42:40.048Z",
+    "changeReason": "invasão"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_DEADLINE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_DEADLINE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:40.056Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_NOT_FOUND",
+     "message": "Prazo jurídico não encontrado.",
+     "traceId": "d2b00af3-ca25-44c4-8334-7d707642e3d4"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não lê o dossiê de A",
+   "perfil": "B:leitura",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/87a79842-b7f3-4180-ab1f-65ff07fdb2ed",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:40.063Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+     "message": "Pacote de evidências não encontrado.",
+     "traceId": "caf8e9a1-4114-4698-a572-e81a8a915049"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1",
+    "M5-A0148-c670b7"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não põe o processo de A em legal hold",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/legal-hold",
+   "corpoEnviado": {
+    "legalHold": true,
+    "reason": "invasão"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:40.070Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "92191e66-db79-494a-8b08-098cd8cb5b52"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R10",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "A lista de prazos do tenant B não contém o prazo de A",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "conferência do corpo de JR-R09",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 0,
+   "quando": "2026-11-11T03:42:40.077Z",
+   "corpo": {
+    "result": {
+     "prazosDeB": 0,
+     "contemPrazoDeA": false
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-R12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Anônimo não lista prazos",
+   "perfil": "anonimo",
+   "metodo": "GET",
+   "rota": "/legal/deadlines",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 401
+   },
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "ok": true,
+   "ms": 3,
+   "quando": "2026-11-11T03:42:40.087Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "0331ce66-b640-40eb-b558-747d5aefad2f"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Maker (sem legal:update) não põe legal hold",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/legal-hold",
+   "corpoEnviado": {
+    "legalHold": true,
+    "reason": "x"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:40.094Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "7b98c796-af0f-482f-a0f0-83584f27a4f0"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REMARCAR pelo checker (sem legal:update) é recusado",
+   "perfil": "A:checker",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "dueAt": "2026-12-06T03:42:37.915Z",
+    "changeReason": "tentativa"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:37.920Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "70631962-6aa0-4d9e-b33e-b105d715cc97"
+    }
+   },
+   "req": [
+    "M5-A0112-210dba",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D21",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CONCLUIR pelo maker, mesmo sendo o responsável, sem legal:update: recusado",
+   "perfil": "A:maker",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "status": "DONE",
+    "conclusionNote": "Protocolado"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:37.950Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "8b5e5428-8a26-46af-ade4-cbaa4f26baa6"
+    }
+   },
+   "req": [
+    "M5-A0146-95ccfc",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D29",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REABRIR pelo checker (sem legal:update): recusado",
+   "perfil": "A:checker",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "status": "PENDING"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.065Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "5ed020c5-599e-415e-ac55-3010a8e74308"
+    }
+   },
+   "req": [
+    "M5-A0306-a4b4b7",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D32d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CANCELAR pelo checker (sem legal:update) é recusado",
+   "perfil": "A:checker",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/f259bacb-e168-4e08-8f3a-22baaf7c59c3",
+   "corpoEnviado": {
+    "status": "CANCELLED",
+    "changeReason": "Audiência cancelada pelo juízo"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:38.226Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "d66db6ea-71a2-407a-9be7-c731470924c9"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Perfil só de leitura não gera dossiê",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-package",
+   "corpoEnviado": {
+    "manifestItems": [
+     {
+      "type": "NOTE",
+      "description": "x"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.729Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "8f8b98e8-beb7-4de3-bc96-a4729210352a"
+    }
+   },
+   "req": [
+    "M5-A0219-23235a",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: tenant B exporta o dossiê de A: não existe",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.806Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+     "message": "Pacote de evidências não encontrado.",
+     "traceId": "43c9a2bf-6ff2-4588-b803-183f8334b5d8"
+    }
+   },
+   "req": [
+    "M5-A0159-a8f148",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E33",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "RLS: tenant B não enxerga o documento de A",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/files/365b01d9-d1a8-424a-aa04-5479ce551358",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:39.033Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FILE_NOT_FOUND",
+     "message": "Arquivo não encontrado.",
+     "traceId": "7bc77993-18b4-41c1-b762-f8f713169aaf"
+    }
+   },
+   "req": [
+    "M5-A0148-c670b7",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Perfil só de leitura não cria notificação",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/notices",
+   "corpoEnviado": {
+    "contractId": "917b3ee5-91df-44aa-b3a4-927ceb819691",
+    "channel": "EMAIL",
+    "content": "x"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:39.233Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "107a5cd5-4060-4725-9ddb-cd97e2996d03"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Maker (sem legal:approve) não aprova",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e/approve",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:39.307Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:approve"
+     },
+     "traceId": "7768dc43-58ef-49c8-a398-3ef94dcf5c0d"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N14b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: arquivo da empresa B",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "ar-b-mwbkplbqsf31.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgQVIgZGEgZW1wcmVzYSBCIG13YmtwbGJxc2YzMQ==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 35,
+   "quando": "2026-11-11T03:42:39.383Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "7316a869-a5dc-4653-aa50-2d2ecac731e8",
+     "groupId": "63027d82-7451-4b83-9bd0-6795839b09f7",
+     "companyId": "335a064c-da17-4ad3-85c4-69a99c999bb9",
+     "storageKey": "generic/63027d82-7451-4b83-9bd0-6795839b09f7/70318b8d-7a0b-427e-9245-f2d6605d12bf-ar-b-mwbkplbqsf31.pdf",
+     "fileName": "ar-b-mwbkplbqsf31.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 37,
+     "checksumSha256": "7d341b4c6a2adefa327c20301235c91459eb042df03f8895ab876fe4993dc612",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:39.363Z",
+     "uploadedByUserId": "3648aa6d-f187-4930-9c09-50cc645b4c2d",
+     "createdBy": "3648aa6d-f187-4930-9c09-50cc645b4c2d",
+     "updatedBy": "3648aa6d-f187-4930-9c09-50cc645b4c2d",
+     "updated_at": "2026-11-11T03:42:39.363Z",
+     "created_at": "2026-11-11T03:42:39.363Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1",
+    "M5-A0148-c670b7"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-N17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não lê a notificação de A",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/notices/acbdd236-1e30-431c-8880-3e29ca2d841e",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_NOTICE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_NOTICE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:39.465Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_NOTICE_NOT_FOUND",
+     "message": "Notificação não encontrada.",
+     "traceId": "2fb13c1e-7698-441f-bda9-459880342a8f"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-4-notificacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não obtém resumo do processo de A",
+   "perfil": "B:leitura",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/summary",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:39.913Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "30d7e6b0-68e5-4789-959d-e885a5abae33"
+    }
+   },
+   "req": [
+    "M5-A0119-720fd1",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Anônimo não usa a NAY Jurídica",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "corpoEnviado": {
+    "text": "x"
+   },
+   "esperado": {
+    "status": 401
+   },
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:39.918Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "8c09c0f7-7084-4b82-9a6b-ee1490bf6882"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: processo do tenant A",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "caseNumber": "RL-mwbkplwzmy35",
+    "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:39.936Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "escalationUserId": null,
+     "caseNumber": "RL-mwbkplwzmy35",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:39.930Z",
+     "created_at": "2026-11-11T03:42:39.930Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R01b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: arquivo de origem do prazo",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "origem-rls-mwbkplwzmy35.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgT3JpZ2VtIFJMUyBtd2JrcGx3em15MzU=",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 47,
+   "quando": "2026-11-11T03:42:39.984Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "6857ce0d-17c7-47b4-91b7-328dcd6bf171",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/07d963cf-4ad5-4fab-adef-a561c85dcabc-origem-rls-mwbkplwzmy35.pdf",
+     "fileName": "origem-rls-mwbkplwzmy35.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 32,
+     "checksumSha256": "c72568c3851fb770b338efc38242034c448bcb04f2b8b65192807acf869bdf74",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:39.950Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:39.951Z",
+     "created_at": "2026-11-11T03:42:39.951Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: prazo do tenant A",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/deadlines",
+   "corpoEnviado": {
+    "description": "Prazo RLS mwbkplwzmy35",
+    "dueAt": "2026-11-20T03:42:39.984Z",
+    "sourceDocument": "Intimação fictícia",
+    "sourceFileId": "6857ce0d-17c7-47b4-91b7-328dcd6bf171"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 32,
+   "quando": "2026-11-11T03:42:40.016Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "755101b8-b958-47f6-99fa-b83781227d0d",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+     "description": "Prazo RLS mwbkplwzmy35",
+     "dueAt": "2026-11-20T03:42:39.984Z",
+     "sourceFileId": "6857ce0d-17c7-47b4-91b7-328dcd6bf171",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "sourceDocument": "Intimação fictícia",
+     "sourceEvent": null,
+     "responsibleUserId": null,
+     "criticality": "MEDIUM",
+     "status": "PENDING",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:40.007Z",
+     "created_at": "2026-11-11T03:42:40.004Z",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "occurrenceTaskId": null,
+     "taskId": "7b933ea0-fcf0-45e9-b4c2-34bacaa5995d",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dossiê do tenant A",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b/evidence-packages",
+   "corpoEnviado": {
+    "manifestItems": [
+     {
+      "type": "NOTE",
+      "description": "Nota RLS"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:40.033Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "87a79842-b7f3-4180-ab1f-65ff07fdb2ed",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+     "manifestJson": [
+      {
+       "hash": null,
+       "type": "NOTE",
+       "description": "Nota RLS",
+       "referenceId": null
+      }
+     ],
+     "packageHash": "3140044e831f16ae2805cc9a4326e8727aa4555203b39426aae6f08f08f9f61f",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:40.024Z"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B lista prazos: nenhum de A aparece",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/deadlines",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:40.076Z",
+   "corpo": {
+    "success": true,
+    "data": []
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura lê o processo; anônimo não",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/cases/8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:40.083Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8b50a6ad-c229-4572-8f0c-0d5491bd192b",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "caseNumber": "RL-mwbkplwzmy35",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "summary": null,
+     "phase": null,
+     "escalationUserId": null,
+     "lockVersion": 0,
+     "legalHold": false,
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:39.930Z",
+     "updated_at": "2026-11-11T03:42:39.930Z",
+     "deleted_at": null,
+     "escalation_user_id": null,
+     "contract_id": null,
+     "property_id": null,
+     "responsible_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b"
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-R19",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: arquivo da empresa B",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "arquivo-b-mwbkplwzmy35.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgQXJxdWl2byBkYSBlbXByZXNhIEIgbXdia3Bsd3pteTM1",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:40.155Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "0d71aeed-63c4-4285-90a0-223f075b7b03",
+     "groupId": "63027d82-7451-4b83-9bd0-6795839b09f7",
+     "companyId": "335a064c-da17-4ad3-85c4-69a99c999bb9",
+     "storageKey": "generic/63027d82-7451-4b83-9bd0-6795839b09f7/993b7eae-6915-4c39-81e1-d373030a2e3a-arquivo-b-mwbkplwzmy35.pdf",
+     "fileName": "arquivo-b-mwbkplwzmy35.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 42,
+     "checksumSha256": "fb97cc910407239610268e86d52de625847e7fb699cccbcc08e134e7bd7a23df",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:40.128Z",
+     "uploadedByUserId": "3648aa6d-f187-4930-9c09-50cc645b4c2d",
+     "createdBy": "3648aa6d-f187-4930-9c09-50cc645b4c2d",
+     "updatedBy": "3648aa6d-f187-4930-9c09-50cc645b4c2d",
+     "updated_at": "2026-11-11T03:42:40.128Z",
+     "created_at": "2026-11-11T03:42:40.128Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0177-7266b1",
+    "M5-A0148-c670b7"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-R14",
+   "req": [
+    "M5-A0177-7266b1",
+    "M5-A0148-c670b7"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "perfil": "B:gestor",
+   "descricao": "RLS no banco: no contexto do tenant B, nenhuma linha de A aparece em processo, prazo e dossiê (SELECT direto pelo id)",
+   "sql": "SELECT (SELECT count(*) FROM legal.legal_cases WHERE id = :caso) AS processos, (SELECT count(*) FROM legal.legal_deadlines WHERE id = :prazo) AS prazos, (SELECT count(*) FROM legal.evidence_packages WHERE id = :pacote) AS dossies",
+   "resultado": [
+    {
+     "processos": "0",
+     "prazos": "0",
+     "dossies": "0"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.185Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-R15",
+   "req": [
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "perfil": "A:gestor",
+   "descricao": "Controle positivo: no contexto do tenant A as mesmas linhas aparecem",
+   "sql": "SELECT (SELECT count(*) FROM legal.legal_cases WHERE id = :caso) AS processos, (SELECT count(*) FROM legal.legal_deadlines WHERE id = :prazo) AS prazos, (SELECT count(*) FROM legal.evidence_packages WHERE id = :pacote) AS dossies",
+   "resultado": [
+    {
+     "processos": "1",
+     "prazos": "1",
+     "dossies": "1"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.186Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-R16",
+   "grupos": [],
+   "f": [],
+   "descricao": "Tabelas do Jurídico (processo, partes, prazo, dossiê, custódia, notificação) e people.file_links com RLS ligado e FORÇADO; a role da suíte não tem BYPASSRLS",
+   "sql": "SELECT n.nspname || '.' || c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS forcado FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE (n.nspname = 'legal' AND c.relname IN ('legal_cases', 'case_parties', 'legal_deadlines', 'evidence_packages', 'evidence_package_access_log', 'notices', 'notice_versions', 'case_receivables')) OR (n.nspname = 'people' AND c.relname = 'file_links') ORDER BY 1",
+   "resultado": [
+    {
+     "tabela": "legal.case_parties",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "legal.case_receivables",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "legal.evidence_package_access_log",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "legal.evidence_packages",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "legal.legal_cases",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "legal.legal_deadlines",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "legal.notice_versions",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "legal.notices",
+     "rls": true,
+     "forcado": true
+    },
+    {
+     "tabela": "people.file_links",
+     "rls": true,
+     "forcado": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.187Z",
+   "req": [
+    "M5-A0177-7266b1",
+    "M5-A0148-c670b7"
+   ],
+   "modulo": "30-juridico-6-permissoes",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

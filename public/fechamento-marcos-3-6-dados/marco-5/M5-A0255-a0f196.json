@@ -1,0 +1,247 @@
+{
+ "id": "M5-A0255-a0f196",
+ "secao": "P2 > 19. O que Marcelo NÃO pode improvisar",
+ "linhaCaderno": 790,
+ "requisito": "❌ Não pular requirements para liberar etapa.",
+ "demandas": "M5-D013;M5-D002",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js gates por etapa; dispensa só com legal:waive e motivo; satisfação só com arquivo real",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/legal.frente5.waiveHttp.test.js",
+   "nome": "dispensa sem legal:waive -> 403 (PATCH e rota dedicada); com legal:waive -> 200",
+   "status": "pass",
+   "ms": 399.08,
+   "commitDoTeste": "bd5456cd"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G4: satisfyRequirement exige satisfiedByFileId OU waivedReason — nunca aceita um requirement \"fechado\" sem nenhum dos dois",
+   "status": "pass",
+   "ms": 70.071,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-111",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_REQUIREMENTS_PENDING: Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos",
+   "quando": "2026-11-11T03:42:24.526Z"
+  },
+  {
+   "passo": "CT-115",
+   "metodo": "POST",
+   "rota": "/legal/requirements/db41729a-9498-44d1-91e5-8d7b5b8b7202/waive",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:24.718Z"
+  },
+  {
+   "passo": "CT-517",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_REQUIREMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_REQUIREMENT_VALIDATION"
+   },
+   "resumo": "erro LEGAL_REQUIREMENT_VALIDATION: Informe \"satisfiedByFileId\" (documento apresentado) ou \"waivedReason\" (dispensa justificada).",
+   "quando": "2026-11-11T03:42:29.153Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0255-a0f196.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/legal.frente5.waiveHttp.test.js \"dispensa sem legal:waive -> 403 (PATCH e rota dedicada); com legal:waive -> 200\"; test/marco5.auditGapClosureR1.test.js \"G4: satisfyRequirement exige satisfiedByFileId OU waivedReason — nunca aceita um requirement \"fechado\" sem nenhum dos dois\"; test/m5fech.contratos.checklist.test.js \"JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.frente5.waiveHttp.test.js test/marco5.auditGapClosureR1.test.js test/m5fech.contratos.checklist.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-111, CT-115, CT-517)"
+ },
+ "passos": [
+  {
+   "id": "CT-111",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DRAFT -> LEGAL_REVIEW (do Guia §3) com documento obrigatório faltante: bloqueado pelo gate da etapa LEGAL_REVIEW",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.526Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENTS_PENDING",
+     "message": "Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização); Vistoria de entrada do imóvel; Comprovação de titularidade do imóvel; Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "details": {
+      "stage": "LEGAL_REVIEW",
+      "missingRequirementCodes": [
+       "LEASE_PF_PJ_DOCS",
+       "LEASE_GUARANTEE",
+       "LEASE_INSPECTION",
+       "LEASE_OWNERSHIP",
+       "LEASE_OBLIGATIONS"
+      ],
+      "pending": [
+       {
+        "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+        "requirementCode": "LEASE_PF_PJ_DOCS",
+        "description": "Documentos PF/PJ das partes (locador/locatário).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+        "requirementCode": "LEASE_GUARANTEE",
+        "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+        "requirementCode": "LEASE_INSPECTION",
+        "description": "Vistoria de entrada do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+        "requirementCode": "LEASE_OWNERSHIP",
+        "description": "Comprovação de titularidade do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+        "requirementCode": "LEASE_OBLIGATIONS",
+        "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+        "requiredStage": "LEGAL_REVIEW"
+       }
+      ]
+     },
+     "traceId": "ce96c271-463c-448b-8f14-54948101e1a2"
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0151-ce90f9",
+    "M5-A0234-075757",
+    "M5-A0255-a0f196",
+    "M5-A0322-89a1d9",
+    "M5-A0196-8a7471",
+    "M5-A0002-dc355e"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-115",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dispensa sem a permissão legal:waive é recusada (não se pula requirement)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/requirements/db41729a-9498-44d1-91e5-8d7b5b8b7202/waive",
+   "corpoEnviado": {
+    "reason": "tentativa"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:24.718Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:waive"
+     },
+     "traceId": "a2781241-1f37-4023-880c-6823c2ba2e96"
+    }
+   },
+   "req": [
+    "M5-A0255-a0f196"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-517",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exigência sem documento nem motivo não é fechada",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_REQUIREMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_REQUIREMENT_VALIDATION",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:29.153Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENT_VALIDATION",
+     "message": "Informe \"satisfiedByFileId\" (documento apresentado) ou \"waivedReason\" (dispensa justificada).",
+     "traceId": "bf6bf430-e1f4-4b15-a9aa-889e135cf031"
+    }
+   },
+   "req": [
+    "M5-A0255-a0f196"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

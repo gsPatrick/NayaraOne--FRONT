@@ -1,0 +1,714 @@
+{
+ "id": "M5-A0332-29fd72",
+ "secao": "(abertura 3)",
+ "linhaCaderno": 864,
+ "requisito": "• Guardar index_code/period/raw/applied/old/new/rule_version. Fonte de índice via adapter.",
+ "demandas": "M5-D216",
+ "implementacao": "src/features/billing/rentAdjustment.service.js:42 requestRentAdjustment (index_code, period, raw_index_value, applied_percentage, old_rent_amount, new_rent_amount, rule_version_id REG-LOC-003); src/features/billing/adapters/IndexSourceAdapter.js (IPCA/IBGE, IGP-M/FGV, indisponível, mock)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: reajuste com fonte de índice disponível aplica o percentual (raw pode divergir de applied)",
+   "status": "pass",
+   "ms": 20.789,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: reajuste sem fonte de índice disponível vira PENDING_SOURCE sem inventar percentual",
+   "status": "pass",
+   "ms": 25.075,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.indexAdapters.test.js",
+   "nome": "billing IPCA: resposta 2xx com JSON válido extrai o valor numérico da variação mensal",
+   "status": "pass",
+   "ms": 0.375,
+   "commitDoTeste": "831caac8"
+  },
+  {
+   "arquivo": "test/billing.indexAdapters.test.js",
+   "nome": "billing IGPM: modo manual nunca tenta rede (fetch não é chamado) e retorna indisponível",
+   "status": "pass",
+   "ms": 79.026,
+   "commitDoTeste": "831caac8"
+  },
+  {
+   "arquivo": "test/billing.indexAdapters.test.js",
+   "nome": "billing: resolveIndexSourceAdapter escolhe IPCA/IGPM/unavailable conforme o indexCode",
+   "status": "pass",
+   "ms": 2.491,
+   "commitDoTeste": "831caac8"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-RJ-01",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "RENT_ADJUSTMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "RENT_ADJUSTMENT_VALIDATION"
+   },
+   "resumo": "erro RENT_ADJUSTMENT_VALIDATION: Os campos \"groupId\", \"companyId\", \"contractId\", \"indexCode\" e \"oldRentAmount\" são obrigatórios.",
+   "quando": "2026-11-11T03:42:35.120Z"
+  },
+  {
+   "passo": "LC-RJ-02",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "RENT_ADJUSTMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "RENT_ADJUSTMENT_VALIDATION"
+   },
+   "resumo": "erro RENT_ADJUSTMENT_VALIDATION: O campo \"period\" deve estar no formato \"YYYY-MM\".",
+   "quando": "2026-11-11T03:42:35.127Z"
+  },
+  {
+   "passo": "LC-RJ-04",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING_SOURCE, id=07922011-c7a2-4b82-8961-89f5270c9082",
+   "quando": "2026-11-11T03:42:35.173Z"
+  },
+  {
+   "passo": "LC-RJ-05",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "RENT_ADJUSTMENT_DUPLICATE_PERIOD",
+   "esperado": {
+    "status": 409,
+    "codigo": "RENT_ADJUSTMENT_DUPLICATE_PERIOD"
+   },
+   "resumo": "erro RENT_ADJUSTMENT_DUPLICATE_PERIOD: Já existe reajuste registrado para o contrato 687c9089-cb0f-47d2-9f6f-80f3be55a88e na competência \"2",
+   "quando": "2026-11-11T03:42:35.184Z"
+  },
+  {
+   "passo": "LC-RJ-11",
+   "metodo": "GET",
+   "rota": "/billing/rent-adjustments?contractId=687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 4 item(ns)",
+   "quando": "2026-11-11T03:42:35.232Z"
+  },
+  {
+   "passo": "LC-RJ-03",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING_SOURCE, id=d844a533-967c-4fcc-9d08-194554dbf138",
+   "quando": "2026-11-11T03:42:35.150Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0332-29fd72.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/billing.test.js test/billing.indexAdapters.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-RJ-01, LC-RJ-02, LC-RJ-04, LC-RJ-05, LC-RJ-07, LC-RJ-08, LC-RJ-09, LC-RJ-11, LC-RJ-03)"
+ },
+ "passos": [
+  {
+   "id": "LC-RJ-01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Reajuste sem índice e valor anterior é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "period": "2030-01"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "RENT_ADJUSTMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "RENT_ADJUSTMENT_VALIDATION",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:35.120Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "RENT_ADJUSTMENT_VALIDATION",
+     "message": "Os campos \"groupId\", \"companyId\", \"contractId\", \"indexCode\" e \"oldRentAmount\" são obrigatórios.",
+     "traceId": "9adab1b3-7ba5-4189-93a7-67ba1db82036"
+    }
+   },
+   "req": [
+    "M5-A0332-29fd72"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Competência do índice fora do formato é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "INPC",
+    "period": "2030/01",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "RENT_ADJUSTMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "RENT_ADJUSTMENT_VALIDATION",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:35.127Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "RENT_ADJUSTMENT_VALIDATION",
+     "message": "O campo \"period\" deve estar no formato \"YYYY-MM\".",
+     "traceId": "85d970ae-8428-4862-b5ee-97ea9f4e02c6"
+    }
+   },
+   "req": [
+    "M5-A0332-29fd72"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "IGP-M em modo manual (adapter da FGV sem rede): PENDING_SOURCE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "IGPM",
+    "period": "2030-02",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:35.173Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "07922011-c7a2-4b82-8961-89f5270c9082",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+     "indexCode": "IGPM",
+     "period": "2030-02",
+     "rawIndexValue": null,
+     "appliedPercentage": null,
+     "oldRentAmount": "2500.00",
+     "newRentAmount": null,
+     "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+     "status": "PENDING_SOURCE",
+     "appliedAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:35.165Z",
+     "created_at": "2026-11-11T03:42:35.165Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0332-29fd72",
+    "M5-A0333-f14aaf",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Segundo reajuste para a mesma competência é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "INPC",
+    "period": "2030-01",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "RENT_ADJUSTMENT_DUPLICATE_PERIOD"
+   },
+   "status": 409,
+   "codigo": "RENT_ADJUSTMENT_DUPLICATE_PERIOD",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:35.184Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "RENT_ADJUSTMENT_DUPLICATE_PERIOD",
+     "message": "Já existe reajuste registrado para o contrato 687c9089-cb0f-47d2-9f6f-80f3be55a88e na competência \"2030-01\".",
+     "traceId": "d8a23d50-b9e3-470b-ad5c-8337d51f86a8"
+    }
+   },
+   "req": [
+    "M5-A0332-29fd72"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-07",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fonte disponível (adapter): IPCA 4,5% aplicado, 2.500,00 -> 2.612,50, com a versão da regra REG-LOC-003",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "rentAdjustment.service.requestRentAdjustment(IPCA 2030-03, adapter de fonte)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:35.206Z",
+   "corpo": {
+    "result": {
+     "dataValues": {
+      "id": "3cefcb62-5521-42b0-827c-14390177b841",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-03",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "4.500000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2612.50",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": {},
+      "created_at": {},
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "_previousDataValues": {
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-03",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "4.500000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2612.50",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "id": "3cefcb62-5521-42b0-827c-14390177b841",
+      "lockVersion": 0,
+      "deletedBy": null,
+      "created_at": {},
+      "updated_at": {},
+      "deleted_at": null
+     },
+     "uniqno": 1,
+     "_changed": {},
+     "_options": {
+      "isNewRecord": true,
+      "_schema": "finance",
+      "_schemaDelimiter": ""
+     },
+     "isNewRecord": false
+    }
+   },
+   "req": [
+    "M5-A0332-29fd72",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-RJ-08",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Percentual negociado (3%) diferente do índice bruto (4,5%): raw e applied guardados separados",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "rentAdjustment.service.requestRentAdjustment(IPCA 2030-04, appliedPercentageOverride 3)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:35.218Z",
+   "corpo": {
+    "result": {
+     "dataValues": {
+      "id": "fcd19f7b-2c9e-4db6-b38e-0d437e55e2f4",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-04",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "3.000000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2575.00",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": {},
+      "created_at": {},
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "_previousDataValues": {
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-04",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "3.000000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2575.00",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "id": "fcd19f7b-2c9e-4db6-b38e-0d437e55e2f4",
+      "lockVersion": 0,
+      "deletedBy": null,
+      "created_at": {},
+      "updated_at": {},
+      "deleted_at": null
+     },
+     "uniqno": 1,
+     "_changed": {},
+     "_options": {
+      "isNewRecord": true,
+      "_schema": "finance",
+      "_schemaDelimiter": ""
+     },
+     "isNewRecord": false
+    }
+   },
+   "req": [
+    "M5-A0332-29fd72"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-RJ-11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Lista os reajustes do contrato",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/rent-adjustments?contractId=687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:35.232Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "fcd19f7b-2c9e-4db6-b38e-0d437e55e2f4",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-04",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "3.000000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2575.00",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": "2026-11-11T03:42:35.212Z",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.212Z",
+      "updated_at": "2026-11-11T03:42:35.212Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "3cefcb62-5521-42b0-827c-14390177b841",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-03",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "4.500000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2612.50",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": "2026-11-11T03:42:35.199Z",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.199Z",
+      "updated_at": "2026-11-11T03:42:35.199Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "07922011-c7a2-4b82-8961-89f5270c9082",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IGPM",
+      "period": "2030-02",
+      "rawIndexValue": null,
+      "appliedPercentage": null,
+      "oldRentAmount": "2500.00",
+      "newRentAmount": null,
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "PENDING_SOURCE",
+      "appliedAt": null,
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.165Z",
+      "updated_at": "2026-11-11T03:42:35.165Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "d844a533-967c-4fcc-9d08-194554dbf138",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "INPC",
+      "period": "2030-01",
+      "rawIndexValue": null,
+      "appliedPercentage": null,
+      "oldRentAmount": "2500.00",
+      "newRentAmount": null,
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "PENDING_SOURCE",
+      "appliedAt": null,
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.142Z",
+      "updated_at": "2026-11-11T03:42:35.142Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0343-c56197",
+    "M5-A0332-29fd72"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Índice sem fonte (INPC): reajuste fica PENDING_SOURCE, sem percentual nem aluguel novo",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "INPC",
+    "period": "2030-01",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:35.150Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "d844a533-967c-4fcc-9d08-194554dbf138",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+     "indexCode": "INPC",
+     "period": "2030-01",
+     "rawIndexValue": null,
+     "appliedPercentage": null,
+     "oldRentAmount": "2500.00",
+     "newRentAmount": null,
+     "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+     "status": "PENDING_SOURCE",
+     "appliedAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:35.142Z",
+     "created_at": "2026-11-11T03:42:35.142Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0333-f14aaf",
+    "M5-A0332-29fd72",
+    "M5-A0343-c56197",
+    "M5-A0345-019723",
+    "M5-A0342-a3762d"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-RJ-09",
+   "req": [
+    "M5-A0332-29fd72",
+    "M5-A0333-f14aaf",
+    "M5-A0327-22b135"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "perfil": "A:gestor",
+   "descricao": "Registro completo: index_code, period, raw, applied, old, new, rule_version e status",
+   "sql": "SELECT ra.index_code, ra.period, ra.raw_index_value, ra.applied_percentage, ra.old_rent_amount, ra.new_rent_amount, ra.status, r.code AS regra, rv.version_number FROM finance.rent_adjustments ra LEFT JOIN core.rule_versions rv ON rv.id = ra.rule_version_id LEFT JOIN core.rules r ON r.id = rv.rule_id WHERE ra.contract_id = :c ORDER BY ra.period",
+   "resultado": [
+    {
+     "index_code": "INPC",
+     "period": "2030-01",
+     "raw_index_value": null,
+     "applied_percentage": null,
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": null,
+     "status": "PENDING_SOURCE",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    },
+    {
+     "index_code": "IGPM",
+     "period": "2030-02",
+     "raw_index_value": null,
+     "applied_percentage": null,
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": null,
+     "status": "PENDING_SOURCE",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    },
+    {
+     "index_code": "IPCA",
+     "period": "2030-03",
+     "raw_index_value": "4.500000",
+     "applied_percentage": "4.500000",
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": "2612.50",
+     "status": "APPLIED",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    },
+    {
+     "index_code": "IPCA",
+     "period": "2030-04",
+     "raw_index_value": "4.500000",
+     "applied_percentage": "3.000000",
+     "old_rent_amount": "2500.00",
+     "new_rent_amount": "2575.00",
+     "status": "APPLIED",
+     "regra": "REG-LOC-003",
+     "version_number": 1
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:35.220Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

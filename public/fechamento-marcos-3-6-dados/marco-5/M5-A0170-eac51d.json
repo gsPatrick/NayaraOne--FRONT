@@ -1,0 +1,566 @@
+{
+ "id": "M5-A0170-eac51d",
+ "secao": "P1 > 21. Definition of Done",
+ "linhaCaderno": 387,
+ "requisito": "☐ Inspection entrada/saída assinável e comparável.",
+ "demandas": "M5-D026;M5-D028;M5-D029",
+ "implementacao": "src/modules/legal/inspections/inspection.service.js:404 signInspection (só COMPLETED, uma vez por parte, MFA na rota) e src/modules/legal/inspections/inspection.service.js:274 compareInspections",
+ "tela": "Contratos > Vistorias (/painel/contratos/vistorias, /painel/contratos/vistorias/[id])",
+ "testes": [
+  {
+   "arquivo": "test/legal.inspections.test.js",
+   "nome": "vistoria: assinatura digital só é possível depois de COMPLETED, uma vez por parte, hash verificável",
+   "status": "pass",
+   "ms": 46.05,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G6: duas partes não podem assinar o mesmo papel duas vezes; comparação entrada x saída usa os lados certos e aponta divergências reais",
+   "status": "pass",
+   "ms": 87.945,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.vistorias.test.js",
+   "nome": "fechamento M5 Guia §10: comparação entrada x saída traz before/after/changed/mediaRefs por item, não cria cobrança e exige validação humana",
+   "status": "pass",
+   "ms": 45.674,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-01",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+   "quando": "2026-11-11T03:42:31.161Z"
+  },
+  {
+   "passo": "LC-VI-02",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "quando": "2026-11-11T03:42:31.183Z"
+  },
+  {
+   "passo": "LC-VI-22",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/complete",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=COMPLETED, id=dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+   "quando": "2026-11-11T03:42:31.456Z"
+  },
+  {
+   "passo": "LC-VI-39",
+   "metodo": "GET",
+   "rota": "/legal/inspections/compare?entryInspectionId=dd23f80f-6f30-42d8-ba5a-801592ca9fce&exitInspectionId=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 7 campo(s)",
+   "quando": "2026-11-11T03:42:31.683Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0170-eac51d.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.inspections.test.js test/marco5.auditGapClosureR1.test.js test/m5fech.locacao.vistorias.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-01, LC-VI-02, LC-VI-22, LC-VI-23, LC-VI-24, LC-VI-39)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria vistoria do tipo ENTRY (código do livro)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "ENTRY"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:31.161Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "ENTRY",
+     "scheduledAt": null,
+     "status": "SCHEDULED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.155Z",
+     "created_at": "2026-11-11T03:42:31.155Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0009-e79a24",
+    "M5-A0087-6b7f4a",
+    "M5-A0214-41f7b0",
+    "M5-A0170-eac51d"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria vistoria do tipo EXIT (código do livro)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "EXIT"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:31.183Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "EXIT",
+     "scheduledAt": null,
+     "status": "SCHEDULED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.179Z",
+     "created_at": "2026-11-11T03:42:31.179Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0009-e79a24",
+    "M5-A0087-6b7f4a",
+    "M5-A0214-41f7b0",
+    "M5-A0170-eac51d"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-22",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Conclui a vistoria de entrada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce/complete",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:31.456Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "ENTRY",
+     "scheduledAt": null,
+     "completedAt": "2026-11-11T03:42:31.450Z",
+     "status": "COMPLETED",
+     "lockVersion": 1,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:31.155Z",
+     "updated_at": "2026-11-11T03:42:31.450Z",
+     "deleted_at": null,
+     "property_id": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contract_id": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspector_user_id": null
+    }
+   },
+   "req": [
+    "M5-A0170-eac51d"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-23",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Locador assina a vistoria de entrada",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "inspections.service.signInspection(entrada, {LANDLORD})",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:31.468Z",
+   "corpo": {
+    "result": {
+     "dataValues": {
+      "id": "2e203886-a0a9-451c-8ff1-f20c2319c7d0",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+      "partyRole": "LANDLORD",
+      "signedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "signatureHash": "84ae7a567c5a0a254fdbc5fdb862f77f8e339ca048bfd81fa0ee7f78941b0cea",
+      "snapshotHash": "c8ebf5fe8b814d6fee1942329a4ef065ed7bd904992897c50d7748e33b389eb2",
+      "signedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": {},
+      "created_at": {}
+     },
+     "_previousDataValues": {
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+      "partyRole": "LANDLORD",
+      "signedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "signatureHash": "84ae7a567c5a0a254fdbc5fdb862f77f8e339ca048bfd81fa0ee7f78941b0cea",
+      "snapshotHash": "c8ebf5fe8b814d6fee1942329a4ef065ed7bd904992897c50d7748e33b389eb2",
+      "signedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "id": "2e203886-a0a9-451c-8ff1-f20c2319c7d0",
+      "created_at": {},
+      "updated_at": {}
+     },
+     "uniqno": 1,
+     "_changed": {},
+     "_options": {
+      "isNewRecord": true,
+      "_schema": "legal",
+      "_schemaDelimiter": ""
+     },
+     "isNewRecord": false
+    }
+   },
+   "req": [
+    "M5-A0268-8ec039",
+    "M5-A0202-a24762",
+    "M5-A0090-d03b23",
+    "M5-A0215-5e9a8f",
+    "M5-A0170-eac51d",
+    "M5-A0134-26015d",
+    "M5-A0225-980dfe"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-VI-24",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Locatário assina a vistoria de entrada",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "inspections.service.signInspection(entrada, {TENANT})",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:31.478Z",
+   "corpo": {
+    "result": {
+     "dataValues": {
+      "id": "50d3bbee-1406-4431-a426-48ba676c4bf5",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+      "partyRole": "TENANT",
+      "signedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "signatureHash": "d309a01c8eb2b83f26c687a6d4225081b6daa6d21cd913c53aeba09a179c9d07",
+      "snapshotHash": "c8ebf5fe8b814d6fee1942329a4ef065ed7bd904992897c50d7748e33b389eb2",
+      "signedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": {},
+      "created_at": {}
+     },
+     "_previousDataValues": {
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+      "partyRole": "TENANT",
+      "signedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "signatureHash": "d309a01c8eb2b83f26c687a6d4225081b6daa6d21cd913c53aeba09a179c9d07",
+      "snapshotHash": "c8ebf5fe8b814d6fee1942329a4ef065ed7bd904992897c50d7748e33b389eb2",
+      "signedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "id": "50d3bbee-1406-4431-a426-48ba676c4bf5",
+      "created_at": {},
+      "updated_at": {}
+     },
+     "uniqno": 1,
+     "_changed": {},
+     "_options": {
+      "isNewRecord": true,
+      "_schema": "legal",
+      "_schemaDelimiter": ""
+     },
+     "isNewRecord": false
+    }
+   },
+   "req": [
+    "M5-A0202-a24762",
+    "M5-A0268-8ec039",
+    "M5-A0170-eac51d",
+    "M5-A0215-5e9a8f",
+    "M5-A0134-26015d",
+    "M5-A0225-980dfe"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-VI-39",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Compara entrada x saída por ambiente + código do item: antes/depois, mudou?, mídias e validação humana",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/inspections/compare?entryInspectionId=dd23f80f-6f30-42d8-ba5a-801592ca9fce&exitInspectionId=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:31.683Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "entryInspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "exitInspectionId": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+     "divergences": [
+      {
+       "itemName": "Sala — piso",
+       "roomCode": "SALA",
+       "itemCode": "PISO",
+       "entryCondition": "GOOD",
+       "exitCondition": "DAMAGED",
+       "reason": "CONDITION_CHANGED"
+      },
+      {
+       "itemName": "Banheiro — box",
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "entryCondition": "DAMAGED",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      },
+      {
+       "itemName": "Pintura das paredes",
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "entryCondition": "NEW",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      },
+      {
+       "itemName": "Quarto — janela",
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "entryCondition": "GOOD",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      }
+     ],
+     "onlyInEntry": [
+      {
+       "itemName": "Banheiro — box",
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "entryCondition": "DAMAGED"
+      },
+      {
+       "itemName": "Pintura das paredes",
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "entryCondition": "NEW"
+      },
+      {
+       "itemName": "Quarto — janela",
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "entryCondition": "GOOD"
+      }
+     ],
+     "onlyInExit": [],
+     "items": [
+      {
+       "roomCode": "SALA",
+       "itemCode": "PISO",
+       "itemName": "Sala — piso",
+       "entryItemId": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+       "exitItemId": "5d4b04f7-3608-4f3b-80dd-39ea8d353563",
+       "before": "GOOD",
+       "after": "DAMAGED",
+       "changed": true,
+       "mediaRefs": [
+        "df88c2c0-3015-4b9f-a0ba-70f61b0482e8"
+       ],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "COZINHA",
+       "itemCode": "ARMARIO",
+       "itemName": "Cozinha — armário",
+       "entryItemId": "2e76ac97-3a17-4d1f-8644-82acded4eeeb",
+       "exitItemId": "526a1474-3159-45fd-b09d-d25655d5689b",
+       "before": "REGULAR",
+       "after": "REGULAR",
+       "changed": false,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "itemName": "Banheiro — box",
+       "entryItemId": "d6f0eeb5-4117-4381-97ee-6a663e8717c6",
+       "exitItemId": null,
+       "before": "DAMAGED",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "itemName": "Pintura das paredes",
+       "entryItemId": "e4ece4bd-42cc-4351-bce5-64867ec65b62",
+       "exitItemId": null,
+       "before": "NEW",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "itemName": "Quarto — janela",
+       "entryItemId": "871334b3-6a2f-4a6c-9e5c-7bd46d18ae79",
+       "exitItemId": null,
+       "before": "GOOD",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      }
+     ],
+     "requiresHumanValidation": true
+    }
+   },
+   "req": [
+    "M5-A0092-c94934",
+    "M5-A0170-eac51d",
+    "M5-A0203-c813f9",
+    "M5-A0204-fc6bab"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

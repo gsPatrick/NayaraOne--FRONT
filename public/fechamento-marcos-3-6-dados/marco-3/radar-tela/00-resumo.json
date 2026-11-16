@@ -1,0 +1,47 @@
+[
+ {
+  "step": "0. dados de apoio pela API (contato + 4 imóveis com oferta ativa)",
+  "ok": true,
+  "detail": "Radar E2E mwbumhhf"
+ },
+ {
+  "step": "1. login pela tela",
+  "ok": true,
+  "detail": "[e-mail omitido]"
+ },
+ {
+  "step": "2. POST /radar enviado pela tela com as quatro categorias",
+  "ok": true,
+  "detail": "status 201; preferências 2, flexíveis 2, exclusões 2; minPrice 300000"
+ },
+ {
+  "step": "3. matches na tela ordenados por score (excluído e fora do preço não aparecem)",
+  "ok": true,
+  "detail": "ids na ordem forte, médio; Score 100%, Score 40%"
+ },
+ {
+  "step": "3b. score mostrado no cartão do match",
+  "ok": true,
+  "detail": "Score 100%, Score 40%"
+ },
+ {
+  "step": "4. explicação do imóvel médio: categorias, situação, peso e motivo em português",
+  "ok": true,
+  "detail": "REQUIRED:MET REQUIRED:MET REQUIRED:MET REQUIRED:MET REQUIRED:MET REQUIRED:MET PREFERENCE:MET PREFERENCE:UNMET FLEXIBLE:UNMET FLEXIBLE:UNMET EXCLUSION:MET EXCLUSION:MET"
+ },
+ {
+  "step": "4b. explicação do imóvel forte: 100% e todos os critérios atendidos",
+  "ok": true,
+  "detail": "100% | score do match | "
+ },
+ {
+  "step": "5. fora do radar: exclusão (sem elevador) e obrigatório (preço) explicados",
+  "ok": true,
+  "detail": "EXCLUDED / REQUIRED_FAILED"
+ },
+ {
+  "step": "6. editar critérios pela tela (peso 2 -> 1) recalcula o score",
+  "ok": true,
+  "detail": "peso lido 2; PATCH 200; scores Score 100%, Score 25%"
+ }
+]

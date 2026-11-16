@@ -1,0 +1,85 @@
+{
+ "id": "M4-G§14.8",
+ "secao": "Guia §14 Eventos mínimos",
+ "requisito": "Evento \"finance.owner_repass.completed\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-02 repasse: dedução sem motivo é recusada (serviço e CHECK no banco); com motivo grava, e o pagamento publica finance.owner_repass.completed",
+   "status": "passou",
+   "duracaoMs": 149,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T30",
+   "tipo": "http",
+   "linhas": [
+    "M4-§12.5",
+    "M4-G§14.8"
+   ],
+   "titulo": "Pagamento do repasse: cria o movimento de saída e o evento próprio",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/owner-repasses/f79e16fb-a3db-4320-b9e5-daf743655f93/pay",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T01:35:12.933Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f79e16fb-a3db-4320-b9e5-daf743655f93",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "propertyId": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+     "ownerPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "bankAccountId": "c0a1d652-fa63-4251-90a1-56c3baf423c4",
+     "grossAmount": "1500.00",
+     "deductionsAmount": "150.00",
+     "netAmount": "1350.00",
+     "financialEntryId": "ebb468be-c4c6-46a2-a4a1-9c98835a9cd5",
+     "paidAt": "2026-11-11T01:35:12.858Z",
+     "deductionsReason": "Taxa de administração de 10% prevista no contrato de administração",
+     "deductionsDocumentFileId": "31f567f9-6882-4183-b9eb-6ad80b80d1cc",
+     "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "approvedAt": "2026-11-11T01:35:12.591Z",
+     "confirmedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "paymentEvidenceFileId": "19fd34ef-8dbb-4263-af27-c388f396a380",
+     "paymentSettlementMethod": "MANUAL_WITH_EVIDENCE",
+     "referenceMonth": "2026-11",
+     "status": "PAID",
+     "idempotencyKey": "m4-rep-0871300",
+     "lockVersion": 2,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:12.406Z",
+     "updated_at": "2026-11-11T01:35:12.906Z",
+     "property_id": "f9ae6da1-a90a-470c-8bc1-6aa1313d7a2b",
+     "owner_person_id": "dba6f294-223c-4b90-a13e-f4bc9674ffdd",
+     "contract_id": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "bank_account_id": "c0a1d652-fa63-4251-90a1-56c3baf423c4"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

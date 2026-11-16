@@ -1,0 +1,1760 @@
+{
+  "id": "M5-A0066-b6c17a",
+  "capturadoEm": "2026-11-11T10:27:20.381Z",
+  "passos": [
+    {
+      "id": "CT5-16",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Contrato principal (venda à vista)",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/contracts",
+      "corpoEnviado": {
+        "contractType": "SALE_CASH",
+        "totalValue": 1
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=672e2e54-c672-4846-a317-632677e22c9c, lockVersion=0, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, contractType=SALE_CASH",
+      "quando": "2026-11-11T10:26:45.975Z"
+    },
+    {
+      "id": "CT5-17",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Imóvel que nasceu de obra (casa nova)",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/properties",
+      "corpoEnviado": {
+        "title": "Casa nova 179439280597527428",
+        "internalCode": "M5CT-N-179439280597588426",
+        "propertyType": "RESIDENTIAL"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=66f16fa5-61ff-4c7d-9c69-84d46cf06fa6, publicAddressPolicy=SO_BAIRRO, addressVisibility=RESTRICTED, publicId=ab4b4e19-f104-4354-8f5c-2d41c3518a81, lockVersion=0",
+      "quando": "2026-11-11T10:26:46.743Z"
+    },
+    {
+      "id": "CT5-18",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Obra da empresa vinculada ao imóvel (construction.projects)",
+      "perfil": "serviço (sem HTTP)",
+      "metodo": "CALL",
+      "rota": "Project.create",
+      "status": "ok",
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": "ok"
+      },
+      "ok": true,
+      "resumo": "\"092ba778-62c3-41d2-a1bb-10d3f1346988\"",
+      "quando": "2026-11-11T10:26:46.750Z"
+    },
+    {
+      "id": "CT5-19",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Imóvel usado (sem obra)",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/properties",
+      "corpoEnviado": {
+        "title": "Usado 179439280675010983",
+        "internalCode": "M5CT-U-179439280675086247",
+        "propertyType": "RESIDENTIAL"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=93140467-5973-4fec-8b80-e06fc6703f9e, publicAddressPolicy=SO_BAIRRO, addressVisibility=RESTRICTED, publicId=dca603bc-79d2-4614-8c88-4257c3371958, lockVersion=0",
+      "quando": "2026-11-11T10:26:48.614Z"
+    },
+    {
+      "id": "CT5-20",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Termo de entrega de chaves do imóvel novo",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/contracts",
+      "corpoEnviado": {
+        "contractType": "KEY_DELIVERY",
+        "parentContractId": "672e2e54-c672-4846-a317-632677e22c9c",
+        "propertyId": "66f16fa5-61ff-4c7d-9c69-84d46cf06fa6"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=a8bd34b0-28f9-4c45-a9d8-ed638da7a2e3, lockVersion=0, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, propertyId=66f16fa5-61ff-4c7d-9c69-84d46cf06fa6",
+      "quando": "2026-11-11T10:26:49.173Z"
+    },
+    {
+      "id": "CT5-21",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Termo de entrega de chaves do imóvel usado",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/contracts",
+      "corpoEnviado": {
+        "contractType": "KEY_DELIVERY",
+        "parentContractId": "672e2e54-c672-4846-a317-632677e22c9c",
+        "propertyId": "93140467-5973-4fec-8b80-e06fc6703f9e"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=1dfb2be3-5378-4ecf-892c-1c0c14adcce2, lockVersion=0, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, propertyId=93140467-5973-4fec-8b80-e06fc6703f9e",
+      "quando": "2026-11-11T10:26:49.405Z"
+    },
+    {
+      "id": "CT5-22",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "O corpo não escolhe o modelo do checklist",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/legal/contracts/1dfb2be3-5378-4ecf-892c-1c0c14adcce2/requirements/generate",
+      "corpoEnviado": {
+        "templateKey": "NEW_PROPERTY_DELIVERY"
+      },
+      "status": 400,
+      "codigo": "LEGAL_REQUIREMENT_TEMPLATE_KEY_NOT_ACCEPTED",
+      "esperado": {
+        "status": 400,
+        "codigo": "LEGAL_REQUIREMENT_TEMPLATE_KEY_NOT_ACCEPTED"
+      },
+      "ok": true,
+      "resumo": "erro LEGAL_REQUIREMENT_TEMPLATE_KEY_NOT_ACCEPTED: O modelo do checklist não é escolhido na requisição: ele vem da regra do checklist documental (tipo do contrato + características das partes",
+      "quando": "2026-11-11T10:26:49.552Z"
+    },
+    {
+      "id": "CT5-23",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Checklist do imóvel novo (regra pelo tipo + característica do imóvel)",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/legal/contracts/a8bd34b0-28f9-4c45-a9d8-ed638da7a2e3/requirements/generate",
+      "corpoEnviado": {},
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "lista com 5 item(ns)",
+      "quando": "2026-11-11T10:26:52.344Z"
+    },
+    {
+      "id": "CT5-24",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Checklist do imóvel usado",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/legal/contracts/1dfb2be3-5378-4ecf-892c-1c0c14adcce2/requirements/generate",
+      "corpoEnviado": {},
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "lista com 1 item(ns)",
+      "quando": "2026-11-11T10:26:53.600Z"
+    },
+    {
+      "id": "CT5-26",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Política vigente REG-JUR-001 com o catálogo de fatos",
+      "perfil": "A:leitura",
+      "metodo": "GET",
+      "rota": "/legal/requirement-rules",
+      "corpoEnviado": null,
+      "status": 200,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 200
+      },
+      "ok": true,
+      "resumo": "ruleCode=REG-JUR-001, seedDefault=false",
+      "quando": "2026-11-11T10:26:53.938Z"
+    },
+    {
+      "id": "CT5-27",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Sem a alçada jurídica não publica a política",
+      "perfil": "A:maker",
+      "metodo": "POST",
+      "rota": "/legal/requirement-rules",
+      "corpoEnviado": {
+        "action": {
+          "templates": {
+            "SALE": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "LEASE": [
+              {
+                "description": "Documentos PF/PJ das partes (locador/locatário).",
+                "requirementCode": "LEASE_PF_PJ_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "LEASE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+                "requirementCode": "LEASE_GUARANTEE",
+                "requirementType": "GUARANTEE"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "LEASE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              },
+              {
+                "description": "Vistoria de entrada do imóvel.",
+                "requirementCode": "LEASE_INSPECTION",
+                "requirementType": "INSPECTION"
+              },
+              {
+                "description": "Comprovação de titularidade do imóvel.",
+                "requirementCode": "LEASE_OWNERSHIP",
+                "requirementType": "OWNERSHIP_PROOF"
+              },
+              {
+                "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+                "requirementCode": "LEASE_OBLIGATIONS",
+                "requirementType": "OBLIGATIONS"
+              },
+              {
+                "requirementCode": "LEASE_CONDO_RULES",
+                "requirementType": "OBLIGATIONS",
+                "description": "Regimento interno do condomínio."
+              }
+            ],
+            "SERVICE": [
+              {
+                "description": "Documentos PF/PJ do contratante e do prestador.",
+                "requirementCode": "SERVICE_PARTIES_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "description": "Escopo/proposta do serviço com preço e prazo.",
+                "requirementCode": "SERVICE_SCOPE",
+                "requirementType": "SERVICE_SCOPE"
+              }
+            ],
+            "ADDENDUM": [
+              {
+                "description": "Documentos das partes que assinam o aditivo.",
+                "requirementCode": "ADDENDUM_PARTIES_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "ADDENDUM_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_CASH": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_CASH_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_CASH_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_CASH_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_CASH_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_CASH_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_CASH_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_CASH_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_TRADE": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_TRADE_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_TRADE_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_TRADE_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_TRADE_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_TRADE_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "description": "Documentação do bem dado em permuta (matrícula/registro e avaliação).",
+                "requirementCode": "SALE_TRADE_ASSET",
+                "requirementType": "TRADE_ASSET"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_TRADE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_TRADE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "CONSTRUCTION": [
+              {
+                "description": "Documentos do contratante e da construtora/empreiteira.",
+                "requirementCode": "CONSTR_PARTIES_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "description": "Projeto aprovado / alvará de construção.",
+                "requirementCode": "CONSTR_PERMIT",
+                "requirementType": "CONSTRUCTION_PERMIT"
+              },
+              {
+                "description": "ART/RRT do responsável técnico.",
+                "requirementCode": "CONSTR_ART_RRT",
+                "requirementType": "TECHNICAL_RESPONSIBILITY"
+              },
+              {
+                "description": "Orçamento e cronograma físico-financeiro.",
+                "requirementCode": "CONSTR_BUDGET_SCHEDULE",
+                "requirementType": "BUDGET_SCHEDULE"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "CONSTR_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "KEY_DELIVERY": [
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Termo de entrega.",
+                "requirementCode": "NEW_DELIVERY_TERM",
+                "requirementType": "DELIVERY_TERM"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Vistoria final.",
+                "requirementCode": "NEW_FINAL_INSPECTION",
+                "requirementType": "FINAL_INSPECTION"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Manual do proprietário.",
+                "requirementCode": "NEW_OWNER_MANUAL",
+                "requirementType": "OWNER_MANUAL"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Fotos.",
+                "requirementCode": "NEW_PHOTOS",
+                "requirementType": "PHOTOS"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Chaves.",
+                "requirementCode": "NEW_KEYS",
+                "requirementType": "KEYS"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": false
+                },
+                "description": "Termo específico deixando clara a natureza/estado do imóvel usado, conforme modelo jurídico aprovado.",
+                "requirementCode": "USED_PROPERTY_TERM",
+                "requirementType": "USED_PROPERTY_TERM"
+              }
+            ],
+            "SALE_FINANCED": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_FIN_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_FIN_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_FIN_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_FIN_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Documentação de financiamento.",
+                "requirementCode": "SALE_FIN_FINANCING",
+                "requirementType": "FINANCING"
+              },
+              {
+                "description": "Dados de pagamento.",
+                "requirementCode": "SALE_FIN_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_FIN_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_FIN_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_INSTALLMENTS": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_INST_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_INST_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_INST_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_INST_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_INST_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_INST_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_INST_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "NEW_PROPERTY_DELIVERY": [
+              {
+                "description": "Termo de entrega.",
+                "requirementCode": "NEW_DELIVERY_TERM",
+                "requirementType": "DELIVERY_TERM"
+              },
+              {
+                "description": "Vistoria final.",
+                "requirementCode": "NEW_FINAL_INSPECTION",
+                "requirementType": "FINAL_INSPECTION"
+              },
+              {
+                "description": "Manual do proprietário.",
+                "requirementCode": "NEW_OWNER_MANUAL",
+                "requirementType": "OWNER_MANUAL"
+              },
+              {
+                "description": "Fotos.",
+                "requirementCode": "NEW_PHOTOS",
+                "requirementType": "PHOTOS"
+              },
+              {
+                "description": "Chaves.",
+                "requirementCode": "NEW_KEYS",
+                "requirementType": "KEYS"
+              }
+            ],
+            "USED_PROPERTY_DELIVERY": [
+              {
+                "description": "Termo específico deixando clara a natureza/estado do imóvel usado, conforme modelo jurídico aprovado.",
+                "requirementCode": "USED_PROPERTY_TERM",
+                "requirementType": "USED_PROPERTY_TERM"
+              }
+            ]
+          },
+          "typeToTemplate": {
+            "SALE": "SALE",
+            "LEASE": "LEASE",
+            "SERVICE": "SERVICE",
+            "ADDENDUM": "ADDENDUM",
+            "SALE_CASH": "SALE_CASH",
+            "SALE_TRADE": "SALE_TRADE",
+            "CONSTRUCTION": "CONSTRUCTION",
+            "KEY_DELIVERY": "KEY_DELIVERY",
+            "SALE_FINANCED": "SALE_FINANCED",
+            "LEASE_SEASONAL": "LEASE",
+            "PROPERTY_ADMIN": "LEASE",
+            "LEASE_COMMERCIAL": "LEASE",
+            "LEASE_RESIDENTIAL": "LEASE",
+            "SALE_INSTALLMENTS": "SALE_INSTALLMENTS",
+            "USED_PROPERTY_DELIVERY": "USED_PROPERTY_DELIVERY"
+          }
+        },
+        "reason": "Exigir o regimento do condomínio"
+      },
+      "status": 403,
+      "codigo": "PERMISSION_DENIED",
+      "esperado": {
+        "status": 403,
+        "codigo": "PERMISSION_DENIED"
+      },
+      "ok": true,
+      "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+      "quando": "2026-11-11T10:26:54.081Z"
+    },
+    {
+      "id": "CT5-28",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Política sem motivo é recusada",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/legal/requirement-rules",
+      "corpoEnviado": {
+        "action": {
+          "templates": {
+            "SALE": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "LEASE": [
+              {
+                "description": "Documentos PF/PJ das partes (locador/locatário).",
+                "requirementCode": "LEASE_PF_PJ_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "LEASE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+                "requirementCode": "LEASE_GUARANTEE",
+                "requirementType": "GUARANTEE"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "LEASE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              },
+              {
+                "description": "Vistoria de entrada do imóvel.",
+                "requirementCode": "LEASE_INSPECTION",
+                "requirementType": "INSPECTION"
+              },
+              {
+                "description": "Comprovação de titularidade do imóvel.",
+                "requirementCode": "LEASE_OWNERSHIP",
+                "requirementType": "OWNERSHIP_PROOF"
+              },
+              {
+                "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+                "requirementCode": "LEASE_OBLIGATIONS",
+                "requirementType": "OBLIGATIONS"
+              },
+              {
+                "requirementCode": "LEASE_CONDO_RULES",
+                "requirementType": "OBLIGATIONS",
+                "description": "Regimento interno do condomínio."
+              }
+            ],
+            "SERVICE": [
+              {
+                "description": "Documentos PF/PJ do contratante e do prestador.",
+                "requirementCode": "SERVICE_PARTIES_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "description": "Escopo/proposta do serviço com preço e prazo.",
+                "requirementCode": "SERVICE_SCOPE",
+                "requirementType": "SERVICE_SCOPE"
+              }
+            ],
+            "ADDENDUM": [
+              {
+                "description": "Documentos das partes que assinam o aditivo.",
+                "requirementCode": "ADDENDUM_PARTIES_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "ADDENDUM_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_CASH": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_CASH_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_CASH_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_CASH_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_CASH_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_CASH_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_CASH_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_CASH_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_TRADE": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_TRADE_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_TRADE_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_TRADE_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_TRADE_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_TRADE_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "description": "Documentação do bem dado em permuta (matrícula/registro e avaliação).",
+                "requirementCode": "SALE_TRADE_ASSET",
+                "requirementType": "TRADE_ASSET"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_TRADE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_TRADE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "CONSTRUCTION": [
+              {
+                "description": "Documentos do contratante e da construtora/empreiteira.",
+                "requirementCode": "CONSTR_PARTIES_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "description": "Projeto aprovado / alvará de construção.",
+                "requirementCode": "CONSTR_PERMIT",
+                "requirementType": "CONSTRUCTION_PERMIT"
+              },
+              {
+                "description": "ART/RRT do responsável técnico.",
+                "requirementCode": "CONSTR_ART_RRT",
+                "requirementType": "TECHNICAL_RESPONSIBILITY"
+              },
+              {
+                "description": "Orçamento e cronograma físico-financeiro.",
+                "requirementCode": "CONSTR_BUDGET_SCHEDULE",
+                "requirementType": "BUDGET_SCHEDULE"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "CONSTR_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "KEY_DELIVERY": [
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Termo de entrega.",
+                "requirementCode": "NEW_DELIVERY_TERM",
+                "requirementType": "DELIVERY_TERM"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Vistoria final.",
+                "requirementCode": "NEW_FINAL_INSPECTION",
+                "requirementType": "FINAL_INSPECTION"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Manual do proprietário.",
+                "requirementCode": "NEW_OWNER_MANUAL",
+                "requirementType": "OWNER_MANUAL"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Fotos.",
+                "requirementCode": "NEW_PHOTOS",
+                "requirementType": "PHOTOS"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Chaves.",
+                "requirementCode": "NEW_KEYS",
+                "requirementType": "KEYS"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": false
+                },
+                "description": "Termo específico deixando clara a natureza/estado do imóvel usado, conforme modelo jurídico aprovado.",
+                "requirementCode": "USED_PROPERTY_TERM",
+                "requirementType": "USED_PROPERTY_TERM"
+              }
+            ],
+            "SALE_FINANCED": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_FIN_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_FIN_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_FIN_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_FIN_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Documentação de financiamento.",
+                "requirementCode": "SALE_FIN_FINANCING",
+                "requirementType": "FINANCING"
+              },
+              {
+                "description": "Dados de pagamento.",
+                "requirementCode": "SALE_FIN_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_FIN_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_FIN_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_INSTALLMENTS": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_INST_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_INST_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_INST_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_INST_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_INST_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_INST_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_INST_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "NEW_PROPERTY_DELIVERY": [
+              {
+                "description": "Termo de entrega.",
+                "requirementCode": "NEW_DELIVERY_TERM",
+                "requirementType": "DELIVERY_TERM"
+              },
+              {
+                "description": "Vistoria final.",
+                "requirementCode": "NEW_FINAL_INSPECTION",
+                "requirementType": "FINAL_INSPECTION"
+              },
+              {
+                "description": "Manual do proprietário.",
+                "requirementCode": "NEW_OWNER_MANUAL",
+                "requirementType": "OWNER_MANUAL"
+              },
+              {
+                "description": "Fotos.",
+                "requirementCode": "NEW_PHOTOS",
+                "requirementType": "PHOTOS"
+              },
+              {
+                "description": "Chaves.",
+                "requirementCode": "NEW_KEYS",
+                "requirementType": "KEYS"
+              }
+            ],
+            "USED_PROPERTY_DELIVERY": [
+              {
+                "description": "Termo específico deixando clara a natureza/estado do imóvel usado, conforme modelo jurídico aprovado.",
+                "requirementCode": "USED_PROPERTY_TERM",
+                "requirementType": "USED_PROPERTY_TERM"
+              }
+            ]
+          },
+          "typeToTemplate": {
+            "SALE": "SALE",
+            "LEASE": "LEASE",
+            "SERVICE": "SERVICE",
+            "ADDENDUM": "ADDENDUM",
+            "SALE_CASH": "SALE_CASH",
+            "SALE_TRADE": "SALE_TRADE",
+            "CONSTRUCTION": "CONSTRUCTION",
+            "KEY_DELIVERY": "KEY_DELIVERY",
+            "SALE_FINANCED": "SALE_FINANCED",
+            "LEASE_SEASONAL": "LEASE",
+            "PROPERTY_ADMIN": "LEASE",
+            "LEASE_COMMERCIAL": "LEASE",
+            "LEASE_RESIDENTIAL": "LEASE",
+            "SALE_INSTALLMENTS": "SALE_INSTALLMENTS",
+            "USED_PROPERTY_DELIVERY": "USED_PROPERTY_DELIVERY"
+          }
+        }
+      },
+      "status": 400,
+      "codigo": "LEGAL_REQUIREMENT_RULE_REASON_REQUIRED",
+      "esperado": {
+        "status": 400,
+        "codigo": "LEGAL_REQUIREMENT_RULE_REASON_REQUIRED"
+      },
+      "ok": true,
+      "resumo": "erro LEGAL_REQUIREMENT_RULE_REASON_REQUIRED: Informe o motivo da nova versão da política do checklist (\"reason\", de 5 a 500 caracteres).",
+      "quando": "2026-11-11T10:26:54.235Z"
+    },
+    {
+      "id": "CT5-29",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "titulo": "Alçada jurídica publica a nova versão com motivo",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/legal/requirement-rules",
+      "corpoEnviado": {
+        "action": {
+          "templates": {
+            "SALE": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "LEASE": [
+              {
+                "description": "Documentos PF/PJ das partes (locador/locatário).",
+                "requirementCode": "LEASE_PF_PJ_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "LEASE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+                "requirementCode": "LEASE_GUARANTEE",
+                "requirementType": "GUARANTEE"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "LEASE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              },
+              {
+                "description": "Vistoria de entrada do imóvel.",
+                "requirementCode": "LEASE_INSPECTION",
+                "requirementType": "INSPECTION"
+              },
+              {
+                "description": "Comprovação de titularidade do imóvel.",
+                "requirementCode": "LEASE_OWNERSHIP",
+                "requirementType": "OWNERSHIP_PROOF"
+              },
+              {
+                "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+                "requirementCode": "LEASE_OBLIGATIONS",
+                "requirementType": "OBLIGATIONS"
+              },
+              {
+                "requirementCode": "LEASE_CONDO_RULES",
+                "requirementType": "OBLIGATIONS",
+                "description": "Regimento interno do condomínio."
+              }
+            ],
+            "SERVICE": [
+              {
+                "description": "Documentos PF/PJ do contratante e do prestador.",
+                "requirementCode": "SERVICE_PARTIES_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "description": "Escopo/proposta do serviço com preço e prazo.",
+                "requirementCode": "SERVICE_SCOPE",
+                "requirementType": "SERVICE_SCOPE"
+              }
+            ],
+            "ADDENDUM": [
+              {
+                "description": "Documentos das partes que assinam o aditivo.",
+                "requirementCode": "ADDENDUM_PARTIES_DOCS",
+                "requirementType": "PF_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "ADDENDUM_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_CASH": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_CASH_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_CASH_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_CASH_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_CASH_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_CASH_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_CASH_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_CASH_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_TRADE": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_TRADE_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_TRADE_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_TRADE_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_TRADE_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_TRADE_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "description": "Documentação do bem dado em permuta (matrícula/registro e avaliação).",
+                "requirementCode": "SALE_TRADE_ASSET",
+                "requirementType": "TRADE_ASSET"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_TRADE_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_TRADE_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "CONSTRUCTION": [
+              {
+                "description": "Documentos do contratante e da construtora/empreiteira.",
+                "requirementCode": "CONSTR_PARTIES_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "description": "Projeto aprovado / alvará de construção.",
+                "requirementCode": "CONSTR_PERMIT",
+                "requirementType": "CONSTRUCTION_PERMIT"
+              },
+              {
+                "description": "ART/RRT do responsável técnico.",
+                "requirementCode": "CONSTR_ART_RRT",
+                "requirementType": "TECHNICAL_RESPONSIBILITY"
+              },
+              {
+                "description": "Orçamento e cronograma físico-financeiro.",
+                "requirementCode": "CONSTR_BUDGET_SCHEDULE",
+                "requirementType": "BUDGET_SCHEDULE"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "CONSTR_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "KEY_DELIVERY": [
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Termo de entrega.",
+                "requirementCode": "NEW_DELIVERY_TERM",
+                "requirementType": "DELIVERY_TERM"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Vistoria final.",
+                "requirementCode": "NEW_FINAL_INSPECTION",
+                "requirementType": "FINAL_INSPECTION"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Manual do proprietário.",
+                "requirementCode": "NEW_OWNER_MANUAL",
+                "requirementType": "OWNER_MANUAL"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Fotos.",
+                "requirementCode": "NEW_PHOTOS",
+                "requirementType": "PHOTOS"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": true
+                },
+                "description": "Chaves.",
+                "requirementCode": "NEW_KEYS",
+                "requirementType": "KEYS"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "property.isNew",
+                  "value": false
+                },
+                "description": "Termo específico deixando clara a natureza/estado do imóvel usado, conforme modelo jurídico aprovado.",
+                "requirementCode": "USED_PROPERTY_TERM",
+                "requirementType": "USED_PROPERTY_TERM"
+              }
+            ],
+            "SALE_FINANCED": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_FIN_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_FIN_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_FIN_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_FIN_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Documentação de financiamento.",
+                "requirementCode": "SALE_FIN_FINANCING",
+                "requirementType": "FINANCING"
+              },
+              {
+                "description": "Dados de pagamento.",
+                "requirementCode": "SALE_FIN_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_FIN_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_FIN_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "SALE_INSTALLMENTS": [
+              {
+                "description": "Documentos do comprador.",
+                "requirementCode": "SALE_INST_BUYER_DOCS",
+                "requirementType": "BUYER_DOCUMENT"
+              },
+              {
+                "description": "Documentos do vendedor.",
+                "requirementCode": "SALE_INST_SELLER_DOCS",
+                "requirementType": "SELLER_DOCUMENT"
+              },
+              {
+                "description": "Matrícula do imóvel.",
+                "requirementCode": "SALE_INST_REGISTRATION",
+                "requirementType": "PROPERTY_REGISTRATION"
+              },
+              {
+                "description": "Certidões (negativas, ônus etc.).",
+                "requirementCode": "SALE_INST_CERTIFICATES",
+                "requirementType": "CERTIFICATES"
+              },
+              {
+                "description": "Dados de pagamento (à vista, parcelas ou torna).",
+                "requirementCode": "SALE_INST_PAYMENT_DATA",
+                "requirementType": "PAYMENT_DATA"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyPJ",
+                  "value": true
+                },
+                "description": "Documentos da pessoa jurídica (contrato social e poderes de quem assina).",
+                "requirementCode": "SALE_INST_PJ_DOCS",
+                "requirementType": "PJ_DOCUMENT"
+              },
+              {
+                "when": {
+                  "op": "==",
+                  "fact": "parties.anyRepresented",
+                  "value": true
+                },
+                "description": "Procuração, quando alguma parte for representada por terceiro.",
+                "requirementCode": "SALE_INST_POWER_OF_ATTORNEY",
+                "requirementType": "POWER_OF_ATTORNEY"
+              }
+            ],
+            "NEW_PROPERTY_DELIVERY": [
+              {
+                "description": "Termo de entrega.",
+                "requirementCode": "NEW_DELIVERY_TERM",
+                "requirementType": "DELIVERY_TERM"
+              },
+              {
+                "description": "Vistoria final.",
+                "requirementCode": "NEW_FINAL_INSPECTION",
+                "requirementType": "FINAL_INSPECTION"
+              },
+              {
+                "description": "Manual do proprietário.",
+                "requirementCode": "NEW_OWNER_MANUAL",
+                "requirementType": "OWNER_MANUAL"
+              },
+              {
+                "description": "Fotos.",
+                "requirementCode": "NEW_PHOTOS",
+                "requirementType": "PHOTOS"
+              },
+              {
+                "description": "Chaves.",
+                "requirementCode": "NEW_KEYS",
+                "requirementType": "KEYS"
+              }
+            ],
+            "USED_PROPERTY_DELIVERY": [
+              {
+                "description": "Termo específico deixando clara a natureza/estado do imóvel usado, conforme modelo jurídico aprovado.",
+                "requirementCode": "USED_PROPERTY_TERM",
+                "requirementType": "USED_PROPERTY_TERM"
+              }
+            ]
+          },
+          "typeToTemplate": {
+            "SALE": "SALE",
+            "LEASE": "LEASE",
+            "SERVICE": "SERVICE",
+            "ADDENDUM": "ADDENDUM",
+            "SALE_CASH": "SALE_CASH",
+            "SALE_TRADE": "SALE_TRADE",
+            "CONSTRUCTION": "CONSTRUCTION",
+            "KEY_DELIVERY": "KEY_DELIVERY",
+            "SALE_FINANCED": "SALE_FINANCED",
+            "LEASE_SEASONAL": "LEASE",
+            "PROPERTY_ADMIN": "LEASE",
+            "LEASE_COMMERCIAL": "LEASE",
+            "LEASE_RESIDENTIAL": "LEASE",
+            "SALE_INSTALLMENTS": "SALE_INSTALLMENTS",
+            "USED_PROPERTY_DELIVERY": "USED_PROPERTY_DELIVERY"
+          }
+        },
+        "reason": "Exigir o regimento do condomínio"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "ruleCode=REG-JUR-001",
+      "quando": "2026-11-11T10:26:54.497Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "CT5-25",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "perfil": "A:leitura",
+      "descricao": "Mesmo tipo de contrato, checklist diferente pela característica do imóvel (casa nova x usado)",
+      "sql": "SELECT contract_id, array_agg(requirement_type ORDER BY created_at, requirement_code) AS tipos FROM legal.contract_requirements WHERE contract_id IN (:a, :b) GROUP BY contract_id",
+      "resultado": [
+        {
+          "contract_id": "1dfb2be3-5378-4ecf-892c-1c0c14adcce2",
+          "tipos": [
+            "USED_PROPERTY_TERM"
+          ]
+        },
+        {
+          "contract_id": "a8bd34b0-28f9-4c45-a9d8-ed638da7a2e3",
+          "tipos": [
+            "DELIVERY_TERM",
+            "FINAL_INSPECTION",
+            "OWNER_MANUAL",
+            "PHOTOS",
+            "KEYS"
+          ]
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:26:53.617Z"
+    },
+    {
+      "id": "CT5-30",
+      "req": [
+        "M5-A0066-b6c17a"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "Versão anterior fechada (nunca editada) e auditoria com o motivo",
+      "sql": "SELECT v.version_number, v.effective_until IS NOT NULL AS fechada, (SELECT reason FROM audit.audit_log WHERE action = 'legal.requirement_rules.publish' AND entity_id = :id) AS motivo FROM core.rule_versions v JOIN core.rules r ON r.id = v.rule_id AND r.code = 'REG-JUR-001' ORDER BY v.version_number",
+      "resultado": [
+        {
+          "version_number": 1,
+          "fechada": true,
+          "motivo": "Política do checklist documental (REG-JUR-001) publicada na versão 2: Exigir o regimento do condomínio"
+        },
+        {
+          "version_number": 2,
+          "fechada": false,
+          "motivo": "Política do checklist documental (REG-JUR-001) publicada na versão 2: Exigir o regimento do condomínio"
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:26:54.521Z"
+    }
+  ]
+}

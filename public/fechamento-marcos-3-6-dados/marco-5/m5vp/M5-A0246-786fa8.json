@@ -1,0 +1,56 @@
+{
+ "id": "M5-A0246-786fa8",
+ "linhaCaderno": 776,
+ "requisito": "J4 | Garantias + locação.",
+ "correcao": "agregação J4: multa/juros pela regra (M5-A0330) e idempotência natural do pagamento (M5-A0346)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.multaJuros.test.js",
+   "nome": "M5-A0330: multa 7%, juros 3% ao mês e carência 5 dias vêm da regra publicada (não do padrão 2/1/3)",
+   "status": "pass",
+   "ms": 213.166,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "Missing expected rejection."
+   }
+  },
+  {
+   "arquivo": "test/m5vp.multaJuros.test.js",
+   "nome": "M5-A0330: gravar a multa na configuração (com MFA) publica versão nova da regra, e é ela que o caso usa; número antigo gravado é alinhado com auditoria",
+   "status": "pass",
+   "ms": 1467.388,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "gravar o número publica versão nova da regra"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.obrigacoes.test.js",
+   "nome": "M5-A0346/§12: o pagamento é de um vencimento, com comprovante; repetir o mesmo vencimento não gera segundo reembolso (com ou sem Idempotency-Key)",
+   "status": "pass",
+   "ms": 376.59,
+   "commitDoTeste": "38897d8d",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.obrigacoes.http.test.js",
+   "nome": "M5-A0346/HTTP: o mesmo vencimento pago duas vezes sem Idempotency-Key — 201 e depois 409, um reembolso só",
+   "status": "pass",
+   "ms": 788.696,
+   "commitDoTeste": "d1147ec5",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal: 201 !== 409 generatedMessage: true, code: 'ERR_ASSERTION', actual: 201, expected: 409, operator: 'strictEqual', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.512Z"
+}

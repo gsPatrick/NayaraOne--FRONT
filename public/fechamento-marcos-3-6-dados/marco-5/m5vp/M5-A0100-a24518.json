@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0100-a24518",
+ "linhaCaderno": 237,
+ "requisito": "• Notificação possui canal, destinatário, conteúdo/arquivo, data e evidência de envio/recebimento quando disponível.",
+ "correcao": "src/modules/legal/contracts/application/noticeRecipient.js assertNoticeRecipient em notices.service.js (create, send) e noticeVersions.service.js",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.notificacoes.test.js",
+   "nome": "M5-A0100/§13: notificação sem destinatário é recusada na criação, na nova versão e no envio",
+   "status": "pass",
+   "ms": 174.609,
+   "commitDoTeste": "cb963a0c",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Missing expected rejection. generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, operator: 'rejects', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.100Z"
+}

@@ -1,0 +1,391 @@
+{
+ "id": "M5-A0135-ebb9f7",
+ "secao": "P1 > 18. Eventos mínimos",
+ "linhaCaderno": 322,
+ "requisito": "• inspection.difference.detected",
+ "demandas": "M5-D150;M5-D042",
+ "implementacao": "src/modules/legal/shared/legalEvents.service.js:192 publishInspectionDifferenceDetected chamado em src/modules/legal/inspections/inspection.service.js:404 signInspection (saída com entrada do mesmo contrato e divergência)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/legal.inspections.test.js",
+   "nome": "vistoria: assinar CHECK_OUT com divergência real publica inspection.difference.detected",
+   "status": "pass",
+   "ms": 151.17,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.inspections.test.js",
+   "nome": "vistoria: assinar CHECK_OUT sem divergência NÃO publica inspection.difference.detected",
+   "status": "pass",
+   "ms": 162.903,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-56",
+   "metodo": "GET",
+   "rota": "/legal/inspections/compare?entryInspectionId=dd23f80f-6f30-42d8-ba5a-801592ca9fce&exitInspectionId=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 7 campo(s)",
+   "quando": "2026-11-11T03:42:31.718Z"
+  },
+  {
+   "passo": "LC-VI-57",
+   "metodo": "GET",
+   "rota": "/legal/inspections/3fe6d1c0-eeed-408d-82da-189250a0249f/signatures",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:31.726Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0135-ebb9f7.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.inspections.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-40, LC-VI-41, LC-VI-56, LC-VI-57)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-40",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Locatário assina a saída: dispara a detecção de diferenças",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "inspections.service.signInspection(saida, {TENANT})",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:31.703Z",
+   "corpo": {
+    "result": {
+     "dataValues": {
+      "id": "61799f47-593e-4d14-9442-d8b47a4559e0",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "inspectionId": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+      "partyRole": "TENANT",
+      "signedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "signatureHash": "0273897c7df0c4341b35437fec3900dd90b9c7dd1129046d1d580bea731ed74f",
+      "snapshotHash": "87379549a97251a7f743c962e9ff2729057d03bdeb2089c95d0169c3f87faf10",
+      "signedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": {},
+      "created_at": {}
+     },
+     "_previousDataValues": {
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "inspectionId": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+      "partyRole": "TENANT",
+      "signedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "signatureHash": "0273897c7df0c4341b35437fec3900dd90b9c7dd1129046d1d580bea731ed74f",
+      "snapshotHash": "87379549a97251a7f743c962e9ff2729057d03bdeb2089c95d0169c3f87faf10",
+      "signedAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "id": "61799f47-593e-4d14-9442-d8b47a4559e0",
+      "created_at": {},
+      "updated_at": {}
+     },
+     "uniqno": 1,
+     "_changed": {},
+     "_options": {
+      "isNewRecord": true,
+      "_schema": "legal",
+      "_schemaDelimiter": ""
+     },
+     "isNewRecord": false
+    }
+   },
+   "req": [
+    "M5-A0092-c94934",
+    "M5-A0135-ebb9f7"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "LC-VI-56",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Após a assinatura da saída, a API devolve as mesmas divergências publicadas em inspection.difference.detected (piso da sala: GOOD → DAMAGED)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/inspections/compare?entryInspectionId=dd23f80f-6f30-42d8-ba5a-801592ca9fce&exitInspectionId=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:31.718Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "entryInspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "exitInspectionId": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+     "divergences": [
+      {
+       "itemName": "Sala — piso",
+       "roomCode": "SALA",
+       "itemCode": "PISO",
+       "entryCondition": "GOOD",
+       "exitCondition": "DAMAGED",
+       "reason": "CONDITION_CHANGED"
+      },
+      {
+       "itemName": "Banheiro — box",
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "entryCondition": "DAMAGED",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      },
+      {
+       "itemName": "Pintura das paredes",
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "entryCondition": "NEW",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      },
+      {
+       "itemName": "Quarto — janela",
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "entryCondition": "GOOD",
+       "exitCondition": null,
+       "reason": "MISSING_IN_EXIT"
+      }
+     ],
+     "onlyInEntry": [
+      {
+       "itemName": "Banheiro — box",
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "entryCondition": "DAMAGED"
+      },
+      {
+       "itemName": "Pintura das paredes",
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "entryCondition": "NEW"
+      },
+      {
+       "itemName": "Quarto — janela",
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "entryCondition": "GOOD"
+      }
+     ],
+     "onlyInExit": [],
+     "items": [
+      {
+       "roomCode": "SALA",
+       "itemCode": "PISO",
+       "itemName": "Sala — piso",
+       "entryItemId": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+       "exitItemId": "5d4b04f7-3608-4f3b-80dd-39ea8d353563",
+       "before": "GOOD",
+       "after": "DAMAGED",
+       "changed": true,
+       "mediaRefs": [
+        "df88c2c0-3015-4b9f-a0ba-70f61b0482e8"
+       ],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "COZINHA",
+       "itemCode": "ARMARIO",
+       "itemName": "Cozinha — armário",
+       "entryItemId": "2e76ac97-3a17-4d1f-8644-82acded4eeeb",
+       "exitItemId": "526a1474-3159-45fd-b09d-d25655d5689b",
+       "before": "REGULAR",
+       "after": "REGULAR",
+       "changed": false,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "BANHEIRO",
+       "itemCode": "BOX",
+       "itemName": "Banheiro — box",
+       "entryItemId": "d6f0eeb5-4117-4381-97ee-6a663e8717c6",
+       "exitItemId": null,
+       "before": "DAMAGED",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "QUARTO",
+       "itemCode": "PINTURA",
+       "itemName": "Pintura das paredes",
+       "entryItemId": "e4ece4bd-42cc-4351-bce5-64867ec65b62",
+       "exitItemId": null,
+       "before": "NEW",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      },
+      {
+       "roomCode": "QUARTO",
+       "itemCode": "JANELA",
+       "itemName": "Quarto — janela",
+       "entryItemId": "871334b3-6a2f-4a6c-9e5c-7bd46d18ae79",
+       "exitItemId": null,
+       "before": "GOOD",
+       "after": null,
+       "changed": true,
+       "mediaRefs": [],
+       "requiresHumanValidation": true
+      }
+     ],
+     "requiresHumanValidation": true
+    }
+   },
+   "req": [
+    "M5-A0135-ebb9f7",
+    "M5-A0092-c94934"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-57",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "A API mostra a assinatura do locatário na saída, o gatilho da detecção de diferenças",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/inspections/3fe6d1c0-eeed-408d-82da-189250a0249f/signatures",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:31.726Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "61799f47-593e-4d14-9442-d8b47a4559e0",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "inspectionId": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+      "partyRole": "TENANT",
+      "signedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "signatureHash": "0273897c7df0c4341b35437fec3900dd90b9c7dd1129046d1d580bea731ed74f",
+      "snapshotHash": "87379549a97251a7f743c962e9ff2729057d03bdeb2089c95d0169c3f87faf10",
+      "signedAt": "2026-11-11T03:42:31.688Z",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "created_at": "2026-11-11T03:42:31.688Z",
+      "updated_at": "2026-11-11T03:42:31.688Z"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0135-ebb9f7"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-VI-41",
+   "req": [
+    "M5-A0135-ebb9f7",
+    "M5-A0092-c94934"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "perfil": "A:gestor",
+   "descricao": "Outbox: inspection.difference.detected com as divergências entrada x saída",
+   "sql": "SELECT event_type, payload_json FROM integration.outbox_events WHERE event_type = 'inspection.difference.detected' AND payload_json::text LIKE :id",
+   "resultado": [
+    {
+     "event_type": "inspection.difference.detected",
+     "payload_json": {
+      "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+      "divergences": [
+       {
+        "reason": "CONDITION_CHANGED",
+        "itemCode": "PISO",
+        "itemName": "Sala — piso",
+        "roomCode": "SALA",
+        "exitCondition": "DAMAGED",
+        "entryCondition": "GOOD"
+       },
+       {
+        "reason": "MISSING_IN_EXIT",
+        "itemCode": "BOX",
+        "itemName": "Banheiro — box",
+        "roomCode": "BANHEIRO",
+        "exitCondition": null,
+        "entryCondition": "DAMAGED"
+       },
+       {
+        "reason": "MISSING_IN_EXIT",
+        "itemCode": "PINTURA",
+        "itemName": "Pintura das paredes",
+        "roomCode": "QUARTO",
+        "exitCondition": null,
+        "entryCondition": "NEW"
+       },
+       {
+        "reason": "MISSING_IN_EXIT",
+        "itemCode": "JANELA",
+        "itemName": "Quarto — janela",
+        "roomCode": "QUARTO",
+        "exitCondition": null,
+        "entryCondition": "GOOD"
+       }
+      ],
+      "divergenceCount": 4,
+      "exitInspectionId": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+      "entryInspectionId": "2792ae03-3506-4fb6-b1db-fa0e47c90645"
+     }
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:31.705Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

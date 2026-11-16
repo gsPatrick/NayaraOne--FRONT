@@ -1,0 +1,442 @@
+{
+  "id": "M6-33",
+  "requisito": "API mínima: POST /projects/:id/change-orders.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#createChangeOrder + /change-orders/:id/decide",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/change-orders: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-33/M6-82: Change Order aprovado altera o baseline do orçamento já congelado",
+      "resultado": "passou",
+      "duracaoMs": 755,
+      "executadoEm": "2026-11-11T00:12:02.106Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "Change Order rejeitado não altera o orçamento",
+      "resultado": "passou",
+      "duracaoMs": 553,
+      "executadoEm": "2026-11-11T00:12:09.930Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H023",
+      "H024",
+      "H025",
+      "H026",
+      "H027",
+      "H028",
+      "H029"
+    ],
+    "resumo": [
+      "H023 POST /api/v1/files → 201",
+      "H024 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "H025 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 400 CHANGE_ORDER_VALIDATION",
+      "H026 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 201",
+      "H027 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 201",
+      "H028 POST /api/v1/construction/change-orders/9171674e-4a45-4aba-bcb8-93af92951511/decide → 403 PERMISSION_DENIED",
+      "H029 POST /api/v1/construction/change-orders/9171674e-4a45-4aba-bcb8-93af92951511/decide → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:07.868Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-change-order.spec.js",
+      "requisitos": [
+        "M6-47",
+        "M6-33",
+        "M6-06"
+      ],
+      "iniciadoEm": "2026-11-11T00:14:47Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "1. login — <usuário de teste>"
+        },
+        {
+          "ok": true,
+          "passo": "2. criar obra — http://localhost:3106/painel/obras/lista/c9ac843b-d503-432c-8ba2-4992e781b57d"
+        },
+        {
+          "ok": true,
+          "passo": "2b. orçamento aprovado (pré-requisito do Change Order)"
+        },
+        {
+          "ok": true,
+          "passo": "3a. botão \"Criar Change Order\" desabilitado sem evidência anexada — bloqueado corretamente antes de chamar a API"
+        },
+        {
+          "ok": true,
+          "passo": "3. criar Change Order sem erro de idempotencyKey — sem erro de idempotência"
+        },
+        {
+          "ok": true,
+          "passo": "4. nenhum erro de idempotencyKey no console do navegador — limpo"
+        },
+        {
+          "ok": true,
+          "passo": "4b. nenhum erro de evidenceFileIds após anexar evidência — sem erro de evidência"
+        },
+        {
+          "ok": true,
+          "passo": "5. Change Order aparece na listagem após criação"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H023",
+      "requisitos": [
+        "M6-06",
+        "M6-33"
+      ],
+      "cenario": "Envio da foto/documento \"aditivo-laudo\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "aditivo-laudo.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 3433,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "3c960577-5959-4b51-98eb-0a166caf0d64",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/df4162cb-51e3-4feb-a5fc-5e2a298b8867-aditivo-laudo.jpg",
+          "fileName": "aditivo-laudo.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "eabe7d8b50735d9c130f3599c3dbcbe2c716b79f39a548fa884fae9f40155569",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:04.905Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:04.910Z",
+          "created_at": "2026-11-11T00:12:04.910Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:07.868Z"
+    },
+    {
+      "id": "H024",
+      "requisitos": [
+        "M6-06",
+        "M6-33",
+        "M6-109"
+      ],
+      "cenario": "NEGATIVO: Change Order com evidência que não é arquivo enviado (UUID inventado)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Reforço da viga V12",
+        "budgetImpact": 6000,
+        "scheduleImpactDays": 7,
+        "evidenceFileIds": [
+          "99999999-9999-4999-8999-999999999999"
+        ],
+        "idempotencyKey": "co-c4fcd6"
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 172,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"evidenceFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "evidenceFileIds",
+            "missingFileIds": [
+              "99999999-9999-4999-8999-999999999999"
+            ]
+          },
+          "traceId": "458c9b07-e973-4092-ae2f-72c3692be040"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.040Z"
+    },
+    {
+      "id": "H025",
+      "requisitos": [
+        "M6-06",
+        "M6-33"
+      ],
+      "cenario": "NEGATIVO: Change Order sem impacto de prazo e sem evidência",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Sem prazo",
+        "budgetImpact": 6000,
+        "evidenceFileIds": [],
+        "idempotencyKey": "co-x-c4fcd6"
+      },
+      "statusHttp": 400,
+      "codigoErro": "CHANGE_ORDER_VALIDATION",
+      "esperado": "400 CHANGE_ORDER_VALIDATION",
+      "conferiu": true,
+      "duracaoMs": 106,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CHANGE_ORDER_VALIDATION",
+          "message": "\"scheduleImpactDays\" é obrigatório e precisa ser numérico (use 0 quando não houver impacto de prazo).",
+          "traceId": "e4bb9355-407e-4c26-b69f-1efda8373111"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.147Z"
+    },
+    {
+      "id": "H026",
+      "requisitos": [
+        "M6-06",
+        "M6-33",
+        "M6-47"
+      ],
+      "cenario": "Criar Change Order (motivo, impacto financeiro, impacto de prazo, evidência)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Reforço da viga V12 (laudo do calculista)",
+        "budgetImpact": 6000,
+        "scheduleImpactDays": 7,
+        "evidenceFileIds": [
+          "3c960577-5959-4b51-98eb-0a166caf0d64"
+        ],
+        "idempotencyKey": "co-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 299,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "9171674e-4a45-4aba-bcb8-93af92951511",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reasonCode": "ESCOPO_ADICIONAL",
+          "description": "Reforço da viga V12 (laudo do calculista)",
+          "budgetImpact": "6000.00",
+          "scheduleImpactDays": 7,
+          "evidenceFileIds": [
+            "3c960577-5959-4b51-98eb-0a166caf0d64"
+          ],
+          "idempotencyKey": "co-c4fcd6",
+          "status": "PENDING_APPROVAL",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:08.430Z",
+          "created_at": "2026-11-11T00:12:08.430Z",
+          "decidedBy": null,
+          "decidedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.446Z"
+    },
+    {
+      "id": "H027",
+      "requisitos": [
+        "M6-06",
+        "M6-33"
+      ],
+      "cenario": "Reenviar o MESMO Change Order (mesma idempotencyKey): devolve o registro original, sem duplicar",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Reforço da viga V12 (laudo do calculista)",
+        "budgetImpact": 6000,
+        "scheduleImpactDays": 7,
+        "evidenceFileIds": [
+          "3c960577-5959-4b51-98eb-0a166caf0d64"
+        ],
+        "idempotencyKey": "co-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 36,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "9171674e-4a45-4aba-bcb8-93af92951511",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reasonCode": "ESCOPO_ADICIONAL",
+          "description": "Reforço da viga V12 (laudo do calculista)",
+          "budgetImpact": "6000.00",
+          "scheduleImpactDays": 7,
+          "evidenceFileIds": [
+            "3c960577-5959-4b51-98eb-0a166caf0d64"
+          ],
+          "idempotencyKey": "co-c4fcd6",
+          "status": "PENDING_APPROVAL",
+          "decidedBy": null,
+          "decidedAt": null,
+          "lockVersion": 0,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:08.430Z",
+          "updated_at": "2026-11-11T00:12:08.430Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.482Z"
+    },
+    {
+      "id": "H028",
+      "requisitos": [
+        "M6-33",
+        "M6-47"
+      ],
+      "cenario": "NEGATIVO: aprovar Change Order sem permissão de aprovação",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/change-orders/9171674e-4a45-4aba-bcb8-93af92951511/decide",
+      "perfil": "Equipe de campo da Empresa A (só construction:create/read)",
+      "corpoEnviado": {
+        "decision": "APPROVE"
+      },
+      "statusHttp": 403,
+      "codigoErro": "PERMISSION_DENIED",
+      "esperado": "403",
+      "conferiu": true,
+      "duracaoMs": 17,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+          "details": {
+            "required": "construction:approve"
+          },
+          "traceId": "1bb0b41d-5e5e-443d-aaea-671312157911"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.499Z"
+    },
+    {
+      "id": "H029",
+      "requisitos": [
+        "M6-17",
+        "M6-33",
+        "M6-47",
+        "M6-82"
+      ],
+      "cenario": "Aprovar Change Order: baseline passa a R$ 86.000,00 (única forma de mudar o orçamento base)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/change-orders/9171674e-4a45-4aba-bcb8-93af92951511/decide",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "decision": "APPROVE"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 222,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "9171674e-4a45-4aba-bcb8-93af92951511",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "reasonCode": "ESCOPO_ADICIONAL",
+          "description": "Reforço da viga V12 (laudo do calculista)",
+          "budgetImpact": "6000.00",
+          "scheduleImpactDays": 7,
+          "evidenceFileIds": [
+            "3c960577-5959-4b51-98eb-0a166caf0d64"
+          ],
+          "idempotencyKey": "co-c4fcd6",
+          "status": "APPROVED",
+          "decidedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "decidedAt": "2026-11-11T00:12:08.694Z",
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:08.430Z",
+          "updated_at": "2026-11-11T00:12:08.694Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.721Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C011",
+      "requisitos": [
+        "M6-17",
+        "M6-23",
+        "M6-61",
+        "M6-82",
+        "M6-89",
+        "M6-33"
+      ],
+      "descricao": "Baseline congelada + aditivo aprovado; itens do orçamento intactos; versão da regra de margem gravada no orçamento",
+      "sql": "SELECT b.status, b.baseline_amount, b.rule_version_id IS NOT NULL AS com_versao_da_regra, (SELECT sum(planned_amount) FROM construction.budget_lines WHERE budget_id = b.id) AS itens, (SELECT string_agg(status || ':' || budget_impact, ',' ORDER BY status) FROM construction.change_orders WHERE project_id = b.project_id) AS aditivos FROM construction.budgets b WHERE b.id = $1",
+      "resultado": [
+        {
+          "status": "APPROVED",
+          "baseline_amount": "86000.00",
+          "com_versao_da_regra": true,
+          "itens": "80000.00",
+          "aditivos": "APPROVED:6000.00,REJECTED:2500.00"
+        }
+      ],
+      "invariante": "APPROVED, baseline 86.000 = 80.000 dos itens + 6.000 do aditivo aprovado (o rejeitado não entra), regra gravada",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.194Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.402Z"
+}

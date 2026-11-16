@@ -1,0 +1,574 @@
+{
+ "id": "M5-A0244-2ce29e",
+ "secao": "P2 > 18. Sprints [tabela: Sprint | Entrega]",
+ "linhaCaderno": 774,
+ "requisito": "J2 | Requirements/gates.",
+ "demandas": "M5-D215",
+ "implementacao": "agregação dos requisitos M5-A0066-b6c17a (linha 139), M5-A0313-498938 (linha 142), M5-A0314-222d75 (linha 145), M5-A0315-c0cefe (linha 148), M5-A0316-86b11c (linha 149), M5-A0322-89a1d9 (linha 521), M5-A0301-5baec1 (linha 27)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.modelosAditivos.test.js",
+   "nome": "§7/Guia §20: checklist pelo Motor de Regras (REG-JUR-001) com as características das partes — PJ e parte representada mudam a lista; nova versão da regra muda a lista",
+   "status": "pass",
+   "ms": 353.503,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "§7 Locação: documentos PF/PJ, garantia, procuração só se aplicável, vistoria, titularidade e obrigações",
+   "status": "pass",
+   "ms": 3225.896,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "§7 Venda financiada: documentos de comprador e vendedor, matrícula, certidões, financiamento e dados de pagamento",
+   "status": "pass",
+   "ms": 62.543,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "§7 Entrega de casa nova e imóvel usado: termo, vistoria final, manual do proprietário, fotos, chaves; termo específico do usado",
+   "status": "pass",
+   "ms": 99.047,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/legal.requirements.test.js",
+   "nome": "generateRequirementsForContract: template USED_PROPERTY_DELIVERY gera termo específico",
+   "status": "pass",
+   "ms": 27.343,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.maquinaTipos.test.js",
+   "nome": "Guia §5: exigência com etapa SIGNING não bloqueia a revisão jurídica, só o envio para assinatura",
+   "status": "pass",
+   "ms": 297.494,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-502c",
+   "metodo": "POST",
+   "rota": "/legal/contracts/820592b9-bd8e-44ef-89c1-022613553bf8/parties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=3b10478d-7c56-4596-b052-0494d90bd3d0",
+   "quando": "2026-11-11T03:42:28.747Z"
+  },
+  {
+   "passo": "CT-108",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 5 item(ns)",
+   "quando": "2026-11-11T03:42:24.504Z"
+  },
+  {
+   "passo": "CT-504",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=fd6dc383-e9c6-4982-b7ac-64d30111202f, contractType=SALE_FINANCED",
+   "quando": "2026-11-11T03:42:28.853Z"
+  },
+  {
+   "passo": "CT-507",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=8d9b9de8-3fc4-4987-83bf-d02220ea7d28, contractType=SALE_CASH",
+   "quando": "2026-11-11T03:42:28.961Z"
+  },
+  {
+   "passo": "CT-510",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=7aeae712-8c28-481d-9d07-069496787734, contractType=SALE_CASH",
+   "quando": "2026-11-11T03:42:29.054Z"
+  },
+  {
+   "passo": "CT-111",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_REQUIREMENTS_PENDING: Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos",
+   "quando": "2026-11-11T03:42:24.526Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0244-2ce29e.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.modelosAditivos.test.js test/m5fech.contratos.checklist.test.js test/legal.requirements.test.js test/m5fech.contratos.maquinaTipos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-502c, CT-108, CT-504, CT-507, CT-510, CT-111)"
+ },
+ "passos": [
+  {
+   "id": "CT-502c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Locador PJ representado por procurador (característica da parte no cadastro)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/820592b9-bd8e-44ef-89c1-022613553bf8/parties",
+   "corpoEnviado": {
+    "personId": "ed7f988d-4fd3-4146-ab8a-85a9c6854006",
+    "partyRole": "LANDLORD",
+    "representedByPersonId": "36c1feee-4e21-4cde-a145-ee2a52834f03"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 37,
+   "quando": "2026-11-11T03:42:28.747Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "3b10478d-7c56-4596-b052-0494d90bd3d0",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "820592b9-bd8e-44ef-89c1-022613553bf8",
+     "personId": "ed7f988d-4fd3-4146-ab8a-85a9c6854006",
+     "partyRole": "LANDLORD",
+     "representedByPersonId": "36c1feee-4e21-4cde-a145-ee2a52834f03",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:28.720Z",
+     "created_at": "2026-11-11T03:42:28.720Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0066-b6c17a",
+    "M5-A0313-498938"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-108",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Gera o checklist documental do contrato de locação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/requirements/generate",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 92,
+   "quando": "2026-11-11T03:42:24.504Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_PF_PJ_DOCS",
+      "description": "Documentos PF/PJ das partes (locador/locatário).",
+      "requirementType": "PF_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.448Z",
+      "created_at": "2026-11-11T03:42:24.448Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_GUARANTEE",
+      "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+      "requirementType": "GUARANTEE",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.452Z",
+      "created_at": "2026-11-11T03:42:24.452Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_INSPECTION",
+      "description": "Vistoria de entrada do imóvel.",
+      "requirementType": "INSPECTION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.456Z",
+      "created_at": "2026-11-11T03:42:24.456Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_OWNERSHIP",
+      "description": "Comprovação de titularidade do imóvel.",
+      "requirementType": "OWNERSHIP_PROOF",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.461Z",
+      "created_at": "2026-11-11T03:42:24.461Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "requirementCode": "LEASE_OBLIGATIONS",
+      "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+      "requirementType": "OBLIGATIONS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:24.464Z",
+      "created_at": "2026-11-11T03:42:24.464Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0313-498938",
+    "M5-A0166-103bce",
+    "M5-A0127-6b0566",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-504",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: contrato SALE_FINANCED para o checklist",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_FINANCED",
+    "totalValue": 1000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:28.853Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "fd6dc383-e9c6-4982-b7ac-64d30111202f",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_FINANCED",
+     "contractNumber": "VEN-2026-0005",
+     "status": "DRAFT",
+     "totalValue": "1000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:28.848Z",
+     "created_at": "2026-11-11T03:42:28.848Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0314-222d75"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-507",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: contrato SALE_CASH para o checklist",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_CASH",
+    "totalValue": 1000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:28.961Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8d9b9de8-3fc4-4987-83bf-d02220ea7d28",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_CASH",
+     "contractNumber": "VEN-2026-0006",
+     "status": "DRAFT",
+     "totalValue": "1000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:28.951Z",
+     "created_at": "2026-11-11T03:42:28.951Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0315-c0cefe"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-510",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: contrato SALE_CASH para o checklist",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_CASH",
+    "totalValue": 1000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:29.054Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7aeae712-8c28-481d-9d07-069496787734",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_CASH",
+     "contractNumber": "VEN-2026-0007",
+     "status": "DRAFT",
+     "totalValue": "1000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:29.047Z",
+     "created_at": "2026-11-11T03:42:29.047Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0316-86b11c"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-111",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DRAFT -> LEGAL_REVIEW (do Guia §3) com documento obrigatório faltante: bloqueado pelo gate da etapa LEGAL_REVIEW",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.526Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENTS_PENDING",
+     "message": "Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização); Vistoria de entrada do imóvel; Comprovação de titularidade do imóvel; Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "details": {
+      "stage": "LEGAL_REVIEW",
+      "missingRequirementCodes": [
+       "LEASE_PF_PJ_DOCS",
+       "LEASE_GUARANTEE",
+       "LEASE_INSPECTION",
+       "LEASE_OWNERSHIP",
+       "LEASE_OBLIGATIONS"
+      ],
+      "pending": [
+       {
+        "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+        "requirementCode": "LEASE_PF_PJ_DOCS",
+        "description": "Documentos PF/PJ das partes (locador/locatário).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+        "requirementCode": "LEASE_GUARANTEE",
+        "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+        "requirementCode": "LEASE_INSPECTION",
+        "description": "Vistoria de entrada do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+        "requirementCode": "LEASE_OWNERSHIP",
+        "description": "Comprovação de titularidade do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+        "requirementCode": "LEASE_OBLIGATIONS",
+        "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+        "requiredStage": "LEGAL_REVIEW"
+       }
+      ]
+     },
+     "traceId": "ce96c271-463c-448b-8f14-54948101e1a2"
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0151-ce90f9",
+    "M5-A0234-075757",
+    "M5-A0255-a0f196",
+    "M5-A0322-89a1d9",
+    "M5-A0196-8a7471",
+    "M5-A0002-dc355e"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0110-29f58b",
+ "linhaCaderno": 263,
+ "requisito": "• Prazo crítico vencido abre ocorrência HIGH/CRITICAL.",
+ "correcao": "src/modules/legal/cases/legalDeadlineOccurrence.js needsOccurrence/openDeadlineOccurrence, conferido a cada rodada em legalDeadlineAlertJob.js",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.prazos.test.js",
+   "nome": "M5-A0110/§15: prazo LOW vencido já alertado, elevado a HIGH, abre UMA ocorrência HIGH na rodada seguinte",
+   "status": "pass",
+   "ms": 106.282,
+   "commitDoTeste": "33b32586",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: ocorrência aberta generatedMessage: false, code: 'ERR_ASSERTION', actual: null, expected: true, operator: '==', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.166Z"
+}

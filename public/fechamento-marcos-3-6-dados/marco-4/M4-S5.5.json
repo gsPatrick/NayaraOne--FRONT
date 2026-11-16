@@ -1,0 +1,104 @@
+{
+ "id": "M4-§5.5",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.financial_entries — \"Previstos/obrigações/direitos.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-06 duas baixas parciais fecham o lançamento: soma bate no centavo e o amount original nunca muda",
+   "status": "passou",
+   "duracaoMs": 265,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "REC-01",
+   "tipo": "http",
+   "linhas": [
+    "M4-§1",
+    "M4-§5.5",
+    "M4-G§15.1"
+   ],
+   "titulo": "Cria o recebível fictício de R$ 0,30 (CREDIT/RECEIVABLE, com centro de resultado)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": "0.30",
+    "description": "ACEITE-M4 recebível fictício de teste (duas baixas) 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "dueAt": "2026-11-10T12:00:00-03:00"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 71,
+   "quando": "2026-11-11T01:35:02.599Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "5514e0b1-b405-40eb-ab42-f7c0137021b2",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "0.30",
+     "description": "ACEITE-M4 recebível fictício de teste (duas baixas) 0871300",
+     "dueAt": "2026-11-10T15:00:00.000Z",
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:02.556Z",
+     "created_at": "2026-11-11T01:35:02.556Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

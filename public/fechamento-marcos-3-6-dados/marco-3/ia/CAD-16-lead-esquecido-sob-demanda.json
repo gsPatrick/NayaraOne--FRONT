@@ -1,0 +1,90 @@
+{
+  "capturadoEm": "2026-11-11T12:48:46.789Z",
+  "pedido": {
+    "taskType": "detectar_leads_esquecidos"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "b790fe0e-cc2f-433c-860a-c44380491add",
+        "status": "COMPLETED",
+        "answer": "Leads esquecidos na sua carteira [1]: 5 oportunidades sem contato há mais de 7 dias.\n1. QA-M3CB Cliente 179440130942949724 — etapa NEW, 30 dias sem contato (nenhum contato desde a abertura).\n2. QA-M3CB Cliente 179440132621147569 — etapa NEW, 20 dias sem contato (nenhum contato desde a abertura).\n3. QA-M3CB Cliente 179440131123027606 — etapa NEW, 12 dias sem contato (nenhum contato desde a abertura).\n4. QA-M3CB Cliente 179440132645392834 — etapa NEW, 12 dias sem contato (nenhum contato desde a abertura).\n5. QA-M3CB Cliente 179440132432921960 — etapa NEW, 10 dias sem contato (nenhum contato desde a abertura).",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "crm.opportunities",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Oportunidades abertas sem contato há mais de 7 dias: 5. QA-M3CB Cliente 179440130942949724: 30 dias; QA-M3CB Cliente 179440132621147569: 20 dias; QA-M3CB Cliente 179440131123027606: 12 dias; QA-M3CB Cliente 179440132645392834: 12 dias; QA-M3CB Cliente 179440132432921960: 10 dias",
+            "retrievedAt": "2026-11-11T12:48:46.666Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:46.666Z",
+        "proposals": [],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": {
+          "tipo": "LEADS_ESQUECIDOS",
+          "prazoDias": 7,
+          "total": 5,
+          "oportunidades": [
+            {
+              "id": "8fe3ff25-91e0-4734-8494-777f3ea28d82",
+              "cliente": "QA-M3CB Cliente 179440130942949724",
+              "etapa": "NEW",
+              "diasSemContato": 30,
+              "ultimoContatoEm": null,
+              "responsavel": "3f6766f7-e479-4050-941d-a07ca492ea60"
+            },
+            {
+              "id": "92bf00bc-537e-4647-a15e-abc5ef1a3dd9",
+              "cliente": "QA-M3CB Cliente 179440132621147569",
+              "etapa": "NEW",
+              "diasSemContato": 20,
+              "ultimoContatoEm": null,
+              "responsavel": "3f6766f7-e479-4050-941d-a07ca492ea60"
+            },
+            {
+              "id": "35bf0475-cb21-43b9-b4b3-59dd8238b510",
+              "cliente": "QA-M3CB Cliente 179440131123027606",
+              "etapa": "NEW",
+              "diasSemContato": 12,
+              "ultimoContatoEm": null,
+              "responsavel": "3f6766f7-e479-4050-941d-a07ca492ea60"
+            },
+            {
+              "id": "1928f715-63f5-4367-9f01-b244a04e3a17",
+              "cliente": "QA-M3CB Cliente 179440132645392834",
+              "etapa": "NEW",
+              "diasSemContato": 12,
+              "ultimoContatoEm": null,
+              "responsavel": "3f6766f7-e479-4050-941d-a07ca492ea60"
+            },
+            {
+              "id": "157c1943-fe95-41d3-ac07-29568d84fd3b",
+              "cliente": "QA-M3CB Cliente 179440132432921960",
+              "etapa": "NEW",
+              "diasSemContato": 10,
+              "ultimoContatoEm": null,
+              "responsavel": "3f6766f7-e479-4050-941d-a07ca492ea60"
+            }
+          ]
+        },
+        "replayed": false
+      }
+    }
+  }
+}

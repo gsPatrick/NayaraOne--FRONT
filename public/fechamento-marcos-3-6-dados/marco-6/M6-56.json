@@ -1,0 +1,122 @@
+{
+  "id": "M6-56",
+  "requisito": "\"Dependência cíclica → bloquear.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "stageDependencies.service.js (STAGE_DEPENDENCY_CYCLE)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/etapas/<etapa>: criar dependência que fecha ciclo",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-56: dependência cíclica entre etapas bloqueia (direta e transitiva)",
+      "resultado": "passou",
+      "duracaoMs": 411,
+      "executadoEm": "2026-11-11T00:12:37.594Z"
+    },
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "M6-56b: dependência entre etapas de OBRAS diferentes é bloqueada; UUID inexistente também",
+      "resultado": "passou",
+      "duracaoMs": 49,
+      "executadoEm": "2026-11-11T00:12:37.643Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H040",
+      "H041"
+    ],
+    "resumo": [
+      "H040 POST /api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/dependencies → 400 STAGE_DEPENDENCY_CYCLE",
+      "H041 POST /api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/dependencies → 400 STAGE_DEPENDENCY_SELF_REFERENCE"
+    ],
+    "dataHora": "2026-11-11T00:12:09.902Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H040",
+      "requisitos": [
+        "M6-03",
+        "M6-19",
+        "M6-56",
+        "M6-81"
+      ],
+      "cenario": "NEGATIVO: dependência cíclica transitiva (Fundação depende de Cobertura)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/dependencies",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "dependsOnStageId": "e16ccea5-a649-4817-8ca2-b9a797854c1e"
+      },
+      "statusHttp": 400,
+      "codigoErro": "STAGE_DEPENDENCY_CYCLE",
+      "esperado": "400 STAGE_DEPENDENCY_CYCLE",
+      "conferiu": true,
+      "duracaoMs": 233,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "STAGE_DEPENDENCY_CYCLE",
+          "message": "Esta dependência criaria um ciclo entre etapas (dependência circular).",
+          "traceId": "8b0736ad-192c-4b9f-bad9-59d298111db9"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.902Z"
+    },
+    {
+      "id": "H041",
+      "requisitos": [
+        "M6-03",
+        "M6-56"
+      ],
+      "cenario": "NEGATIVO: dependência direta da etapa com ela mesma",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8/dependencies",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "dependsOnStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 400,
+      "codigoErro": "STAGE_DEPENDENCY_SELF_REFERENCE",
+      "esperado": "400 STAGE_DEPENDENCY_SELF_REFERENCE",
+      "conferiu": true,
+      "duracaoMs": 14,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "STAGE_DEPENDENCY_SELF_REFERENCE",
+          "message": "Uma etapa não pode depender de si mesma.",
+          "traceId": "3e6bbf74-8d75-48eb-bb1e-80150bc36b2b"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.916Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C021",
+      "requisitos": [
+        "M6-03",
+        "M6-19",
+        "M6-56"
+      ],
+      "descricao": "Dependências gravadas (Alvenaria ← Fundação, Cobertura ← Alvenaria); a cíclica não foi gravada",
+      "sql": "SELECT count(*)::int AS dependencias FROM construction.stage_dependencies WHERE stage_id = ANY($1::uuid[])",
+      "resultado": [
+        {
+          "dependencias": 2
+        }
+      ],
+      "invariante": "exatamente 2",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.206Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.423Z"
+}

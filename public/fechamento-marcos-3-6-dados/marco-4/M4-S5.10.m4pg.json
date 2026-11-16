@@ -1,0 +1,112 @@
+{
+ "id": "M4-§5.10",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.approval_requests — \"Snapshot de aprovação.\"",
+ "substitui": "evidencias/marco-4/M4-S5.10.json",
+ "motivo": "Correção M4PG (verificação independente do Marco 4): approval_requests guarda snapshot e hash. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "f1f33f82",
+  "branchApi": "m4fix/pagamentos-verificacao",
+  "commitFront": "c574a8a",
+  "quando": "2026-11-11T12:09:43Z",
+  "ambiente": "Postgres 16 descartável (scripts/withDisposableDb.js; migrations do zero, seeds do CI e de dois tenants; RLS real, role de runtime sem bypass), API Express real em processo; ClamAV real na 3310."
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+   "noCommit": "passou",
+   "duracaoMs": 16268,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "expected='CRITICAL'"
+  },
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-§21.4/G§3/G§20.5: o retrato aprovado e o hash incluem o favorecido (banco, agência, conta, PIX), congelados no PREPARE",
+   "noCommit": "passou",
+   "duracaoMs": 1964,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error='o favorecido é congelado na preparação, não no envio'"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C03-1",
+   "titulo": "Pedido diz LOW; o servidor calcula pelo valor",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "relatedEntityType": "FinancialEntry",
+    "relatedEntityId": "58bdddab-4dad-45e8-93e4-4e2d51596679",
+    "riskLevel": "LOW"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:21.066Z",
+   "resposta": {
+    "id": "1b2b739b-088b-4f7e-9824-22a9af6ed3cb",
+    "status": "PENDING",
+    "amount": "100000000.00",
+    "snapshotHash": "8aa4b0f817e44e7d88a79bbe74c8bd839a1777e9d452a3d75733e03676d2284d",
+    "riskLevel": "CRITICAL",
+    "requiredApprovals": 2,
+    "riskSource": "PARAMETERS",
+    "relatedEntityType": "FinancialEntry",
+    "reason": null
+   }
+  },
+  {
+   "id": "C03-2",
+   "titulo": "Aprovador sem MFA recente é recusado",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/1b2b739b-088b-4f7e-9824-22a9af6ed3cb/decide",
+   "perfil": "semMfa",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "quando": "2026-11-11T10:54:21.355Z",
+   "resposta": {
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Esta ação exige verificação MFA recente. Verifique seu código em \"/users/me/mfa/verify\" e tente novamente."
+    }
+   }
+  },
+  {
+   "id": "C03-3",
+   "titulo": "Primeiro aprovador com MFA: 1 de 2, continua PENDING",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/1b2b739b-088b-4f7e-9824-22a9af6ed3cb/decide",
+   "perfil": "aprova",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:22.055Z",
+   "resposta": {}
+  },
+  {
+   "id": "C03-4",
+   "titulo": "Segundo aprovador com MFA: APPROVED",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/1b2b739b-088b-4f7e-9824-22a9af6ed3cb/decide",
+   "perfil": "aprova2",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:22.522Z",
+   "resposta": {}
+  }
+ ],
+ "sondasDoVerificador": null,
+ "sanitizacao": [
+  "Sem token de acesso, sem token de impacto da confirmação de nível 3 (só \"enviada\"), sem segredo TOTP, sem senha e sem string de conexão.",
+  "Usuários fictícios m4-<perfil>-<sufixo>@nayaraone.dev numa empresa isolada criada no banco descartável; MFA recente por linhas no banco descartável (nunca pelo endpoint de MFA)."
+ ]
+}

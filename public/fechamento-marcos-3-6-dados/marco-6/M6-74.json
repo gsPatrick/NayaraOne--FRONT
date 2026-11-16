@@ -1,0 +1,269 @@
+{
+  "id": "M6-74",
+  "requisito": "Evento mínimo project.delay.detected.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §11 Eventos mínimos; Guia do Marcelo (Obras) §11",
+  "implementacao": "constructionEvents.service.js#publishProjectDelayDetected (job projectDelayDetectionJob) (Outbox transacional, mesma transação do dado)",
+  "telaParaReteste": "Painel → /painel/obras/dashboard: obra atrasada sinalizada",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.minimumEvents.test.js",
+      "nome": "M6-69..M6-80: a jornada da obra grava na Outbox os 15 eventos mínimos do Caderno, com o nome exato",
+      "resultado": "passou",
+      "duracaoMs": 1392,
+      "executadoEm": "2026-11-11T00:13:57.177Z"
+    },
+    {
+      "arquivo": "test/construction.projectDelay.test.js",
+      "nome": "M6-74: projectDelayDetectionJob detecta obra atrasada e publica project.delay.detected",
+      "resultado": "passou",
+      "duracaoMs": 334,
+      "executadoEm": "2026-11-11T00:14:23.800Z"
+    },
+    {
+      "arquivo": "test/construction.projectDelay.test.js",
+      "nome": "M6-74: projectDelayDetectionJob cria Notification real pro responsável, e não duplica no mesmo dia",
+      "resultado": "passou",
+      "duracaoMs": 86,
+      "executadoEm": "2026-11-11T00:14:23.948Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H130",
+      "H132"
+    ],
+    "resumo": [
+      "H130 POST /api/v1/construction/projects → 201",
+      "H132 GET /api/v1/construction/projects/617092a6-2036-4b67-802d-9e2dd8068a9b/nay-summary → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:23.840Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H130",
+      "requisitos": [
+        "M6-74"
+      ],
+      "cenario": "Criar obra com prazo planejado vencido ontem",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "name": "Obra atrasada c4fcd6",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "managerUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "endsAtPlanned": "2026-11-10T00:12:23.802Z"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 38,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "617092a6-2036-4b67-802d-9e2dd8068a9b",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": null,
+          "unitId": null,
+          "name": "Obra atrasada c4fcd6",
+          "code": "OBRA-2026-0003",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "budgetAmount": null,
+          "costCenterId": null,
+          "startsAt": null,
+          "endsAtPlanned": "2026-11-10T00:12:23.802Z",
+          "status": "PLANNED",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:23.819Z",
+          "created_at": "2026-11-11T00:12:23.819Z",
+          "actualEndDate": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.840Z"
+    },
+    {
+      "id": "H132",
+      "requisitos": [
+        "M6-74",
+        "M6-101"
+      ],
+      "cenario": "NAY Obras da obra atrasada (risco de atraso apontado, sem decisão)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/617092a6-2036-4b67-802d-9e2dd8068a9b/nay-summary",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 31,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "component": "NAY Obras",
+          "generatedAt": "2026-11-11T00:12:24.755Z",
+          "summary": {
+            "physicalProgressPct": 0,
+            "plannedProgressPct": 0,
+            "scheduleDelayDays": 2,
+            "baselineBudget": 0,
+            "projectedTotalCost": 0,
+            "projectedMargin": 0,
+            "measurementsByStatus": {},
+            "wastagePct": null,
+            "recurrenceByRootCause": [],
+            "missingDailyReportDays": 10,
+            "workersWithoutDocuments": 0
+          },
+          "visualAnalysisSuggestions": [
+            {
+              "type": "NO_DAILY_REPORT_PHOTO",
+              "message": "Nenhum RDO desta obra tem foto anexada (evidenceFileIds vazio). Considere registrar evidência visual no próximo diário — sugestão baseada em metadados, pendente de confirmação humana.",
+              "referenceEntity": "construction.daily_reports",
+              "referenceId": null,
+              "ageDays": null
+            }
+          ],
+          "risks": [
+            "Obra atrasada em 2 dia(s) em relação ao prazo planejado."
+          ],
+          "decisionsMade": []
+        }
+      },
+      "dataHora": "2026-11-11T00:12:24.757Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C004",
+      "requisitos": [
+        "M6-69",
+        "M6-70",
+        "M6-71",
+        "M6-72",
+        "M6-73",
+        "M6-74",
+        "M6-75",
+        "M6-76",
+        "M6-77",
+        "M6-78",
+        "M6-79",
+        "M6-80",
+        "M6-105",
+        "M6-106"
+      ],
+      "descricao": "Eventos mínimos do Caderno §11 gravados na Outbox pela jornada (nome exato, um por agregado e chave de idempotência)",
+      "sql": "SELECT event_type, count(*)::int AS eventos, count(DISTINCT idempotency_key)::int AS chaves FROM integration.outbox_events WHERE event_type = ANY($1) AND (aggregate_id = ANY($2::uuid[]) OR payload_json->>'projectId' = ANY($3) OR payload_json->>'id' = ANY($3)) GROUP BY 1 ORDER BY 1",
+      "resultado": [
+        {
+          "event_type": "material.received",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "material.requested",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "measurement.approved",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "measurement.submitted",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.closed",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.opened",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "project.budget.approved",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.daily_log.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.delay.detected",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.delivered",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.stage.completed",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.started",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "warranty.case.closed",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "warranty.case.opened",
+          "eventos": 2,
+          "chaves": 2
+        }
+      ],
+      "invariante": "os 15 nomes presentes; eventos = chaves (nenhum evento duplicado)",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.180Z"
+    },
+    {
+      "id": "C019",
+      "requisitos": [
+        "M6-74"
+      ],
+      "descricao": "Atraso detectado: evento project.delay.detected e notificação; reexecução no mesmo dia não duplica",
+      "sql": "SELECT (SELECT count(*) FROM integration.outbox_events WHERE aggregate_id = $1 AND event_type = 'project.delay.detected')::int AS eventos",
+      "resultado": [
+        {
+          "eventos": 1
+        }
+      ],
+      "invariante": "exatamente um evento",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.204Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.436Z"
+}

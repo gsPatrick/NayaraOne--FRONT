@@ -1,0 +1,81 @@
+{
+ "id": "M4-G§17.9",
+ "secao": "Guia §17 CI/CD",
+ "requisito": "Etapa \"reconciliation_tests\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "contrato §11 scoreMatch aplica os pesos EXATOS do contrato (0.45/0.30/0.15/0.10)",
+   "status": "passou",
+   "duracaoMs": 92,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: os 17 estágios do Guia §17 com os nomes literais e na ordem do livro no estagios.json e no workflow",
+   "status": "passou",
+   "duracaoMs": 17,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: cada estágio tem comando e os testes exigidos existem de fato nos arquivos do estágio",
+   "status": "passou",
+   "duracaoMs": 32,
+   "commitDoArquivo": "3e3d2e05"
+  },
+  {
+   "arquivo": "test/m4.ciEsteiraFinanceiro.test.js",
+   "nome": "M4-G§17 esteira financeira: estágio de banco recusa rodar fora do banco descartável",
+   "status": "passou",
+   "duracaoMs": 100,
+   "commitDoArquivo": "3e3d2e05"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C42",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.6",
+    "M4-G§17.9"
+   ],
+   "titulo": "Conciliar de novo a mesma transação: recusado (conciliação duplicada)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/reconciliations",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "40d6a6d5-1540-4b45-a34d-37fa19e77063",
+    "bankTransactionId": "08314b06-c49b-4e49-93cb-c7c72c5f18eb"
+   },
+   "esperado": {
+    "status": 409
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_RECONCILIATION_ENTRY_ALREADY_MATCHED",
+   "ok": true,
+   "ms": 24,
+   "quando": "2026-11-11T01:35:11.790Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_RECONCILIATION_ENTRY_ALREADY_MATCHED",
+     "message": "Este lançamento financeiro já está conciliado com outra transação.",
+     "traceId": "bf3cf634-c465-42b0-b4f2-f56c29228279"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

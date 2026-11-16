@@ -1,0 +1,62 @@
+{
+ "id": "M4-§4.2",
+ "secao": "§4 Plano de contas",
+ "requisito": "\"Centro de custo obrigatório para despesa.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-04 dimensões obrigatórias: despesa sem centro de custo e receita sem centro de resultado são recusadas na criação",
+   "status": "passou",
+   "duracaoMs": 2,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N07",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.2"
+   ],
+   "titulo": "Despesa sem centro de custo é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 10,
+    "description": "Despesa sem centro de custo"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_ENTRY_COST_CENTER_REQUIRED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_ENTRY_COST_CENTER_REQUIRED",
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T01:35:01.359Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_ENTRY_COST_CENTER_REQUIRED",
+     "message": "Lançamento de despesa exige o centro de custo.",
+     "traceId": "624d3b8f-5afc-4149-85cc-88b95337d430"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

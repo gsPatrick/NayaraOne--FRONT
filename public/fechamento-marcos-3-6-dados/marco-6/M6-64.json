@@ -1,0 +1,91 @@
+{
+  "id": "M6-64",
+  "requisito": "\"IA atribui culpa → nenhum efeito automático.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "nayObras.service.js; agente NAY_OBRAS somente leitura",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>: card NAY Obras: só texto, nenhuma ação",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.nayNoAutomaticEffect.test.js",
+      "nome": "M6-64: pedir à NAY Obras (agente) que atribua culpa ao empreiteiro e aplique desconto não tem efeito automático",
+      "resultado": "passou",
+      "duracaoMs": 1909,
+      "executadoEm": "2026-11-11T00:14:10.037Z"
+    },
+    {
+      "arquivo": "test/construction.nayNoAutomaticEffect.test.js",
+      "nome": "M6-27/M6-64/M6-90: resumo determinístico da NAY Obras sobre obra atrasada, com NC crítica e garantia aberta não decide nem grava nada",
+      "resultado": "passou",
+      "duracaoMs": 632,
+      "executadoEm": "2026-11-11T00:14:08.123Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H176"
+    ],
+    "resumo": [
+      "H176 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary/post-obra → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:28.840Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H176",
+      "requisitos": [
+        "M6-101",
+        "M6-27",
+        "M6-64",
+        "M6-90"
+      ],
+      "cenario": "NAY Obras pós-obra: resumo sem atribuir culpa nem desconto",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nay-summary/post-obra",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 81,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "component": "NAY Obras",
+          "generatedAt": "2026-11-11T00:12:28.797Z",
+          "summary": {
+            "totalCases": 2,
+            "openCases": 1,
+            "closedCases": 1,
+            "avgResolutionHours": 0,
+            "totalLaborCost": 1300,
+            "totalMaterialCost": 210,
+            "totalWarrantyCost": 1510,
+            "casesByEscalationLevel": {
+              "NONE": 1,
+              "WARNING": 0,
+              "CRITICAL": 0,
+              "OVERDUE": 1
+            },
+            "totalWarrantyActions": 1,
+            "updatedAt": "2026-11-11T00:12:28.797Z"
+          },
+          "risks": [
+            "1 caso(s) de garantia com SLA vencido (OVERDUE)."
+          ],
+          "decisionsMade": []
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.840Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.431Z"
+}

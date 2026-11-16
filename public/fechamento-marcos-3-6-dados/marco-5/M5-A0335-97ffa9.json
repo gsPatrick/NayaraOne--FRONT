@@ -1,0 +1,666 @@
+{
+ "id": "M5-A0335-97ffa9",
+ "secao": "(abertura 3)",
+ "linhaCaderno": 868,
+ "requisito": "• Guaranteed rent: obrigação da empresa ao proprietário + crédito a recuperar do locatário.",
+ "demandas": "M5-D331;M5-D333;M5-D332",
+ "implementacao": "src/features/billing/guaranteedRent.service.js:89 payGuaranteedRent (lançamento PAYABLE empresa->proprietário + RECEIVABLE a recuperar do locatário, por competência, FOR UPDATE)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: aluguel garantido e antecipação são produtos/tabelas separados",
+   "status": "pass",
+   "ms": 118.004,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: dois pagamentos CONCORRENTES de aluguel garantido para a mesma competência não duplicam",
+   "status": "pass",
+   "ms": 29.816,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.rentAdvanceRecovery.test.js",
+   "nome": "ADV-REC-4: aluguel garantido segue separado — recuperação da antecipação não toca centros nem lançamentos do garantido",
+   "status": "pass",
+   "ms": 97.553,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (ALTO): objeto no lugar de identificador nas rotas da locação devolve 400 com código claro, nunca 500",
+   "status": "pass",
+   "ms": 128.566,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (ALTO): texto longo demais em pagamento do garantido, conta de consumo e pagamento de utilidade é 400",
+   "status": "pass",
+   "ms": 12.393,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-GR-01",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "GUARANTEED_RENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "GUARANTEED_RENT_VALIDATION"
+   },
+   "resumo": "erro GUARANTEED_RENT_VALIDATION: Os campos \"groupId\", \"companyId\", \"contractId\" e \"coverageStartsAt\" são obrigatórios.",
+   "quando": "2026-11-11T03:42:35.998Z"
+  },
+  {
+   "passo": "LC-GR-02",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=25868bee-9380-481a-aaae-8057979467ec",
+   "quando": "2026-11-11T03:42:36.009Z"
+  },
+  {
+   "passo": "LC-GR-03",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "GUARANTEED_RENT_DUPLICATE",
+   "esperado": {
+    "status": 409,
+    "codigo": "GUARANTEED_RENT_DUPLICATE"
+   },
+   "resumo": "erro GUARANTEED_RENT_DUPLICATE: Este contrato já está matriculado em aluguel garantido.",
+   "quando": "2026-11-11T03:42:36.018Z"
+  },
+  {
+   "passo": "LC-GR-04",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION"
+   },
+   "resumo": "erro GUARANTEED_RENT_PAYMENT_VALIDATION: Os campos \"period\" e \"amount\" são obrigatórios.",
+   "quando": "2026-11-11T03:42:36.024Z"
+  },
+  {
+   "passo": "LC-GR-05",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:36.031Z"
+  },
+  {
+   "passo": "LC-GR-06",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:36.068Z"
+  },
+  {
+   "passo": "LC-GR-07",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "GUARANTEED_RENT_PAYMENT_DUPLICATE",
+   "esperado": {
+    "status": 409,
+    "codigo": "GUARANTEED_RENT_PAYMENT_DUPLICATE"
+   },
+   "resumo": "erro GUARANTEED_RENT_PAYMENT_DUPLICATE: Já existe pagamento de aluguel garantido registrado para a competência \"01/2030\".",
+   "quando": "2026-11-11T03:42:36.074Z"
+  },
+  {
+   "passo": "LC-GR-26",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION"
+   },
+   "resumo": "erro GUARANTEED_RENT_PAYMENT_VALIDATION: O campo \"period\" deve estar no formato \"AAAA-MM\".",
+   "quando": "2026-11-11T03:42:36.375Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0335-97ffa9.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Pentest (ALTO, corrigido): competência longa no pagamento era 500; agora 400 (LC-GR-26).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/billing.test.js test/billing.rentAdvanceRecovery.test.js test/m5fech.locacao.pentest.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-GR-01, LC-GR-02, LC-GR-03, LC-GR-04, LC-GR-05, LC-GR-06, LC-GR-07, LC-GR-08, LC-GR-22, LC-GR-26, LC-GR-09)"
+ },
+ "passos": [
+  {
+   "id": "LC-GR-01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Aluguel garantido sem início de cobertura é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "GUARANTEED_RENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "GUARANTEED_RENT_VALIDATION",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:35.998Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GUARANTEED_RENT_VALIDATION",
+     "message": "Os campos \"groupId\", \"companyId\", \"contractId\" e \"coverageStartsAt\" são obrigatórios.",
+     "traceId": "a994ff93-9740-421c-93d4-f5542e3da089"
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Contrato matriculado no aluguel garantido",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+    "coverageStartsAt": "2030-01-01"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:36.009Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "25868bee-9380-481a-aaae-8057979467ec",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "ACTIVE",
+     "coverageStartsAt": "2030-01-01",
+     "coverageEndsAt": null,
+     "paymentsJson": [],
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:36.005Z",
+     "created_at": "2026-11-11T03:42:36.005Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Matricular o mesmo contrato de novo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+    "coverageStartsAt": "2030-01-01"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "GUARANTEED_RENT_DUPLICATE"
+   },
+   "status": 409,
+   "codigo": "GUARANTEED_RENT_DUPLICATE",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:36.018Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GUARANTEED_RENT_DUPLICATE",
+     "message": "Este contrato já está matriculado em aluguel garantido.",
+     "traceId": "35b4f080-25c6-48a6-a4f0-8dc7d12d2a5f"
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pagamento do garantido sem competência é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "corpoEnviado": {
+    "amount": 2500
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:36.024Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GUARANTEED_RENT_PAYMENT_VALIDATION",
+     "message": "Os campos \"period\" e \"amount\" são obrigatórios.",
+     "traceId": "385037cd-1d72-45c0-a702-9535d1f0e398"
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem billing:approve) não paga o garantido",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "corpoEnviado": {
+    "period": "2030-01",
+    "amount": 2500
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:36.031Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "billing:approve"
+     },
+     "traceId": "d39fc6ff-7135-473a-ac15-a559a86993ac"
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Paga o garantido da competência 2030-01: obrigação ao proprietário + crédito a recuperar do locatário",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "corpoEnviado": {
+    "period": "2030-01",
+    "amount": 2500
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 37,
+   "quando": "2026-11-11T03:42:36.068Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "guaranteedRentContract": {
+      "id": "25868bee-9380-481a-aaae-8057979467ec",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "status": "ACTIVE",
+      "coverageStartsAt": "2030-01-01",
+      "coverageEndsAt": null,
+      "paymentsJson": [
+       {
+        "period": "2030-01",
+        "amount": 2500,
+        "payableEntryId": "02a09eb7-a192-47c7-b975-8fe6df2c1b03",
+        "receivableEntryId": "e74fbaae-578e-4b7b-8691-148c03b812df",
+        "paidAt": "2026-11-11T03:42:36.061Z"
+       }
+      ],
+      "lockVersion": 1,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:36.005Z",
+      "updated_at": "2026-11-11T03:42:36.061Z",
+      "deleted_at": null,
+      "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca"
+     },
+     "payableEntry": {
+      "id": "02a09eb7-a192-47c7-b975-8fe6df2c1b03",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "bankAccountId": null,
+      "costCenterId": "2cbb7cbf-38ca-4237-bd57-48e9d7a3a348",
+      "resultCenterId": null,
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "DEBIT",
+      "nature": "PAYABLE",
+      "amount": "2500.00",
+      "description": "Aluguel garantido — pagamento ao proprietário, competência 01/2030.",
+      "dueAt": "2026-11-11T03:42:36.040Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "guaranteed_rent.payable:25868bee-9380-481a-aaae-8057979467ec:2030-01",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.042Z",
+      "created_at": "2026-11-11T03:42:36.042Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     },
+     "receivableEntry": {
+      "id": "e74fbaae-578e-4b7b-8691-148c03b812df",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "f603ce3e-21c6-4bb2-af5e-27dddda647be",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "2500.00",
+      "description": "Aluguel garantido — crédito a recuperar do locatário, competência 01/2030.",
+      "dueAt": "2026-11-11T03:42:36.054Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "guaranteed_rent.receivable:25868bee-9380-481a-aaae-8057979467ec:2030-01",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.056Z",
+      "created_at": "2026-11-11T03:42:36.056Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0335-97ffa9",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0345-019723"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pagar a mesma competência de novo é recusado (idempotência por competência)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "corpoEnviado": {
+    "period": "2030-01",
+    "amount": 2500
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "GUARANTEED_RENT_PAYMENT_DUPLICATE"
+   },
+   "status": 409,
+   "codigo": "GUARANTEED_RENT_PAYMENT_DUPLICATE",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:36.074Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GUARANTEED_RENT_PAYMENT_DUPLICATE",
+     "message": "Já existe pagamento de aluguel garantido registrado para a competência \"01/2030\".",
+     "traceId": "f69f2a20-5c7a-4c3e-baf3-acb35dc95a76"
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-26",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: competência longa demais no pagamento do garantido é 400",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "corpoEnviado": {
+    "period": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "amount": 10
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "GUARANTEED_RENT_PAYMENT_VALIDATION",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:36.375Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GUARANTEED_RENT_PAYMENT_VALIDATION",
+     "message": "O campo \"period\" deve estar no formato \"AAAA-MM\".",
+     "traceId": "1cd25d90-f97e-42f7-a7d5-d78cead823c2"
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-GR-08",
+   "req": [
+    "M5-A0335-97ffa9"
+   ],
+   "modulo": "26-locacao-garantido",
+   "perfil": "A:gestor",
+   "descricao": "Dois lançamentos do garantido: PAYABLE (empresa -> proprietário) e RECEIVABLE (locatário -> empresa), mesmo contrato e valor",
+   "sql": "SELECT id, nature, entry_type, amount, contract_id, description FROM finance.financial_entries WHERE id IN (:a, :b) ORDER BY nature",
+   "resultado": [
+    {
+     "id": "02a09eb7-a192-47c7-b975-8fe6df2c1b03",
+     "nature": "PAYABLE",
+     "entry_type": "DEBIT",
+     "amount": "2500.00",
+     "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "description": "Aluguel garantido — pagamento ao proprietário, competência 01/2030."
+    },
+    {
+     "id": "e74fbaae-578e-4b7b-8691-148c03b812df",
+     "nature": "RECEIVABLE",
+     "entry_type": "CREDIT",
+     "amount": "2500.00",
+     "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "description": "Aluguel garantido — crédito a recuperar do locatário, competência 01/2030."
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:36.076Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-GR-22",
+   "req": [
+    "M5-A0336-97de94",
+    "M5-A0335-97ffa9",
+    "M5-A0327-22b135",
+    "M5-A0345-019723"
+   ],
+   "modulo": "26-locacao-garantido",
+   "perfil": "A:gestor",
+   "descricao": "Produtos em tabelas separadas: guaranteed_rent_contracts x rent_advances do mesmo contrato",
+   "sql": "SELECT (SELECT count(*)::int FROM finance.guaranteed_rent_contracts WHERE contract_id = :c) AS garantido, (SELECT count(*)::int FROM finance.rent_advances WHERE contract_id = :c) AS antecipacoes, (SELECT status FROM finance.rent_advances WHERE id = :a) AS status_antecipacao",
+   "resultado": [
+    {
+     "garantido": 1,
+     "antecipacoes": 1,
+     "status_antecipacao": "RECOVERED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:36.350Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "LC-GR-09",
+   "req": [
+    "M5-A0342-a3762d",
+    "M5-A0335-97ffa9"
+   ],
+   "modulo": "26-locacao-garantido",
+   "perfil": "A:gestor",
+   "descricao": "Outbox: guaranteed_rent.paid da competência",
+   "sql": "SELECT event_type, idempotency_key FROM integration.outbox_events WHERE event_type = 'guaranteed_rent.paid' AND aggregate_id = :id",
+   "resultado": [
+    {
+     "event_type": "guaranteed_rent.paid",
+     "idempotency_key": "guaranteed_rent.paid:25868bee-9380-481a-aaae-8057979467ec:2030-01"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:36.077Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

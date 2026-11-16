@@ -1,0 +1,468 @@
+{
+ "esteira": "Marco 3 — Pessoas, Imóveis, CRM e Radar (Guia M3 §16)",
+ "commit": "d8a17f46b25269c9b56778547e670a8349c63970",
+ "release": false,
+ "de": 1,
+ "ate": 17,
+ "inicio": "2026-11-11T08:49:05.287Z",
+ "etapas": [
+  {
+   "numero": 1,
+   "nome": "lint",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "3 comando(s)",
+   "arquivosDeTeste": [],
+   "comandos": [
+    {
+     "argv": [
+      "npm",
+      "run",
+      "-s",
+      "lint"
+     ],
+     "status": 0
+    },
+    {
+     "argv": [
+      "npx",
+      "eslint",
+      "--max-warnings=0",
+      "scripts/ci-marco3",
+      "scripts/m3-load",
+      "scripts/loadTestMarco3.js",
+      "test/m3.ciEsteiraMarco3.test.js"
+     ],
+     "status": 0
+    },
+    {
+     "argv": [
+      "node",
+      "scripts/check-file-size.js",
+      "scripts/ci-marco3",
+      "scripts/m3-load"
+     ],
+     "status": 0
+    }
+   ],
+   "duracaoMs": 475698,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 2,
+   "nome": "typecheck",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "scripts/ci-marco3/typecheck.js"
+     ],
+     "status": 0
+    }
+   ],
+   "duracaoMs": 25694,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 3,
+   "nome": "migrations",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "2 comando(s)",
+   "arquivosDeTeste": [
+    "test/rls.catalog.allTables.test.js",
+    "test/crm.livroEntidades.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "scripts/ci-marco3/migracoes.js"
+     ],
+     "status": 0
+    },
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(2 arquivos)"
+     ],
+     "status": 0,
+     "testes": 81,
+     "passaram": 81,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 32942,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 4,
+   "nome": "people_dedup_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/people.dedupe.test.js",
+    "test/people.weakDedup.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(2 arquivos)"
+     ],
+     "status": 0,
+     "testes": 6,
+     "passaram": 6,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 15070,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 5,
+   "nome": "merge_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/people.mergeCpfConflict.test.js",
+    "test/people.mergeReinforced.test.js",
+    "test/properties.merge.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(3 arquivos)"
+     ],
+     "status": 0,
+     "testes": 10,
+     "passaram": 10,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 26359,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 6,
+   "nome": "property_offer_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/properties.offers.test.js",
+    "test/properties.priceRace.test.js",
+    "test/properties.registryUnique.test.js",
+    "test/properties.addressDedup.test.js",
+    "test/properties.internalOccurrencesIsolation.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(5 arquivos)"
+     ],
+     "status": 0,
+     "testes": 15,
+     "passaram": 15,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 71165,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 7,
+   "nome": "publication_gate_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/properties.publishGates.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(1 arquivos)"
+     ],
+     "status": 0,
+     "testes": 4,
+     "passaram": 4,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 19543,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 8,
+   "nome": "crm_invariant_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/crm.opportunities.test.js",
+    "test/marco3.crm.test.js",
+    "test/crm.opportunityOutcomeRace.test.js",
+    "test/crm.funnelStages.test.js",
+    "test/crm.permanentHistory.test.js",
+    "test/crm.ownerScope.test.js",
+    "test/marco3.minimumEvents.test.js",
+    "test/marco3.httpRoutes.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(8 arquivos)"
+     ],
+     "status": 0,
+     "testes": 44,
+     "passaram": 44,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 150624,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 9,
+   "nome": "radar_idempotency_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/radar.idempotency.test.js",
+    "test/radar.storedMatches.test.js",
+    "test/radar.eventDrivenMatch.test.js",
+    "test/radar.matching.test.js",
+    "test/radar.livroScoring.test.js",
+    "test/radar.http.test.js",
+    "test/marco3.batch2.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(7 arquivos)"
+     ],
+     "status": 0,
+     "testes": 24,
+     "passaram": 24,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 71613,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 10,
+   "nome": "consent_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/crm.optOutGate.test.js",
+    "test/marco3.acceptance.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(2 arquivos)"
+     ],
+     "status": 0,
+     "testes": 10,
+     "passaram": 10,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 17370,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 11,
+   "nome": "ai_grounding_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/marco9/ia/m9d034.fronteira.test.js",
+    "test/marco9/ia/m9d034.homologacao.test.js",
+    "test/marco9/ia/m9d034.http.test.js",
+    "test/marco9/ia/m9d034.proxima_acao.test.js",
+    "test/marco9/ia/m9d034.radar.test.js",
+    "test/marco9/ia/m9d034.rascunhos.test.js",
+    "test/marco9/ia/m9d034.resumo.test.js",
+    "test/people.dataQuality.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(8 arquivos)"
+     ],
+     "status": 0,
+     "testes": 25,
+     "passaram": 25,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 212322,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 12,
+   "nome": "multi_company_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [
+    "test/marco3.crossCompanyIsolation.test.js",
+    "test/people.mesmoGrupo.rls.test.js",
+    "test/people.mesmoGrupo.http.test.js",
+    "test/adversarial.crm.test.js",
+    "test/rls.policiesSelectPorEmpresa.test.js"
+   ],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "(5 arquivos)"
+     ],
+     "status": 0,
+     "testes": 36,
+     "passaram": 36,
+     "falharam": 0,
+     "pulados": 0
+    }
+   ],
+   "duracaoMs": 77523,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 13,
+   "nome": "security_scan",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "4 comando(s)",
+   "arquivosDeTeste": [],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "scripts/sastScan.js"
+     ],
+     "status": 0
+    },
+    {
+     "argv": [
+      "node",
+      "scripts/secretScan.js"
+     ],
+     "status": 0
+    },
+    {
+     "argv": [
+      "node",
+      "scripts/securityScan.js"
+     ],
+     "status": 0
+    },
+    {
+     "argv": [
+      "node",
+      "scripts/dependencyAudit.js"
+     ],
+     "status": 0
+    }
+   ],
+   "duracaoMs": 27770,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 14,
+   "nome": "deploy_DEV",
+   "tipo": "release",
+   "status": "NAO_APLICAVEL",
+   "motivo": "etapa de release: só em tag m3-release-* (job release-marco3)",
+   "duracaoMs": 0,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 15,
+   "nome": "deploy_LAB",
+   "tipo": "release",
+   "status": "NAO_APLICAVEL",
+   "motivo": "etapa de release: só em tag m3-release-* (job release-marco3)",
+   "duracaoMs": 0,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 16,
+   "nome": "load_tests",
+   "tipo": "push",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "arquivosDeTeste": [],
+   "comandos": [
+    {
+     "argv": [
+      "node",
+      "scripts/loadTestMarco3.js"
+     ],
+     "status": 0
+    }
+   ],
+   "duracaoMs": 35233,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  },
+  {
+   "numero": 17,
+   "nome": "production_approval",
+   "tipo": "aprovacao",
+   "status": "NAO_APLICAVEL",
+   "motivo": "só em tag m3-release-*, no job aprovacao-marco3 atrás do environment marco3-aprovacao (revisor obrigatório)",
+   "duracaoMs": 1,
+   "commit": "d8a17f46b25269c9b56778547e670a8349c63970"
+  }
+ ],
+ "fim": "2026-11-11T09:10:04.259Z"
+}

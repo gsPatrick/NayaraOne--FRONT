@@ -1,0 +1,421 @@
+{
+ "id": "M5-A0189-177dc8",
+ "secao": "P2 > 1. Ordem exata de implementação",
+ "linhaCaderno": 433,
+ "requisito": "10. legal_cases + case_parties.",
+ "demandas": "M5-D032;M5-D033;M5-D220",
+ "implementacao": "agregação dos requisitos M5-A0102-1a6313 (linha 244), M5-A0103-9d1f1e (linha 246), M5-A0104-c10a98 (linha 248), M5-A0105-1c9cc6 (linha 250), M5-A0106-ace96c (linha 252), M5-A0047-64780b (linha 101), M5-A0048-193c7d (linha 102)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: tem número, órgão, classe, status, partes, valor, risco e responsável (§14)",
+   "status": "pass",
+   "ms": 91.25,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: documento ligado por file_links entra no dossiê automático com hash, nome, data e origem do arquivo; arquivo inexistente é 404 (§14/§16)",
+   "status": "pass",
+   "ms": 42.003,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: movimentação relevante (fase, legal hold, parte, documento, prazo, remarcação, conclusão, dossiê, notificação) aparece na linha do tempo (§14)",
+   "status": "pass",
+   "ms": 93.926,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.versoesRecebivel.test.js",
+   "nome": "JR recebível do processo: estimativa nunca vira lançamento; o valor confirmado com base jurídica (acordo/sentença) vira UM recebível vinculado, e o confirmado não muda depois",
+   "status": "pass",
+   "ms": 256.977,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: valor estimado não vira recebível; valor confirmado fica separado do estimado (§14)",
+   "status": "pass",
+   "ms": 16.725,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.legal_cases: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 0.398,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.case_parties: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 0.459,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-P02",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=f5959797-2ec3-4630-a457-21529e647cfe",
+   "quando": "2026-11-11T03:42:37.163Z"
+  },
+  {
+   "passo": "JR-P08",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=a2e83252-6304-44ea-ade0-d476a23ecb7a",
+   "quando": "2026-11-11T03:42:37.274Z"
+  },
+  {
+   "passo": "JR-P13",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=OPEN, id=f5959797-2ec3-4630-a457-21529e647cfe",
+   "quando": "2026-11-11T03:42:37.346Z"
+  },
+  {
+   "passo": "JR-P13b",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED"
+   },
+   "resumo": "erro LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED: O processo não tem valor CONFIRMADO: estimativa processual não vira recebível.",
+   "quando": "2026-11-11T03:42:37.356Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0189-177dc8.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.processos.test.js test/m5fech.juridico.versoesRecebivel.test.js test/m5fech.meta.tabelasDoLivro.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-P02, JR-P08, JR-P13, JR-P13b, MT-T18-SQL, MT-T19-SQL)"
+ },
+ "passos": [
+  {
+   "id": "JR-P02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria processo com número, órgão, classe, valor estimado, risco, responsável e escalonamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "LITIGATION",
+    "caseNumber": "0001234-55.2026.8.26.mwbk",
+    "court": "1ª Vara Cível (fictícia)",
+    "caseClass": "Despejo por falta de pagamento",
+    "estimatedAmount": 18500.75,
+    "riskLevel": "HIGH",
+    "summary": "Processo fictício JR mwbkpjpjaok7",
+    "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+    "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:37.163Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "caseNumber": "0001234-55.2026.8.26.mwbk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": "Processo fictício JR mwbkpjpjaok7",
+     "court": "1ª Vara Cível (fictícia)",
+     "caseClass": "Despejo por falta de pagamento",
+     "riskLevel": "HIGH",
+     "estimatedAmount": "18500.75",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.153Z",
+     "created_at": "2026-11-11T03:42:37.153Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "confirmedAmount": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0102-1a6313",
+    "M5-A0217-4b2e80",
+    "M5-A0173-2531a4",
+    "M5-A0271-64d1b2",
+    "M5-A0106-ace96c",
+    "M5-A0273-a39e38",
+    "M5-A0138-650e64"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envia a petição inicial (arquivo fictício; SHA-256 calculado no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "peticao-mwbkpjpjaok7.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgUGV0acOnw6NvIGluaWNpYWwgZmljdMOtY2lhIG13YmtwanBqYW9rNw==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 45,
+   "quando": "2026-11-11T03:42:37.274Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "a2e83252-6304-44ea-ade0-d476a23ecb7a",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/b654f2d0-eaac-4ae6-a87b-0708fa1779bd-peticao-mwbkpjpjaok7.pdf",
+     "fileName": "peticao-mwbkpjpjaok7.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 49,
+     "checksumSha256": "952b2db5d8b3296a338c053c8a18e26780d725a7a475ccd90050c747214e75fc",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:37.249Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:37.249Z",
+     "created_at": "2026-11-11T03:42:37.249Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0103-9d1f1e",
+    "M5-A0113-48df89"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Mudança de fase do processo (movimentação relevante)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "corpoEnviado": {
+    "phase": "DISCOVERY"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:37.346Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "caseNumber": "0001234-55.2026.8.26.mwbk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "summary": "Processo fictício JR mwbkpjpjaok7",
+     "phase": "DISCOVERY",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "lockVersion": 1,
+     "legalHold": false,
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": "1ª Vara Cível (fictícia)",
+     "caseClass": "Despejo por falta de pagamento",
+     "estimatedAmount": "18500.75",
+     "confirmedAmount": null,
+     "riskLevel": "HIGH",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:37.153Z",
+     "updated_at": "2026-11-11T03:42:37.340Z",
+     "deleted_at": null,
+     "escalation_user_id": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "contract_id": null,
+     "property_id": null,
+     "responsible_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b"
+    }
+   },
+   "req": [
+    "M5-A0104-c10a98"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P13b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem valor CONFIRMADO, nada vai ao Financeiro: a estimativa não vira recebível",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/receivables",
+   "corpoEnviado": {
+    "basis": "SETTLEMENT",
+    "basisReference": "Acordo fictício",
+    "dueAt": "2030-03-10"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.356Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_RECEIVABLE_NOT_CONFIRMED",
+     "message": "O processo não tem valor CONFIRMADO: estimativa processual não vira recebível.",
+     "traceId": "ce43c8a0-f2ed-4920-a4bc-0b7a2663d31f"
+    }
+   },
+   "req": [
+    "M5-A0105-1c9cc6",
+    "M5-A0106-ace96c"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "MT-T18-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.legal_cases existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.legal_cases' AS tabela_do_livro, to_regclass('legal.legal_cases') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.legal_cases') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.legal_cases",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.604Z",
+   "req": [
+    "M5-A0047-64780b"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "MT-T19-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.case_parties existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.case_parties' AS tabela_do_livro, to_regclass('legal.case_parties') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.case_parties') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.case_parties",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.612Z",
+   "req": [
+    "M5-A0048-193c7d"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

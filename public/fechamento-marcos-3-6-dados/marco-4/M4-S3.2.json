@@ -1,0 +1,79 @@
+{
+ "id": "M4-§3.2",
+ "secao": "§3 Estrutura",
+ "requisito": "Consolidado Diretoria: \"Somente visão — Não mistura ledger nem saldos; agrega relatórios.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-IC4 consolidado do grupo elimina os dois lados da transferência (sem duplicidade) e só onde o usuário tem permissão",
+   "status": "passou",
+   "duracaoMs": 134,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "IC12",
+   "tipo": "http",
+   "linhas": [
+    "M4-§15.2",
+    "M4-§3.2"
+   ],
+   "titulo": "Consolidado do grupo: a transferência interna é eliminada só na apresentação",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/finance/reports/group-consolidated",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 29,
+   "quando": "2026-11-11T01:35:14.264Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "referenceMonth": null,
+     "companies": [
+      {
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "name": "CI — Empresa Fictícia A",
+       "totalCredits": 8833.36,
+       "totalDebits": 38370,
+       "intercompanyCredits": 0,
+       "intercompanyDebits": 0
+      }
+     ],
+     "eliminations": [],
+     "consolidated": {
+      "totalCredits": 8833.36,
+      "totalDebits": 38370,
+      "net": -29536.64
+     },
+     "excludedCompanies": [
+      {
+       "companyId": "213c5901-9715-45c1-95f6-02140a54efd3",
+       "name": "CI — Empresa Fictícia A2 (Construção) 0871300",
+       "reason": "Sem permissão finance:read nesta empresa."
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

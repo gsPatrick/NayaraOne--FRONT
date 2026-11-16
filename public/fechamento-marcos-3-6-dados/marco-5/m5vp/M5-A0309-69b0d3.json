@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0309-69b0d3",
+ "linhaCaderno": 48,
+ "requisito": "JUR-012 | Ocorrência contratual permanente | Aditivos, notificações, inadimplência e reparos entram na linha do tempo.",
+ "correcao": "src/modules/legal/contracts/application/contractTimeline.service.js: reparos = item DAMAGED de vistoria + construction.maintenance_cases do imóvel durante a vigência",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.objetivo.test.js",
+   "nome": "M5-A0309/JUR-012: reparos entram na linha do tempo — dano apontado em vistoria e registro de reparo do imóvel durante o contrato",
+   "status": "pass",
+   "ms": 109.469,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "só os reparos deste imóvel/contrato\n+ actual - expected\n\n  [\n-   '7fc019d2-1c86-46a1-bfb6-a21930347bf8',\n    'd7803c85-c7da-41d1-9db0-7b94ec4cc199'\n  ]\n"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.800Z"
+}

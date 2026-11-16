@@ -1,0 +1,149 @@
+{
+  "id": "M6-32",
+  "requisito": "API mínima: POST /budgets/:id/approve.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#approveBudget",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/orcamento: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-17/M6-32: aprovar orçamento fora de DRAFT (já APPROVED) é bloqueado",
+      "resultado": "passou",
+      "duracaoMs": 250,
+      "executadoEm": "2026-11-11T00:12:01.354Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-67: duas aprovações concorrentes do mesmo orçamento — só uma vence, a outra recebe conflito",
+      "resultado": "passou",
+      "duracaoMs": 337,
+      "executadoEm": "2026-11-11T00:12:11.009Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H017",
+      "H018",
+      "H019"
+    ],
+    "resumo": [
+      "H017 POST /api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve → 403 PERMISSION_DENIED",
+      "H018 POST /api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve → 200",
+      "H019 POST /api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve → 409 BUDGET_NOT_DRAFT"
+    ],
+    "dataHora": "2026-11-11T00:12:03.049Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H017",
+      "requisitos": [
+        "M6-32",
+        "M6-67"
+      ],
+      "cenario": "NEGATIVO: aprovar orçamento sem a permissão de aprovação (perfil de campo)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve",
+      "perfil": "Equipe de campo da Empresa A (só construction:create/read)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 403,
+      "codigoErro": "PERMISSION_DENIED",
+      "esperado": "403",
+      "conferiu": true,
+      "duracaoMs": 432,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+          "details": {
+            "required": "construction:approve"
+          },
+          "traceId": "9bc474b8-03a5-42c7-9e3f-598953c86137"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:03.049Z"
+    },
+    {
+      "id": "H018",
+      "requisitos": [
+        "M6-32",
+        "M6-17",
+        "M6-70",
+        "M6-46",
+        "M6-61",
+        "M6-98"
+      ],
+      "cenario": "Aprovar orçamento: baseline congelada (R$ 80.000,00), regra de margem gravada, obra vai para BUDGETED",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 549,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "b7894679-6a90-481b-a529-b239ae8647f3",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "status": "APPROVED",
+          "totalAmount": 80000,
+          "baselineAmount": 80000,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "approvedAt": "2026-11-11T00:12:03.407Z",
+          "approvedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.803Z",
+          "updated_at": "2026-11-11T00:12:03.407Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "rule_version_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:03.599Z"
+    },
+    {
+      "id": "H019",
+      "requisitos": [
+        "M6-17",
+        "M6-32",
+        "M6-82"
+      ],
+      "cenario": "NEGATIVO: aprovar de novo o orçamento já APPROVED",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 409,
+      "codigoErro": "BUDGET_NOT_DRAFT",
+      "esperado": "409 BUDGET_NOT_DRAFT",
+      "conferiu": true,
+      "duracaoMs": 266,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "BUDGET_NOT_DRAFT",
+          "message": "Este orçamento está já aprovado — só é possível aprovar um orçamento ainda em rascunho.",
+          "traceId": "02ae0c69-90b6-4919-a94a-44a01b0728a9"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:03.865Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.402Z"
+}

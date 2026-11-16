@@ -1,0 +1,74 @@
+{
+  "id": "M5-A0310-1efdf0",
+  "capturadoEm": "2026-11-11T10:27:20.386Z",
+  "passos": [
+    {
+      "id": "CT5-45",
+      "req": [
+        "M5-A0310-1efdf0"
+      ],
+      "titulo": "Centro de custo da empresa B",
+      "perfil": "B:gestor",
+      "metodo": "POST",
+      "rota": "/finance/cost-centers",
+      "corpoEnviado": {
+        "code": "M5CT-179439283258172258",
+        "name": "Centro de custo captura"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=4bfcaf7a-8d65-4255-85d5-09211d31137b, groupId=72cb4322-601d-423d-b4ba-2d0ae2439580, companyId=85ed0e3a-f560-428e-8950-c1d97a975972, code=M5CT-179439283258172258, name=Centro de custo captura",
+      "quando": "2026-11-11T10:27:20.110Z"
+    },
+    {
+      "id": "CT5-46",
+      "req": [
+        "M5-A0310-1efdf0"
+      ],
+      "titulo": "Lançamento da empresa B com o contrato da empresa A é recusado",
+      "perfil": "B:gestor",
+      "metodo": "POST",
+      "rota": "/finance/entries",
+      "corpoEnviado": {
+        "entryType": "DEBIT",
+        "nature": "PAYABLE",
+        "amount": 10,
+        "dueAt": "2030-01-10",
+        "description": "Captura JUR-013",
+        "costCenterId": "4bfcaf7a-8d65-4255-85d5-09211d31137b",
+        "contractId": "9539cc82-3b48-4055-bf2a-481e748546f2"
+      },
+      "status": 400,
+      "codigo": "FINANCE_ENTRY_CONTRACT_NOT_IN_COMPANY",
+      "esperado": {
+        "status": 400,
+        "codigo": "FINANCE_ENTRY_CONTRACT_NOT_IN_COMPANY"
+      },
+      "ok": true,
+      "resumo": "erro FINANCE_ENTRY_CONTRACT_NOT_IN_COMPANY: O contrato informado não existe nesta empresa: o lançamento só se vincula a contrato da própria empresa.",
+      "quando": "2026-11-11T10:27:20.240Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "CT5-47",
+      "req": [
+        "M5-A0310-1efdf0"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "Nenhum lançamento ligado ao contrato de A",
+      "sql": "SELECT count(*)::int AS n FROM finance.financial_entries WHERE contract_id = :id",
+      "resultado": [
+        {
+          "n": 0
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:27:20.378Z"
+    }
+  ]
+}

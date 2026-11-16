@@ -1,0 +1,19 @@
+{
+ "pastaDeOrigem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/esteira",
+ "arquivos": [
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/esteira/carga-marco3-2026-11-11.json",
+   "bytes": 5076,
+   "sha256": "156017b9980a124795cc58498f376f4be092ed8157065d89f6b693d168eb76cf",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/esteira/carga-marco3-2026-11-11.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/esteira/esteira-marco3.json",
+   "bytes": 9753,
+   "sha256": "b602b2e3c3a28c8d37459deb6eabac838c98d3638d82eb6a05eb5e546bc784a8",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3cb/esteira/esteira-marco3.json",
+   "mascarado": false
+  }
+ ]
+}

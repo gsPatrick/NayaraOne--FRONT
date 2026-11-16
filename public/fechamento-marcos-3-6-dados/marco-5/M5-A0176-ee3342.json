@@ -1,0 +1,423 @@
+{
+ "id": "M5-A0176-ee3342",
+ "secao": "P1 > 21. Definition of Done",
+ "linhaCaderno": 399,
+ "requisito": "☐ 15 testes adversariais verdes.",
+ "demandas": "X45-D074;M5-D047",
+ "implementacao": "Os 15 JUR-TS do §20 têm teste nomeado e verde nesta rodada (001..007 e 013..015 das áreas Contratos/Locação; 008..012 desta área)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L09: \"reverter\" uma ContractVersion é impossível — nova versão nunca reescreve a anterior e número repetido é barrado pelo banco",
+   "status": "pass",
+   "ms": 134.754,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-03 JUR-TS-002/§8: webhook com hash diferente da versão enviada é rejeitado; o mesmo hash confirma",
+   "status": "pass",
+   "ms": 227.718,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.requirements.test.js",
+   "nome": "JUR-TS-003: generateRequirementsForContract gera checklist de LEASE e assertRequirementsSatisfied bloqueia com PENDING",
+   "status": "pass",
+   "ms": 120.085,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.keyDeliveries.test.js",
+   "nome": "releaseKeyDelivery exige keysCount e termSignedByPersonId (JUR-TS-004 \"Chave cedo\")",
+   "status": "pass",
+   "ms": 166.142,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.guaranteeExpiry.test.js",
+   "nome": "JUR-TS-005: garantia já vencida também é alertada (não só \"prestes a vencer\")",
+   "status": "pass",
+   "ms": 54.67,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-06 JUR-TS-006/§11: correção de vistoria assinada cria revisão com itens copiados; o laudo original continua intacto e imutável",
+   "status": "pass",
+   "ms": 44.539,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-007: webhook de assinatura duplicado (mesmo id externo) gera uma única atualização, e SIGNED só com todas as assinaturas da versão",
+   "status": "pass",
+   "ms": 558.993,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-008: criar prazo crítico sem origem verificável é bloqueado (DEADLINE_SOURCE_REQUIRED, Guia §12) e nada é gravado; texto de origem sozinho não basta",
+   "status": "pass",
+   "ms": 87,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-009: prazo crítico vencido sem conclusão alerta o responsável, abre UMA ocorrência CRITICAL, publica legal.deadline.overdue e escala após 24 h",
+   "status": "pass",
+   "ms": 39.016,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.adversariais.test.js",
+   "nome": "JUR-TS-010: prova alterada — o hash diverge e a integridade falha (export adulterado e linha do banco reescrita)",
+   "status": "pass",
+   "ms": 18.427,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JUR-TS-011: exportar dossiê sem a permissão específica legal:evidence:export é negado (403 PERMISSION_DENIED, inclusive só com legal:read) sem registro EXPORTED; outra empresa/inexistente 404; com a permissão a DLP ainda exige finalidade e MFA (classe HIGH)",
+   "status": "pass",
+   "ms": 133.609,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.nay.test.js",
+   "nome": "JUR-TS-012: data errada extraída pela NAY não vira prazo crítico sem confirmação — sugestão PENDING_CONFIRMATION, não crítica, nenhum prazo criado",
+   "status": "pass",
+   "ms": 14.717,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-013: documento da empresa B é bloqueado na versão, no checklist e no aditivo da empresa A, e B não lê o contrato de A",
+   "status": "pass",
+   "ms": 806.798,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-014: aditivo não sobrescreve o contrato — cabeçalho, versões e hash intactos; versão não tem rota de edição e o banco recusa UPDATE",
+   "status": "pass",
+   "ms": 464.636,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "caução totalmente devolvida não bloqueia; saldo parcial bloqueia",
+   "status": "pass",
+   "ms": 41.346,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G3: webhook de assinatura (externalSignatureId) duplicado é idempotente — não republica evento nem reprocessa efeito",
+   "status": "pass",
+   "ms": 302.528,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L11: anexar mídia de vistoria com arquivo de outro tenant não vincula nada (o File não existe sob o RLS do atacante)",
+   "status": "pass",
+   "ms": 43.703,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "M5-25: aditivos têm numeração sequencial por contrato e histórico nunca é editado",
+   "status": "pass",
+   "ms": 180.939,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-D02",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "resumo": "erro DEADLINE_SOURCE_REQUIRED: Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jur",
+   "quando": "2026-11-11T03:42:37.618Z"
+  },
+  {
+   "passo": "JR-E14",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "A:mascarado",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.799Z"
+  },
+  {
+   "passo": "JR-Y14",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 7 campo(s)",
+   "quando": "2026-11-11T03:42:39.888Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0176-ee3342.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/adversarial.legal.test.js test/m45.cadernoM5Gaps.test.js test/legal.requirements.test.js test/legal.keyDeliveries.test.js test/legal.guaranteeExpiry.test.js test/m5fech.contratos.adversariais.test.js test/m5fech.juridico.adversariais.test.js test/m5fech.juridico.rotas.test.js test/m5fech.juridico.nay.test.js test/legal.frente5.rules.test.js test/marco5.auditGapClosureR1.test.js test/marco5.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-D02, JR-D36, JR-E26, JR-E14, JR-Y14)"
+ },
+ "passos": [
+  {
+   "id": "JR-D02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "CRIAR prazo crítico sem origem é bloqueado (JUR-TS-008)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/632a809b-fcfe-4173-9852-e69456dfa385/deadlines",
+   "corpoEnviado": {
+    "description": "Contestação",
+    "dueAt": "2026-11-26T03:42:37.605Z",
+    "criticality": "CRITICAL",
+    "responsibleUserId": null
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "DEADLINE_SOURCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "DEADLINE_SOURCE_REQUIRED",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.618Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "DEADLINE_SOURCE_REQUIRED",
+     "message": "Informe o documento (sourceFileId) ou o evento (sourceEventId) que originou o prazo — todo prazo jurídico precisa de uma origem verificável.",
+     "traceId": "60b1eca8-18d9-49d0-8f7b-986dd3966bae"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0107-dce0a2",
+    "M5-A0156-d0fcff",
+    "M5-A0238-193275",
+    "M5-A0258-4d0dd8",
+    "M5-A0206-d4f5e0",
+    "M5-A0218-5853eb"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E26",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-010: prova alterada no export (hash de item trocado) → integridade falha contra o hash gravado",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "verifyEvidencePackageIntegrity(export adulterado, package_hash)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 0,
+   "quando": "2026-11-11T03:42:38.962Z",
+   "corpo": {
+    "result": {
+     "valid": false,
+     "recomputedHash": "eb3f46b622c04c3e879a4dee51c51c6ed0c61e45f1dc43dd52606c60f1c4be21",
+     "expectedHash": "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0158-4d694b",
+    "M5-A0239-f593a7",
+    "M5-A0307-653b7c"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-E14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: perfil sem legal:read exporta o dossiê: negado",
+   "perfil": "A:mascarado",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:38.799Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:evidence:export"
+     },
+     "traceId": "fd831be6-e29e-4f64-b72a-5c7ebe8e65b6"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0159-a8f148",
+    "M5-A0147-3b57ed"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-012: NAY extrai datas (uma inexistente, outra possivelmente errada): tudo PENDING_CONFIRMATION, não crítico, nenhum prazo criado",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "corpoEnviado": {
+    "legalCaseId": "3878035f-979a-40dd-964f-4972f2dee8b8",
+    "text": "Audiência em 31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+    "referenceDate": "2026-11-03T12:00:00-03:00"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:39.888Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "sugestoes": [
+      {
+       "tipo": "DATA_EXPLICITA",
+       "trecho": "Audiência em 31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+       "vencimentoSugerido": "2026-11-13T15:00:00.000Z",
+       "natureza": "EXTRAIDO",
+       "status": "PENDING_CONFIRMATION",
+       "critico": false,
+       "confirmacao": "Prazo só passa a existir quando uma pessoa o cadastra em POST /legal/cases/:id/deadlines com origem verificável (sourceFileId/sourceEventId) e responsável."
+      },
+      {
+       "tipo": "PRAZO_DIAS_UTEIS",
+       "dias": 5,
+       "trecho": "31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+       "vencimentoSugerido": "2026-11-10T15:00:00.000Z",
+       "natureza": "ESTIMADO",
+       "baseDeCalculo": "2026-11-03T15:00:00.000Z",
+       "status": "PENDING_CONFIRMATION",
+       "critico": false,
+       "confirmacao": "Prazo só passa a existir quando uma pessoa o cadastra em POST /legal/cases/:id/deadlines com origem verificável (sourceFileId/sourceEventId) e responsável."
+      }
+     ],
+     "prazosCriados": 0,
+     "fontes": [
+      {
+       "origem": "texto informado",
+       "caracteres": 94,
+       "legalCaseId": "3878035f-979a-40dd-964f-4972f2dee8b8"
+      }
+     ],
+     "aiRunId": "ca7c2fc1-6451-4b58-9ce7-d797d8a5a2a8"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0122-0f8a78",
+    "M5-A0160-df7d81",
+    "M5-A0241-f5402f",
+    "M5-A0305-1ecad7",
+    "M5-A0175-e0569a",
+    "M5-A0274-fcaec5"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-D36",
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0109-d70c4e",
+    "M5-A0110-29f58b",
+    "M5-A0140-1d5cc9",
+    "M5-A0157-aeca75",
+    "M5-A0230-6b9dbf",
+    "M5-A0139-b9fb17",
+    "M5-A0229-87c693",
+    "M5-A0273-a39e38"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:gestor",
+   "descricao": "Prazo vencido: severidade alertada, ocorrência CRITICAL única, escalonado, eventos legal.deadline.created e legal.deadline.overdue (uma vez) e notificações ao responsável e ao escalonamento",
+   "sql": "SELECT d.last_alerted_severity, d.escalated_at IS NOT NULL AS escalado, d.status, (SELECT count(*) FROM core.tasks t WHERE t.related_entity_type = 'legal.legal_deadlines' AND t.related_entity_id = d.id AND t.priority = 'CRITICAL') AS ocorrencias, (SELECT count(*) FROM integration.outbox_events o WHERE o.aggregate_id = d.id AND o.event_type = 'legal.deadline.overdue') AS eventos_overdue, (SELECT count(*) FROM integration.outbox_events o WHERE o.aggregate_id = d.id AND o.event_type = 'legal.deadline.created') AS eventos_created, (SELECT count(*) FROM core.notifications n WHERE n.user_id = :resp AND n.title = 'Prazo jurídico VENCIDO' AND n.body LIKE '%' || d.description || '%') AS avisos_responsavel, (SELECT count(*) FROM core.notifications n WHERE n.user_id = :esc AND n.body LIKE '%' || d.description || '%') AS avisos_escalonamento FROM legal.legal_deadlines d WHERE d.id = :id",
+   "resultado": [
+    {
+     "last_alerted_severity": "OVERDUE",
+     "escalado": true,
+     "status": "PENDING",
+     "ocorrencias": "1",
+     "eventos_overdue": "1",
+     "eventos_created": "1",
+     "avisos_responsavel": "1",
+     "avisos_escalonamento": "1"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.345Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

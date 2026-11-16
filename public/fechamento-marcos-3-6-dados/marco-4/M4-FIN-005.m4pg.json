@@ -1,0 +1,261 @@
+{
+ "id": "M4-FIN-005",
+ "secao": "§2 Princípios",
+ "requisito": "FIN-005 Dupla aprovação por risco: \"Limites vêm do Motor de Regras; aprovação usa snapshot/hash.\"",
+ "substitui": "evidencias/marco-4/M4-FIN-005.json",
+ "motivo": "Correção M4PG (verificação independente do Marco 4): limites do Motor de Regras/parâmetros; approval_request com snapshot e hash. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "f1f33f82",
+  "branchApi": "m4fix/pagamentos-verificacao",
+  "commitFront": "c574a8a",
+  "quando": "2026-11-11T12:09:43Z",
+  "ambiente": "Postgres 16 descartável (scripts/withDisposableDb.js; migrations do zero, seeds do CI e de dois tenants; RLS real, role de runtime sem bypass), API Express real em processo; ClamAV real na 3310."
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+   "noCommit": "passou",
+   "duracaoMs": 16268,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "expected='CRITICAL'"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-§8.5/§8.6: intenção de R$ 120.000,00 (HIGH) exige 2 aprovadores distintos com MFA recente; quem preparou não aprova",
+   "noCommit": "passou",
+   "duracaoMs": 18554,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error=\"Cannot read properties of null (reading 'riskLevel')\""
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6: as faixas são parâmetros da empresa e a versão publicada da REG-FIN-002 decide risco e aprovadores quando define",
+   "noCommit": "passou",
+   "duracaoMs": 8268,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error='Chave de configuração desconhecida: \"pagamentos.faixa.baixo_ate\".'"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C03-1",
+   "titulo": "Pedido diz LOW; o servidor calcula pelo valor",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "relatedEntityType": "FinancialEntry",
+    "relatedEntityId": "58bdddab-4dad-45e8-93e4-4e2d51596679",
+    "riskLevel": "LOW"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:21.066Z",
+   "resposta": {
+    "id": "1b2b739b-088b-4f7e-9824-22a9af6ed3cb",
+    "status": "PENDING",
+    "amount": "100000000.00",
+    "snapshotHash": "8aa4b0f817e44e7d88a79bbe74c8bd839a1777e9d452a3d75733e03676d2284d",
+    "riskLevel": "CRITICAL",
+    "requiredApprovals": 2,
+    "riskSource": "PARAMETERS",
+    "relatedEntityType": "FinancialEntry",
+    "reason": null
+   }
+  },
+  {
+   "id": "C03-2",
+   "titulo": "Aprovador sem MFA recente é recusado",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/1b2b739b-088b-4f7e-9824-22a9af6ed3cb/decide",
+   "perfil": "semMfa",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "quando": "2026-11-11T10:54:21.355Z",
+   "resposta": {
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Esta ação exige verificação MFA recente. Verifique seu código em \"/users/me/mfa/verify\" e tente novamente."
+    }
+   }
+  },
+  {
+   "id": "C03-3",
+   "titulo": "Primeiro aprovador com MFA: 1 de 2, continua PENDING",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/1b2b739b-088b-4f7e-9824-22a9af6ed3cb/decide",
+   "perfil": "aprova",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:22.055Z",
+   "resposta": {}
+  },
+  {
+   "id": "C03-4",
+   "titulo": "Segundo aprovador com MFA: APPROVED",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests/1b2b739b-088b-4f7e-9824-22a9af6ed3cb/decide",
+   "perfil": "aprova2",
+   "corpoEnviado": {
+    "decision": "APPROVED"
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:22.522Z",
+   "resposta": {}
+  },
+  {
+   "id": "C05-1",
+   "titulo": "PREPARE de R$ 120.000,00: risco HIGH, 2 aprovações (faixas da DEC-004)",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "698686cb-1615-4f70-9a30-bd011449374f"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:32.505Z",
+   "resposta": {
+    "id": "41b5bff2-b7fd-4639-8c41-22afb93ac889",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "120000.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447046734642",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447011731453",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "5d23ea53-16d7-4a4a-902b-1239dc0d2f5d"
+    },
+    "snapshotHash": "ea14cc23662ec44b5fc21cf172813b910b39c661db6416b25bcf4cb185e6fdc4",
+    "approval": {
+     "id": "4213193b-9654-4238-aecf-b84f4be6b45d",
+     "riskLevel": "HIGH",
+     "requiredApprovals": 2,
+     "approvedCount": 0,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:41b5bff2-b7fd-4639-8c41-22afb93ac889"
+   }
+  },
+  {
+   "id": "C05-2",
+   "titulo": "Aprovador sem MFA recente é recusado",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/41b5bff2-b7fd-4639-8c41-22afb93ac889/approve",
+   "perfil": "semMfa",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "quando": "2026-11-11T10:54:32.654Z",
+   "resposta": {
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Esta ação exige verificação MFA recente. Verifique seu código em \"/users/me/mfa/verify\" e tente novamente."
+    }
+   }
+  },
+  {
+   "id": "C05-3",
+   "titulo": "Primeira aprovação: 1 de 2",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/41b5bff2-b7fd-4639-8c41-22afb93ac889/approve",
+   "perfil": "aprova",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:33.726Z",
+   "resposta": {
+    "id": "41b5bff2-b7fd-4639-8c41-22afb93ac889",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "120000.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447046734642",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447011731453",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "5d23ea53-16d7-4a4a-902b-1239dc0d2f5d"
+    },
+    "snapshotHash": "ea14cc23662ec44b5fc21cf172813b910b39c661db6416b25bcf4cb185e6fdc4",
+    "approval": {
+     "id": "4213193b-9654-4238-aecf-b84f4be6b45d",
+     "riskLevel": "HIGH",
+     "requiredApprovals": 2,
+     "approvedCount": 1,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:41b5bff2-b7fd-4639-8c41-22afb93ac889"
+   }
+  },
+  {
+   "id": "C05-4",
+   "titulo": "Segunda aprovação: APPROVED",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/41b5bff2-b7fd-4639-8c41-22afb93ac889/approve",
+   "perfil": "aprova2",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:34.389Z",
+   "resposta": {
+    "id": "41b5bff2-b7fd-4639-8c41-22afb93ac889",
+    "status": "APPROVED",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "120000.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447046734642",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447011731453",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "5d23ea53-16d7-4a4a-902b-1239dc0d2f5d"
+    },
+    "snapshotHash": "ea14cc23662ec44b5fc21cf172813b910b39c661db6416b25bcf4cb185e6fdc4",
+    "approval": {
+     "id": "4213193b-9654-4238-aecf-b84f4be6b45d",
+     "riskLevel": "HIGH",
+     "requiredApprovals": 2,
+     "approvedCount": 2,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:41b5bff2-b7fd-4639-8c41-22afb93ac889"
+   }
+  }
+ ],
+ "sondasDoVerificador": {
+  "V2-P2": {
+   "arquivo": "scratchpad/v2own/probe/verif2.probe.test.js (sonda do verificador 2, sem alteração)",
+   "naBase41addaa2_relatorioDoVerificador": {
+    "entryRequiresManualReview": true,
+    "approvalRiskLevel": "LOW",
+    "intentApprovedByOnePerson": "APPROVED"
+   },
+   "noCommit": {
+    "entryRequiresManualReview": true,
+    "approvalRiskLevel": "CRITICAL",
+    "intentError": "MFA_REQUIRED_NOT_ENABLED"
+   }
+  }
+ },
+ "sanitizacao": [
+  "Sem token de acesso, sem token de impacto da confirmação de nível 3 (só \"enviada\"), sem segredo TOTP, sem senha e sem string de conexão.",
+  "Usuários fictícios m4-<perfil>-<sufixo>@nayaraone.dev numa empresa isolada criada no banco descartável; MFA recente por linhas no banco descartável (nunca pelo endpoint de MFA)."
+ ]
+}

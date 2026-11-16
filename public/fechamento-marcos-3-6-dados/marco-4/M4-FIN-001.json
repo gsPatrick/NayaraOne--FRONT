@@ -1,0 +1,322 @@
+{
+ "id": "M4-FIN-001",
+ "secao": "§2 Princípios",
+ "requisito": "FIN-001 Empresa obrigatória: \"Todo lançamento pertence a uma única company_id.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/adversarial.finance.test.js",
+   "nome": "ADV-F02 forjar companyId no payload (escrever lançamento na empresa vizinha) é barrado pelo banco, não pela UI",
+   "status": "passou",
+   "duracaoMs": 35,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.crossCompanyIsolation.test.js",
+   "nome": "FIN-TS-020: financial_entries é isolado por EMPRESA — outra empresa do mesmo grupo nunca vê o lançamento",
+   "status": "passou",
+   "duracaoMs": 74,
+   "commitDoArquivo": "35aaf028"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "E01",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-001",
+    "M4-G§1.4"
+   ],
+   "titulo": "companyId forjado no corpo é ignorado: o lançamento nasce na empresa do token",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 15,
+    "description": "Forjando empresa 0871300",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "companyId": "213c5901-9715-45c1-95f6-02140a54efd3"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 62,
+   "quando": "2026-11-11T01:35:05.493Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "43eef209-a606-4556-811a-a16dee808329",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": null,
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "15.00",
+     "description": "Forjando empresa 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:05.449Z",
+     "created_at": "2026-11-11T01:35:05.449Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "E05",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-020",
+    "M4-FIN-001"
+   ],
+   "titulo": "Tenant B lista lançamentos: nenhum do tenant A",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 801,
+   "quando": "2026-11-11T01:35:06.347Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": []
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q09",
+   "linhas": [
+    "M4-FIN-001",
+    "M4-G§17.11"
+   ],
+   "descricao": "RLS ligada e forçada nas tabelas do Financeiro (exceto a tabela de roteamento do webhook bancário, que só guarda id externo -> empresa para o callback público achar o tenant)",
+   "sql": "select c.relname, c.relrowsecurity, c.relforcerowsecurity from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'finance' and c.relkind = 'r' and c.relname not like '%provider_routing' order by 1",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "relname": "anomaly_cases",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "approval_requests",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "approval_steps",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_accounts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_statement_entries",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_statement_imports",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "bank_transactions",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "billing_schedule_items",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "billing_schedules",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "budgets_forecasts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "chart_of_account_versions",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "chart_of_accounts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "collection_cadence_steps",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "collection_cases",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "commission_installments",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "commissions",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "cost_centers",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "financial_entries",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "guaranteed_rent_contracts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "intercompany_transfers",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "owner_repasses",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "ownership_transfer_tasks",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "payment_intents",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "period_closure_snapshots",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "period_closures",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "reconciliations",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "rent_adjustments",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "rent_advances",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "result_centers",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "tax_documents",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "utility_accounts",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "utility_obligations",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    },
+    {
+     "relname": "utility_reimbursements",
+     "relrowsecurity": true,
+     "relforcerowsecurity": true
+    }
+   ],
+   "invariante": "todas com relrowsecurity e relforcerowsecurity",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.719Z"
+  }
+ ]
+}

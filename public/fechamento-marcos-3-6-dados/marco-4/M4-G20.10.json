@@ -1,0 +1,199 @@
+{
+ "id": "M4-G§20.10",
+ "secao": "Guia §20 DoD do Marcelo",
+ "requisito": "\"Relatório semanal conferido contra fonte.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-20 getWeeklyHealthReport bate com a soma manual dos lançamentos criados no teste",
+   "status": "passou",
+   "duracaoMs": 76,
+   "commitDoArquivo": "fa15be9f"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "REC-11",
+   "tipo": "http",
+   "linhas": [
+    "M4-§19.3",
+    "M4-G§20.10"
+   ],
+   "titulo": "Relatório semanal DEPOIS das baixas (efeito no relatório)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/reports/weekly-health",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 52,
+   "quando": "2026-11-11T01:35:03.268Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "generatedAt": "2026-11-11T01:35:03.234Z",
+     "windowEndsAt": "2026-11-18T03:00:00.000Z",
+     "payablePending": {
+      "count": 1,
+      "total": 10
+     },
+     "receivablePending": {
+      "count": 1,
+      "total": 1500
+     },
+     "projectedNetBalance": 1490,
+     "overdue": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      },
+      "total": 0
+     },
+     "dueNextSevenDays": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 1,
+       "total": 1500
+      }
+     },
+     "dueNext30Days": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 1,
+       "total": 1500
+      }
+     },
+     "dueNext60Days": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 1,
+       "total": 1500
+      }
+     },
+     "thirdPartyFunds": {
+      "count": 0,
+      "total": 0,
+      "basis": "PENDING",
+      "label": "Dinheiro de terceiros em aberto (previsto)",
+      "description": "Soma dos lançamentos de dinheiro de terceiro (cauções etc.) ainda pendentes. Não é o que já está retido em caixa."
+     },
+     "delinquencyRatio": 0,
+     "pendingReconciliations": {
+      "count": 0,
+      "total": 0
+     },
+     "provisionedCommissions": {
+      "count": 0,
+      "total": 0
+     },
+     "pendingOwnerRepasses": {
+      "count": 0,
+      "total": 0
+     },
+     "openHighRiskAnomalies": 0,
+     "managementAlerts": {
+      "recurringManualReconciliation": {
+       "label": "Conciliação manual recorrente",
+       "openCases": 0,
+       "latestReason": "Nenhum alerta aberto.",
+       "latestCaseId": null
+      }
+     },
+     "freeCash": {
+      "grossBankBalance": 0,
+      "thirdPartyHeld": 0,
+      "thirdPartyHeldBasis": "SETTLED",
+      "thirdPartyHeldLabel": "Dinheiro de terceiros retido em caixa (realizado)",
+      "thirdPartyHeldDescription": "Dinheiro de terceiro já recebido e ainda não devolvido; é o que sai do saldo bancário para chegar ao caixa livre. Difere do total em aberto, que é previsto.",
+      "value": 0
+     },
+     "marginBySector": [
+      {
+       "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+       "revenueRealized": 0.6,
+       "costsAttributed": 0,
+       "margin": 0.6
+      }
+     ],
+     "breathingNeed": {
+      "value": -1500,
+      "excludesFreeCashBalance": false
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H11",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.18",
+    "M4-G§20.10"
+   ],
+   "titulo": "Orçado x realizado da competência (conferido contra os lançamentos)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/budget-forecasts/compare?competenceMonth=2026-11",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T01:35:16.258Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "nature": "PAYABLE",
+      "forecasted": 5000,
+      "realized": 2175,
+      "variance": -2825
+     },
+     {
+      "nature": "RECEIVABLE",
+      "forecasted": 0,
+      "realized": 2200.6,
+      "variance": 2200.6
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

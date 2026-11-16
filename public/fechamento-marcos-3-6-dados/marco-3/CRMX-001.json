@@ -1,0 +1,109 @@
+{
+  "id": "CRMX-001",
+  "secao": "Livro §2 Princípios",
+  "requisito": "Pessoa única: um CPF/CNPJ corresponde a um cadastro mestre, salvo exceção auditada.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 12,
+      "casos": [
+        "dedup_cpf"
+      ],
+      "descricao": "Mesmo CPF de novo: bloqueado e aponta o cadastro existente",
+      "metodo": "POST",
+      "rota": "/api/v1/people",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Outra Maria mwbdc8mt0kr7",
+        "taxIdNormalized": "72519586192"
+      },
+      "status": 409,
+      "codigoErro": "PERSON_DUPLICATE",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DUPLICATE",
+          "message": "Já existe uma pessoa cadastrada com o mesmo documento ou contato principal.",
+          "details": {
+            "existingPersonId": "f6d6adbf-0670-4128-a50d-3896159d8e6a"
+          },
+          "traceId": "d27ea47a-031f-42aa-8289-b92b23d3934b"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:19.703Z"
+    },
+    {
+      "seq": 13,
+      "casos": [
+        "dedup_cpf"
+      ],
+      "descricao": "Mesmo CPF com allowDuplicate: o match forte continua bloqueando",
+      "metodo": "POST",
+      "rota": "/api/v1/people",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personType": "PF",
+        "legalName": "Outra Maria mwbdc8mt0kr7",
+        "taxIdNormalized": "72519586192",
+        "allowDuplicate": true
+      },
+      "status": 409,
+      "codigoErro": "PERSON_DUPLICATE_TAX_ID",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DUPLICATE_TAX_ID",
+          "message": "Já existe uma pessoa com este documento (CPF/CNPJ) neste grupo. Esta duplicidade é uma restrição de identidade e não pode ser forçada com \"allowDuplicate\".",
+          "traceId": "cc83eb7f-c902-4f48-9cb0-9f060e9d00ae"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:19.750Z"
+    },
+    {
+      "seq": 14,
+      "casos": [
+        "dedup_cnpj"
+      ],
+      "descricao": "Mesmo CNPJ de novo: bloqueado",
+      "metodo": "POST",
+      "rota": "/api/v1/people",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "personType": "PJ",
+        "legalName": "Outra Imobiliária mwbdc8mt0kr7",
+        "taxIdNormalized": "91349210000145"
+      },
+      "status": 409,
+      "codigoErro": "PERSON_DUPLICATE",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PERSON_DUPLICATE",
+          "message": "Já existe uma pessoa cadastrada com o mesmo documento ou contato principal.",
+          "details": {
+            "existingPersonId": "8a08397e-302b-4bcc-b3e7-50d543c06285"
+          },
+          "traceId": "7e979b27-3141-458c-a3f2-4835abbde201"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:19.771Z"
+    }
+  ],
+  "consultasBanco": []
+}

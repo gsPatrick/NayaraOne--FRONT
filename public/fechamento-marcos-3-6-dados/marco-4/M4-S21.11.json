@@ -1,0 +1,63 @@
+{
+ "id": "M4-§21.11",
+ "secao": "§21 Definition of Done",
+ "requisito": "\"NAY sem permissão de execução financeira.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.nayNoExecution.test.js",
+   "nome": "FIN-TS-014: não existe nenhum módulo de execução financeira acessível por \"NAY\" fora das rotas HTTP protegidas",
+   "status": "passou",
+   "duracaoMs": 84,
+   "commitDoArquivo": "e0eec045"
+  },
+  {
+   "arquivo": "test/finance.nay.test.js",
+   "nome": "NAY-FIN-04: não executa nada — lançamentos, intenções, fechamentos, extratos, conciliações, aprovações e contas bancárias idênticos depois de chamar a NAY; só ai_runs cresce",
+   "status": "passou",
+   "duracaoMs": 307,
+   "commitDoArquivo": "390b60db"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H25",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.11"
+   ],
+   "titulo": "Execução financeira sem sessão humana (como um agente sem login) é recusada: 401",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/da58d0e3-b0ed-431d-9ebc-20e84c111029/execute",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 401
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T01:35:16.557Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "0beeae8c-58dd-4715-89fa-1c7b5d485227"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

@@ -1,0 +1,125 @@
+{
+ "id": "M4-§13.3",
+ "secao": "§13 Cauções",
+ "requisito": "\"Movimentação exige vínculo com contrato e titular.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F04-2: negativos — sem origem, origem inexistente, contrato divergente, titular divergente e valor acima do saldo",
+   "status": "passou",
+   "duracaoMs": 41,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F04-4: no recebimento, o titular precisa ser parte do contrato",
+   "status": "passou",
+   "duracaoMs": 6,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "D2: caução sem contrato/titular é recusada; titular precisa ser locatário/comprador/fiador",
+   "status": "passou",
+   "duracaoMs": 23,
+   "commitDoArquivo": "7dd7af78"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T01",
+   "tipo": "http",
+   "linhas": [
+    "M4-§13.3"
+   ],
+   "titulo": "Caução sem contrato e sem titular: recusada (vínculo obrigatório)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 3000,
+    "description": "Caução do contrato 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+    "isThirdPartyFunds": true,
+    "thirdPartyReference": "Caução contrato LOC-0871300"
+   },
+   "esperado": {
+    "status": 400
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_THIRD_PARTY_LINK_REQUIRED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T01:35:12.084Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_THIRD_PARTY_LINK_REQUIRED",
+     "message": "Recebimento de caução exige o contrato e o titular. Informe os dois.",
+     "traceId": "bd233d6f-7900-4446-8670-28c563c0abd6"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "T02",
+   "tipo": "http",
+   "linhas": [
+    "M4-§13.3"
+   ],
+   "titulo": "Titular da caução que não é locatário/comprador/fiador do contrato: recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 3000,
+    "description": "Caução do contrato 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+    "isThirdPartyFunds": true,
+    "thirdPartyReference": "Caução contrato LOC-0871300",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+    "thirdPartyHolderPersonId": "dba6f294-223c-4b90-a13e-f4bc9674ffdd"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_THIRD_PARTY_HOLDER_ROLE_INVALID"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_THIRD_PARTY_HOLDER_ROLE_INVALID",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T01:35:12.099Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_THIRD_PARTY_HOLDER_ROLE_INVALID",
+     "message": "O titular da caução precisa ser locatário, comprador ou fiador do contrato (papel atual: LANDLORD).",
+     "traceId": "d6d432ac-f4f5-421a-a497-830ee2cec2b3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

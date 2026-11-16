@@ -1,0 +1,569 @@
+{
+ "id": "M5-A0301-5baec1",
+ "secao": "P1 > 2. Princípios constitucionais [tabela: Código | Princípio | Regra]",
+ "linhaCaderno": 27,
+ "requisito": "JUR-003 | Checklist obrigatório | Etapa não avança com documento obrigatório faltante.",
+ "demandas": "M5-D013;M5-D002;M5-D012",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js gate por etapa (assertRequirementsSatisfied(contractId, targetStage)); requirements.service.js satisfyRequirement exige arquivo da empresa",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.checklist.test.js",
+   "nome": "JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança",
+   "status": "pass",
+   "ms": 387.882,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.maquinaTipos.test.js",
+   "nome": "Guia §3/§5: DRAFT -> LEGAL_REVIEW direto com checklist completo; LEGAL_REVIEW -> DRAFT mesmo com pendência; atalhos fora do livro recusados",
+   "status": "pass",
+   "ms": 494.592,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.requirements.test.js",
+   "nome": "AUD-009: transitionContractStatus BLOQUEIA avanço de status com requirement PENDING (gate estava desligado)",
+   "status": "pass",
+   "ms": 274.326,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.rodada3.test.js",
+   "nome": "Mensagens: recusa por documento faltante traz o rótulo das exigências; os códigos ficam em campo estruturado; a linha do tempo usa rótulos",
+   "status": "pass",
+   "ms": 3999.641,
+   "commitDoTeste": "cbd80b79"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-111",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_REQUIREMENTS_PENDING: Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos",
+   "quando": "2026-11-11T03:42:24.526Z"
+  },
+  {
+   "passo": "CT-111c",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "resumo": "erro LEGAL_REQUIREMENTS_PENDING: Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos",
+   "quando": "2026-11-11T03:42:24.589Z"
+  },
+  {
+   "passo": "CT-113",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=32b6ad97-10c6-41b3-89cb-063726a68813",
+   "quando": "2026-11-11T03:42:24.654Z"
+  },
+  {
+   "passo": "CT-114",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/dd50497d-0e64-4fed-9e1a-979bb6a73514",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=SATISFIED, id=dd50497d-0e64-4fed-9e1a-979bb6a73514",
+   "quando": "2026-11-11T03:42:24.709Z"
+  },
+  {
+   "passo": "CT-516",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_REQUIREMENT_FILE_NOT_FOUND: Documento informado em \"satisfiedByFileId\" não encontrado nesta empresa.",
+   "quando": "2026-11-11T03:42:29.147Z"
+  },
+  {
+   "passo": "CT-134c",
+   "metodo": "GET",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/timeline",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:25.368Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0301-5baec1.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.checklist.test.js \"JUR-003/JUR-TS-003: com exigência obrigatória pendente o contrato não avança por HTTP; com a exigência satisfeita por arquivo real, avança\"; test/m5fech.contratos.maquinaTipos.test.js \"Guia §3/§5: DRAFT -> LEGAL_REVIEW direto com checklist completo; LEGAL_REVIEW -> DRAFT mesmo com pendência; atalhos fora do livro recusados\"; test/legal.requirements.test.js \"AUD-009: transitionContractStatus BLOQUEIA avanço de status com requirement PENDING (gate estava desligado)\"; test/m5fech.contratos.rodada3.test.js \"Mensagens: recusa por documento faltante traz o rótulo das exigências; os códigos ficam em campo estruturado; a linha do tempo usa rótulos\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.checklist.test.js test/m5fech.contratos.maquinaTipos.test.js test/legal.requirements.test.js test/m5fech.contratos.rodada3.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-111, CT-111c, CT-113, CT-114, CT-516, CT-134c, CT-134d)"
+ },
+ "passos": [
+  {
+   "id": "CT-111",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DRAFT -> LEGAL_REVIEW (do Guia §3) com documento obrigatório faltante: bloqueado pelo gate da etapa LEGAL_REVIEW",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.526Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENTS_PENDING",
+     "message": "Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização); Vistoria de entrada do imóvel; Comprovação de titularidade do imóvel; Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "details": {
+      "stage": "LEGAL_REVIEW",
+      "missingRequirementCodes": [
+       "LEASE_PF_PJ_DOCS",
+       "LEASE_GUARANTEE",
+       "LEASE_INSPECTION",
+       "LEASE_OWNERSHIP",
+       "LEASE_OBLIGATIONS"
+      ],
+      "pending": [
+       {
+        "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+        "requirementCode": "LEASE_PF_PJ_DOCS",
+        "description": "Documentos PF/PJ das partes (locador/locatário).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+        "requirementCode": "LEASE_GUARANTEE",
+        "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+        "requirementCode": "LEASE_INSPECTION",
+        "description": "Vistoria de entrada do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+        "requirementCode": "LEASE_OWNERSHIP",
+        "description": "Comprovação de titularidade do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+        "requirementCode": "LEASE_OBLIGATIONS",
+        "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+        "requiredStage": "LEGAL_REVIEW"
+       }
+      ]
+     },
+     "traceId": "ce96c271-463c-448b-8f14-54948101e1a2"
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0151-ce90f9",
+    "M5-A0234-075757",
+    "M5-A0255-a0f196",
+    "M5-A0322-89a1d9",
+    "M5-A0196-8a7471",
+    "M5-A0002-dc355e"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-111c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-003: DOCUMENTS_PENDING -> LEGAL_REVIEW com documento faltante é bloqueado",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_REQUIREMENTS_PENDING"
+   },
+   "status": 409,
+   "codigo": "LEGAL_REQUIREMENTS_PENDING",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:24.589Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENTS_PENDING",
+     "message": "Não é possível avançar para a etapa de revisão jurídica: faltam documentos obrigatórios — Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização); Vistoria de entrada do imóvel; Comprovação de titularidade do imóvel; Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "details": {
+      "stage": "LEGAL_REVIEW",
+      "missingRequirementCodes": [
+       "LEASE_PF_PJ_DOCS",
+       "LEASE_GUARANTEE",
+       "LEASE_INSPECTION",
+       "LEASE_OWNERSHIP",
+       "LEASE_OBLIGATIONS"
+      ],
+      "pending": [
+       {
+        "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+        "requirementCode": "LEASE_PF_PJ_DOCS",
+        "description": "Documentos PF/PJ das partes (locador/locatário).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "db41729a-9498-44d1-91e5-8d7b5b8b7202",
+        "requirementCode": "LEASE_GUARANTEE",
+        "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "95c94b20-8943-4782-9fe6-4e89f68c9dd7",
+        "requirementCode": "LEASE_INSPECTION",
+        "description": "Vistoria de entrada do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "7996b029-530d-46fc-b0bb-f4acd01a9652",
+        "requirementCode": "LEASE_OWNERSHIP",
+        "description": "Comprovação de titularidade do imóvel.",
+        "requiredStage": "LEGAL_REVIEW"
+       },
+       {
+        "id": "ca27680e-5840-46ba-b541-aecd4e51e6a1",
+        "requirementCode": "LEASE_OBLIGATIONS",
+        "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+        "requiredStage": "LEGAL_REVIEW"
+       }
+      ]
+     },
+     "traceId": "1fcdcac7-df13-4f9c-a29d-3256fc2b5723"
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0151-ce90f9",
+    "M5-A0234-075757",
+    "M5-A0322-89a1d9"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-113",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Arquivo fictício do documento de identificação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "documento.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "RG9jdW1lbnRvIGZpY3TDrWNpbyA4NTQzMjY5",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 53,
+   "quando": "2026-11-11T03:42:24.654Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "32b6ad97-10c6-41b3-89cb-063726a68813",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/bc82d586-94fa-4af2-82d7-1886c2865c38-documento.pdf",
+     "fileName": "documento.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 27,
+     "checksumSha256": "382d3bb7898215afd8758258553c8f79f26f5bb0b6e37d1507d308d761074d04",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:24.629Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.629Z",
+     "created_at": "2026-11-11T03:42:24.629Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-114",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exigência satisfeita com arquivo real da empresa",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/dd50497d-0e64-4fed-9e1a-979bb6a73514",
+   "corpoEnviado": {
+    "satisfiedByFileId": "32b6ad97-10c6-41b3-89cb-063726a68813"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 55,
+   "quando": "2026-11-11T03:42:24.709Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "dd50497d-0e64-4fed-9e1a-979bb6a73514",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "requirementCode": "LEASE_PF_PJ_DOCS",
+     "description": "Documentos PF/PJ das partes (locador/locatário).",
+     "requirementType": "PF_DOCUMENT",
+     "status": "SATISFIED",
+     "satisfiedByFileId": "32b6ad97-10c6-41b3-89cb-063726a68813",
+     "satisfiedAt": "2026-11-11T03:42:24.702Z",
+     "waivedReason": null,
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:24.448Z",
+     "updated_at": "2026-11-11T03:42:24.702Z",
+     "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0166-103bce"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-516",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Fail closed: documento inexistente não satisfaz exigência",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede",
+   "corpoEnviado": {
+    "satisfiedByFileId": "11111111-1111-4111-8111-111111111111"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_REQUIREMENT_FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:29.147Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_REQUIREMENT_FILE_NOT_FOUND",
+     "message": "Documento informado em \"satisfiedByFileId\" não encontrado nesta empresa.",
+     "traceId": "3b3a8d9b-5faf-4cf7-9dc6-66889ccf40fc"
+    }
+   },
+   "req": [
+    "M5-A0312-5a734e",
+    "M5-A0301-5baec1"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-134c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Linha do tempo do contrato com os estados em português (código cru só em campo estruturado)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/timeline",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 31,
+   "quando": "2026-11-11T03:42:25.368Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "items": [
+      {
+       "type": "STATUS_CHANGE",
+       "occurredAt": "2026-11-11T03:42:24.554Z",
+       "referenceId": "e7bf5be1-6b79-4f5d-83d9-9964b96064ae",
+       "summary": "Situação do contrato mudou de \"Rascunho\" para \"Documentos pendentes\"",
+       "details": {
+        "fromStatus": "DRAFT",
+        "toStatus": "DOCUMENTS_PENDING"
+       }
+      },
+      {
+       "type": "STATUS_CHANGE",
+       "occurredAt": "2026-11-11T03:42:24.817Z",
+       "referenceId": "d0af6f93-38f0-41d1-9e0f-55f949b03796",
+       "summary": "Situação do contrato mudou de \"Documentos pendentes\" para \"Revisão jurídica\"",
+       "details": {
+        "fromStatus": "DOCUMENTS_PENDING",
+        "toStatus": "LEGAL_REVIEW"
+       }
+      },
+      {
+       "type": "STATUS_CHANGE",
+       "occurredAt": "2026-11-11T03:42:24.874Z",
+       "referenceId": "357a7329-ef5a-4569-8c34-67a1fcfdea3d",
+       "summary": "Situação do contrato mudou de \"Revisão jurídica\" para \"Rascunho\"",
+       "details": {
+        "fromStatus": "LEGAL_REVIEW",
+        "toStatus": "DRAFT"
+       }
+      },
+      {
+       "type": "STATUS_CHANGE",
+       "occurredAt": "2026-11-11T03:42:24.911Z",
+       "referenceId": "928c4574-cfad-465b-8ef9-10c29e4e3538",
+       "summary": "Situação do contrato mudou de \"Rascunho\" para \"Revisão jurídica\"",
+       "details": {
+        "fromStatus": "DRAFT",
+        "toStatus": "LEGAL_REVIEW"
+       }
+      },
+      {
+       "type": "STATUS_CHANGE",
+       "occurredAt": "2026-11-11T03:42:25.124Z",
+       "referenceId": "b295c5e3-b683-4878-a039-67221d671fe1",
+       "summary": "Situação do contrato mudou de \"Revisão jurídica\" para \"Aprovado\"",
+       "details": {
+        "fromStatus": "LEGAL_REVIEW",
+        "toStatus": "APPROVED"
+       }
+      },
+      {
+       "type": "STATUS_CHANGE",
+       "occurredAt": "2026-11-11T03:42:25.162Z",
+       "referenceId": "7dce3ab4-62e6-4e02-96dc-f0e9cb2524c5",
+       "summary": "Situação do contrato mudou de \"Aprovado\" para \"Em assinatura\"",
+       "details": {
+        "fromStatus": "APPROVED",
+        "toStatus": "SIGNING"
+       }
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0301-5baec1",
+    "M5-A0322-89a1d9"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-134d",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Conferência: nenhum resumo da linha do tempo traz código de estado",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "confere CT-134c",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 0,
+   "quando": "2026-11-11T03:42:25.368Z",
+   "corpo": {
+    "result": [
+     "Situação do contrato mudou de \"Rascunho\" para \"Documentos pendentes\"",
+     "Situação do contrato mudou de \"Documentos pendentes\" para \"Revisão jurídica\"",
+     "Situação do contrato mudou de \"Revisão jurídica\" para \"Rascunho\"",
+     "Situação do contrato mudou de \"Rascunho\" para \"Revisão jurídica\"",
+     "Situação do contrato mudou de \"Revisão jurídica\" para \"Aprovado\"",
+     "Situação do contrato mudou de \"Aprovado\" para \"Em assinatura\""
+    ]
+   },
+   "req": [
+    "M5-A0301-5baec1"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "servico"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

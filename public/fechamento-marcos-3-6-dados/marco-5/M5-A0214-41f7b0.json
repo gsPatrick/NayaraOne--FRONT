@@ -1,0 +1,615 @@
+{
+ "id": "M5-A0214-41f7b0",
+ "secao": "P2 > 14. APIs mínimas [tabela: Endpoint | Função]",
+ "linhaCaderno": 686,
+ "requisito": "POST /inspections | Criar vistoria.",
+ "demandas": "M5-D026;M5-D047",
+ "implementacao": "src/modules/legal/shared/legal.routes.js POST /api/v1/inspections (rota literal do Guia §14) e POST /api/v1/legal/inspections (legal:create) -> src/modules/legal/inspections/inspection.service.js:44 createInspection",
+ "tela": "Contratos > Vistorias (/painel/contratos/vistorias, /painel/contratos/vistorias/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.http.test.js",
+   "nome": "fechamento M5 Guia §14/HTTP: rotas literais POST /contracts/:id/guarantees, POST /inspections e POST /inspections/:id/sign usam o mesmo serviço, permissão e MFA",
+   "status": "pass",
+   "ms": 49.482,
+   "commitDoTeste": "fd18a57a"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-05 §11: tipos ENTRY/EXIT/INTERMEDIATE/FINAL do Caderno são gravados com o código do livro (CHECK_IN/CHECK_OUT/PERIODIC só como apelido de entrada); tipo inventado é recusado",
+   "status": "pass",
+   "ms": 25.447,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.frente5.rules.test.js",
+   "nome": "vistoria: falha no meio de createInspectionWithItems não deixa vistoria nem itens",
+   "status": "pass",
+   "ms": 44.955,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (CRÍTICO): vistoria com imóvel ou contrato de OUTRA empresa é 404 e nada é gravado",
+   "status": "pass",
+   "ms": 372.48,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (ALTO): objeto no lugar de identificador nas rotas da locação devolve 400 com código claro, nunca 500",
+   "status": "pass",
+   "ms": 128.566,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-46",
+   "metodo": "POST",
+   "rota": "/inspections",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=844b63b5-d177-4414-a931-344af7f52fe0",
+   "quando": "2026-11-11T03:42:31.801Z"
+  },
+  {
+   "passo": "LC-VI-01",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+   "quando": "2026-11-11T03:42:31.161Z"
+  },
+  {
+   "passo": "LC-VI-02",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=3fe6d1c0-eeed-408d-82da-189250a0249f",
+   "quando": "2026-11-11T03:42:31.183Z"
+  },
+  {
+   "passo": "LC-VI-03",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=516056c1-3b32-4c23-a22c-e26bbc3ebb48",
+   "quando": "2026-11-11T03:42:31.198Z"
+  },
+  {
+   "passo": "LC-VI-04",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=SCHEDULED, id=56133638-64f4-425b-804a-b6715dfeac82",
+   "quando": "2026-11-11T03:42:31.209Z"
+  },
+  {
+   "passo": "LC-VI-06",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:31.222Z"
+  },
+  {
+   "passo": "LC-VI-44",
+   "metodo": "GET",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_INSPECTION_NOT_FOUND",
+   "esperado": {
+    "status": 404
+   },
+   "resumo": "erro LEGAL_INSPECTION_NOT_FOUND: Vistoria não encontrada.",
+   "quando": "2026-11-11T03:42:31.777Z"
+  },
+  {
+   "passo": "LC-VI-52",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_INSPECTION_PROPERTY_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_INSPECTION_PROPERTY_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_INSPECTION_PROPERTY_NOT_FOUND: Imóvel não encontrado.",
+   "quando": "2026-11-11T03:42:31.820Z"
+  },
+  {
+   "passo": "LC-VI-53",
+   "metodo": "POST",
+   "rota": "/inspections",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_VALIDATION"
+   },
+   "resumo": "erro LEGAL_INSPECTION_VALIDATION: O campo \"propertyId\" deve ser um identificador válido.",
+   "quando": "2026-11-11T03:42:31.828Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0214-41f7b0.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Rota literal do Guia §14 (POST /inspections) adicionada como apelido da rota /legal (LC-VI-46). Teste novo m5fech.locacao.http \"rotas literais\". Pentest (CRÍTICO, corrigido): POST /inspections com imóvel/contrato de outra empresa gravava na empresa de quem chamava; agora 404 sem gravar (LC-VI-52); objeto no lugar do id 400 (LC-VI-53).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.http.test.js test/m45.cadernoM5Gaps.test.js test/legal.frente5.rules.test.js test/m5fech.locacao.pentest.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-46, LC-VI-01, LC-VI-02, LC-VI-03, LC-VI-04, LC-VI-06, LC-VI-44, LC-VI-52, LC-VI-53)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-46",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rota literal do Guia §14 POST /inspections cria a vistoria com o mesmo serviço",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "INTERMEDIATE"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:31.801Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "844b63b5-d177-4414-a931-344af7f52fe0",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "INTERMEDIATE",
+     "scheduledAt": null,
+     "status": "SCHEDULED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.796Z",
+     "created_at": "2026-11-11T03:42:31.796Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0214-41f7b0",
+    "M5-A0087-6b7f4a"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria vistoria do tipo ENTRY (código do livro)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "ENTRY"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:31.161Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "ENTRY",
+     "scheduledAt": null,
+     "status": "SCHEDULED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.155Z",
+     "created_at": "2026-11-11T03:42:31.155Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0009-e79a24",
+    "M5-A0087-6b7f4a",
+    "M5-A0214-41f7b0",
+    "M5-A0170-eac51d"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria vistoria do tipo EXIT (código do livro)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "EXIT"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:31.183Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "3fe6d1c0-eeed-408d-82da-189250a0249f",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "EXIT",
+     "scheduledAt": null,
+     "status": "SCHEDULED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.179Z",
+     "created_at": "2026-11-11T03:42:31.179Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0009-e79a24",
+    "M5-A0087-6b7f4a",
+    "M5-A0214-41f7b0",
+    "M5-A0170-eac51d"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria vistoria do tipo INTERMEDIATE (código do livro)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "INTERMEDIATE"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:31.198Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "516056c1-3b32-4c23-a22c-e26bbc3ebb48",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "INTERMEDIATE",
+     "scheduledAt": null,
+     "status": "SCHEDULED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.193Z",
+     "created_at": "2026-11-11T03:42:31.193Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0087-6b7f4a",
+    "M5-A0214-41f7b0"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria vistoria do tipo FINAL (código do livro)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "FINAL"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:31.209Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "56133638-64f4-425b-804a-b6715dfeac82",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+     "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+     "inspectorUserId": null,
+     "inspectionType": "FINAL",
+     "scheduledAt": null,
+     "status": "SCHEDULED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.205Z",
+     "created_at": "2026-11-11T03:42:31.205Z",
+     "completedAt": null,
+     "reportPdfBytes": null,
+     "reportHash": null,
+     "reportGeneratedAt": null,
+     "revisionOfInspectionId": null,
+     "revisionReason": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0087-6b7f4a",
+    "M5-A0214-41f7b0"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem legal:create) não cria vistoria",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "inspectionType": "ENTRY"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:31.222Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "e4dfc183-4c26-4e65-8cd0-f49aef7b2b9e"
+    }
+   },
+   "req": [
+    "M5-A0214-41f7b0"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-44",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não lê a vistoria do tenant A",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/inspections/dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404
+   },
+   "status": 404,
+   "codigo": "LEGAL_INSPECTION_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:31.777Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_NOT_FOUND",
+     "message": "Vistoria não encontrada.",
+     "traceId": "97baa6d4-5332-49e4-a40a-8e5342fae4a1"
+    }
+   },
+   "req": [
+    "M5-A0214-41f7b0"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-52",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: tenant B não cria vistoria apontando para o imóvel e o contrato do tenant A (404, nada gravado)",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections",
+   "corpoEnviado": {
+    "propertyId": "8ada9f78-3929-454b-b9ce-73189ac4232a",
+    "contractId": "5a1335af-f8e7-4e8b-9728-f3ab0a7290db",
+    "inspectionType": "ENTRY"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_INSPECTION_PROPERTY_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_INSPECTION_PROPERTY_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:31.820Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_PROPERTY_NOT_FOUND",
+     "message": "Imóvel não encontrado.",
+     "traceId": "ef695d9a-1621-418b-a351-248974978a78"
+    }
+   },
+   "req": [
+    "M5-A0214-41f7b0"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-53",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: objeto no lugar do id do imóvel é 400, não 500",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/inspections",
+   "corpoEnviado": {
+    "propertyId": {
+     "$gt": ""
+    },
+    "inspectionType": "ENTRY"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_INSPECTION_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_INSPECTION_VALIDATION",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:31.828Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_VALIDATION",
+     "message": "O campo \"propertyId\" deve ser um identificador válido.",
+     "traceId": "c48f51e9-2e16-447e-ab42-09b285b085ca"
+    }
+   },
+   "req": [
+    "M5-A0214-41f7b0"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

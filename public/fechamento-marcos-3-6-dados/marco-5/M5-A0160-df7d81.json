@@ -1,0 +1,158 @@
+{
+ "id": "M5-A0160-df7d81",
+ "secao": "P1 > 20. Testes adversariais [tabela: Teste | Tema | Cenário | Resultado]",
+ "linhaCaderno": 366,
+ "requisito": "JUR-TS-012 | AI prazo | IA extrai data errada | Não vira crítico sem confirmação.",
+ "demandas": "X45-D074;M5-D041",
+ "implementacao": "src/modules/legal/cases/legalNay.service.js suggestDeadlines",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.nay.test.js",
+   "nome": "JUR-TS-012: data errada extraída pela NAY não vira prazo crítico sem confirmação — sugestão PENDING_CONFIRMATION, não crítica, nenhum prazo criado",
+   "status": "pass",
+   "ms": 14.717,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.nay.test.js",
+   "nome": "NAY-JUR-04: prazos extraídos de texto são SUGESTÃO (PENDING_CONFIRMATION, não críticos) e nenhum prazo é criado",
+   "status": "pass",
+   "ms": 85.105,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-Y14",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 7 campo(s)",
+   "quando": "2026-11-11T03:42:39.888Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0160-df7d81.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.nay.test.js test/legal.nay.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-Y14, JR-Y18)"
+ },
+ "passos": [
+  {
+   "id": "JR-Y14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-012: NAY extrai datas (uma inexistente, outra possivelmente errada): tudo PENDING_CONFIRMATION, não crítico, nenhum prazo criado",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "corpoEnviado": {
+    "legalCaseId": "3878035f-979a-40dd-964f-4972f2dee8b8",
+    "text": "Audiência em 31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+    "referenceDate": "2026-11-03T12:00:00-03:00"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:39.888Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "sugestoes": [
+      {
+       "tipo": "DATA_EXPLICITA",
+       "trecho": "Audiência em 31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+       "vencimentoSugerido": "2026-11-13T15:00:00.000Z",
+       "natureza": "EXTRAIDO",
+       "status": "PENDING_CONFIRMATION",
+       "critico": false,
+       "confirmacao": "Prazo só passa a existir quando uma pessoa o cadastra em POST /legal/cases/:id/deadlines com origem verificável (sourceFileId/sourceEventId) e responsável."
+      },
+      {
+       "tipo": "PRAZO_DIAS_UTEIS",
+       "dias": 5,
+       "trecho": "31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+       "vencimentoSugerido": "2026-11-10T15:00:00.000Z",
+       "natureza": "ESTIMADO",
+       "baseDeCalculo": "2026-11-03T15:00:00.000Z",
+       "status": "PENDING_CONFIRMATION",
+       "critico": false,
+       "confirmacao": "Prazo só passa a existir quando uma pessoa o cadastra em POST /legal/cases/:id/deadlines com origem verificável (sourceFileId/sourceEventId) e responsável."
+      }
+     ],
+     "prazosCriados": 0,
+     "fontes": [
+      {
+       "origem": "texto informado",
+       "caracteres": 94,
+       "legalCaseId": "3878035f-979a-40dd-964f-4972f2dee8b8"
+      }
+     ],
+     "aiRunId": "ca7c2fc1-6451-4b58-9ce7-d797d8a5a2a8"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0122-0f8a78",
+    "M5-A0160-df7d81",
+    "M5-A0241-f5402f",
+    "M5-A0305-1ecad7",
+    "M5-A0175-e0569a",
+    "M5-A0274-fcaec5"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-Y18",
+   "req": [
+    "M5-A0125-3ef77f",
+    "M5-A0241-f5402f",
+    "M5-A0260-172e5a",
+    "M5-A0122-0f8a78",
+    "M5-A0160-df7d81"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "perfil": "A:gestor",
+   "descricao": "Retrato DEPOIS da NAY: nada mudou (prazos, versões, checklist, dossiês); só ai_runs registra as execuções",
+   "sql": "SELECT (SELECT count(*) FROM legal.legal_deadlines WHERE legal_case_id = :caso) AS prazos, (SELECT count(*) FROM legal.contract_versions WHERE contract_id = :ct) AS versoes, (SELECT string_agg(status, ',' ORDER BY id) FROM legal.contract_requirements WHERE contract_id = :ct) AS checklist, (SELECT count(*) FROM legal.evidence_packages WHERE legal_case_id = :caso) AS dossies, (SELECT count(*) FROM ai.ai_runs WHERE agent_name = 'NAY_JURIDICA' AND created_at > now() - interval '1 hour') AS execucoes_nay",
+   "resultado": [
+    {
+     "prazos": "0",
+     "versoes": "2",
+     "checklist": "PENDING,PENDING,PENDING,PENDING,PENDING",
+     "dossies": "0",
+     "execucoes_nay": "6"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:39.921Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

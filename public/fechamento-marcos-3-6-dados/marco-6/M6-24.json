@@ -1,0 +1,585 @@
+{
+  "id": "M6-24",
+  "requisito": "\"closeNonconformity exige afterEvidenceFileIds; se requiresAcceptance, acceptedBy obrigatório; depois evento nonconformity.closed.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §2; Guia do Marcelo (Obras) §8",
+  "implementacao": "nonconformities.service.js#closeNonconformity (+ evidenceFiles.js: a evidência precisa ser arquivo real da empresa)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: \"Fechar NC\" fica desabilitado sem foto \"depois\"",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "M6-62: fechar não conformidade sem after_evidence_file_ids bloqueia",
+      "resultado": "passou",
+      "duracaoMs": 401,
+      "executadoEm": "2026-11-11T00:14:18.094Z"
+    },
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "M6-24: fechar NC com requiresAcceptance=true sem acceptedByUserId bloqueia",
+      "resultado": "passou",
+      "duracaoMs": 406,
+      "executadoEm": "2026-11-11T00:14:18.500Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-62/M6-109: fechar NC com evidência \"depois\" inexistente é recusado e a NC continua aberta",
+      "resultado": "passou",
+      "duracaoMs": 216,
+      "executadoEm": "2026-11-11T00:13:09.831Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H123",
+      "H124",
+      "H125",
+      "H126",
+      "H127",
+      "H128",
+      "H138",
+      "H139",
+      "H140",
+      "H141"
+    ],
+    "resumo": [
+      "H123 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 422 NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "H124 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "H125 POST /api/v1/files → 201",
+      "H126 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 422 NONCONFORMITY_CLOSE_REQUIRES_ACCEPTANCE",
+      "H127 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 200",
+      "H128 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 409 NONCONFORMITY_ALREADY_CLOSED",
+      "H138 POST /api/v1/files → 201",
+      "H139 POST /api/v1/construction/nonconformities/48ef9acb-a9eb-4fea-9095-884ce5f1dcee/close → 200",
+      "H140 POST /api/v1/files → 201",
+      "H141 POST /api/v1/construction/nonconformities/175a58f6-b555-4040-8b41-7b330bdf6e1d/close → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:22.905Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H123",
+      "requisitos": [
+        "M6-24",
+        "M6-38",
+        "M6-62",
+        "M6-86"
+      ],
+      "cenario": "NEGATIVO: fechar NC sem evidência \"depois\"",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": []
+      },
+      "statusHttp": 422,
+      "codigoErro": "NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "esperado": "422 NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "conferiu": true,
+      "duracaoMs": 417,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+          "message": "Não é possível fechar a NC sem evidência \"depois\" (\"afterEvidenceFileIds\" vazio).",
+          "traceId": "a5a3b7f8-bf23-4a6c-96ef-c1fe1eec68aa"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.905Z"
+    },
+    {
+      "id": "H124",
+      "requisitos": [
+        "M6-24",
+        "M6-62",
+        "M6-110"
+      ],
+      "cenario": "NEGATIVO: fechar NC com evidência \"depois\" inexistente",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "88888888-8888-4888-8888-888888888888"
+        ]
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 37,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"afterEvidenceFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "afterEvidenceFileIds",
+            "missingFileIds": [
+              "88888888-8888-4888-8888-888888888888"
+            ]
+          },
+          "traceId": "7a8f9b17-34e5-4cee-bc12-243364067f48"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.942Z"
+    },
+    {
+      "id": "H125",
+      "requisitos": [
+        "M6-24"
+      ],
+      "cenario": "Envio da foto/documento \"nc-reboco-depois\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "nc-reboco-depois.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 385,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "8a72ad60-81fa-4aa1-a2e2-a012518ae28e",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/14c837ea-fddb-4c65-8831-2542d246f9ce-nc-reboco-depois.jpg",
+          "fileName": "nc-reboco-depois.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "260538796c057431be04ce4e5d8b28fb4bc89104b17d99927f72aa9bfbe99743",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:22.982Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:22.983Z",
+          "created_at": "2026-11-11T00:12:22.983Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.327Z"
+    },
+    {
+      "id": "H126",
+      "requisitos": [
+        "M6-24",
+        "M6-86"
+      ],
+      "cenario": "NEGATIVO: fechar NC que exige aceite sem quem aceitou",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+        ]
+      },
+      "statusHttp": 422,
+      "codigoErro": "NONCONFORMITY_CLOSE_REQUIRES_ACCEPTANCE",
+      "esperado": "422 NONCONFORMITY_CLOSE_REQUIRES_ACCEPTANCE",
+      "conferiu": true,
+      "duracaoMs": 106,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "NONCONFORMITY_CLOSE_REQUIRES_ACCEPTANCE",
+          "message": "Esta NC exige aceite (\"requiresAcceptance=true\") — \"acceptedByUserId\" é obrigatório para fechar.",
+          "traceId": "0a1f2f32-9094-4393-8580-28a9998d0b8d"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.433Z"
+    },
+    {
+      "id": "H127",
+      "requisitos": [
+        "M6-24",
+        "M6-38",
+        "M6-78",
+        "M6-86",
+        "M6-50",
+        "M6-98"
+      ],
+      "cenario": "Fechar NC com evidência \"depois\" e aceite (publica nonconformity.closed)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+        ],
+        "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 65,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "severity": "HIGH",
+          "description": "Reboco solto na parede da escada",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-16T00:12:22.026Z",
+          "status": "CLOSED",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [
+            "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+          ],
+          "requiresAcceptance": true,
+          "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "closedAt": "2026-11-11T00:12:23.476Z",
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "causeCode": null,
+          "teamLabel": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:22.026Z",
+          "updated_at": "2026-11-11T00:12:23.476Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "accepted_by_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.498Z"
+    },
+    {
+      "id": "H128",
+      "requisitos": [
+        "M6-24"
+      ],
+      "cenario": "NEGATIVO: fechar de novo a NC já fechada",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+        ],
+        "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 409,
+      "codigoErro": "NONCONFORMITY_ALREADY_CLOSED",
+      "esperado": "409 NONCONFORMITY_ALREADY_CLOSED",
+      "conferiu": true,
+      "duracaoMs": 286,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "NONCONFORMITY_ALREADY_CLOSED",
+          "message": "Não conformidade já está fechada.",
+          "traceId": "a11d21d7-efc7-41c0-9316-e8005e2b8e21"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.784Z"
+    },
+    {
+      "id": "H138",
+      "requisitos": [
+        "M6-24"
+      ],
+      "cenario": "Envio da foto/documento \"nc-corrigida\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "nc-corrigida.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 96,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "4f2b8a85-35dd-42d5-937c-f2cbb4496da9",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/a58577e5-6cb4-48ff-8101-d3b346c8a65e-nc-corrigida.jpg",
+          "fileName": "nc-corrigida.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "e81a086d7b2cfdf7743da8aac2d882e3bfef56e5a1b18ee04e86cdef9e5d2ab3",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:25.161Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:25.161Z",
+          "created_at": "2026-11-11T00:12:25.161Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:25.209Z"
+    },
+    {
+      "id": "H139",
+      "requisitos": [
+        "M6-24",
+        "M6-25"
+      ],
+      "cenario": "Fechar NC LOW pendente com evidência \"depois\"",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/48ef9acb-a9eb-4fea-9095-884ce5f1dcee/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "4f2b8a85-35dd-42d5-937c-f2cbb4496da9"
+        ],
+        "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 41,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "48ef9acb-a9eb-4fea-9095-884ce5f1dcee",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": null,
+          "severity": "LOW",
+          "description": "Respingo",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-12-11T00:12:22.471Z",
+          "status": "CLOSED",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [
+            "4f2b8a85-35dd-42d5-937c-f2cbb4496da9"
+          ],
+          "requiresAcceptance": false,
+          "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "closedAt": "2026-11-11T00:12:25.243Z",
+          "evidenceReuseFlagged": true,
+          "evidenceReuseReferenceId": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "evidenceReuseDetails": {
+            "matchedAt": "2026-11-11T00:12:22.459Z",
+            "overlappingFileIds": [
+              "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+            ]
+          },
+          "causeCode": null,
+          "teamLabel": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:22.471Z",
+          "updated_at": "2026-11-11T00:12:25.243Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "project_stage_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "accepted_by_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:25.250Z"
+    },
+    {
+      "id": "H140",
+      "requisitos": [
+        "M6-24"
+      ],
+      "cenario": "Envio da foto/documento \"nc-corrigida\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "nc-corrigida.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 609,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "e5e7f182-c3e0-45f5-b551-e6f15e305455",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/07b49bce-6e47-4bdd-ae7a-b3a97e5fa8a2-nc-corrigida.jpg",
+          "fileName": "nc-corrigida.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "f6f63bce9dafb67accf674a8ce3875a09a0f16a9c088e83643aa60c90a823170",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:25.789Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:25.789Z",
+          "created_at": "2026-11-11T00:12:25.789Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:25.859Z"
+    },
+    {
+      "id": "H141",
+      "requisitos": [
+        "M6-24",
+        "M6-25"
+      ],
+      "cenario": "Fechar NC CRITICAL pendente com evidência \"depois\"",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/175a58f6-b555-4040-8b41-7b330bdf6e1d/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "e5e7f182-c3e0-45f5-b551-e6f15e305455"
+        ],
+        "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 214,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "175a58f6-b555-4040-8b41-7b330bdf6e1d",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "severity": "CRITICAL",
+          "description": "Checklist de qualidade reprovado: \"Prumo e nível das sapatas\" — Fissura na sapata S3.",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-13T00:12:20.443Z",
+          "status": "CLOSED",
+          "beforeEvidenceFileIds": [
+            "cb3bcbef-2239-4ef3-b42d-036c72944b71"
+          ],
+          "afterEvidenceFileIds": [
+            "e5e7f182-c3e0-45f5-b551-e6f15e305455"
+          ],
+          "requiresAcceptance": false,
+          "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "closedAt": "2026-11-11T00:12:26.057Z",
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "causeCode": null,
+          "teamLabel": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:20.443Z",
+          "updated_at": "2026-11-11T00:12:26.057Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "accepted_by_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.073Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C014",
+      "requisitos": [
+        "M6-13",
+        "M6-24",
+        "M6-59",
+        "M6-12",
+        "M6-25"
+      ],
+      "descricao": "Não conformidades: severidade, responsável, SLA, evidências que existem em people.files, aceite e alerta de foto reutilizada",
+      "sql": "SELECT severity, status, responsible_user_id IS NOT NULL AS responsavel, sla_due_at IS NOT NULL AS sla, requires_acceptance, accepted_by_user_id IS NOT NULL AS aceita, evidence_reuse_flagged AS foto_reutilizada, (SELECT count(*) FROM people.files f WHERE f.id = ANY(n.before_evidence_file_ids || n.after_evidence_file_ids))::int AS fotos_existentes, cardinality(n.before_evidence_file_ids || n.after_evidence_file_ids) AS fotos FROM construction.nonconformities n WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "severity": "CRITICAL",
+          "status": "CLOSED",
+          "responsavel": true,
+          "sla": true,
+          "requires_acceptance": false,
+          "aceita": true,
+          "foto_reutilizada": false,
+          "fotos_existentes": 2,
+          "fotos": 2
+        },
+        {
+          "severity": "HIGH",
+          "status": "CLOSED",
+          "responsavel": true,
+          "sla": true,
+          "requires_acceptance": true,
+          "aceita": true,
+          "foto_reutilizada": false,
+          "fotos_existentes": 2,
+          "fotos": 2
+        },
+        {
+          "severity": "LOW",
+          "status": "CLOSED",
+          "responsavel": true,
+          "sla": true,
+          "requires_acceptance": false,
+          "aceita": true,
+          "foto_reutilizada": true,
+          "fotos_existentes": 2,
+          "fotos": 2
+        }
+      ],
+      "invariante": "toda NC com responsável e SLA; toda foto referenciada existe; a NC com foto repetida está sinalizada",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.199Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.398Z"
+}

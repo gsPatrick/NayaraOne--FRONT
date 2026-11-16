@@ -1,0 +1,56 @@
+{
+ "id": "M4-G§21.3",
+ "secao": "Guia §21 Autochecagem",
+ "requisito": "\"Tem passo a passo? SIM.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/financeE2E.flow.test.js",
+   "nome": "Financeiro E2E: lançamento -> intenção -> callback sandbox HMAC -> ledger -> extrato -> conciliação -> relatório",
+   "status": "passou",
+   "duracaoMs": 1156,
+   "commitDoArquivo": "4f73948a"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "A06",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§21.3"
+   ],
+   "titulo": "Intenção sem lançamento: a resposta diz o passo que falta",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_PAYMENT_INTENT_VALIDATION",
+   "ok": true,
+   "ms": 52,
+   "quando": "2026-11-11T01:35:19.204Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_VALIDATION",
+     "message": "Escolha o lançamento para criar a intenção de pagamento.",
+     "traceId": "71e17b12-f4c7-4b9d-a216-ea340e75f797"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

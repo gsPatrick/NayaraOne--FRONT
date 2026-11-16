@@ -1,0 +1,111 @@
+{
+  "id": "CRM-TS-006",
+  "secao": "Livro §19 Adversariais",
+  "requisito": "Internal leak: portal consulta ocorrência interna → nunca retorna.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 71,
+      "casos": [
+        "imovel_sem_ocorrencia"
+      ],
+      "descricao": "Leitura comum do imóvel não traz a ocorrência interna",
+      "metodo": "GET",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635",
+      "perfil": "Empresa A — leitura sem campo restrito",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "_resumo": "corpo de 5147 caracteres; início mostrado",
+        "inicio": "{\"success\":true,\"data\":{\"id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"title\":\"Casa Fictícia mwbdcbsmq7m7\",\"internalCode\":\"M3-mwbdcbsmq7m7\",\"propertyType\":\"RESIDENTIAL\",\"addressId\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"registryNumber\":\"MAT-mwbdcbsmq7m7\",\"registryOffice\":\"1º Cartório Fictício\",\"latitude\":\"-22.9056000\",\"longitude\":\"-47.0608000\",\"addressLine\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"zipCode\":null,\"areaTotalM2\":\"180.000000\",\"description\":null,\"bedrooms\":3,\"parkingSpots\":2,\"attributesJson\":null,\"publicationStatus\":\"DRAFT\",\"availabilityStatus\":\"AVAILABLE\",\"publicAddressPolicy\":\"SO_BAIRRO\",\"addressVisibility\":\"RESTRICTED\",\"descriptionPublic\":null,\"publicId\":\"f2e9e1ae-708a-4863-9cde-78481f85baa5\",\"mergedIntoId\":null,\"publishedAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:22.994Z\",\"updated_at\":\"2026-11-11T00:16:22.994Z\",\"deleted_at\":null,\"address_id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"owners\":[{\"id\":\"3abd3e05-17ff-403a-a29a-d174efdb064d\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"personId\":\"f6d6adbf-0670-4128-a50d-3896159d8e6a\",\"ownershipPercent\":\"100.0000\",\"roleCode\":\"OWNER\",\"validFrom\":null,\"validUntil\":null,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.087Z\",\"updated_at\":\"2026-11-11T00:16:23.087Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"person_id\":\"f6d6adbf-0670-4128-a50d-3896159d8e6a\"}],\"offers\":[{\"id\":\"d4eef318-1bfb-496a-9031-395197337f89\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"offerType\":\"SALE\",\"askingPrice\":\"912000.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":true,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":3,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.617Z\",\"updated_at\":\"2026-11-11T00:16:23.855Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"},{\"id\":\"b9bd6b43-d4e6-4732-9523-596d76e3f374\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"offerType\":\"RENT\",\"askingPrice\":\"4800.00\",\"confidentialMinPrice\":null,\"acceptsFinancing\":null,\"acceptsTrade\":null,\"status\":\"ACTIVE\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.500Z\",\"updated_at\":\"2026-11-11T00:16:23.500Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"},{\"id\":\"350abdaa-a138-42b6-9a1a-e74a9217c929\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"offerType\":\"SALE\",\"askingPrice\":\"950000.00\",\"confidentialMinPrice\":\"900000.00\",\"acceptsFinancing\":true,\"acceptsTrade\":null,\"status\":\"SUPERSEDED\",\"startsAt\":null,\"endsAt\":null,\"lockVersion\":0,\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"deletedBy\":null,\"created_at\":\"2026-11-11T00:16:23.333Z\",\"updated_at\":\"2026-11-11T00:16:23.616Z\",\"deleted_at\":null,\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"}],\"address\":{\"id\":\"f74c875c-0c1d-4c1d-a969-7c23f321a0b4\",\"zipCode\":\"13010-000\",\"street\":\"Rua Sigilosa mwbdcbsmq7m7\",\"number\":\"100\",\"complement\":null,\"neighborhood\":\"Cambuí\",\"city\":\"Campinas\",\"state\":\"SP\",\"created_at\":\"2026-11-11T00:16:22.992Z\",\"updated_at\":\"2026-11-11T00:16:22.992Z\"},\"media\":[],\"documents\":[{\"id\":\"ca9e3936-b934-4e0e-ae26-76f162aec61e\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"documentType\":\"IPTU\",\"label\":\"IPTU\",\"valueNumber\":null,\"valueAmount\":null,\"status\":\"REGULARIZADO\",\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"created_at\":\"2026-11-11T00:16:23.145Z\",\"updated_at\":\"2026-11-11T00:16:23.145Z\",\"property_id\":\"167ce16f-f474-42d8-94f0-56df5b36a635\"},{\"id\":\"4eec571c-e2a8-477d-b0e2-7e09090be914\",\"groupId\":\"9b820ac4-092f-4b1c-8643-03720fce6c59\",\"companyId\":\"adfbb683-5716-4cf9-b95b-11a53b91ff13\",\"propertyId\":\"167ce16f-f474-42d8-94f0-56df5b36a635\",\"documentType\":\"REGISTRY\",\"label\":\"REGISTRY\",\"valueNumber\":null,\"valueAmount\":null,\"status\":\"REGULARIZADO\",\"createdBy\":\"50440c45-76e5-4fa5-bad5-fabbab6eb717\",\"updatedBy\":\"50440c45-76e5-4fa5-bad5-fab"
+      },
+      "dataHora": "2026-11-11T00:16:23.992Z"
+    },
+    {
+      "seq": 157,
+      "casos": [
+        "carrinho_publico"
+      ],
+      "descricao": "Link público (sem login): sem observação interna, sem rua/CEP/matrícula, só fotos aprovadas",
+      "metodo": "GET",
+      "rota": "/api/v1/crm/carts/public/[token do link omitido]",
+      "perfil": "sem login (rota pública)",
+      "corpoEnviado": "sem corpo",
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "cartId": "92e61f8d-0962-45bf-8be9-39c4021b372a",
+          "version": 2,
+          "expiresAt": "2026-11-18T00:16:26.518Z",
+          "properties": [
+            {
+              "id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+              "title": "Casa Fictícia mwbdcbsmq7m7",
+              "propertyType": "RESIDENTIAL",
+              "city": "Campinas",
+              "state": "SP",
+              "bedrooms": 3,
+              "parkingSpots": 2,
+              "areaTotalM2": "180.000000",
+              "offer": {
+                "offerType": "RENT",
+                "askingPrice": "4800.00",
+                "acceptsFinancing": null
+              },
+              "photos": []
+            },
+            {
+              "id": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+              "title": "Casa Fictícia mwbdccmim8e1",
+              "propertyType": "RESIDENTIAL",
+              "city": "Campinas",
+              "state": "SP",
+              "bedrooms": 3,
+              "parkingSpots": 2,
+              "areaTotalM2": "180.000000",
+              "offer": {
+                "offerType": "RENT",
+                "askingPrice": "3900.00",
+                "acceptsFinancing": null
+              },
+              "photos": [
+                {
+                  "id": "9de690ff-fd56-4f99-b41d-78680838a3b8",
+                  "position": 1
+                },
+                {
+                  "id": "a6caa639-043b-47e0-8e59-ae86462b3484",
+                  "position": 2
+                },
+                {
+                  "id": "41223659-bdf0-4d18-b95b-8ecb3cfb31d5",
+                  "position": 3
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "dataHora": "2026-11-11T00:16:26.561Z"
+    }
+  ],
+  "consultasBanco": []
+}

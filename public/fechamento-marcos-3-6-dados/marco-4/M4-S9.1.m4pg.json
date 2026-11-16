@@ -1,0 +1,240 @@
+{
+ "id": "M4-§9.1",
+ "secao": "§9 Favorecido",
+ "requisito": "\"Favorecido e dados bancários usados em payment_intent ficam congelados no snapshot.\"",
+ "substitui": "evidencias/marco-4/M4-S9.1.json",
+ "motivo": "Correção M4PG (verificação independente do Marco 4): favorecido e dados bancários congelados no snapshot. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "f1f33f82",
+  "branchApi": "m4fix/pagamentos-verificacao",
+  "commitFront": "c574a8a",
+  "quando": "2026-11-11T12:09:43Z",
+  "ambiente": "Postgres 16 descartável (scripts/withDisposableDb.js; migrations do zero, seeds do CI e de dois tenants; RLS real, role de runtime sem bypass), API Express real em processo; ClamAV real na 3310."
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-§21.4/G§3/G§20.5: o retrato aprovado e o hash incluem o favorecido (banco, agência, conta, PIX), congelados no PREPARE",
+   "noCommit": "passou",
+   "duracaoMs": 1964,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "error='o favorecido é congelado na preparação, não no envio'"
+  },
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-§9: sem troca, o envio ao banco leva exatamente o favorecido congelado na aprovação",
+   "noCommit": "passou",
+   "duracaoMs": 2750,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "expected='EXECUTING'"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C01-1",
+   "titulo": "PREPARE congela o favorecido no retrato/hash",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "85cdd4b7-ac8a-4685-af05-fe0e566e4cc2"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:11.733Z",
+   "resposta": {
+    "id": "e820a4d9-e5ea-4ef1-9012-ab7e748bd452",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "900.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439444272531552",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439444266363933",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "4e10018c-da69-4cfa-8e19-054e1e0e0407"
+    },
+    "snapshotHash": "d009aeed52b696be71b1e81f4376ed6c5c896666d930b2876dfe1ff068ba7ff5",
+    "approval": {
+     "id": "b22827c4-5ec0-428f-ab27-285db8de35db",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 0,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:e820a4d9-e5ea-4ef1-9012-ab7e748bd452"
+   }
+  },
+  {
+   "id": "C01-2",
+   "titulo": "Outra pessoa aprova (risco LOW, 1 aprovação)",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/e820a4d9-e5ea-4ef1-9012-ab7e748bd452/approve",
+   "perfil": "aprova",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:13.475Z",
+   "resposta": {
+    "id": "e820a4d9-e5ea-4ef1-9012-ab7e748bd452",
+    "status": "APPROVED",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "900.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439444272531552",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439444266363933",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "4e10018c-da69-4cfa-8e19-054e1e0e0407"
+    },
+    "snapshotHash": "d009aeed52b696be71b1e81f4376ed6c5c896666d930b2876dfe1ff068ba7ff5",
+    "approval": {
+     "id": "b22827c4-5ec0-428f-ab27-285db8de35db",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 1,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:e820a4d9-e5ea-4ef1-9012-ab7e748bd452"
+   }
+  },
+  {
+   "id": "C01-3",
+   "titulo": "Troca da chave PIX e da conta do favorecido DEPOIS da aprovação",
+   "metodo": "PATCH",
+   "rota": "/finance/bank-accounts/4e10018c-da69-4cfa-8e19-054e1e0e0407",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "pixKey": "[e-mail omitido]",
+    "accountNumber": "NOVA-179439445347523665",
+    "changeEvidence": {
+     "source": "PERSON_STATEMENT",
+     "note": "captura M4PG"
+    }
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:16.170Z",
+   "resposta": {
+    "id": "4e10018c-da69-4cfa-8e19-054e1e0e0407",
+    "status": "PENDING_COOLDOWN"
+   }
+  },
+  {
+   "id": "C01-4",
+   "titulo": "A intenção aprovada foi invalidada (CANCELED, motivo)",
+   "metodo": "GET",
+   "rota": "/finance/payment-intents?financialEntryId=85cdd4b7-ac8a-4685-af05-fe0e566e4cc2",
+   "perfil": "prepara",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:18.298Z",
+   "resposta": [
+    {
+     "id": "e820a4d9-e5ea-4ef1-9012-ab7e748bd452",
+     "status": "CANCELED",
+     "submissionPhase": "NOT_STARTED",
+     "amount": "900.00",
+     "installmentNumber": 1,
+     "beneficiarySnapshot": {
+      "name": "captura m4pg 179439444272531552",
+      "branch": "0001",
+      "pixKey": "••••••",
+      "account": "CAP-179439444266363933",
+      "bankCode": "••••••",
+      "personId": null,
+      "bankAccountId": "4e10018c-da69-4cfa-8e19-054e1e0e0407"
+     },
+     "snapshotHash": "d009aeed52b696be71b1e81f4376ed6c5c896666d930b2876dfe1ff068ba7ff5",
+     "approval": {
+      "id": "b22827c4-5ec0-428f-ab27-285db8de35db",
+      "status": "STALE",
+      "riskLevel": "LOW",
+      "riskSource": "PARAMETERS",
+      "ruleVersionId": null,
+      "requiredApprovals": 1,
+      "approvedCount": 1,
+      "approvers": [
+       {
+        "approverUserId": "977f75b7-1853-4171-8021-eb8d1efb817e",
+        "decision": "APPROVED",
+        "decidedAt": "2026-11-11T10:54:11.840Z",
+        "stepOrder": 1
+       }
+      ]
+     },
+     "cancelReason": "Favorecido alterado (accountNumber, pixKey) na conta de destino depois da preparação: a intenção de pagamento e as aprovações anteriores foram invalidadas (Caderno §9). Prepare uma nova intenção, que congela o favorecido atual, e peça a aprovação de novo.",
+     "idempotencyKey": "payment-intent:e820a4d9-e5ea-4ef1-9012-ab7e748bd452"
+    }
+   ]
+  },
+  {
+   "id": "C01-5",
+   "titulo": "Envio ao banco recusado mesmo vencido o resfriamento",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/e820a4d9-e5ea-4ef1-9012-ab7e748bd452/submit-to-bank",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "paymentMethod": "PIX"
+   },
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_APPROVED",
+   "quando": "2026-11-11T10:54:18.800Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_PAYMENT_INTENT_NOT_APPROVED",
+     "message": "Só é possível submeter ao banco uma intenção APPROVED (atual: \"CANCELED\")."
+    }
+   }
+  },
+  {
+   "id": "C01-6",
+   "titulo": "Alerta aberto (§17 Favorecido alterado)",
+   "metodo": "GET",
+   "rota": "/finance/anomaly-cases",
+   "perfil": "prepara",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:19.505Z",
+   "resposta": [
+    {
+     "id": "20b55ceb-9fb4-4a68-b991-7eb0f8d190fb",
+     "status": "OPEN",
+     "riskLevel": "HIGH",
+     "relatedEntityType": "BankAccount",
+     "reason": "Dados do favorecido (accountNumber, pixKey) alterados com 1 intenção(ões) de pagamento e 0 aprovação(ões) ainda não enviadas ao banco: todas foram invalidadas. Confirme a troca com o favorecido por um canal independente antes de pagar.",
+     "caseType": "BENEFICIARY_CHANGED_AFTER_APPROVAL"
+    }
+   ]
+  }
+ ],
+ "sondasDoVerificador": {
+  "V2-P1": {
+   "arquivo": "scratchpad/v2own/probe/verif2.probe.test.js (sonda do verificador 2, sem alteração)",
+   "naBase41addaa2_relatorioDoVerificador": {
+    "accountStatusBefore": "ACTIVE",
+    "intentStatusAfterPixChange": "APPROVED",
+    "submitAccepted": true,
+    "beneficiaryPixKeyEnviado": "pix-ATACANTE-…@v2.dev",
+    "beneficiaryAccountEnviado": "ATK-…"
+   },
+   "noCommit": {
+    "accountStatusBefore": "ACTIVE",
+    "intentStatusAfterPixChange": "CANCELED",
+    "submitAccepted": false,
+    "submitError": "FINANCE_PAYMENT_INTENT_NOT_APPROVED"
+   }
+  }
+ },
+ "sanitizacao": [
+  "Sem token de acesso, sem token de impacto da confirmação de nível 3 (só \"enviada\"), sem segredo TOTP, sem senha e sem string de conexão.",
+  "Usuários fictícios m4-<perfil>-<sufixo>@nayaraone.dev numa empresa isolada criada no banco descartável; MFA recente por linhas no banco descartável (nunca pelo endpoint de MFA)."
+ ]
+}

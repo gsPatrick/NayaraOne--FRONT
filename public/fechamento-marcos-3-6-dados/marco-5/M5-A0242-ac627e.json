@@ -1,0 +1,242 @@
+{
+ "id": "M5-A0242-ac627e",
+ "requisito": "lint typecheck migrations contract_state_tests requirements_tests signature_adapter_contract_tests signature_webhook_idempotency_tests inspection_immutability_tests key_delivery_gate_tests deadline_tests evidence_integrity_tests multi_company_tests security_scan deploy_DEV deploy_LAB failure_drills pentest production_approval",
+ "quando": "2026-11-11T11:44:50.105Z",
+ "api": "6f1ddb34f634594643876c545fb2fbd474e76152",
+ "front": "c8ccff0",
+ "esteira": {
+  "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+  "dirty": false,
+  "inicio": "2026-11-11T11:15:20.502Z",
+  "fim": "2026-11-11T11:44:50.105Z",
+  "resultado": "VERDE",
+  "etapas": [
+   {
+    "numero": 1,
+    "nome": "lint",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 270976,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 2,
+    "nome": "typecheck",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 335088,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 3,
+    "nome": "migrations",
+    "status": "VERDE",
+    "motivo": "3 comando(s)",
+    "duracaoMs": 35295,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 4,
+    "nome": "contract_state_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 70348,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 5,
+    "nome": "requirements_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 54701,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 6,
+    "nome": "signature_adapter_contract_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 9863,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 7,
+    "nome": "signature_webhook_idempotency_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 39768,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 8,
+    "nome": "inspection_immutability_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 11488,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 9,
+    "nome": "key_delivery_gate_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 21228,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 10,
+    "nome": "deadline_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 29896,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 11,
+    "nome": "evidence_integrity_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 11812,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 12,
+    "nome": "multi_company_tests",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 29162,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 13,
+    "nome": "security_scan",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 4786,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 14,
+    "nome": "deploy_DEV",
+    "status": "VERDE",
+    "motivo": "1 comando(s) (deploy local do artefato; o hook do servidor só em tag jur-release-*)",
+    "duracaoMs": 44026,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 15,
+    "nome": "deploy_LAB",
+    "status": "VERDE",
+    "motivo": "1 comando(s) (deploy local do artefato; o hook do servidor só em tag jur-release-*)",
+    "duracaoMs": 177728,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 16,
+    "nome": "failure_drills",
+    "status": "VERDE",
+    "motivo": "2 comando(s)",
+    "duracaoMs": 170612,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 17,
+    "nome": "pentest",
+    "status": "VERDE",
+    "motivo": "1 comando(s)",
+    "duracaoMs": 452642,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   },
+   {
+    "numero": 18,
+    "nome": "production_approval",
+    "status": "VERDE",
+    "motivo": "portão de produção liberado; fora de tag jur-release-* não há publicação nem aprovação a pedir; o CI não publica em produção",
+    "duracaoMs": 137,
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152"
+   }
+  ]
+ },
+ "portao": {
+  "liberado": true,
+  "bloqueios": [],
+  "resumo": {
+   "etapasVerdes": 17,
+   "restore": [
+    {
+     "arquivo": "restore/drill-legal-restore-2026-11-11-6f1ddb3.json",
+     "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+     "dirty": false,
+     "exitCode": 0,
+     "aprovadas": 141,
+     "total": 141
+    }
+   ],
+   "pentest": {
+    "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+    "rotas": 157,
+    "ataques": 2762,
+    "porGravidade": {
+     "critico": 0,
+     "alto": 0,
+     "medio": 0,
+     "baixo": 10
+    }
+   },
+   "testes": {
+    "pass": 313,
+    "fail": 0,
+    "skip": 0,
+    "todo": 0
+   }
+  }
+ },
+ "restore": {
+  "checkoutLimpo41addaa2": {
+   "commit": "41addaa2c37eac6c977e9fea0f90c648e42a56a4",
+   "dirty": false,
+   "exitCode": 0,
+   "aprovadas": 141,
+   "total": 141
+  },
+  "esteira": {
+   "arquivo": "drill-legal-restore-2026-11-11-6f1ddb3.json",
+   "commit": "6f1ddb34f634594643876c545fb2fbd474e76152",
+   "dirty": false,
+   "exitCode": 0,
+   "aprovadas": 141,
+   "total": 141
+  }
+ },
+ "testes": [
+  {
+   "arquivo": "test/m5fech.meta.esteiraJuridico.test.js",
+   "nome": "Guia §17: a esteira do jurídico tem as 18 etapas com os nomes literais do livro, na ordem",
+   "status": "pass",
+   "ms": 24,
+   "commitDoTeste": "6f1ddb34"
+  },
+  {
+   "arquivo": "test/m5fech.meta.esteiraJuridico.test.js",
+   "nome": "Guia §17 M5ES: nenhum job roda um pedaço da esteira fora da ordem (sem --de/--ate nem execução isolada de etapa)",
+   "status": "pass",
+   "ms": 1,
+   "commitDoTeste": "6f1ddb34"
+  },
+  {
+   "arquivo": "test/m5fech.meta.esteiraJuridico.test.js",
+   "nome": "Guia §17 M5ES: deploy_DEV e deploy_LAB publicam o artefato e fazem o smoke em todo push; o hook do servidor só com --release",
+   "status": "pass",
+   "ms": 0,
+   "commitDoTeste": "6f1ddb34"
+  },
+  {
+   "arquivo": "test/m5fech.meta.esteiraJuridico.test.js",
+   "nome": "Guia §17/§22 M5ES: failure_drills roda o drill de restore completo com relatório; pentest guarda o relatório; production_approval é o portão",
+   "status": "pass",
+   "ms": 1,
+   "commitDoTeste": "6f1ddb34"
+  }
+ ],
+ "nota": "Ordem do Guia §17 em todo push e pull request, parando na primeira vermelha; nenhum job roda pedaço da esteira (meta-teste). deploy_DEV/deploy_LAB locais do artefato; hook do servidor só em tag (DI-M5ES-1). failure_drills com o drill de restore; production_approval é o portão (DI-M5ES-2). Os testes novos falham em 41addaa2 e passam aqui (evidencias/marco-5/esteira/m5es/prova-testes-em-*.log)."
+}

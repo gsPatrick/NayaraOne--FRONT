@@ -1,0 +1,25 @@
+{
+ "esteira": "juridico (Guia M5 §17)",
+ "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5",
+ "release": false,
+ "inicio": "2026-11-11T03:32:40.255Z",
+ "etapas": [
+  {
+   "numero": 16,
+   "nome": "failure_drills",
+   "status": "VERDE",
+   "motivo": "2 comando(s)",
+   "duracaoMs": 56272,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  },
+  {
+   "numero": 17,
+   "nome": "pentest",
+   "status": "VERDE",
+   "motivo": "1 comando(s)",
+   "duracaoMs": 151030,
+   "commit": "77dfe209fa35418993ac58cbfa1482779c4d22f5"
+  }
+ ],
+ "fim": "2026-11-11T03:36:07.559Z"
+}

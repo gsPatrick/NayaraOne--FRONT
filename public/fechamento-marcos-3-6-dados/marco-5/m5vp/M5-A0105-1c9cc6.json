@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0105-1c9cc6",
+ "linhaCaderno": 250,
+ "requisito": "• Valores a receber ficam estimados e vinculados ao Financeiro somente quando juridicamente cabível.",
+ "correcao": "src/modules/legal/cases/legalCaseReceivables.service.js + legalRules.params.js enabledReceivableBases (legal.processo.recebivel.base.<BASE>); migration 20260101015601; GET /legal/receivable-bases",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.recebivelBases.test.js",
+   "nome": "M5-A0105/§14: a base jurídica do recebível segue a configuração da empresa (ligar cumprimento provisório; desligar acordo)",
+   "status": "pass",
+   "ms": 283.936,
+   "commitDoTeste": "33b32586",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "TypeError: Cannot read properties of undefined (reading 'acceptedBases') [withDisposableDb] cluster parado e diretório temporário apagado. exit=1"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.117Z"
+}

@@ -1,0 +1,160 @@
+{
+ "id": "M4-§8.12",
+ "secao": "§8 Fluxo de pagamento",
+ "requisito": "\"12. Divergência abre anomaly_case.\"",
+ "substitui": "evidencias/marco-4/M4-S8.12.json",
+ "motivo": "Correção M4PG (verificação independente do Marco 4): divergência de valor do banco abre anomaly_case. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "f1f33f82",
+  "branchApi": "m4fix/pagamentos-verificacao",
+  "commitFront": "c574a8a",
+  "quando": "2026-11-11T12:09:43Z",
+  "ambiente": "Postgres 16 descartável (scripts/withDisposableDb.js; migrations do zero, seeds do CI e de dois tenants; RLS real, role de runtime sem bypass), API Express real em processo; ClamAV real na 3310."
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-§8.12: valor confirmado pelo banco diferente do aprovado não confirma e abre anomaly_case (uma vez por intenção)",
+   "noCommit": "passou",
+   "duracaoMs": 1500,
+   "naBase41addaa2": "falhou",
+   "erroNaBase": "expected='EXECUTING'"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C08-1",
+   "titulo": "PREPARE",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "financialEntryId": "afb569f3-d510-44ec-83f0-955a54547e2a"
+   },
+   "status": 201,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:40.809Z",
+   "resposta": {
+    "id": "af5152b2-4b48-470b-8030-7d91d8ba3447",
+    "status": "PENDING_APPROVAL",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "300.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447976435687",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447950386082",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "272fb646-e8d7-435d-b0be-67391e766b09"
+    },
+    "snapshotHash": "0f04fb2eec763c1ee132fd3df880979216d60ba7df6cdfb4d3b39e42ba7aff9d",
+    "approval": {
+     "id": "2d135e15-7e8d-4cc0-825e-b42c03b845e5",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 0,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:af5152b2-4b48-470b-8030-7d91d8ba3447"
+   }
+  },
+  {
+   "id": "C08-2",
+   "titulo": "Aprovação",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/af5152b2-4b48-470b-8030-7d91d8ba3447/approve",
+   "perfil": "aprova",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:41.770Z",
+   "resposta": {
+    "id": "af5152b2-4b48-470b-8030-7d91d8ba3447",
+    "status": "APPROVED",
+    "submissionPhase": "NOT_STARTED",
+    "amount": "300.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447976435687",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447950386082",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "272fb646-e8d7-435d-b0be-67391e766b09"
+    },
+    "snapshotHash": "0f04fb2eec763c1ee132fd3df880979216d60ba7df6cdfb4d3b39e42ba7aff9d",
+    "approval": {
+     "id": "2d135e15-7e8d-4cc0-825e-b42c03b845e5",
+     "riskLevel": "LOW",
+     "requiredApprovals": 1,
+     "approvedCount": 1,
+     "riskSource": "PARAMETERS"
+    },
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:af5152b2-4b48-470b-8030-7d91d8ba3447"
+   }
+  },
+  {
+   "id": "C08-3",
+   "titulo": "Envio ao banco (sandbox): EXECUTING/SUBMITTED e evento finance.payment.execution_requested",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/af5152b2-4b48-470b-8030-7d91d8ba3447/submit-to-bank",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "paymentMethod": "PIX"
+   },
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:43.337Z",
+   "resposta": {
+    "id": "af5152b2-4b48-470b-8030-7d91d8ba3447",
+    "status": "EXECUTING",
+    "submissionPhase": "SUBMITTED",
+    "amount": "300.00",
+    "installmentNumber": 1,
+    "beneficiarySnapshot": {
+     "name": "captura m4pg 179439447976435687",
+     "branch": "0001",
+     "pixKey": "••••••",
+     "account": "CAP-179439447950386082",
+     "bankCode": "••••••",
+     "personId": null,
+     "bankAccountId": "272fb646-e8d7-435d-b0be-67391e766b09"
+    },
+    "snapshotHash": "0f04fb2eec763c1ee132fd3df880979216d60ba7df6cdfb4d3b39e42ba7aff9d",
+    "cancelReason": null,
+    "idempotencyKey": "payment-intent:af5152b2-4b48-470b-8030-7d91d8ba3447"
+   }
+  },
+  {
+   "id": "C08-4",
+   "titulo": "Banco confirma R$ 299,99 para o aprovado de R$ 300,00: não confirma e abre anomaly_case",
+   "camada": "serviço (mesma transação do teste)",
+   "quando": "2026-11-11T10:54:43.496Z",
+   "dados": {
+    "intentStatus": "EXECUTING",
+    "submissionPhase": "SUBMITTED",
+    "anomalias": [
+     {
+      "caseType": "BANK_AMOUNT_MISMATCH",
+      "riskLevel": "CRITICAL",
+      "status": "OPEN"
+     }
+    ],
+    "eventos": [
+     "finance.payment.prepared",
+     "finance.payment.approved",
+     "finance.payment.execution_requested"
+    ]
+   }
+  }
+ ],
+ "sondasDoVerificador": null,
+ "sanitizacao": [
+  "Sem token de acesso, sem token de impacto da confirmação de nível 3 (só \"enviada\"), sem segredo TOTP, sem senha e sem string de conexão.",
+  "Usuários fictícios m4-<perfil>-<sufixo>@nayaraone.dev numa empresa isolada criada no banco descartável; MFA recente por linhas no banco descartável (nunca pelo endpoint de MFA)."
+ ]
+}

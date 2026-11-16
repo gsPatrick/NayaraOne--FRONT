@@ -1,0 +1,209 @@
+{
+  "id": "M6-72",
+  "requisito": "Evento mínimo project.stage.completed.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §11 Eventos mínimos; Guia do Marcelo (Obras) §11",
+  "implementacao": "constructionEvents.service.js#publishStageCompleted (Outbox transacional, mesma transação do dado)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/medicoes: aprovar medição de 100%",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.minimumEvents.test.js",
+      "nome": "M6-69..M6-80: a jornada da obra grava na Outbox os 15 eventos mínimos do Caderno, com o nome exato",
+      "resultado": "passou",
+      "duracaoMs": 1392,
+      "executadoEm": "2026-11-11T00:13:57.177Z"
+    },
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-106: aprovar medição de 100% completa a etapa E publica project.stage.completed",
+      "resultado": "passou",
+      "duracaoMs": 131,
+      "executadoEm": "2026-11-11T00:13:51.131Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H095"
+    ],
+    "resumo": [
+      "H095 POST /api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:16.922Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H095",
+      "requisitos": [
+        "M6-36",
+        "M6-10",
+        "M6-21",
+        "M6-76",
+        "M6-72",
+        "M6-85",
+        "M6-97",
+        "M6-49",
+        "M6-98",
+        "M6-106"
+      ],
+      "cenario": "Aprovar medição: conta a pagar real no Financeiro (com obra e centro de custo), status PAYABLE, etapa concluída",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/measurements/7d62db51-ddf7-45f4-ae53-767c9ace7c44/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 682,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7d62db51-ddf7-45f4-ae53-767c9ace7c44",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "PAYABLE",
+          "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "decidedAt": "2026-11-11T00:12:16.623Z",
+          "rejectionReason": null,
+          "submittedAt": "2026-11-11T00:12:15.995Z",
+          "reviewedAt": "2026-11-11T00:12:16.190Z",
+          "reviewedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "reviewNotes": "Conferido em campo pelo fiscal",
+          "approvedAt": "2026-11-11T00:12:16.623Z",
+          "totalAmount": "41200.00",
+          "payableFinancialEntryId": "c6c73a47-c908-452c-a3db-8d8338177778",
+          "parentMeasurementId": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "revisionNumber": 2,
+          "costCenterId": null,
+          "idempotencyKey": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "created_at": "2026-11-11T00:12:15.900Z",
+          "updated_at": "2026-11-11T00:12:16.897Z",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measured_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approved_by_user_id": null,
+          "reviewed_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "payable_financial_entry_id": null,
+          "parent_measurement_id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:16.922Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C004",
+      "requisitos": [
+        "M6-69",
+        "M6-70",
+        "M6-71",
+        "M6-72",
+        "M6-73",
+        "M6-74",
+        "M6-75",
+        "M6-76",
+        "M6-77",
+        "M6-78",
+        "M6-79",
+        "M6-80",
+        "M6-105",
+        "M6-106"
+      ],
+      "descricao": "Eventos mínimos do Caderno §11 gravados na Outbox pela jornada (nome exato, um por agregado e chave de idempotência)",
+      "sql": "SELECT event_type, count(*)::int AS eventos, count(DISTINCT idempotency_key)::int AS chaves FROM integration.outbox_events WHERE event_type = ANY($1) AND (aggregate_id = ANY($2::uuid[]) OR payload_json->>'projectId' = ANY($3) OR payload_json->>'id' = ANY($3)) GROUP BY 1 ORDER BY 1",
+      "resultado": [
+        {
+          "event_type": "material.received",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "material.requested",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "measurement.approved",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "measurement.submitted",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.closed",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.opened",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "project.budget.approved",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.daily_log.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.delay.detected",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.delivered",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.stage.completed",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.started",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "warranty.case.closed",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "warranty.case.opened",
+          "eventos": 2,
+          "chaves": 2
+        }
+      ],
+      "invariante": "os 15 nomes presentes; eventos = chaves (nenhum evento duplicado)",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.180Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.435Z"
+}

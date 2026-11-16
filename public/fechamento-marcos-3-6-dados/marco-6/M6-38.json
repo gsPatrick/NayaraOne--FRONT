@@ -1,0 +1,142 @@
+{
+  "id": "M6-38",
+  "requisito": "API mínima: POST /nonconformities/:id/close.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#closeNonconformity",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "NC fecha normalmente quando after_evidence_file_ids está preenchido e não exige aceite",
+      "resultado": "passou",
+      "duracaoMs": 254,
+      "executadoEm": "2026-11-11T00:14:18.754Z"
+    },
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "M6-62: fechar não conformidade sem after_evidence_file_ids bloqueia",
+      "resultado": "passou",
+      "duracaoMs": 401,
+      "executadoEm": "2026-11-11T00:14:18.094Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H123",
+      "H127"
+    ],
+    "resumo": [
+      "H123 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 422 NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "H127 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:22.905Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H123",
+      "requisitos": [
+        "M6-24",
+        "M6-38",
+        "M6-62",
+        "M6-86"
+      ],
+      "cenario": "NEGATIVO: fechar NC sem evidência \"depois\"",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": []
+      },
+      "statusHttp": 422,
+      "codigoErro": "NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "esperado": "422 NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+      "conferiu": true,
+      "duracaoMs": 417,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "NONCONFORMITY_CLOSE_REQUIRES_AFTER_EVIDENCE",
+          "message": "Não é possível fechar a NC sem evidência \"depois\" (\"afterEvidenceFileIds\" vazio).",
+          "traceId": "a5a3b7f8-bf23-4a6c-96ef-c1fe1eec68aa"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.905Z"
+    },
+    {
+      "id": "H127",
+      "requisitos": [
+        "M6-24",
+        "M6-38",
+        "M6-78",
+        "M6-86",
+        "M6-50",
+        "M6-98"
+      ],
+      "cenario": "Fechar NC com evidência \"depois\" e aceite (publica nonconformity.closed)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+        ],
+        "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 65,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "severity": "HIGH",
+          "description": "Reboco solto na parede da escada",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-16T00:12:22.026Z",
+          "status": "CLOSED",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [
+            "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+          ],
+          "requiresAcceptance": true,
+          "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "closedAt": "2026-11-11T00:12:23.476Z",
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "causeCode": null,
+          "teamLabel": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:22.026Z",
+          "updated_at": "2026-11-11T00:12:23.476Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "accepted_by_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.498Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.404Z"
+}

@@ -1,0 +1,162 @@
+{
+ "id": "M4-G§18.5",
+ "secao": "Guia §18 Não improvisar",
+ "requisito": "\"❌ Não misturar dinheiro de terceiros com caixa livre.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "M4-20c: freeCash soma o extrato bancário real e exclui dinheiro de terceiro retido; marginBySector agrupa por centro de resultado",
+   "status": "passou",
+   "duracaoMs": 145,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T05",
+   "tipo": "http",
+   "linhas": [
+    "M4-§13.5",
+    "M4-FIN-TS-015",
+    "M4-G§18.5"
+   ],
+   "titulo": "Relatório: saldo de terceiros separado do caixa livre (caução fora do caixa disponível)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/reports/weekly-health",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T01:35:12.187Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "generatedAt": "2026-11-11T01:35:12.163Z",
+     "windowEndsAt": "2026-11-18T03:00:00.000Z",
+     "payablePending": {
+      "count": 6,
+      "total": 26345
+     },
+     "receivablePending": {
+      "count": 12,
+      "total": 4733.06
+     },
+     "projectedNetBalance": -21611.94,
+     "overdue": {
+      "payable": {
+       "count": 0,
+       "total": 0
+      },
+      "receivable": {
+       "count": 0,
+       "total": 0
+      },
+      "total": 0
+     },
+     "dueNextSevenDays": {
+      "payable": {
+       "count": 4,
+       "total": 26320
+      },
+      "receivable": {
+       "count": 9,
+       "total": 3622.76
+      }
+     },
+     "dueNext30Days": {
+      "payable": {
+       "count": 4,
+       "total": 26320
+      },
+      "receivable": {
+       "count": 9,
+       "total": 3622.76
+      }
+     },
+     "dueNext60Days": {
+      "payable": {
+       "count": 4,
+       "total": 26320
+      },
+      "receivable": {
+       "count": 9,
+       "total": 3622.76
+      }
+     },
+     "thirdPartyFunds": {
+      "count": 0,
+      "total": 0,
+      "basis": "PENDING",
+      "label": "Dinheiro de terceiros em aberto (previsto)",
+      "description": "Soma dos lançamentos de dinheiro de terceiro (cauções etc.) ainda pendentes. Não é o que já está retido em caixa."
+     },
+     "delinquencyRatio": 0,
+     "pendingReconciliations": {
+      "count": 2,
+      "total": 1110.92
+     },
+     "provisionedCommissions": {
+      "count": 0,
+      "total": 0
+     },
+     "pendingOwnerRepasses": {
+      "count": 0,
+      "total": 0
+     },
+     "openHighRiskAnomalies": 2,
+     "managementAlerts": {
+      "recurringManualReconciliation": {
+       "label": "Conciliação manual recorrente",
+       "openCases": 1,
+       "latestReason": "Conciliação manual recorrente: 3 conciliações feitas à mão nos últimos 30 dias (limiar 3). Vale revisar a qualidade dos dados do extrato e dos lançamentos, que o motor de sugestão não está casando sozinho.",
+       "latestCaseId": "cd99d38d-6605-43c2-8cde-76ae37197852"
+      }
+     },
+     "freeCash": {
+      "grossBankBalance": 2222.76,
+      "thirdPartyHeld": 3000,
+      "thirdPartyHeldBasis": "SETTLED",
+      "thirdPartyHeldLabel": "Dinheiro de terceiros retido em caixa (realizado)",
+      "thirdPartyHeldDescription": "Dinheiro de terceiro já recebido e ainda não devolvido; é o que sai do saldo bancário para chegar ao caixa livre. Difere do total em aberto, que é previsto.",
+      "value": -777.24
+     },
+     "marginBySector": [
+      {
+       "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+       "revenueRealized": 200.6,
+       "costsAttributed": 0,
+       "margin": 200.6
+      },
+      {
+       "resultCenterId": null,
+       "revenueRealized": 0,
+       "costsAttributed": 2150,
+       "margin": -2150
+      }
+     ],
+     "breathingNeed": {
+      "value": 23474.48,
+      "excludesFreeCashBalance": false
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

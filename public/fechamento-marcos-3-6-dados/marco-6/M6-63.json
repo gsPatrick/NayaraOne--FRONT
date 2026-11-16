@@ -1,0 +1,331 @@
+{
+  "id": "M6-63",
+  "requisito": "\"Warranty SLA vencido → escalar.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "engines/jobs/warrantyEscalationJob.js (OVERDUE + notificação, idempotente); slaRules.service.js (REG-OBR-002)",
+  "telaParaReteste": "Painel → /painel/obras/pos-obra: chamado vencido em vermelho (Vencido)",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: warrantyEscalationJob escalona para OVERDUE um caso com sla_due_at no passado",
+      "resultado": "passou",
+      "duracaoMs": 57,
+      "executadoEm": "2026-11-11T00:14:40.681Z"
+    },
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: warrantyEscalationJob é idempotente — rodar de novo sem mudança não reescalona",
+      "resultado": "passou",
+      "duracaoMs": 155,
+      "executadoEm": "2026-11-11T00:14:40.838Z"
+    },
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: warrantyEscalationJob cria Notification real pro responsável quando o caso vira OVERDUE",
+      "resultado": "passou",
+      "duracaoMs": 281,
+      "executadoEm": "2026-11-11T00:14:41.119Z"
+    },
+    {
+      "arquivo": "test/construction.slaRules.test.js",
+      "nome": "REG-OBR-002: publicar nova versão da regra passa a valer pra casos novos, preservando o SLA já calculado dos casos existentes",
+      "resultado": "passou",
+      "duracaoMs": 115,
+      "executadoEm": "2026-11-11T00:14:37.691Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H143",
+      "H164",
+      "H165",
+      "H170"
+    ],
+    "resumo": [
+      "H143 GET /api/v1/construction/settings/sla-rule → 200",
+      "H164 POST /api/v1/files → 201",
+      "H165 POST /api/v1/construction/warranty-cases → 201",
+      "H170 GET /api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406 → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:26.114Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H143",
+      "requisitos": [
+        "M6-26",
+        "M6-63",
+        "M6-88"
+      ],
+      "cenario": "SLA de garantia por severidade vigente (regra REG-OBR-002, configurável)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/settings/sla-rule",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 11,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "ruleVersionId": "e50cd50d-d248-4812-b170-9a0a72890ff6",
+          "slaDays": {
+            "LOW": 30,
+            "HIGH": 5,
+            "MEDIUM": 15,
+            "CRITICAL": 2
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.114Z"
+    },
+    {
+      "id": "H164",
+      "requisitos": [
+        "M6-63"
+      ],
+      "cenario": "Envio da foto/documento \"trinca-antes\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "trinca-antes.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 55,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "f827978c-a8b7-45b3-bee9-dd069444adb6",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/3f123449-29c5-4878-a237-e75a8bc8f80a-trinca-antes.jpg",
+          "fileName": "trinca-antes.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "1151aa202dc40fc2079c02cc85fa30e0c7c4c2d1772d792f1d29e521f08f4983",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:27.815Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:27.815Z",
+          "created_at": "2026-11-11T00:12:27.815Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.848Z"
+    },
+    {
+      "id": "H165",
+      "requisitos": [
+        "M6-40",
+        "M6-63"
+      ],
+      "cenario": "Segundo chamado (severidade CRÍTICA) para o teste de SLA vencido",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/warranty-cases",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+        "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+        "description": "Trinca estrutural na viga da garagem",
+        "severity": "CRITICAL",
+        "category": "STRUCTURAL",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeMediaFileIds": [
+          "f827978c-a8b7-45b3-bee9-dd069444adb6"
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 43,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+          "afterMediaFileIds": [],
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Trinca estrutural na viga da garagem",
+          "status": "OPEN",
+          "warrantyDeadlineAt": null,
+          "category": "STRUCTURAL",
+          "severity": "CRITICAL",
+          "slaDueAt": "2026-11-13T00:12:27.874Z",
+          "escalationLevel": "WARNING",
+          "rootCauseCode": null,
+          "beforeMediaFileIds": [
+            "f827978c-a8b7-45b3-bee9-dd069444adb6"
+          ],
+          "laborCost": null,
+          "materialCost": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:27.884Z",
+          "created_at": "2026-11-11T00:12:27.884Z",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.892Z"
+    },
+    {
+      "id": "H170",
+      "requisitos": [
+        "M6-63",
+        "M6-88",
+        "M6-52"
+      ],
+      "cenario": "Chamado com SLA vencido aparece ESCALADO (OVERDUE) depois da varredura",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 117,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Trinca estrutural na viga da garagem",
+          "status": "OPEN",
+          "warrantyDeadlineAt": null,
+          "category": "STRUCTURAL",
+          "severity": "CRITICAL",
+          "slaDueAt": "2026-11-10T21:12:28.126Z",
+          "escalationLevel": "OVERDUE",
+          "beforeMediaFileIds": [
+            "f827978c-a8b7-45b3-bee9-dd069444adb6"
+          ],
+          "afterMediaFileIds": [],
+          "laborCost": null,
+          "materialCost": null,
+          "rootCauseCode": null,
+          "resolutionType": "REIMBURSEMENT",
+          "resolutionAmount": "5000.00",
+          "resolutionStatus": "APPROVED",
+          "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "resolutionFinancialEntryId": "d9a98017-a66d-4cb7-ab31-64ce07e07308",
+          "lockVersion": 3,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:27.884Z",
+          "updated_at": "2026-11-11T00:12:28.208Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.338Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C015",
+      "requisitos": [
+        "M6-15",
+        "M6-26",
+        "M6-63",
+        "M6-88",
+        "M6-111"
+      ],
+      "descricao": "Chamados de garantia: categoria, severidade, SLA, responsável, causa, custos, fotos que existem; escalonamento do vencido",
+      "sql": "SELECT severity, category, status, root_cause_code, sla_due_at IS NOT NULL AS sla, responsible_user_id IS NOT NULL AS responsavel, labor_cost, material_cost, escalation_level, (SELECT count(*) FROM people.files f WHERE f.id = ANY(m.before_media_file_ids || m.after_media_file_ids))::int AS fotos_existentes, cardinality(m.before_media_file_ids || m.after_media_file_ids) AS fotos, (SELECT count(*) FROM construction.warranty_actions a WHERE a.warranty_case_id = m.id)::int AS acoes FROM construction.maintenance_cases m WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "severity": "HIGH",
+          "category": "WATERPROOFING",
+          "status": "CLOSED",
+          "root_cause_code": "WORKMANSHIP",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": "650.00",
+          "material_cost": "210.00",
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        },
+        {
+          "severity": "CRITICAL",
+          "category": "STRUCTURAL",
+          "status": "CLOSED",
+          "root_cause_code": "DESIGN_FLAW",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": null,
+          "material_cost": null,
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        }
+      ],
+      "invariante": "dois chamados fechados com causa, fotos antes/depois existentes e ação de atendimento",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.200Z"
+    },
+    {
+      "id": "C016",
+      "requisitos": [
+        "M6-63",
+        "M6-88"
+      ],
+      "descricao": "Escalonamento do SLA vencido gerou notificação ao responsável (job real, executado 2x sem duplicar)",
+      "sql": "SELECT count(*)::int AS notificacoes FROM core.notifications WHERE user_id = $1 AND (title ILIKE '%garantia%' OR body ILIKE '%garantia%' OR title ILIKE '%SLA%')",
+      "resultado": [
+        {
+          "notificacoes": 1
+        }
+      ],
+      "invariante": "uma notificação; a reexecução não escalou de novo",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.202Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.431Z"
+}

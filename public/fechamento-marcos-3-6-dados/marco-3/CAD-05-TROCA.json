@@ -1,0 +1,765 @@
+{
+ "id": "CAD-05-TROCA",
+ "secao": "Livro §5 + pedido da cliente (Documentos)",
+ "requisito": "Troca de arquivo validado pela rota: o original fica preservado, a nova versão nasce PENDENTE e o novo arquivo passa por antivírus, leitura e revisão próprias.",
+ "meta": {
+  "geradoEm": "2026-11-11T00:16:28.061Z",
+  "inicioCaptura": "2026-11-11T00:16:12.980Z",
+  "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+  "commitApi": "d6bc89b7",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+   "corretor": "Empresa A — corretor (só a própria carteira)",
+   "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+   "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+   "mascarado": "Empresa A — leitura sem campo restrito",
+   "claro": "Empresa A — leitura com campo restrito em claro"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 38,
+   "casos": [
+    "documento_envio",
+    "troca_original"
+   ],
+   "descricao": "Envio do IR (PDF real): antivírus, hash, leitura (pdftotext) e versão 1 PENDENTE com origem e confiança",
+   "metodo": "POST",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/ingest",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileName": "ir-2025.pdf",
+    "mimeType": "application/pdf",
+    "documentType": "IR",
+    "contentBase64": "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA1OTUgODQyXSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCAxMzEgPj4Kc3RyZWFtCkJUIC9GMSAxNCBUZiA1MCA3ODAgVGQgMTggVEwgKE5vbWU6IE1BUklBIEZJQ1RJQ0lBIERBIFNJTFZBKSBUaiBUKiAoQ1BGOiA1MjkuOTgyLjI0Ny0yNSkgVGogVCogKFJlbmRhIG1lbnNhbDogUiQgNC41MDAsMDApIFRqIFQqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MSAwMDAwMCBuIAowMDAwMDAwNDIzIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKNDkzCiUlRU9GCg=="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "document": {
+      "id": "168bc992-88a5-4d01-b665-592fd5b123bd",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+      "documentType": "IR",
+      "fileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+      "versionNo": 1,
+      "verificationStatus": "PENDING",
+      "extractedDataJson": {
+       "fields": {
+        "name": "MARIA FICTICIA DA SILVA",
+        "taxId": "52998224725",
+        "income": 4500
+       },
+       "illegible": false,
+       "confidence": 0.95,
+       "sourceFileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+       "extractionMeta": {
+        "engine": "pdftotext",
+        "source": "pdf-text",
+        "languages": "por",
+        "wordCount": 11,
+        "textLength": 75,
+        "documentType": "IR",
+        "fieldSources": {
+         "name": "Nome: MARIA FICTICIA DA SILVA",
+         "taxId": "CPF: [CPF omitido]",
+         "income": "Renda mensal: R$ 4.500,00"
+        },
+        "meanConfidence": 0.95
+       }
+      },
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updated_at": "2026-11-11T00:16:22.123Z",
+      "created_at": "2026-11-11T00:16:22.123Z",
+      "issuedAt": null,
+      "expiresAt": null,
+      "verifiedBy": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "fileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+     "pendingTask": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:21.934Z"
+  },
+  {
+   "seq": 40,
+   "casos": [
+    "documento_verificar",
+    "troca_original"
+   ],
+   "descricao": "Revisão humana: o IR lido é VERIFICADO",
+   "metodo": "PATCH",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/168bc992-88a5-4d01-b665-592fd5b123bd",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "verificationStatus": "VERIFIED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "168bc992-88a5-4d01-b665-592fd5b123bd",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+     "documentType": "IR",
+     "fileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+     "versionNo": 1,
+     "issuedAt": null,
+     "expiresAt": null,
+     "verificationStatus": "VERIFIED",
+     "verifiedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "extractedDataJson": {
+      "fields": {
+       "name": "MARIA FICTICIA DA SILVA",
+       "taxId": "52998224725",
+       "income": 4500
+      },
+      "illegible": false,
+      "confidence": 0.95,
+      "sourceFileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+      "extractionMeta": {
+       "engine": "pdftotext",
+       "source": "pdf-text",
+       "languages": "por",
+       "wordCount": 11,
+       "textLength": 75,
+       "documentType": "IR",
+       "fieldSources": {
+        "name": "Nome: MARIA FICTICIA DA SILVA",
+        "taxId": "CPF: [CPF omitido]",
+        "income": "Renda mensal: R$ 4.500,00"
+       },
+       "meanConfidence": 0.95
+      }
+     },
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:22.123Z",
+     "updated_at": "2026-11-11T00:16:22.259Z",
+     "deleted_at": null,
+     "person_id": "5fbc8195-bbae-4b49-91b4-c1f632543667"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.235Z"
+  },
+  {
+   "seq": 41,
+   "casos": [
+    "troca_upload_novo"
+   ],
+   "descricao": "Envio do arquivo NOVO pelo upload (antivírus e hash no envio)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileName": "ir-2025-retificada.pdf",
+    "mimeType": "application/pdf",
+    "category": "people-documents",
+    "contentBase64": "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA1OTUgODQyXSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4gPj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCAxMzEgPj4Kc3RyZWFtCkJUIC9GMSAxNCBUZiA1MCA3ODAgVGQgMTggVEwgKE5vbWU6IE1BUklBIEZJQ1RJQ0lBIERBIFNJTFZBKSBUaiBUKiAoQ1BGOiA1MjkuOTgyLjI0Ny0yNSkgVGogVCogKFJlbmRhIG1lbnNhbDogUiQgOS4xMDAsMDApIFRqIFQqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MSAwMDAwMCBuIAowMDAwMDAwNDIzIDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKNDkzCiUlRU9GCg=="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "INTERNAL",
+     "id": "0450f176-4f90-466a-8284-08a78d36cdc0",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "storageKey": "people-documents/9b820ac4-092f-4b1c-8643-03720fce6c59/faf479ed-2b83-456a-afd2-da540085d0e7-ir-2025-retificada.pdf",
+     "fileName": "ir-2025-retificada.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 676,
+     "checksumSha256": "1fda9361247c0fd8b7bf720baa93020d98aeca41f61492cbfb2a5422b416f213",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T00:16:22.382Z",
+     "uploadedByUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:22.382Z",
+     "created_at": "2026-11-11T00:16:22.382Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.310Z"
+  },
+  {
+   "seq": 42,
+   "casos": [
+    "troca_nova_versao"
+   ],
+   "descricao": "Troca do arquivo do documento VERIFICADO pela rota: nasce a versão 2 PENDENTE, com antivírus e leitura do arquivo novo",
+   "metodo": "PATCH",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/168bc992-88a5-4d01-b665-592fd5b123bd",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileId": "0450f176-4f90-466a-8284-08a78d36cdc0"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c107ba7a-99a8-49a9-b879-5396c2989277",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+     "documentType": "IR",
+     "fileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+     "versionNo": 2,
+     "issuedAt": null,
+     "expiresAt": null,
+     "verificationStatus": "PENDING",
+     "extractedDataJson": {
+      "fields": {
+       "name": "MARIA FICTICIA DA SILVA",
+       "taxId": "52998224725",
+       "income": 9100
+      },
+      "antivirus": {
+       "clean": true,
+       "engine": "clamav",
+       "scannedAt": "2026-11-11T00:16:22.469Z",
+       "checksumSha256": "1fda9361247c0fd8b7bf720baa93020d98aeca41f61492cbfb2a5422b416f213"
+      },
+      "illegible": false,
+      "confidence": 0.95,
+      "sourceFileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+      "extractionMeta": {
+       "engine": "pdftotext",
+       "source": "pdf-text",
+       "languages": "por",
+       "wordCount": 11,
+       "textLength": 75,
+       "documentType": "IR",
+       "fieldSources": {
+        "name": "Nome: MARIA FICTICIA DA SILVA",
+        "taxId": "CPF: [CPF omitido]",
+        "income": "Renda mensal: R$ 9.100,00"
+       },
+       "meanConfidence": 0.95
+      }
+     },
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:22.508Z",
+     "created_at": "2026-11-11T00:16:22.508Z",
+     "verifiedBy": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.416Z"
+  },
+  {
+   "seq": 43,
+   "casos": [
+    "troca_lista"
+   ],
+   "descricao": "O original continua VERIFICADO com o arquivo e a leitura de antes; a versão nova aparece pendente",
+   "metodo": "GET",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "c107ba7a-99a8-49a9-b879-5396c2989277",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+      "documentType": "IR",
+      "fileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+      "versionNo": 2,
+      "issuedAt": null,
+      "expiresAt": null,
+      "verificationStatus": "PENDING",
+      "verifiedBy": null,
+      "extractedDataJson": {
+       "fields": {
+        "name": "MARIA FICTICIA DA SILVA",
+        "taxId": "52998224725",
+        "income": 9100
+       },
+       "antivirus": {
+        "clean": true,
+        "engine": "clamav",
+        "scannedAt": "2026-11-11T00:16:22.469Z",
+        "checksumSha256": "1fda9361247c0fd8b7bf720baa93020d98aeca41f61492cbfb2a5422b416f213"
+       },
+       "illegible": false,
+       "confidence": 0.95,
+       "sourceFileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+       "extractionMeta": {
+        "engine": "pdftotext",
+        "source": "pdf-text",
+        "languages": "por",
+        "wordCount": 11,
+        "textLength": 75,
+        "documentType": "IR",
+        "fieldSources": {
+         "name": "Nome: MARIA FICTICIA DA SILVA",
+         "taxId": "CPF: [CPF omitido]",
+         "income": "Renda mensal: R$ 9.100,00"
+        },
+        "meanConfidence": 0.95
+       }
+      },
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:22.508Z",
+      "updated_at": "2026-11-11T00:16:22.508Z",
+      "deleted_at": null,
+      "person_id": "5fbc8195-bbae-4b49-91b4-c1f632543667"
+     },
+     {
+      "id": "168bc992-88a5-4d01-b665-592fd5b123bd",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+      "documentType": "IR",
+      "fileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+      "versionNo": 1,
+      "issuedAt": null,
+      "expiresAt": null,
+      "verificationStatus": "VERIFIED",
+      "verifiedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "extractedDataJson": {
+       "fields": {
+        "name": "MARIA FICTICIA DA SILVA",
+        "taxId": "52998224725",
+        "income": 4500
+       },
+       "illegible": false,
+       "confidence": 0.95,
+       "sourceFileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+       "extractionMeta": {
+        "engine": "pdftotext",
+        "source": "pdf-text",
+        "languages": "por",
+        "wordCount": 11,
+        "textLength": 75,
+        "documentType": "IR",
+        "fieldSources": {
+         "name": "Nome: MARIA FICTICIA DA SILVA",
+         "taxId": "CPF: [CPF omitido]",
+         "income": "Renda mensal: R$ 4.500,00"
+        },
+        "meanConfidence": 0.95
+       }
+      },
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:22.123Z",
+      "updated_at": "2026-11-11T00:16:22.259Z",
+      "deleted_at": null,
+      "person_id": "5fbc8195-bbae-4b49-91b4-c1f632543667"
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T00:16:22.560Z"
+  },
+  {
+   "seq": 44,
+   "casos": [
+    "troca_verificar_junto"
+   ],
+   "descricao": "Trocar o arquivo e verificar na mesma chamada é recusado (a revisão é própria da versão nova)",
+   "metodo": "PATCH",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/168bc992-88a5-4d01-b665-592fd5b123bd",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+    "verificationStatus": "VERIFIED"
+   },
+   "status": 422,
+   "codigoErro": "PERSON_DOCUMENT_REPLACE_FILE_WITH_STATUS",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_DOCUMENT_REPLACE_FILE_WITH_STATUS",
+     "message": "Ao trocar o arquivo, a nova versão nasce pendente. Troque o arquivo primeiro e confirme (verifique) a nova versão em seguida.",
+     "traceId": "350dafee-8bb8-468a-b9a9-6c1610386398"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.629Z"
+  },
+  {
+   "seq": 45,
+   "casos": [
+    "troca_confirmar"
+   ],
+   "descricao": "Revisão própria: a versão nova é confirmada sobre o arquivo novo",
+   "metodo": "PATCH",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/c107ba7a-99a8-49a9-b879-5396c2989277",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "verificationStatus": "VERIFIED"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c107ba7a-99a8-49a9-b879-5396c2989277",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+     "documentType": "IR",
+     "fileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+     "versionNo": 2,
+     "issuedAt": null,
+     "expiresAt": null,
+     "verificationStatus": "VERIFIED",
+     "verifiedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "extractedDataJson": {
+      "fields": {
+       "name": "MARIA FICTICIA DA SILVA",
+       "taxId": "52998224725",
+       "income": 9100
+      },
+      "antivirus": {
+       "clean": true,
+       "engine": "clamav",
+       "scannedAt": "2026-11-11T00:16:22.469Z",
+       "checksumSha256": "1fda9361247c0fd8b7bf720baa93020d98aeca41f61492cbfb2a5422b416f213"
+      },
+      "illegible": false,
+      "confidence": 0.95,
+      "sourceFileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+      "extractionMeta": {
+       "engine": "pdftotext",
+       "source": "pdf-text",
+       "languages": "por",
+       "wordCount": 11,
+       "textLength": 75,
+       "documentType": "IR",
+       "fieldSources": {
+        "name": "Nome: MARIA FICTICIA DA SILVA",
+        "taxId": "CPF: [CPF omitido]",
+        "income": "Renda mensal: R$ 9.100,00"
+       },
+       "meanConfidence": 0.95
+      }
+     },
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "deletedBy": null,
+     "created_at": "2026-11-11T00:16:22.508Z",
+     "updated_at": "2026-11-11T00:16:22.662Z",
+     "deleted_at": null,
+     "person_id": "5fbc8195-bbae-4b49-91b4-c1f632543667"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.646Z"
+  },
+  {
+   "seq": 46,
+   "casos": [
+    "troca_ilegivel"
+   ],
+   "descricao": "Arquivo novo ilegível (digitalização sem texto)",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileName": "ir-borrado.pdf",
+    "mimeType": "application/pdf",
+    "category": "people-documents",
+    "contentBase64": "JVBERi0xLjQgZGlnaXRhbGl6YWNhbyBib3JyYWRhIHNlbSB0ZXh0bw=="
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "classification": "INTERNAL",
+     "id": "a00a8e35-4fbf-4885-bd3c-96627360d7ec",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "storageKey": "people-documents/9b820ac4-092f-4b1c-8643-03720fce6c59/dafb531c-9981-434e-b95f-d3cf796911ab-ir-borrado.pdf",
+     "fileName": "ir-borrado.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 40,
+     "checksumSha256": "5bf088ef95573f584cdcff2cd04cd1705b8049582dc7c010234a70aa4e120b9e",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T00:16:22.739Z",
+     "uploadedByUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:22.739Z",
+     "created_at": "2026-11-11T00:16:22.739Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.688Z"
+  },
+  {
+   "seq": 47,
+   "casos": [
+    "troca_ilegivel"
+   ],
+   "descricao": "Troca para o arquivo ilegível: versão PENDENTE sem campo inventado e pendência de revisão aberta",
+   "metodo": "PATCH",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/c107ba7a-99a8-49a9-b879-5396c2989277",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileId": "a00a8e35-4fbf-4885-bd3c-96627360d7ec"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "1fab7700-bee3-4296-898f-fd60c27c1c90",
+     "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+     "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+     "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+     "documentType": "IR",
+     "fileId": "a00a8e35-4fbf-4885-bd3c-96627360d7ec",
+     "versionNo": 3,
+     "issuedAt": null,
+     "expiresAt": null,
+     "verificationStatus": "PENDING",
+     "extractedDataJson": {
+      "fields": {},
+      "antivirus": {
+       "clean": true,
+       "engine": "clamav",
+       "scannedAt": "2026-11-11T00:16:22.805Z",
+       "checksumSha256": "5bf088ef95573f584cdcff2cd04cd1705b8049582dc7c010234a70aa4e120b9e"
+      },
+      "illegible": true,
+      "confidence": 0,
+      "sourceFileId": "a00a8e35-4fbf-4885-bd3c-96627360d7ec",
+      "extractionMeta": {
+       "engine": "local",
+       "reason": "ARQUIVO_NAO_LEGIVEL",
+       "documentType": "IR"
+      }
+     },
+     "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+     "updated_at": "2026-11-11T00:16:22.862Z",
+     "created_at": "2026-11-11T00:16:22.862Z",
+     "verifiedBy": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.781Z"
+  },
+  {
+   "seq": 48,
+   "casos": [
+    "troca_ilegivel"
+   ],
+   "descricao": "A versão ilegível não pode ser verificada",
+   "metodo": "PATCH",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/1fab7700-bee3-4296-898f-fd60c27c1c90",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "verificationStatus": "VERIFIED"
+   },
+   "status": 422,
+   "codigoErro": "PERSON_DOCUMENT_ILLEGIBLE",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_DOCUMENT_ILLEGIBLE",
+     "message": "A leitura automática não conseguiu ler este documento. Recuse o documento e peça um arquivo legível antes de verificar.",
+     "traceId": "47e02249-e236-4b48-a673-57bb1667aa64"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.895Z"
+  },
+  {
+   "seq": 49,
+   "casos": [
+    "troca_virus_upload"
+   ],
+   "descricao": "Malware no upload do arquivo novo: recusado antes de virar arquivo",
+   "metodo": "POST",
+   "rota": "/api/v1/files",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileName": "virus.pdf",
+    "mimeType": "application/pdf",
+    "category": "people-documents",
+    "contentBase64": "WDVPIVAlQEFQWzRcUFpYNTQoUF4pN0NDKTd9JEVJQ0FSLVNUQU5EQVJELUFOVElWSVJVUy1URVNULUZJTEUhJEgrSCo="
+   },
+   "status": 422,
+   "codigoErro": "FILE_UPLOAD_MALWARE_DETECTED",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "FILE_UPLOAD_MALWARE_DETECTED",
+     "message": "Arquivo rejeitado pelo antivírus: assinatura de malware detectada.",
+     "details": {
+      "signature": "Eicar-Test-Signature"
+     },
+     "traceId": "a4643e81-5c61-4e91-b11a-efadf99fc3b8"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.911Z"
+  },
+  {
+   "seq": 50,
+   "casos": [
+    "troca_virus_sem_exame"
+   ],
+   "descricao": "Arquivo inexistente/de outra empresa como arquivo novo: recusado e nenhuma versão criada",
+   "metodo": "PATCH",
+   "rota": "/api/v1/people/5fbc8195-bbae-4b49-91b4-c1f632543667/documents/168bc992-88a5-4d01-b665-592fd5b123bd",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": {
+    "fileId": "00000000-0000-4000-8000-000000000000"
+   },
+   "status": 400,
+   "codigoErro": "PERSON_DOCUMENT_FILE_NOT_FOUND",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_DOCUMENT_FILE_NOT_FOUND",
+     "message": "O arquivo informado não existe ou não pertence a esta empresa.",
+     "traceId": "e0373619-77ca-4d77-a981-789e657570aa"
+    }
+   },
+   "dataHora": "2026-11-11T00:16:22.931Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "troca_ilegivel"
+   ],
+   "descricao": "Pendência de revisão (core.tasks) aberta para o arquivo trocado",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "sql": "SELECT title, description, status FROM core.tasks WHERE related_entity_type = 'people.persons' AND related_entity_id = $1 ORDER BY created_at DESC LIMIT 3",
+   "parametros": [
+    "5fbc8195-bbae-4b49-91b4-c1f632543667"
+   ],
+   "resultado": [
+    {
+     "title": "Revisar nova versão 3 do documento IR (arquivo trocado)",
+     "description": "Documento ilegível: OCR/IA não conseguiu extrair dados suficientes.",
+     "status": "OPEN"
+    }
+   ],
+   "dataHora": "2026-11-11T00:16:22.911Z"
+  },
+  {
+   "casos": [
+    "troca_nova_versao",
+    "troca_lista"
+   ],
+   "descricao": "Versões do documento IR: original VERIFIED preservado, nova versão com antivírus próprio",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "sql": "SELECT version_no, verification_status, file_id, extracted_data_json->'antivirus' AS antivirus, extracted_data_json->'fields' AS campos_lidos, extracted_data_json->>'sourceFileId' AS source_file_id FROM people.person_documents WHERE person_id = $1 ORDER BY version_no",
+   "parametros": [
+    "5fbc8195-bbae-4b49-91b4-c1f632543667"
+   ],
+   "resultado": [
+    {
+     "version_no": 1,
+     "verification_status": "VERIFIED",
+     "file_id": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+     "antivirus": null,
+     "campos_lidos": {
+      "name": "MARIA FICTICIA DA SILVA",
+      "taxId": "52998224725",
+      "income": 4500
+     },
+     "source_file_id": "0f78895e-990a-4016-8d9c-26f3ba3c5932"
+    },
+    {
+     "version_no": 2,
+     "verification_status": "VERIFIED",
+     "file_id": "0450f176-4f90-466a-8284-08a78d36cdc0",
+     "antivirus": {
+      "clean": true,
+      "engine": "clamav",
+      "scannedAt": "2026-11-11T00:16:22.469Z",
+      "checksumSha256": "1fda9361247c0fd8b7bf720baa93020d98aeca41f61492cbfb2a5422b416f213"
+     },
+     "campos_lidos": {
+      "name": "MARIA FICTICIA DA SILVA",
+      "taxId": "52998224725",
+      "income": 9100
+     },
+     "source_file_id": "0450f176-4f90-466a-8284-08a78d36cdc0"
+    },
+    {
+     "version_no": 3,
+     "verification_status": "PENDING",
+     "file_id": "a00a8e35-4fbf-4885-bd3c-96627360d7ec",
+     "antivirus": {
+      "clean": true,
+      "engine": "clamav",
+      "scannedAt": "2026-11-11T00:16:22.805Z",
+      "checksumSha256": "5bf088ef95573f584cdcff2cd04cd1705b8049582dc7c010234a70aa4e120b9e"
+     },
+     "campos_lidos": {},
+     "source_file_id": "a00a8e35-4fbf-4885-bd3c-96627360d7ec"
+    }
+   ],
+   "dataHora": "2026-11-11T00:16:22.961Z"
+  },
+  {
+   "casos": [
+    "troca_nova_versao"
+   ],
+   "descricao": "Auditoria da troca (antes = original, depois = versão nova)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "sql": "SELECT action, reason, before_json->>'id' AS antes_id, before_json->>'verificationStatus' AS antes_status, after_json->>'id' AS depois_id, after_json->>'verificationStatus' AS depois_status, occurred_at FROM audit.audit_log WHERE action = 'people.document.replace_file' AND entity_id IN (SELECT id FROM people.person_documents WHERE person_id = $1) ORDER BY occurred_at",
+   "parametros": [
+    "5fbc8195-bbae-4b49-91b4-c1f632543667"
+   ],
+   "resultado": [
+    {
+     "action": "people.document.replace_file",
+     "reason": "Arquivo do documento IR (versão 1) substituído: o original foi preservado e a nova versão 2 nasceu pendente, com antivírus, leitura e confirmação ligadas ao novo arquivo.",
+     "antes_id": "168bc992-88a5-4d01-b665-592fd5b123bd",
+     "antes_status": "VERIFIED",
+     "depois_id": "c107ba7a-99a8-49a9-b879-5396c2989277",
+     "depois_status": "PENDING",
+     "occurred_at": "2026-11-11T00:16:22.510Z"
+    },
+    {
+     "action": "people.document.replace_file",
+     "reason": "Arquivo do documento IR (versão 2) substituído: o original foi preservado e a nova versão 3 nasceu pendente, com antivírus, leitura e confirmação ligadas ao novo arquivo; revisão pendente: Documento ilegível: OCR/IA não conseguiu extrair dados suficientes..",
+     "antes_id": "c107ba7a-99a8-49a9-b879-5396c2989277",
+     "antes_status": "VERIFIED",
+     "depois_id": "1fab7700-bee3-4296-898f-fd60c27c1c90",
+     "depois_status": "PENDING",
+     "occurred_at": "2026-11-11T00:16:22.867Z"
+    }
+   ],
+   "dataHora": "2026-11-11T00:16:22.964Z"
+  }
+ ]
+}

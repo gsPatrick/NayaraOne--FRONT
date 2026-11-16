@@ -1,0 +1,468 @@
+{
+ "id": "M3-07",
+ "meta": {
+  "geradoEm": "2026-11-11T09:25:32.895Z",
+  "inicioCaptura": "2026-11-11T09:24:54.065Z",
+  "ambiente": "API local ligada a um PostgreSQL descartável criado do zero pelas migrations (RLS FORCE, papel de runtime sem BYPASSRLS), antivírus ClamAV real. Nada foi gravado na homologação.",
+  "commitApi": "119c0fb2",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "leituraImoveis": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "config": "Empresa A — administrador de Configurações (settings:read e settings:update)"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 20,
+   "casos": [
+    "oferta"
+   ],
+   "descricao": "Cria imóvel (endereço completo)",
+   "metodo": "POST",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "title": "Imóvel M3IM mwbwxv4luyd9",
+    "internalCode": "IM-mwbwxv4luyd9",
+    "propertyType": "RESIDENTIAL",
+    "addressLine": "Rua Fictícia mwbwxv4luyd9, 10",
+    "city": "Campinas",
+    "state": "SP",
+    "zipCode": "13010-000"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "publicId": "fa27a44e-29fe-49af-8be5-0b52cf7365bb",
+     "lockVersion": 0,
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "title": "Imóvel M3IM mwbwxv4luyd9",
+     "internalCode": "IM-mwbwxv4luyd9",
+     "propertyType": "RESIDENTIAL",
+     "addressId": null,
+     "registryNumber": null,
+     "registryOffice": null,
+     "latitude": null,
+     "longitude": null,
+     "addressLine": "Rua Fictícia mwbwxv4luyd9, 10",
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": "13010-000",
+     "areaTotalM2": null,
+     "description": null,
+     "bedrooms": null,
+     "parkingSpots": null,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:25:00.514Z",
+     "created_at": "2026-11-11T09:25:00.514Z",
+     "descriptionPublic": null,
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    },
+    "meta": {
+     "similarPropertyWarnings": []
+    }
+   },
+   "dataHora": "2026-11-11T09:25:00.501Z"
+  },
+  {
+   "seq": 21,
+   "casos": [
+    "oferta"
+   ],
+   "descricao": "Oferta de venda com condições e preço mínimo confidencial",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "offerType": "SALE",
+    "askingPrice": 900000,
+    "confidentialMinPrice": 850000,
+    "conditions": "Entrada de 20%, saldo em 12 parcelas"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "offerType": "SALE",
+     "askingPrice": "900000.00",
+     "confidentialMinPrice": "850000.00",
+     "acceptsFinancing": null,
+     "acceptsTrade": null,
+     "status": "ACTIVE",
+     "startsAt": null,
+     "endsAt": null,
+     "conditions": "Entrada de 20%, saldo em 12 parcelas",
+     "supersededByOfferId": null,
+     "supersededAt": null,
+     "lockVersion": 0,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:25:00.728Z",
+     "updated_at": "2026-11-11T09:25:00.728Z",
+     "deleted_at": null,
+     "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:00.718Z"
+  },
+  {
+   "seq": 22,
+   "casos": [
+    "oferta"
+   ],
+   "descricao": "Nova oferta de venda substitui a anterior",
+   "metodo": "POST",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "offerType": "SALE",
+    "askingPrice": 880000
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "offerType": "SALE",
+     "askingPrice": "880000.00",
+     "confidentialMinPrice": null,
+     "acceptsFinancing": null,
+     "acceptsTrade": null,
+     "status": "ACTIVE",
+     "startsAt": null,
+     "endsAt": null,
+     "conditions": null,
+     "supersededByOfferId": null,
+     "supersededAt": null,
+     "lockVersion": 0,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:25:01.067Z",
+     "updated_at": "2026-11-11T09:25:01.067Z",
+     "deleted_at": null,
+     "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:01.033Z"
+  },
+  {
+   "seq": 23,
+   "casos": [
+    "oferta"
+   ],
+   "descricao": "Ofertas com o vínculo da substituída (perfil com properties:internal)",
+   "metodo": "GET",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+      "offerType": "SALE",
+      "askingPrice": "880000.00",
+      "confidentialMinPrice": null,
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "ACTIVE",
+      "startsAt": null,
+      "endsAt": null,
+      "conditions": null,
+      "supersededByOfferId": null,
+      "supersededAt": null,
+      "lockVersion": 0,
+      "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "deletedBy": null,
+      "created_at": "2026-11-11T09:25:01.067Z",
+      "updated_at": "2026-11-11T09:25:01.067Z",
+      "deleted_at": null,
+      "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+     },
+     {
+      "id": "c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+      "offerType": "SALE",
+      "askingPrice": "900000.00",
+      "confidentialMinPrice": "850000.00",
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "SUPERSEDED",
+      "startsAt": null,
+      "endsAt": null,
+      "conditions": "Entrada de 20%, saldo em 12 parcelas",
+      "supersededByOfferId": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "supersededAt": "2026-11-11T09:25:01.074Z",
+      "lockVersion": 0,
+      "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "deletedBy": null,
+      "created_at": "2026-11-11T09:25:00.728Z",
+      "updated_at": "2026-11-11T09:25:01.074Z",
+      "deleted_at": null,
+      "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T09:25:01.111Z"
+  },
+  {
+   "seq": 24,
+   "casos": [
+    "oferta"
+   ],
+   "descricao": "Substituída não volta a ACTIVE",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/offers/c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "status": "ACTIVE"
+   },
+   "status": 409,
+   "codigoErro": "PROPERTY_OFFER_SUPERSEDED_FINAL",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PROPERTY_OFFER_SUPERSEDED_FINAL",
+     "message": "Esta oferta foi substituída e não pode mais ser alterada nem reativada. Crie uma nova oferta.",
+     "details": {
+      "supersededByOfferId": "f821a773-95ea-4f06-8966-57e9c26e109b"
+     },
+     "traceId": "666f00c5-c8ab-4a35-95de-a05c4a8eb73a"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:01.137Z"
+  },
+  {
+   "seq": 25,
+   "casos": [
+    "oferta_confidencial"
+   ],
+   "descricao": "Só properties:read: as ofertas vêm sem o preço mínimo confidencial",
+   "metodo": "GET",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/offers",
+   "perfil": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+      "offerType": "SALE",
+      "askingPrice": "880000.00",
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "ACTIVE",
+      "startsAt": null,
+      "endsAt": null,
+      "conditions": null,
+      "supersededByOfferId": null,
+      "supersededAt": null,
+      "lockVersion": 0,
+      "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "deletedBy": null,
+      "created_at": "2026-11-11T09:25:01.067Z",
+      "updated_at": "2026-11-11T09:25:01.067Z",
+      "deleted_at": null,
+      "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+     },
+     {
+      "id": "c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+      "offerType": "SALE",
+      "askingPrice": "900000.00",
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "SUPERSEDED",
+      "startsAt": null,
+      "endsAt": null,
+      "conditions": "Entrada de 20%, saldo em 12 parcelas",
+      "supersededByOfferId": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "supersededAt": "2026-11-11T09:25:01.074Z",
+      "lockVersion": 0,
+      "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "deletedBy": null,
+      "created_at": "2026-11-11T09:25:00.728Z",
+      "updated_at": "2026-11-11T09:25:01.074Z",
+      "deleted_at": null,
+      "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T09:25:01.491Z"
+  },
+  {
+   "seq": 26,
+   "casos": [
+    "oferta_confidencial"
+   ],
+   "descricao": "Só properties:read: a ficha do imóvel também não traz o preço mínimo",
+   "metodo": "GET",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868",
+   "perfil": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "title": "Imóvel M3IM mwbwxv4luyd9",
+     "internalCode": "IM-mwbwxv4luyd9",
+     "propertyType": "RESIDENTIAL",
+     "addressId": null,
+     "registryNumber": null,
+     "registryOffice": null,
+     "latitude": null,
+     "longitude": null,
+     "addressLine": "Rua Fictícia mwbwxv4luyd9, 10",
+     "city": "Campinas",
+     "state": "SP",
+     "zipCode": "13010-000",
+     "areaTotalM2": null,
+     "description": null,
+     "bedrooms": null,
+     "parkingSpots": null,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "descriptionPublic": null,
+     "publicId": "fa27a44e-29fe-49af-8be5-0b52cf7365bb",
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "lockVersion": 0,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:25:00.514Z",
+     "updated_at": "2026-11-11T09:25:00.514Z",
+     "deleted_at": null,
+     "address_id": null,
+     "owners": [],
+     "offers": [
+      {
+       "id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+       "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+       "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+       "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+       "offerType": "SALE",
+       "askingPrice": "880000.00",
+       "acceptsFinancing": null,
+       "acceptsTrade": null,
+       "status": "ACTIVE",
+       "startsAt": null,
+       "endsAt": null,
+       "conditions": null,
+       "supersededByOfferId": null,
+       "supersededAt": null,
+       "lockVersion": 0,
+       "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+       "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+       "deletedBy": null,
+       "created_at": "2026-11-11T09:25:01.067Z",
+       "updated_at": "2026-11-11T09:25:01.067Z",
+       "deleted_at": null,
+       "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+      },
+      {
+       "id": "c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+       "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+       "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+       "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+       "offerType": "SALE",
+       "askingPrice": "900000.00",
+       "acceptsFinancing": null,
+       "acceptsTrade": null,
+       "status": "SUPERSEDED",
+       "startsAt": null,
+       "endsAt": null,
+       "conditions": "Entrada de 20%, saldo em 12 parcelas",
+       "supersededByOfferId": "f821a773-95ea-4f06-8966-57e9c26e109b",
+       "supersededAt": "2026-11-11T09:25:01.074Z",
+       "lockVersion": 0,
+       "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+       "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+       "deletedBy": null,
+       "created_at": "2026-11-11T09:25:00.728Z",
+       "updated_at": "2026-11-11T09:25:01.074Z",
+       "deleted_at": null,
+       "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+      }
+     ],
+     "address": null,
+     "media": [],
+     "documents": []
+    }
+   },
+   "dataHora": "2026-11-11T09:25:01.514Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "oferta"
+   ],
+   "descricao": "Auditoria da substituição com antes e depois",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "SELECT action, before_json->>'status' AS antes, after_json->>'status' AS depois, after_json->>'supersededByOfferId' AS substituta FROM audit.audit_log WHERE entity_id = $1 AND action = 'property_offer.supersede'",
+   "parametros": [
+    "c49db93f-3bbb-42b1-af12-1c18620a1ea8"
+   ],
+   "resultado": [
+    {
+     "action": "property_offer.supersede",
+     "antes": "ACTIVE",
+     "depois": "SUPERSEDED",
+     "substituta": "f821a773-95ea-4f06-8966-57e9c26e109b"
+    }
+   ],
+   "dataHora": "2026-11-11T09:25:01.688Z"
+  }
+ ]
+}

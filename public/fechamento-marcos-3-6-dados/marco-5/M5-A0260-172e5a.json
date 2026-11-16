@@ -1,0 +1,407 @@
+{
+ "id": "M5-A0260-172e5a",
+ "secao": "P2 > 19. O que Marcelo NÃO pode improvisar",
+ "linhaCaderno": 796,
+ "requisito": "❌ Não permitir NAY alterar documento jurídico final.",
+ "demandas": "M5-D041",
+ "implementacao": "src/modules/legal/cases/legalNay.service.js (nenhuma escrita em contrato/versão; versão é append-only no banco)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.nay.test.js",
+   "nome": "JR NAY: o serviço não expõe nenhuma ação de escrita jurídica (não cria prazo, não altera contrato assinado, não exclui prova) (§17/Guia §19)",
+   "status": "pass",
+   "ms": 0.377,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.nay.test.js",
+   "nome": "NAY-JUR-06: não executa nada — versões, contratos, prazos, checklist, cláusulas e dossiês idênticos depois de todas as funções; só ai_runs cresce",
+   "status": "pass",
+   "ms": 122.69,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L07: adulterar o content_hash de uma ContractVersion direto no banco é REJEITADO pelo trigger append-only",
+   "status": "pass",
+   "ms": 138.048,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-Y08",
+   "metodo": "GET",
+   "rota": "/legal/nay/contracts/6b912d61-ff0f-490b-9235-429f525808d7/summary",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 13 campo(s)",
+   "quando": "2026-11-11T03:42:39.807Z"
+  },
+  {
+   "passo": "JR-Y11",
+   "metodo": "GET",
+   "rota": "/legal/nay/contracts/6b912d61-ff0f-490b-9235-429f525808d7/compare?from=1&to=2",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 12 campo(s)",
+   "quando": "2026-11-11T03:42:39.846Z"
+  },
+  {
+   "passo": "JR-Y15",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/dossier",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 9 campo(s)",
+   "quando": "2026-11-11T03:42:39.906Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0260-172e5a.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.nay.test.js test/legal.nay.test.js test/adversarial.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-Y08, JR-Y11, JR-Y15, JR-Y07, JR-Y18)"
+ },
+ "passos": [
+  {
+   "id": "JR-Y08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "NAY resume o contrato e aponta documentos faltantes do checklist (com fontes e aviso)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/nay/contracts/6b912d61-ff0f-490b-9235-429f525808d7/summary",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T03:42:39.807Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "contrato": {
+      "id": "6b912d61-ff0f-490b-9235-429f525808d7",
+      "numero": "LOC-2026-0019",
+      "tipo": "LEASE_RESIDENTIAL",
+      "status": "DRAFT",
+      "valorTotal": 3100,
+      "vigencia": {
+       "inicio": null,
+       "fim": null
+      }
+     },
+     "partes": [],
+     "versaoVigente": {
+      "id": "56879591-1220-43f2-a208-23833c05d8d8",
+      "numero": 2,
+      "contentHash": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2",
+      "clauseVersionIds": [],
+      "vigenteDesde": "2026-11-11T03:42:39.728Z"
+     },
+     "totalVersoes": 2,
+     "garantias": [],
+     "documentosFaltantes": [
+      {
+       "id": "54b699ac-16e8-47e8-9fd5-c6e2097fc7c6",
+       "codigo": "LEASE_PF_PJ_DOCS",
+       "descricao": "Documentos PF/PJ das partes (locador/locatário)."
+      },
+      {
+       "id": "e0b7e6e4-31ff-477a-a695-949fc011e650",
+       "codigo": "LEASE_GUARANTEE",
+       "descricao": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização)."
+      },
+      {
+       "id": "3cfa2a0c-72ae-40c5-a4eb-901e8259821f",
+       "codigo": "LEASE_INSPECTION",
+       "descricao": "Vistoria de entrada do imóvel."
+      },
+      {
+       "id": "8f922ef2-4c56-4c77-a797-c900ab60fa10",
+       "codigo": "LEASE_OWNERSHIP",
+       "descricao": "Comprovação de titularidade do imóvel."
+      },
+      {
+       "id": "7cbe4eed-4370-4e4e-8928-1e6d65a22e5b",
+       "codigo": "LEASE_OBLIGATIONS",
+       "descricao": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás)."
+      }
+     ],
+     "prazosAbertos": [],
+     "pontosDeAtencao": [
+      "5 documento(s) obrigatório(s) pendente(s) no checklist."
+     ],
+     "fontes": [
+      {
+       "tabela": "legal.contracts",
+       "id": "6b912d61-ff0f-490b-9235-429f525808d7"
+      },
+      {
+       "tabela": "legal.contract_versions",
+       "id": "56879591-1220-43f2-a208-23833c05d8d8",
+       "contentHash": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2"
+      },
+      {
+       "tabela": "legal.contract_parties",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.guarantees",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.contract_requirements",
+       "registros": 5
+      },
+      {
+       "tabela": "legal.legal_deadlines",
+       "registros": 0
+      }
+     ],
+     "aiRunId": "244df5e3-e72b-47be-9b32-fc5b88c2f391"
+    }
+   },
+   "req": [
+    "M5-A0119-720fd1",
+    "M5-A0124-645aeb",
+    "M5-A0305-1ecad7",
+    "M5-A0125-3ef77f",
+    "M5-A0260-172e5a"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "NAY compara a versão 1 com a 2 (linhas removidas/incluídas e hashes)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/nay/contracts/6b912d61-ff0f-490b-9235-429f525808d7/compare?from=1&to=2",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:39.846Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "de": {
+      "numero": 1,
+      "id": "d0188374-8356-4c83-a9c0-2685229ef920",
+      "contentHash": "964e8940399c205dea303fdeb9b4f20ac1353b609facd8a713eafc2adcb4c37a"
+     },
+     "para": {
+      "numero": 2,
+      "id": "56879591-1220-43f2-a208-23833c05d8d8",
+      "contentHash": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2"
+     },
+     "hashIgual": false,
+     "clausulasIncluidas": [],
+     "clausulasExcluidas": [],
+     "linhasRemovidas": [
+      "Cláusula 1 - aluguel de R$ 3.100,00."
+     ],
+     "linhasIncluidas": [
+      "Cláusula 1 - aluguel de R$ 3.300,00."
+     ],
+     "fontes": [
+      {
+       "tabela": "legal.contract_versions",
+       "id": "d0188374-8356-4c83-a9c0-2685229ef920",
+       "contentHash": "964e8940399c205dea303fdeb9b4f20ac1353b609facd8a713eafc2adcb4c37a"
+      },
+      {
+       "tabela": "legal.contract_versions",
+       "id": "56879591-1220-43f2-a208-23833c05d8d8",
+       "contentHash": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2"
+      }
+     ],
+     "aiRunId": "2ae1b38d-4c08-4419-a8de-e2d5869b8e28"
+    }
+   },
+   "req": [
+    "M5-A0120-db30b1",
+    "M5-A0125-3ef77f",
+    "M5-A0260-172e5a"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "NAY organiza o dossiê do processo por fatos (ordem cronológica) e fontes",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/dossier",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:39.906Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "processoId": "3878035f-979a-40dd-964f-4972f2dee8b8",
+     "legalHold": false,
+     "fatos": [
+      {
+       "data": "2026-11-11T03:42:39.677Z",
+       "fato": "Versão 1 do contrato vinculado.",
+       "fonte": {
+        "tabela": "legal.contract_versions",
+        "id": "d0188374-8356-4c83-a9c0-2685229ef920",
+        "sha256": "964e8940399c205dea303fdeb9b4f20ac1353b609facd8a713eafc2adcb4c37a"
+       }
+      },
+      {
+       "data": "2026-11-11T03:42:39.728Z",
+       "fato": "Versão 2 do contrato vinculado.",
+       "fonte": {
+        "tabela": "legal.contract_versions",
+        "id": "56879591-1220-43f2-a208-23833c05d8d8",
+        "sha256": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2"
+       }
+      },
+      {
+       "data": "2026-11-11T03:42:39.770Z",
+       "fato": "Processo aberto (COLLECTION).",
+       "fonte": {
+        "tabela": "legal.legal_cases",
+        "id": "3878035f-979a-40dd-964f-4972f2dee8b8"
+       }
+      }
+     ],
+     "arquivos": [],
+     "fontes": [
+      {
+       "tabela": "legal.legal_cases",
+       "id": "3878035f-979a-40dd-964f-4972f2dee8b8"
+      },
+      {
+       "tabela": "legal.legal_deadlines",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.evidence_packages",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.contract_versions",
+       "registros": 2
+      }
+     ],
+     "aiRunId": "58718d8e-f799-4248-971b-6eb5121893a4"
+    }
+   },
+   "req": [
+    "M5-A0123-69456d",
+    "M5-A0125-3ef77f",
+    "M5-A0260-172e5a"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-Y07",
+   "req": [
+    "M5-A0125-3ef77f",
+    "M5-A0241-f5402f",
+    "M5-A0260-172e5a",
+    "M5-A0122-0f8a78"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "perfil": "A:gestor",
+   "descricao": "Retrato ANTES da NAY: prazos do processo, versões, checklist e dossiês",
+   "sql": "SELECT (SELECT count(*) FROM legal.legal_deadlines WHERE legal_case_id = :caso) AS prazos, (SELECT count(*) FROM legal.contract_versions WHERE contract_id = :ct) AS versoes, (SELECT string_agg(status, ',' ORDER BY id) FROM legal.contract_requirements WHERE contract_id = :ct) AS checklist, (SELECT count(*) FROM legal.evidence_packages WHERE legal_case_id = :caso) AS dossies",
+   "resultado": [
+    {
+     "prazos": "0",
+     "versoes": "2",
+     "checklist": "PENDING,PENDING,PENDING,PENDING,PENDING",
+     "dossies": "0"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:39.779Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "JR-Y18",
+   "req": [
+    "M5-A0125-3ef77f",
+    "M5-A0241-f5402f",
+    "M5-A0260-172e5a",
+    "M5-A0122-0f8a78",
+    "M5-A0160-df7d81"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "perfil": "A:gestor",
+   "descricao": "Retrato DEPOIS da NAY: nada mudou (prazos, versões, checklist, dossiês); só ai_runs registra as execuções",
+   "sql": "SELECT (SELECT count(*) FROM legal.legal_deadlines WHERE legal_case_id = :caso) AS prazos, (SELECT count(*) FROM legal.contract_versions WHERE contract_id = :ct) AS versoes, (SELECT string_agg(status, ',' ORDER BY id) FROM legal.contract_requirements WHERE contract_id = :ct) AS checklist, (SELECT count(*) FROM legal.evidence_packages WHERE legal_case_id = :caso) AS dossies, (SELECT count(*) FROM ai.ai_runs WHERE agent_name = 'NAY_JURIDICA' AND created_at > now() - interval '1 hour') AS execucoes_nay",
+   "resultado": [
+    {
+     "prazos": "0",
+     "versoes": "2",
+     "checklist": "PENDING,PENDING,PENDING,PENDING,PENDING",
+     "dossies": "0",
+     "execucoes_nay": "6"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:39.921Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

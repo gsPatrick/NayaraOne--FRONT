@@ -1,0 +1,209 @@
+{
+ "id": "M5-A0123-69456d",
+ "secao": "P1 > 17. NAY Jurídica",
+ "linhaCaderno": 295,
+ "requisito": "• Organiza dossiê por fatos e fontes.",
+ "demandas": "M5-D151",
+ "implementacao": "src/modules/legal/cases/legalNay.service.js organizeDossier (fatos em ordem cronológica com fonte e sha256)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/legal.nay.test.js",
+   "nome": "NAY-JUR-05: dossiê organizado por fatos (ordem cronológica) e fontes, com sha256 de cada item do manifesto",
+   "status": "pass",
+   "ms": 74.876,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-Y15",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/dossier",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 9 campo(s)",
+   "quando": "2026-11-11T03:42:39.906Z"
+  },
+  {
+   "passo": "JR-Y06",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=3878035f-979a-40dd-964f-4972f2dee8b8",
+   "quando": "2026-11-11T03:42:39.777Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0123-69456d.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.nay.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-Y15, JR-Y06)"
+ },
+ "passos": [
+  {
+   "id": "JR-Y15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "NAY organiza o dossiê do processo por fatos (ordem cronológica) e fontes",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/dossier",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:39.906Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "processoId": "3878035f-979a-40dd-964f-4972f2dee8b8",
+     "legalHold": false,
+     "fatos": [
+      {
+       "data": "2026-11-11T03:42:39.677Z",
+       "fato": "Versão 1 do contrato vinculado.",
+       "fonte": {
+        "tabela": "legal.contract_versions",
+        "id": "d0188374-8356-4c83-a9c0-2685229ef920",
+        "sha256": "964e8940399c205dea303fdeb9b4f20ac1353b609facd8a713eafc2adcb4c37a"
+       }
+      },
+      {
+       "data": "2026-11-11T03:42:39.728Z",
+       "fato": "Versão 2 do contrato vinculado.",
+       "fonte": {
+        "tabela": "legal.contract_versions",
+        "id": "56879591-1220-43f2-a208-23833c05d8d8",
+        "sha256": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2"
+       }
+      },
+      {
+       "data": "2026-11-11T03:42:39.770Z",
+       "fato": "Processo aberto (COLLECTION).",
+       "fonte": {
+        "tabela": "legal.legal_cases",
+        "id": "3878035f-979a-40dd-964f-4972f2dee8b8"
+       }
+      }
+     ],
+     "arquivos": [],
+     "fontes": [
+      {
+       "tabela": "legal.legal_cases",
+       "id": "3878035f-979a-40dd-964f-4972f2dee8b8"
+      },
+      {
+       "tabela": "legal.legal_deadlines",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.evidence_packages",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.contract_versions",
+       "registros": 2
+      }
+     ],
+     "aiRunId": "58718d8e-f799-4248-971b-6eb5121893a4"
+    }
+   },
+   "req": [
+    "M5-A0123-69456d",
+    "M5-A0125-3ef77f",
+    "M5-A0260-172e5a"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: processo ligado ao contrato",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases",
+   "corpoEnviado": {
+    "caseType": "COLLECTION",
+    "caseNumber": "NY-mwbkplllc1w7",
+    "contractId": "6b912d61-ff0f-490b-9235-429f525808d7"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:39.777Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "3878035f-979a-40dd-964f-4972f2dee8b8",
+     "lockVersion": 0,
+     "legalHold": false,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "6b912d61-ff0f-490b-9235-429f525808d7",
+     "propertyId": null,
+     "responsibleUserId": null,
+     "escalationUserId": null,
+     "caseNumber": "NY-mwbkplllc1w7",
+     "caseType": "COLLECTION",
+     "status": "OPEN",
+     "phase": null,
+     "summary": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:39.770Z",
+     "created_at": "2026-11-11T03:42:39.770Z",
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": null,
+     "caseClass": null,
+     "estimatedAmount": null,
+     "confirmedAmount": null,
+     "riskLevel": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0119-720fd1",
+    "M5-A0123-69456d"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

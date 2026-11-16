@@ -1,0 +1,219 @@
+{
+  "linha": "CAD-10",
+  "capturadoEm": "2026-11-11T11:10:36.871Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "oportunidade para fechar",
+      "pedido": "POST /api/v1/crm/opportunities",
+      "corpo": {
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "id": "202e4a98-f9f9-4457-96e7-ebf2c98a9b14",
+        "lockVersion": 0,
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "propertyId": null,
+        "ownerUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "stage": "NEW",
+        "temperature": null,
+        "expectedValue": null,
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z",
+        "wonReason": null,
+        "lostReason": null,
+        "withdrawnReason": null,
+        "closedAt": null,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:35.146Z",
+        "created_at": "2026-11-11T11:10:35.146Z",
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:35.186Z"
+    },
+    {
+      "titulo": "CLOSED_WON na entrada é gravado WON",
+      "pedido": "PATCH /api/v1/opportunities/202e4a98-f9f9-4457-96e7-ebf2c98a9b14",
+      "corpo": {
+        "stage": "CLOSED_WON",
+        "wonReason": "REFERRAL"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "id": "202e4a98-f9f9-4457-96e7-ebf2c98a9b14",
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "propertyId": null,
+        "ownerUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "stage": "WON",
+        "temperature": null,
+        "expectedValue": null,
+        "closedAt": "2026-11-11T11:10:35.228Z",
+        "lostReason": null,
+        "wonReason": "REFERRAL",
+        "withdrawnReason": null,
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z",
+        "lockVersion": 1,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "deletedBy": null,
+        "created_at": "2026-11-11T11:10:35.146Z",
+        "updated_at": "2026-11-11T11:10:35.228Z",
+        "deleted_at": null,
+        "person_id": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "property_id": null,
+        "owner_user_id": "edd0c6db-c042-4e74-a649-523867044483"
+      },
+      "em": "2026-11-11T11:10:35.416Z"
+    },
+    {
+      "titulo": "oportunidade para desistência",
+      "pedido": "POST /api/v1/crm/opportunities",
+      "corpo": {
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z"
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "id": "0d17ac3f-f0ee-447f-9342-03c370b1cbd5",
+        "lockVersion": 0,
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "propertyId": null,
+        "ownerUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "stage": "NEW",
+        "temperature": null,
+        "expectedValue": null,
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z",
+        "wonReason": null,
+        "lostReason": null,
+        "withdrawnReason": null,
+        "closedAt": null,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:35.521Z",
+        "created_at": "2026-11-11T11:10:35.521Z",
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:35.531Z"
+    },
+    {
+      "titulo": "WITHDRAWN na entrada vira LOST com motivo de desistência",
+      "pedido": "PATCH /api/v1/opportunities/0d17ac3f-f0ee-447f-9342-03c370b1cbd5",
+      "corpo": {
+        "stage": "WITHDRAWN",
+        "withdrawnReason": "CLIENT_GAVE_UP"
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "id": "0d17ac3f-f0ee-447f-9342-03c370b1cbd5",
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "propertyId": null,
+        "ownerUserId": "edd0c6db-c042-4e74-a649-523867044483",
+        "stage": "LOST",
+        "temperature": null,
+        "expectedValue": null,
+        "closedAt": "2026-11-11T11:10:35.542Z",
+        "lostReason": "CLIENT_GAVE_UP",
+        "wonReason": null,
+        "withdrawnReason": "CLIENT_GAVE_UP",
+        "nextAction": "Ligar",
+        "nextActionDueAt": "2026-11-12T11:10:33.837Z",
+        "lockVersion": 1,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "deletedBy": null,
+        "created_at": "2026-11-11T11:10:35.521Z",
+        "updated_at": "2026-11-11T11:10:35.542Z",
+        "deleted_at": null,
+        "person_id": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "property_id": null,
+        "owner_user_id": "edd0c6db-c042-4e74-a649-523867044483"
+      },
+      "em": "2026-11-11T11:10:35.551Z"
+    },
+    {
+      "titulo": "motivos configurados da empresa",
+      "pedido": "GET /api/v1/crm/outcome-reasons",
+      "corpo": null,
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "won": [
+          {
+            "code": "PRICE_ACCEPTED",
+            "label": "Preço aceito"
+          },
+          {
+            "code": "FAST_DECISION",
+            "label": "Decisão rápida"
+          },
+          {
+            "code": "REFERRAL",
+            "label": "Indicação"
+          },
+          {
+            "code": "OTHER",
+            "label": "Outro motivo"
+          }
+        ],
+        "lost": [
+          {
+            "code": "PRICE_TOO_HIGH",
+            "label": "Preço alto"
+          },
+          {
+            "code": "COMPETITOR",
+            "label": "Concorrente"
+          },
+          {
+            "code": "FINANCING_DENIED",
+            "label": "Financiamento negado"
+          },
+          {
+            "code": "LOCATION",
+            "label": "Localização"
+          },
+          {
+            "code": "OTHER",
+            "label": "Outro motivo"
+          }
+        ],
+        "withdrawal": [
+          {
+            "code": "CLIENT_GAVE_UP",
+            "label": "Cliente desistiu"
+          },
+          {
+            "code": "NO_RESPONSE",
+            "label": "Sem resposta"
+          },
+          {
+            "code": "CHANGED_MIND",
+            "label": "Mudou de ideia"
+          }
+        ]
+      },
+      "em": "2026-11-11T11:10:35.573Z"
+    }
+  ]
+}

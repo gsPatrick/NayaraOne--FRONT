@@ -1,0 +1,767 @@
+{
+  "id": "M6-60",
+  "requisito": "\"Material devolvido → saldo/custo correto.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "materialRequests.service.js#returnMaterialRequest (RETURN com custo); lossRecords.service.js#returnLossRecord; inventoryCost.service.js",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/materiais: Devolver e conferir saldo e custo",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.siteReturns.test.js",
+      "nome": "M6-28/M6-60: devolução REUSABLE do canteiro devolve o saldo e abate o custo consumido da obra; reenvio não estorna duas vezes",
+      "resultado": "passou",
+      "duracaoMs": 1108,
+      "executadoEm": "2026-11-11T00:14:33.060Z"
+    },
+    {
+      "arquivo": "test/construction.siteReturns.test.js",
+      "nome": "M6-60: devolução DAMAGED volta ao saldo sem valor (a obra continua com o custo); LOST não mexe em saldo nem custo",
+      "resultado": "passou",
+      "duracaoMs": 1104,
+      "executadoEm": "2026-11-11T00:14:34.164Z"
+    },
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "M6-60: devolução de material corrige o saldo (movimento inverso real)",
+      "resultado": "passou",
+      "duracaoMs": 234,
+      "executadoEm": "2026-11-11T00:14:19.403Z"
+    },
+    {
+      "arquivo": "test/construction.materialRequests.test.js",
+      "nome": "material-request: devolução LOST NÃO credita o saldo — material nunca voltou fisicamente",
+      "resultado": "passou",
+      "duracaoMs": 468,
+      "executadoEm": "2026-11-11T00:13:44.928Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H065",
+      "H066",
+      "H067",
+      "H070",
+      "H073",
+      "H074",
+      "H075",
+      "H079",
+      "H080",
+      "H081"
+    ],
+    "resumo": [
+      "H065 POST /api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/return → 200",
+      "H066 POST /api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/return → 200",
+      "H067 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health → 200",
+      "H070 POST /api/v1/construction/material-requests/0bd1aca3-7d8c-44f9-a153-84602d867de9/return → 200",
+      "H073 POST /api/v1/construction/material-requests/849dff1e-2afe-4932-80b0-f1982b181ed5/return → 200",
+      "H074 POST /api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/return → 400 MATERIAL_REQUEST_RETURN_ITEM_MISMATCH",
+      "H075 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health → 200",
+      "H079 POST /api/v1/construction/loss-records/9bb26ea4-e15f-40f3-91ab-0ec761efb6ec/return → 201",
+      "H080 POST /api/v1/construction/loss-records/9bb26ea4-e15f-40f3-91ab-0ec761efb6ec/return → 201",
+      "H081 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:12.724Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H065",
+      "requisitos": [
+        "M6-28",
+        "M6-60",
+        "M6-53"
+      ],
+      "cenario": "Devolução REUSABLE de 6 sacos: movimento inverso (RETURN) credita o almoxarifado",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/return",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "quantity": 6,
+        "conditionCode": "REUSABLE",
+        "reason": "Sobra da concretagem"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 177,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "materialRequest": {
+            "id": "48814203-8d2a-473e-ac75-919769662592",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "description": "Cimento CP-II 50 kg",
+            "quantity": "40.000",
+            "unit": "UN",
+            "status": "RECEIVED",
+            "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "receivedAt": "2026-11-11T00:12:12.114Z",
+            "lockVersion": 1,
+            "idempotencyKey": "mr-a-c4fcd6",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:12.094Z",
+            "updated_at": "2026-11-11T00:12:12.114Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          "returnMovement": {
+            "id": "dff71e67-f7fa-4323-b285-8adbe4cb8ff9",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "movementType": "RETURN",
+            "quantity": "6.0000",
+            "sourceLocationId": null,
+            "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+            "sourceType": "REQUISITION",
+            "sourceId": "48814203-8d2a-473e-ac75-919769662592",
+            "idempotencyKey": "material_request.return:48814203-8d2a-473e-ac75-919769662592",
+            "movedAt": "2026-11-11T00:12:12.688Z",
+            "movedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "responsiblePersonId": null,
+            "evidenceFileId": null,
+            "reason": "Sobra da concretagem",
+            "unitCost": "38.500000",
+            "totalCost": "231.00",
+            "costSource": "RECORDED",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updated_at": "2026-11-11T00:12:12.688Z",
+            "created_at": "2026-11-11T00:12:12.688Z"
+          },
+          "returnDetails": {
+            "reusable": true,
+            "conditionCode": "REUSABLE",
+            "returnCost": null,
+            "originalUnitCost": 38.5
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.724Z"
+    },
+    {
+      "id": "H066",
+      "requisitos": [
+        "M6-60"
+      ],
+      "cenario": "Reenviar a mesma devolução: não credita duas vezes",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/return",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "quantity": 6,
+        "conditionCode": "REUSABLE"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 36,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "materialRequest": {
+            "id": "48814203-8d2a-473e-ac75-919769662592",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "description": "Cimento CP-II 50 kg",
+            "quantity": "40.000",
+            "unit": "UN",
+            "status": "RECEIVED",
+            "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "receivedAt": "2026-11-11T00:12:12.114Z",
+            "lockVersion": 1,
+            "idempotencyKey": "mr-a-c4fcd6",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:12.094Z",
+            "updated_at": "2026-11-11T00:12:12.114Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          "returnMovement": {
+            "id": "dff71e67-f7fa-4323-b285-8adbe4cb8ff9",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "movementType": "RETURN",
+            "quantity": "6.0000",
+            "sourceLocationId": null,
+            "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+            "sourceType": "REQUISITION",
+            "sourceId": "48814203-8d2a-473e-ac75-919769662592",
+            "idempotencyKey": "material_request.return:48814203-8d2a-473e-ac75-919769662592",
+            "responsiblePersonId": null,
+            "evidenceFileId": null,
+            "reason": "Sobra da concretagem",
+            "unitCost": "38.500000",
+            "totalCost": "231.00",
+            "costSource": "RECORDED",
+            "movedAt": "2026-11-11T00:12:12.688Z",
+            "movedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "created_at": "2026-11-11T00:12:12.688Z",
+            "updated_at": "2026-11-11T00:12:12.688Z",
+            "inventory_item_id": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "moved_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "source_location_id": null,
+            "destination_location_id": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+            "responsible_person_id": null,
+            "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+          },
+          "returnDetails": {
+            "reusable": true,
+            "conditionCode": "REUSABLE",
+            "returnCost": null,
+            "originalUnitCost": 38.5
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.760Z"
+    },
+    {
+      "id": "H067",
+      "requisitos": [
+        "M6-42",
+        "M6-60",
+        "M6-85"
+      ],
+      "cenario": "Custo consumido depois do estorno (34 × R$ 38,50 = R$ 1.309,00)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 400,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "baselineBudget": 86000,
+          "approvedChanges": 6000,
+          "committedCost": 80000,
+          "actualFinancialCost": 0,
+          "consumedInventoryCost": 1309,
+          "forecastToComplete": 84691,
+          "projectedTotalCost": 86000,
+          "projectedMargin": 0,
+          "marginPct": 0,
+          "minMarginPct": 10,
+          "belowMinMargin": true,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "economyAmount": 0,
+          "commissionAmount": 0,
+          "costBasis": {
+            "base": "CAIXA",
+            "paidFinancialCost": 0,
+            "openPayablesCost": 0,
+            "pendingApprovedMeasurementsCost": 0,
+            "includedInActualFinancialCost": false
+          },
+          "updatedAt": "2026-11-11T00:12:13.158Z",
+          "kpis": {
+            "physicalProgressPct": 0,
+            "plannedProgressPct": 100,
+            "scheduleProgressPct": 12.28,
+            "progressVsScheduleGapPct": -12.28,
+            "scheduleDelayDays": 0,
+            "isOverdue": false,
+            "payablePendingTotal": 0,
+            "measurementsByStatus": {},
+            "wastagePct": 0,
+            "recurrenceByRootCause": []
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.160Z"
+    },
+    {
+      "id": "H070",
+      "requisitos": [
+        "M6-60"
+      ],
+      "cenario": "Devolução DAMAGED: volta ao almoxarifado sem valor (a obra continua com o custo)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/0bd1aca3-7d8c-44f9-a153-84602d867de9/return",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "quantity": 5,
+        "conditionCode": "DAMAGED"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 96,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "materialRequest": {
+            "id": "0bd1aca3-7d8c-44f9-a153-84602d867de9",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "description": "Cimento CP-II 50 kg",
+            "quantity": "5.000",
+            "unit": "UN",
+            "status": "RECEIVED",
+            "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "receivedAt": "2026-11-11T00:12:13.229Z",
+            "lockVersion": 1,
+            "idempotencyKey": "mr-b-c4fcd6",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:13.198Z",
+            "updated_at": "2026-11-11T00:12:13.229Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          "returnMovement": {
+            "id": "9363416b-cbed-4889-8ed4-34ae84e5a25e",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "movementType": "RETURN",
+            "quantity": "5.0000",
+            "sourceLocationId": null,
+            "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+            "sourceType": "REQUISITION",
+            "sourceId": "0bd1aca3-7d8c-44f9-a153-84602d867de9",
+            "idempotencyKey": "material_request.return:0bd1aca3-7d8c-44f9-a153-84602d867de9",
+            "movedAt": "2026-11-11T00:12:13.463Z",
+            "movedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "responsiblePersonId": null,
+            "evidenceFileId": null,
+            "reason": "Devolução de material da requisição \"Cimento CP-II 50 kg\" (obra acb529ee-9a5a-4513-9d58-1764116cd61f) — condição: DAMAGED.",
+            "unitCost": "0.000000",
+            "totalCost": "0.00",
+            "costSource": "RECORDED",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updated_at": "2026-11-11T00:12:13.464Z",
+            "created_at": "2026-11-11T00:12:13.464Z"
+          },
+          "returnDetails": {
+            "reusable": true,
+            "conditionCode": "DAMAGED",
+            "returnCost": 0,
+            "originalUnitCost": 38.5
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.492Z"
+    },
+    {
+      "id": "H073",
+      "requisitos": [
+        "M6-60"
+      ],
+      "cenario": "Devolução LOST: não credita saldo (o material não voltou)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/849dff1e-2afe-4932-80b0-f1982b181ed5/return",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "quantity": 3,
+        "conditionCode": "LOST"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 152,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "materialRequest": {
+            "id": "849dff1e-2afe-4932-80b0-f1982b181ed5",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "description": "Cimento CP-II 50 kg",
+            "quantity": "3.000",
+            "unit": "UN",
+            "status": "RECEIVED",
+            "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "receivedAt": "2026-11-11T00:12:13.695Z",
+            "lockVersion": 1,
+            "idempotencyKey": "mr-c-c4fcd6",
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:13.505Z",
+            "updated_at": "2026-11-11T00:12:13.695Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          "returnMovement": null,
+          "returnDetails": {
+            "reusable": true,
+            "conditionCode": "LOST",
+            "returnCost": null,
+            "originalUnitCost": 38.5
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.906Z"
+    },
+    {
+      "id": "H074",
+      "requisitos": [
+        "M6-60"
+      ],
+      "cenario": "NEGATIVO: devolver item diferente do que saiu na requisição",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/return",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+        "destinationLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "quantity": 1
+      },
+      "statusHttp": 400,
+      "codigoErro": "MATERIAL_REQUEST_RETURN_ITEM_MISMATCH",
+      "esperado": "400 MATERIAL_REQUEST_RETURN_ITEM_MISMATCH",
+      "conferiu": true,
+      "duracaoMs": 17,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MATERIAL_REQUEST_RETURN_ITEM_MISMATCH",
+          "message": "O item devolvido precisa ser o mesmo item que foi consumido por esta requisição (vínculo com a saída original).",
+          "traceId": "8fe4165b-aa9c-4d19-b7eb-9652b6439256"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.923Z"
+    },
+    {
+      "id": "H075",
+      "requisitos": [
+        "M6-42",
+        "M6-60",
+        "M6-99"
+      ],
+      "cenario": "Read model de custo depois de todas as devoluções",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 35,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "baselineBudget": 86000,
+          "approvedChanges": 6000,
+          "committedCost": 80000,
+          "actualFinancialCost": 0,
+          "consumedInventoryCost": 1617,
+          "forecastToComplete": 84383,
+          "projectedTotalCost": 86000,
+          "projectedMargin": 0,
+          "marginPct": 0,
+          "minMarginPct": 10,
+          "belowMinMargin": true,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "economyAmount": 0,
+          "commissionAmount": 0,
+          "costBasis": {
+            "base": "CAIXA",
+            "paidFinancialCost": 0,
+            "openPayablesCost": 0,
+            "pendingApprovedMeasurementsCost": 0,
+            "includedInActualFinancialCost": false
+          },
+          "updatedAt": "2026-11-11T00:12:13.956Z",
+          "kpis": {
+            "physicalProgressPct": 0,
+            "plannedProgressPct": 100,
+            "scheduleProgressPct": 12.28,
+            "progressVsScheduleGapPct": -12.28,
+            "scheduleDelayDays": 0,
+            "isOverdue": false,
+            "payablePendingTotal": 0,
+            "measurementsByStatus": {},
+            "wastagePct": 0,
+            "recurrenceByRootCause": []
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.958Z"
+    },
+    {
+      "id": "H079",
+      "requisitos": [
+        "M6-29",
+        "M6-60"
+      ],
+      "cenario": "Estorno da perda (devolução de 8 sacos): registro novo RETURN, a perda original fica",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/loss-records/9bb26ea4-e15f-40f3-91ab-0ec761efb6ec/return",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "quantity": 8,
+        "idempotencyKey": "loss-ret-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 42,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "59f2c1ad-de81-411f-a755-52a1697b9bd6",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "materialDescription": "Cimento empedrado",
+          "quantity": "8.000",
+          "estimatedValue": "308.00",
+          "reason": "Devolução de \"Cimento empedrado\" (perda original de 8 un.).",
+          "movementType": "RETURN",
+          "relatedLossRecordId": "9bb26ea4-e15f-40f3-91ab-0ec761efb6ec",
+          "status": "APPROVED",
+          "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approvedAt": "2026-11-11T00:12:14.233Z",
+          "idempotencyKey": "loss-ret-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:14.233Z",
+          "created_at": "2026-11-11T00:12:14.233Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:14.243Z"
+    },
+    {
+      "id": "H080",
+      "requisitos": [
+        "M6-29",
+        "M6-60"
+      ],
+      "cenario": "Reenviar o mesmo estorno (mesma chave): devolve o registro já criado",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/loss-records/9bb26ea4-e15f-40f3-91ab-0ec761efb6ec/return",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "quantity": 8,
+        "idempotencyKey": "loss-ret-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 403,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "59f2c1ad-de81-411f-a755-52a1697b9bd6",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "materialDescription": "Cimento empedrado",
+          "quantity": "8.000",
+          "estimatedValue": "308.00",
+          "reason": "Devolução de \"Cimento empedrado\" (perda original de 8 un.).",
+          "movementType": "RETURN",
+          "relatedLossRecordId": "9bb26ea4-e15f-40f3-91ab-0ec761efb6ec",
+          "status": "APPROVED",
+          "approvedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "approvedAt": "2026-11-11T00:12:14.233Z",
+          "idempotencyKey": "loss-ret-c4fcd6",
+          "lockVersion": 0,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:14.233Z",
+          "updated_at": "2026-11-11T00:12:14.233Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "approved_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "related_loss_record_id": "9bb26ea4-e15f-40f3-91ab-0ec761efb6ec"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:14.646Z"
+    },
+    {
+      "id": "H081",
+      "requisitos": [
+        "M6-99",
+        "M6-60"
+      ],
+      "cenario": "Desperdício volta a 0% depois do estorno total",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 43,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "baselineBudget": 86000,
+          "approvedChanges": 6000,
+          "committedCost": 80000,
+          "actualFinancialCost": 0,
+          "consumedInventoryCost": 1617,
+          "forecastToComplete": 84383,
+          "projectedTotalCost": 86000,
+          "projectedMargin": 0,
+          "marginPct": 0,
+          "minMarginPct": 10,
+          "belowMinMargin": true,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "economyPct": 5,
+          "commissionPct": 2,
+          "economyAmount": 0,
+          "commissionAmount": 0,
+          "costBasis": {
+            "base": "CAIXA",
+            "paidFinancialCost": 0,
+            "openPayablesCost": 0,
+            "pendingApprovedMeasurementsCost": 0,
+            "includedInActualFinancialCost": false
+          },
+          "updatedAt": "2026-11-11T00:12:14.687Z",
+          "kpis": {
+            "physicalProgressPct": 0,
+            "plannedProgressPct": 100,
+            "scheduleProgressPct": 12.28,
+            "progressVsScheduleGapPct": -12.28,
+            "scheduleDelayDays": 0,
+            "isOverdue": false,
+            "payablePendingTotal": 0,
+            "measurementsByStatus": {},
+            "wastagePct": 0,
+            "recurrenceByRootCause": [
+              {
+                "cause": "Umidade no depósito",
+                "count": 1
+              }
+            ]
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:14.689Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C010",
+      "requisitos": [
+        "M6-28",
+        "M6-60",
+        "M6-85",
+        "M6-22"
+      ],
+      "descricao": "Almoxarifado: saldo = soma dos movimentos; saídas da obra e devoluções (RETURN) com custo histórico",
+      "sql": "SELECT b.quantity_on_hand AS saldo, (SELECT coalesce(sum(CASE WHEN movement_type IN ('IN','RETURN') THEN quantity WHEN movement_type IN ('OUT','LOSS') THEN -quantity ELSE 0 END),0) FROM inventory.inventory_movements WHERE inventory_item_id = $1) AS soma_movimentos, (SELECT coalesce(sum(quantity),0) FROM inventory.inventory_movements WHERE project_id = $3 AND movement_type = 'OUT') AS saida_para_obra, (SELECT coalesce(sum(quantity),0) FROM inventory.inventory_movements WHERE project_id = $3 AND movement_type = 'RETURN') AS devolvido FROM inventory.stock_balances b WHERE b.inventory_item_id = $1 AND b.location_id = $2",
+      "resultado": [
+        {
+          "saldo": "263.000000",
+          "soma_movimentos": "263.0000",
+          "saida_para_obra": "48.0000",
+          "devolvido": "11.0000"
+        }
+      ],
+      "invariante": "saldo 263 = 300 − 48 + 11 (LOST não volta); saldo igual à soma dos movimentos",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.192Z"
+    },
+    {
+      "id": "C013",
+      "requisitos": [
+        "M6-14",
+        "M6-29",
+        "M6-60"
+      ],
+      "descricao": "Perdas: LOSS original preservada + estorno RETURN vinculado; perda acima da alçada aprovada por pessoa",
+      "sql": "SELECT movement_type, status, quantity, estimated_value, related_loss_record_id IS NOT NULL AS estorno, approved_by_user_id IS NOT NULL AS aprovada_por_pessoa FROM construction.loss_records WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "movement_type": "LOSS",
+          "status": "APPROVED",
+          "quantity": "8.000",
+          "estimated_value": "308.00",
+          "estorno": false,
+          "aprovada_por_pessoa": true
+        },
+        {
+          "movement_type": "RETURN",
+          "status": "APPROVED",
+          "quantity": "8.000",
+          "estimated_value": "308.00",
+          "estorno": true,
+          "aprovada_por_pessoa": true
+        },
+        {
+          "movement_type": "LOSS",
+          "status": "APPROVED",
+          "quantity": "40.000",
+          "estimated_value": "5000.00",
+          "estorno": false,
+          "aprovada_por_pessoa": true
+        }
+      ],
+      "invariante": "2 LOSS + 1 RETURN vinculado",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.196Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.424Z"
+}

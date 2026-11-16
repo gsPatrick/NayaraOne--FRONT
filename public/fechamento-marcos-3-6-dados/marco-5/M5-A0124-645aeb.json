@@ -1,0 +1,379 @@
+{
+ "id": "M5-A0124-645aeb",
+ "secao": "P1 > 17. NAY Jurídica",
+ "linhaCaderno": 297,
+ "requisito": "• Não afirma conclusão jurídica como definitiva sem validação profissional.",
+ "demandas": "M5-D041",
+ "implementacao": "src/modules/legal/cases/legalNay.service.js AVISO (\"Não é conclusão jurídica definitiva; requer validação profissional\") em toda saída",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/legal.nay.test.js",
+   "nome": "NAY-JUR-01: resumo do contrato traz status, partes, versão vigente com hash, garantias, documentos faltantes e prazos abertos, com fontes e aviso",
+   "status": "pass",
+   "ms": 506.56,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.nay.test.js",
+   "nome": "JR NAY: resumo do processo aponta documentos faltantes (checklist do contrato, processo sem documento, prazo concluído sem evidência), com aviso e fontes, sem alterar nada (§17)",
+   "status": "pass",
+   "ms": 159.393,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-Y08",
+   "metodo": "GET",
+   "rota": "/legal/nay/contracts/6b912d61-ff0f-490b-9235-429f525808d7/summary",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 13 campo(s)",
+   "quando": "2026-11-11T03:42:39.807Z"
+  },
+  {
+   "passo": "JR-Y09",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/summary",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 13 campo(s)",
+   "quando": "2026-11-11T03:42:39.827Z"
+  },
+  {
+   "passo": "JR-Y14",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 7 campo(s)",
+   "quando": "2026-11-11T03:42:39.888Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0124-645aeb.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.nay.test.js test/m5fech.juridico.nay.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-Y08, JR-Y09, JR-Y14)"
+ },
+ "passos": [
+  {
+   "id": "JR-Y08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "NAY resume o contrato e aponta documentos faltantes do checklist (com fontes e aviso)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/nay/contracts/6b912d61-ff0f-490b-9235-429f525808d7/summary",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T03:42:39.807Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "contrato": {
+      "id": "6b912d61-ff0f-490b-9235-429f525808d7",
+      "numero": "LOC-2026-0019",
+      "tipo": "LEASE_RESIDENTIAL",
+      "status": "DRAFT",
+      "valorTotal": 3100,
+      "vigencia": {
+       "inicio": null,
+       "fim": null
+      }
+     },
+     "partes": [],
+     "versaoVigente": {
+      "id": "56879591-1220-43f2-a208-23833c05d8d8",
+      "numero": 2,
+      "contentHash": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2",
+      "clauseVersionIds": [],
+      "vigenteDesde": "2026-11-11T03:42:39.728Z"
+     },
+     "totalVersoes": 2,
+     "garantias": [],
+     "documentosFaltantes": [
+      {
+       "id": "54b699ac-16e8-47e8-9fd5-c6e2097fc7c6",
+       "codigo": "LEASE_PF_PJ_DOCS",
+       "descricao": "Documentos PF/PJ das partes (locador/locatário)."
+      },
+      {
+       "id": "e0b7e6e4-31ff-477a-a695-949fc011e650",
+       "codigo": "LEASE_GUARANTEE",
+       "descricao": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização)."
+      },
+      {
+       "id": "3cfa2a0c-72ae-40c5-a4eb-901e8259821f",
+       "codigo": "LEASE_INSPECTION",
+       "descricao": "Vistoria de entrada do imóvel."
+      },
+      {
+       "id": "8f922ef2-4c56-4c77-a797-c900ab60fa10",
+       "codigo": "LEASE_OWNERSHIP",
+       "descricao": "Comprovação de titularidade do imóvel."
+      },
+      {
+       "id": "7cbe4eed-4370-4e4e-8928-1e6d65a22e5b",
+       "codigo": "LEASE_OBLIGATIONS",
+       "descricao": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás)."
+      }
+     ],
+     "prazosAbertos": [],
+     "pontosDeAtencao": [
+      "5 documento(s) obrigatório(s) pendente(s) no checklist."
+     ],
+     "fontes": [
+      {
+       "tabela": "legal.contracts",
+       "id": "6b912d61-ff0f-490b-9235-429f525808d7"
+      },
+      {
+       "tabela": "legal.contract_versions",
+       "id": "56879591-1220-43f2-a208-23833c05d8d8",
+       "contentHash": "a2b06d72ffa9e0ed497919abdc7cd0b043eebd1b36a7102dc18f0799f6cc8cf2"
+      },
+      {
+       "tabela": "legal.contract_parties",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.guarantees",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.contract_requirements",
+       "registros": 5
+      },
+      {
+       "tabela": "legal.legal_deadlines",
+       "registros": 0
+      }
+     ],
+     "aiRunId": "244df5e3-e72b-47be-9b32-fc5b88c2f391"
+    }
+   },
+   "req": [
+    "M5-A0119-720fd1",
+    "M5-A0124-645aeb",
+    "M5-A0305-1ecad7",
+    "M5-A0125-3ef77f",
+    "M5-A0260-172e5a"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "NAY resume o processo e aponta documentos faltantes (checklist do contrato e processo sem documento)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/nay/cases/3878035f-979a-40dd-964f-4972f2dee8b8/summary",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 19,
+   "quando": "2026-11-11T03:42:39.827Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "processo": {
+      "id": "3878035f-979a-40dd-964f-4972f2dee8b8",
+      "numero": "NY-mwbkplllc1w7",
+      "tipo": "COLLECTION",
+      "status": "OPEN",
+      "fase": null,
+      "resumo": null,
+      "contratoId": "6b912d61-ff0f-490b-9235-429f525808d7",
+      "legalHold": false
+     },
+     "partes": [],
+     "prazosAbertos": [],
+     "prazosConcluidos": 0,
+     "documentosVinculados": 0,
+     "documentosFaltantes": [
+      {
+       "id": "54b699ac-16e8-47e8-9fd5-c6e2097fc7c6",
+       "codigo": "LEASE_PF_PJ_DOCS",
+       "descricao": "Documentos PF/PJ das partes (locador/locatário)."
+      },
+      {
+       "id": "e0b7e6e4-31ff-477a-a695-949fc011e650",
+       "codigo": "LEASE_GUARANTEE",
+       "descricao": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização)."
+      },
+      {
+       "id": "3cfa2a0c-72ae-40c5-a4eb-901e8259821f",
+       "codigo": "LEASE_INSPECTION",
+       "descricao": "Vistoria de entrada do imóvel."
+      },
+      {
+       "id": "8f922ef2-4c56-4c77-a797-c900ab60fa10",
+       "codigo": "LEASE_OWNERSHIP",
+       "descricao": "Comprovação de titularidade do imóvel."
+      },
+      {
+       "id": "7cbe4eed-4370-4e4e-8928-1e6d65a22e5b",
+       "codigo": "LEASE_OBLIGATIONS",
+       "descricao": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás)."
+      }
+     ],
+     "pontosDeAtencao": [
+      "5 documento(s) obrigatório(s) pendente(s) no checklist do contrato do processo.",
+      "Processo sem nenhum documento ou prova vinculado."
+     ],
+     "dossies": [],
+     "fontes": [
+      {
+       "tabela": "legal.legal_cases",
+       "id": "3878035f-979a-40dd-964f-4972f2dee8b8"
+      },
+      {
+       "tabela": "legal.case_parties",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.legal_deadlines",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.evidence_packages",
+       "registros": 0
+      },
+      {
+       "tabela": "legal.contract_requirements",
+       "registros": 5
+      },
+      {
+       "tabela": "people.file_links",
+       "registros": 0
+      }
+     ],
+     "aiRunId": "b2a35670-2a8c-4ec8-8566-e056b91760b1"
+    }
+   },
+   "req": [
+    "M5-A0119-720fd1",
+    "M5-A0124-645aeb"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-Y14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-012: NAY extrai datas (uma inexistente, outra possivelmente errada): tudo PENDING_CONFIRMATION, não crítico, nenhum prazo criado",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/nay/deadline-suggestions",
+   "corpoEnviado": {
+    "legalCaseId": "3878035f-979a-40dd-964f-4972f2dee8b8",
+    "text": "Audiência em 31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+    "referenceDate": "2026-11-03T12:00:00-03:00"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:39.888Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "agente": "NAY Jurídica",
+     "metodo": "RULE_BASED",
+     "aviso": "Não é conclusão jurídica definitiva; requer validação profissional. A NAY Jurídica só resume e sugere — não altera contrato, não cria prazo e não exclui prova.",
+     "sugestoes": [
+      {
+       "tipo": "DATA_EXPLICITA",
+       "trecho": "Audiência em 31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+       "vencimentoSugerido": "2026-11-13T15:00:00.000Z",
+       "natureza": "EXTRAIDO",
+       "status": "PENDING_CONFIRMATION",
+       "critico": false,
+       "confirmacao": "Prazo só passa a existir quando uma pessoa o cadastra em POST /legal/cases/:id/deadlines com origem verificável (sourceFileId/sourceEventId) e responsável."
+      },
+      {
+       "tipo": "PRAZO_DIAS_UTEIS",
+       "dias": 5,
+       "trecho": "31/02/2026. Intime-se para manifestação até 13/11/2026, no prazo de 5 dias úteis.",
+       "vencimentoSugerido": "2026-11-10T15:00:00.000Z",
+       "natureza": "ESTIMADO",
+       "baseDeCalculo": "2026-11-03T15:00:00.000Z",
+       "status": "PENDING_CONFIRMATION",
+       "critico": false,
+       "confirmacao": "Prazo só passa a existir quando uma pessoa o cadastra em POST /legal/cases/:id/deadlines com origem verificável (sourceFileId/sourceEventId) e responsável."
+      }
+     ],
+     "prazosCriados": 0,
+     "fontes": [
+      {
+       "origem": "texto informado",
+       "caracteres": 94,
+       "legalCaseId": "3878035f-979a-40dd-964f-4972f2dee8b8"
+      }
+     ],
+     "aiRunId": "ca7c2fc1-6451-4b58-9ce7-d797d8a5a2a8"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0122-0f8a78",
+    "M5-A0160-df7d81",
+    "M5-A0241-f5402f",
+    "M5-A0305-1ecad7",
+    "M5-A0175-e0569a",
+    "M5-A0274-fcaec5"
+   ],
+   "modulo": "30-juridico-5-nay",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

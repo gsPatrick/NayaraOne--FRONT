@@ -1,0 +1,217 @@
+{
+  "id": "M6-40",
+  "requisito": "API mínima: POST /warranty-cases.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#createMaintenanceCase (alias de /maintenance-cases)",
+  "telaParaReteste": "Painel → /painel/obras/pos-obra/novo: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/warranty-cases cria o caso de garantia/pós-obra (201)",
+      "resultado": "passou",
+      "duracaoMs": 61,
+      "executadoEm": "2026-11-11T00:13:30.948Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H145",
+      "H146",
+      "H165"
+    ],
+    "resumo": [
+      "H145 POST /api/v1/construction/warranty-cases → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "H146 POST /api/v1/construction/warranty-cases → 201",
+      "H165 POST /api/v1/construction/warranty-cases → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:26.310Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H145",
+      "requisitos": [
+        "M6-40",
+        "M6-110"
+      ],
+      "cenario": "NEGATIVO: abrir chamado com foto \"antes\" que não é arquivo enviado",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/warranty-cases",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+        "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+        "description": "Infiltração",
+        "severity": "HIGH",
+        "beforeMediaFileIds": [
+          "77777777-7777-4777-8777-777777777777"
+        ]
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 18,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"beforeMediaFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "beforeMediaFileIds",
+            "missingFileIds": [
+              "77777777-7777-4777-8777-777777777777"
+            ]
+          },
+          "traceId": "3701c193-57be-43da-8d4f-c84e27540185"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.310Z"
+    },
+    {
+      "id": "H146",
+      "requisitos": [
+        "M6-40",
+        "M6-15",
+        "M6-26",
+        "M6-80",
+        "M6-52"
+      ],
+      "cenario": "Abrir chamado de garantia estruturado (categoria, severidade, SLA, responsável, foto \"antes\", custos)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/warranty-cases",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+        "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+        "description": "Infiltração na laje do banheiro social",
+        "severity": "HIGH",
+        "category": "WATERPROOFING",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeMediaFileIds": [
+          "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+        ],
+        "laborCost": 0,
+        "materialCost": 0
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 59,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "afterMediaFileIds": [],
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "OPEN",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "rootCauseCode": null,
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "laborCost": "0.00",
+          "materialCost": "0.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.358Z",
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.369Z"
+    },
+    {
+      "id": "H165",
+      "requisitos": [
+        "M6-40",
+        "M6-63"
+      ],
+      "cenario": "Segundo chamado (severidade CRÍTICA) para o teste de SLA vencido",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/warranty-cases",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+        "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+        "description": "Trinca estrutural na viga da garagem",
+        "severity": "CRITICAL",
+        "category": "STRUCTURAL",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeMediaFileIds": [
+          "f827978c-a8b7-45b3-bee9-dd069444adb6"
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 43,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+          "afterMediaFileIds": [],
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Trinca estrutural na viga da garagem",
+          "status": "OPEN",
+          "warrantyDeadlineAt": null,
+          "category": "STRUCTURAL",
+          "severity": "CRITICAL",
+          "slaDueAt": "2026-11-13T00:12:27.874Z",
+          "escalationLevel": "WARNING",
+          "rootCauseCode": null,
+          "beforeMediaFileIds": [
+            "f827978c-a8b7-45b3-bee9-dd069444adb6"
+          ],
+          "laborCost": null,
+          "materialCost": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:27.884Z",
+          "created_at": "2026-11-11T00:12:27.884Z",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.892Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.405Z"
+}

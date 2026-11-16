@@ -1,0 +1,103 @@
+{
+ "id": "M4-§8.10",
+ "secao": "§8 Fluxo de pagamento",
+ "requisito": "\"10. Evento finance.payment.completed.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-01 eventos mínimos do Guia §14 com o nome literal: payment.prepared/approved/completed/reversed, receipt.completed, reconciliation.completed, anomaly.opened",
+   "status": "passou",
+   "duracaoMs": 511,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P32",
+   "tipo": "http",
+   "linhas": [
+    "M4-§8.9",
+    "M4-§8.10",
+    "M4-FIN-015"
+   ],
+   "titulo": "Lançamento SETTLED pela confirmação do banco (SANDBOX_CONFIRMED) e intenção EXECUTED",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/entries/de217925-818a-4dd1-baab-fe97fa407a38",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 31,
+   "quando": "2026-11-11T01:35:08.594Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "de217925-818a-4dd1-baab-fe97fa407a38",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": "SANDBOX_CONFIRMED",
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "1200.00",
+     "description": "Pagamento ao fornecedor 0871300",
+     "dueAt": "2026-11-13T01:35:07.127Z",
+     "competenceMonth": "2026-11",
+     "settledAt": "2026-11-11T01:35:08.479Z",
+     "status": "SETTLED",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": null,
+     "created_at": "2026-11-11T01:35:07.145Z",
+     "updated_at": "2026-11-11T01:35:08.489Z",
+     "bank_account_id": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

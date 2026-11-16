@@ -1,0 +1,2520 @@
+{
+ "id": "M5-A0022-0656df",
+ "secao": "P1 > 3. Tipos de contrato [tabela: Código | Uso]",
+ "linhaCaderno": 68,
+ "requisito": "LEASE_RESIDENTIAL | Locação residencial.",
+ "demandas": "M5-D001",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js:29 CONTRACT_TYPES (LEASE_RESIDENTIAL); src/modules/legal/contracts/application/contract.service.js:331 createContract; rotas POST /api/v1/legal/contracts e POST /api/v1/contracts (literal do Guia §14); tabela legal.contracts (contract_type, contract_number por prefixo)",
+ "tela": "Contratos > Novo contrato (/painel/contratos/lista/novo)",
+ "testes": [
+  {
+   "arquivo": "test/legal.contractTimelineAndSubtypes.test.js",
+   "nome": "AUD-015: subtipos de locação (LEASE_RESIDENTIAL/LEASE_COMMERCIAL/LEASE_SEASONAL/PROPERTY_ADMIN) são aceitos e numerados como locação",
+   "status": "pass",
+   "ms": 121.756,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G1: cada subtipo de contrato real (LEASE_RESIDENTIAL/COMMERCIAL/SEASONAL, PROPERTY_ADMIN, SALE_*) é criado via API e tratado como \"lease-like\"/\"sale-like\" corretamente",
+   "status": "pass",
+   "ms": 305.266,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-006",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=e0f7c475-2dcf-4435-a1bf-d81c9975fc17, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:23.910Z"
+  },
+  {
+   "passo": "CT-001",
+   "metodo": "POST",
+   "rota": "/properties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=74eb7e63-c04b-4810-b0d7-d63310404bab",
+   "quando": "2026-11-11T03:42:23.807Z"
+  },
+  {
+   "passo": "CT-101",
+   "metodo": "POST",
+   "rota": "/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=831f6109-2e18-4197-84c9-564b89db0076",
+   "quando": "2026-11-11T03:42:24.218Z"
+  },
+  {
+   "passo": "CT-102",
+   "metodo": "POST",
+   "rota": "/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=8fec3c7f-398f-41af-a16b-72b40d755010",
+   "quando": "2026-11-11T03:42:24.310Z"
+  },
+  {
+   "passo": "CT-106",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/parties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=ab475e84-bfbc-4d1c-ac16-5db0dc2b7848",
+   "quando": "2026-11-11T03:42:24.383Z"
+  },
+  {
+   "passo": "CT-107",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/parties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=91fd404b-a8c9-4405-9d05-49b6c3e13237",
+   "quando": "2026-11-11T03:42:24.412Z"
+  },
+  {
+   "passo": "CT-301-a",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=daaf3fcb-c3a1-4d73-93e6-d98e28f636d4, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:26.017Z"
+  },
+  {
+   "passo": "CT-301-b",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/parties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=2a33fe0d-57d6-488f-b47d-53ef6c8343b3",
+   "quando": "2026-11-11T03:42:26.052Z"
+  },
+  {
+   "passo": "CT-301-c",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/parties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=ed0cfad3-a07f-4d97-807a-8e59ca4924f8",
+   "quando": "2026-11-11T03:42:26.088Z"
+  },
+  {
+   "passo": "CT-301-d",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 5 item(ns)",
+   "quando": "2026-11-11T03:42:26.165Z"
+  },
+  {
+   "passo": "CT-301-e0",
+   "metodo": "POST",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=39910943-099d-4593-9ce1-4f3e9e6b9ede",
+   "quando": "2026-11-11T03:42:26.186Z"
+  },
+  {
+   "passo": "CT-301-e1",
+   "metodo": "POST",
+   "rota": "/legal/requirements/077b7c04-eb4b-424c-be23-97fe3f7b7884/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=077b7c04-eb4b-424c-be23-97fe3f7b7884",
+   "quando": "2026-11-11T03:42:26.199Z"
+  },
+  {
+   "passo": "CT-301-e2",
+   "metodo": "POST",
+   "rota": "/legal/requirements/ec2a543b-69b1-4271-85bf-170c39c53a5f/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=ec2a543b-69b1-4271-85bf-170c39c53a5f",
+   "quando": "2026-11-11T03:42:26.211Z"
+  },
+  {
+   "passo": "CT-301-e3",
+   "metodo": "POST",
+   "rota": "/legal/requirements/c6982dd4-2e73-4060-b996-c584d6caee96/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=c6982dd4-2e73-4060-b996-c584d6caee96",
+   "quando": "2026-11-11T03:42:26.224Z"
+  },
+  {
+   "passo": "CT-301-e4",
+   "metodo": "POST",
+   "rota": "/legal/requirements/4c3bd417-140e-4eed-b06c-362b426e51bc/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=4c3bd417-140e-4eed-b06c-362b426e51bc",
+   "quando": "2026-11-11T03:42:26.235Z"
+  },
+  {
+   "passo": "CT-301-f",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=7254d322-b8a8-4ed5-9530-07d5c337753b",
+   "quando": "2026-11-11T03:42:26.280Z"
+  },
+  {
+   "passo": "CT-301-g",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814, versionNumber=1",
+   "quando": "2026-11-11T03:42:26.316Z"
+  },
+  {
+   "passo": "CT-301-h",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/transition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=DOCUMENTS_PENDING, id=daaf3fcb-c3a1-4d73-93e6-d98e28f636d4, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:26.358Z"
+  },
+  {
+   "passo": "CT-301-i",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/transition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=LEGAL_REVIEW, id=daaf3fcb-c3a1-4d73-93e6-d98e28f636d4, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:26.399Z"
+  },
+  {
+   "passo": "CT-330-a",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=7de30a98-8be3-4bbe-b24a-50965b99caef, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:27.255Z"
+  },
+  {
+   "passo": "CT-330-b",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/parties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=1d1abe9b-3cbf-488f-93d5-930c56838f59",
+   "quando": "2026-11-11T03:42:27.299Z"
+  },
+  {
+   "passo": "CT-330-c",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/parties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=4dec2f48-f3ac-46d1-8360-9fda7b1619f1",
+   "quando": "2026-11-11T03:42:27.330Z"
+  },
+  {
+   "passo": "CT-330-d",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/requirements/generate",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "lista com 5 item(ns)",
+   "quando": "2026-11-11T03:42:27.414Z"
+  },
+  {
+   "passo": "CT-330-e0",
+   "metodo": "POST",
+   "rota": "/legal/requirements/2de10d56-d0d2-4895-abc0-0057adc86f59/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=2de10d56-d0d2-4895-abc0-0057adc86f59",
+   "quando": "2026-11-11T03:42:27.434Z"
+  },
+  {
+   "passo": "CT-330-e1",
+   "metodo": "POST",
+   "rota": "/legal/requirements/14f9b056-4013-494d-9825-5ad7b0608d06/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=14f9b056-4013-494d-9825-5ad7b0608d06",
+   "quando": "2026-11-11T03:42:27.455Z"
+  },
+  {
+   "passo": "CT-330-e2",
+   "metodo": "POST",
+   "rota": "/legal/requirements/fc1505d0-cba5-480e-801c-7f98cefc7eb0/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=fc1505d0-cba5-480e-801c-7f98cefc7eb0",
+   "quando": "2026-11-11T03:42:27.477Z"
+  },
+  {
+   "passo": "CT-330-e3",
+   "metodo": "POST",
+   "rota": "/legal/requirements/15f974f3-986c-4555-b602-a80e9ee5dc43/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=15f974f3-986c-4555-b602-a80e9ee5dc43",
+   "quando": "2026-11-11T03:42:27.491Z"
+  },
+  {
+   "passo": "CT-330-e4",
+   "metodo": "POST",
+   "rota": "/legal/requirements/428c158d-ff7a-4862-a654-5a2cd77ba44e/waive",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=WAIVED, id=428c158d-ff7a-4862-a654-5a2cd77ba44e",
+   "quando": "2026-11-11T03:42:27.505Z"
+  },
+  {
+   "passo": "CT-330-f",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=35e7843c-df30-49d9-ad88-d8bbcf2fdb26",
+   "quando": "2026-11-11T03:42:27.543Z"
+  },
+  {
+   "passo": "CT-330-g",
+   "metodo": "POST",
+   "rota": "/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=1bb46cf4-b4be-4b37-859b-d6609b8ee36c, versionNumber=1",
+   "quando": "2026-11-11T03:42:27.572Z"
+  },
+  {
+   "passo": "CT-330-h",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/transition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=DOCUMENTS_PENDING, id=7de30a98-8be3-4bbe-b24a-50965b99caef, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:27.630Z"
+  },
+  {
+   "passo": "CT-330-i",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/transition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=LEGAL_REVIEW, id=7de30a98-8be3-4bbe-b24a-50965b99caef, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:27.674Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0022-0656df.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.contractTimelineAndSubtypes.test.js test/marco5.auditGapClosureR1.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-006, CT-013, CT-001, CT-101, CT-102, CT-106, CT-107, CT-301-a, CT-301-b, CT-301-c, CT-301-d, CT-301-e0, CT-301-e1, CT-301-e2, CT-301-e3, CT-301-e4, CT-301-f, CT-301-g, CT-301-h, CT-301-i, CT-330-a, CT-330-b, CT-330-c, CT-330-d, CT-330-e0, CT-330-e1, CT-330-e2, CT-330-e3, CT-330-e4, CT-330-f, CT-330-g, CT-330-h, CT-330-i)"
+ },
+ "passos": [
+  {
+   "id": "CT-006",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo LEASE_RESIDENTIAL pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_RESIDENTIAL",
+    "totalValue": 6000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:23.910Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "contractNumber": "LOC-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "6000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.901Z",
+     "created_at": "2026-11-11T03:42:23.901Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-001",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: imóvel fictício dos contratos",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/properties",
+   "corpoEnviado": {
+    "title": "Imóvel Contratos 8543269",
+    "internalCode": "CT-8543269",
+    "propertyType": "RESIDENTIAL"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 537,
+   "quando": "2026-11-11T03:42:23.807Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "publicAddressPolicy": "SO_BAIRRO",
+     "addressVisibility": "RESTRICTED",
+     "publicId": "53c03fd2-bf49-4127-a295-207e31281977",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "title": "Imóvel Contratos 8543269",
+     "internalCode": "CT-8543269",
+     "propertyType": "RESIDENTIAL",
+     "addressId": null,
+     "registryNumber": null,
+     "registryOffice": null,
+     "latitude": null,
+     "longitude": null,
+     "addressLine": null,
+     "city": null,
+     "state": null,
+     "zipCode": null,
+     "areaTotalM2": null,
+     "description": null,
+     "bedrooms": null,
+     "parkingSpots": null,
+     "attributesJson": null,
+     "publicationStatus": "DRAFT",
+     "availabilityStatus": "AVAILABLE",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.288Z",
+     "created_at": "2026-11-11T03:42:23.288Z",
+     "descriptionPublic": null,
+     "mergedIntoId": null,
+     "publishedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    },
+    "meta": {
+     "similarPropertyWarnings": []
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-101",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: locador fictício",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Locador Contratos 8543269"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 98,
+   "quando": "2026-11-11T03:42:24.218Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "831f6109-2e18-4197-84c9-564b89db0076",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "personType": "PF",
+     "legalName": "Locador Contratos 8543269",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:24.128Z",
+     "updated_at": "2026-11-11T03:42:24.128Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    },
+    "meta": {
+     "similarPersonWarnings": []
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-102",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: locatário fictício",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Locatário Contratos 8543269"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 92,
+   "quando": "2026-11-11T03:42:24.310Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "personType": "PF",
+     "legalName": "Locatário Contratos 8543269",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:24.222Z",
+     "updated_at": "2026-11-11T03:42:24.222Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ]
+     }
+    },
+    "meta": {
+     "similarPersonWarnings": []
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-106",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Parte LANDLORD",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/parties",
+   "corpoEnviado": {
+    "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+    "partyRole": "LANDLORD"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 33,
+   "quando": "2026-11-11T03:42:24.383Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ab475e84-bfbc-4d1c-ac16-5db0dc2b7848",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+     "partyRole": "LANDLORD",
+     "representedByPersonId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.360Z",
+     "created_at": "2026-11-11T03:42:24.360Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-107",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Parte TENANT",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/parties",
+   "corpoEnviado": {
+    "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+    "partyRole": "TENANT"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 29,
+   "quando": "2026-11-11T03:42:24.412Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "91fd404b-a8c9-4405-9d05-49b6c3e13237",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "partyRole": "TENANT",
+     "representedByPersonId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.391Z",
+     "created_at": "2026-11-11T03:42:24.391Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-a",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: contrato de locação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_RESIDENTIAL",
+    "totalValue": 2000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:26.017Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "contractNumber": "LOC-2026-0005",
+     "status": "DRAFT",
+     "totalValue": "2000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.008Z",
+     "created_at": "2026-11-11T03:42:26.008Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: parte LANDLORD",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/parties",
+   "corpoEnviado": {
+    "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+    "partyRole": "LANDLORD"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T03:42:26.052Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "2a33fe0d-57d6-488f-b47d-53ef6c8343b3",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+     "partyRole": "LANDLORD",
+     "representedByPersonId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.027Z",
+     "created_at": "2026-11-11T03:42:26.027Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: parte TENANT",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/parties",
+   "corpoEnviado": {
+    "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+    "partyRole": "TENANT"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:26.088Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ed0cfad3-a07f-4d97-807a-8e59ca4924f8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "partyRole": "TENANT",
+     "representedByPersonId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.061Z",
+     "created_at": "2026-11-11T03:42:26.061Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: checklist",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/requirements/generate",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 77,
+   "quando": "2026-11-11T03:42:26.165Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "39910943-099d-4593-9ce1-4f3e9e6b9ede",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "requirementCode": "LEASE_PF_PJ_DOCS",
+      "description": "Documentos PF/PJ das partes (locador/locatário).",
+      "requirementType": "PF_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:26.107Z",
+      "created_at": "2026-11-11T03:42:26.107Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "077b7c04-eb4b-424c-be23-97fe3f7b7884",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "requirementCode": "LEASE_GUARANTEE",
+      "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+      "requirementType": "GUARANTEE",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:26.112Z",
+      "created_at": "2026-11-11T03:42:26.112Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "ec2a543b-69b1-4271-85bf-170c39c53a5f",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "requirementCode": "LEASE_INSPECTION",
+      "description": "Vistoria de entrada do imóvel.",
+      "requirementType": "INSPECTION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:26.115Z",
+      "created_at": "2026-11-11T03:42:26.115Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "c6982dd4-2e73-4060-b996-c584d6caee96",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "requirementCode": "LEASE_OWNERSHIP",
+      "description": "Comprovação de titularidade do imóvel.",
+      "requirementType": "OWNERSHIP_PROOF",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:26.119Z",
+      "created_at": "2026-11-11T03:42:26.119Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "4c3bd417-140e-4eed-b06c-362b426e51bc",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+      "requirementCode": "LEASE_OBLIGATIONS",
+      "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+      "requirementType": "OBLIGATIONS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:26.122Z",
+      "created_at": "2026-11-11T03:42:26.122Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-e0",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/39910943-099d-4593-9ce1-4f3e9e6b9ede/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:26.186Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "39910943-099d-4593-9ce1-4f3e9e6b9ede",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "requirementCode": "LEASE_PF_PJ_DOCS",
+     "description": "Documentos PF/PJ das partes (locador/locatário).",
+     "requirementType": "PF_DOCUMENT",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:26.107Z",
+     "updated_at": "2026-11-11T03:42:26.178Z",
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-e1",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/077b7c04-eb4b-424c-be23-97fe3f7b7884/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:26.199Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "077b7c04-eb4b-424c-be23-97fe3f7b7884",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "requirementCode": "LEASE_GUARANTEE",
+     "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+     "requirementType": "GUARANTEE",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:26.112Z",
+     "updated_at": "2026-11-11T03:42:26.193Z",
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-e2",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/ec2a543b-69b1-4271-85bf-170c39c53a5f/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:26.211Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "ec2a543b-69b1-4271-85bf-170c39c53a5f",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "requirementCode": "LEASE_INSPECTION",
+     "description": "Vistoria de entrada do imóvel.",
+     "requirementType": "INSPECTION",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:26.115Z",
+     "updated_at": "2026-11-11T03:42:26.206Z",
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-e3",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/c6982dd4-2e73-4060-b996-c584d6caee96/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:26.224Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c6982dd4-2e73-4060-b996-c584d6caee96",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "requirementCode": "LEASE_OWNERSHIP",
+     "description": "Comprovação de titularidade do imóvel.",
+     "requirementType": "OWNERSHIP_PROOF",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:26.119Z",
+     "updated_at": "2026-11-11T03:42:26.219Z",
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-e4",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/4c3bd417-140e-4eed-b06c-362b426e51bc/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:26.235Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "4c3bd417-140e-4eed-b06c-362b426e51bc",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "requirementCode": "LEASE_OBLIGATIONS",
+     "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "requirementType": "OBLIGATIONS",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:26.122Z",
+     "updated_at": "2026-11-11T03:42:26.229Z",
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-f",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: arquivo do contrato",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "contrato.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "Q29udHJhdG8gODU0MzI2OWN0Vg==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:26.280Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/593c7b52-4abc-4274-9d11-8792280a9db2-contrato.pdf",
+     "fileName": "contrato.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 19,
+     "checksumSha256": "11500919d55097e067daea92feef143824435e9bc7725053e5f8142e05111c08",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:26.254Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.255Z",
+     "created_at": "2026-11-11T03:42:26.255Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-g",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: versão 1",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "corpoEnviado": {
+    "content": "Contrato de locação 8543269ctV v1",
+    "documentFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 36,
+   "quando": "2026-11-11T03:42:26.316Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "versionNumber": 1,
+     "documentFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+     "content": "Contrato de locação 8543269ctV v1",
+     "contentHash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+     "contentFileId": "b2a40f80-eb9a-4a91-b17b-50b84fe23628",
+     "status": "DRAFT",
+     "templateId": null,
+     "templateVersionId": null,
+     "clauseVersionIds": null,
+     "conditionContext": null,
+     "excludedClauses": null,
+     "effectiveFrom": "2026-11-11T03:42:26.307Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.307Z",
+     "created_at": "2026-11-11T03:42:26.307Z",
+     "signedDocumentFileId": null,
+     "approvedBy": null,
+     "approvedAt": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-h",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: DOCUMENTS_PENDING",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/transition",
+   "corpoEnviado": {
+    "targetStatus": "DOCUMENTS_PENDING"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T03:42:26.358Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": null,
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0005",
+     "status": "DOCUMENTS_PENDING",
+     "totalValue": "2000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 1,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:26.008Z",
+     "updated_at": "2026-11-11T03:42:26.327Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null,
+     "versions": [
+      {
+       "id": "9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+       "versionNumber": 1,
+       "documentFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+       "contentHash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+       "content": "Contrato de locação 8543269ctV v1",
+       "signedDocumentFileId": null,
+       "status": "DRAFT",
+       "approvedBy": null,
+       "approvedAt": null,
+       "contentFileId": "b2a40f80-eb9a-4a91-b17b-50b84fe23628",
+       "templateVersionId": null,
+       "templateId": null,
+       "clauseVersionIds": null,
+       "conditionContext": null,
+       "excludedClauses": null,
+       "effectiveFrom": "2026-11-11T03:42:26.307Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:26.307Z",
+       "updated_at": "2026-11-11T03:42:26.307Z",
+       "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+       "document_file_id": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+       "template_id": null,
+       "template": null
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-301-i",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: LEGAL_REVIEW",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 40,
+   "quando": "2026-11-11T03:42:26.399Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": null,
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0005",
+     "status": "LEGAL_REVIEW",
+     "totalValue": "2000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:26.008Z",
+     "updated_at": "2026-11-11T03:42:26.369Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null,
+     "versions": [
+      {
+       "id": "9c0b5cd1-4fa2-4a2c-8b48-c02bf719c814",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+       "versionNumber": 1,
+       "documentFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+       "contentHash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+       "content": "Contrato de locação 8543269ctV v1",
+       "signedDocumentFileId": null,
+       "status": "DRAFT",
+       "approvedBy": null,
+       "approvedAt": null,
+       "contentFileId": "b2a40f80-eb9a-4a91-b17b-50b84fe23628",
+       "templateVersionId": null,
+       "templateId": null,
+       "clauseVersionIds": null,
+       "conditionContext": null,
+       "excludedClauses": null,
+       "effectiveFrom": "2026-11-11T03:42:26.307Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:26.307Z",
+       "updated_at": "2026-11-11T03:42:26.307Z",
+       "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+       "document_file_id": "7254d322-b8a8-4ed5-9530-07d5c337753b",
+       "template_id": null,
+       "template": null
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-a",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: contrato de locação",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_RESIDENTIAL",
+    "totalValue": 2000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:27.255Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "contractNumber": "LOC-2026-0006",
+     "status": "DRAFT",
+     "totalValue": "2000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:27.244Z",
+     "created_at": "2026-11-11T03:42:27.244Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: parte LANDLORD",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/parties",
+   "corpoEnviado": {
+    "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+    "partyRole": "LANDLORD"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:27.299Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "1d1abe9b-3cbf-488f-93d5-930c56838f59",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+     "partyRole": "LANDLORD",
+     "representedByPersonId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:27.275Z",
+     "created_at": "2026-11-11T03:42:27.275Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-c",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: parte TENANT",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/parties",
+   "corpoEnviado": {
+    "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+    "partyRole": "TENANT"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 31,
+   "quando": "2026-11-11T03:42:27.330Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "4dec2f48-f3ac-46d1-8360-9fda7b1619f1",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "partyRole": "TENANT",
+     "representedByPersonId": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:27.307Z",
+     "created_at": "2026-11-11T03:42:27.307Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-d",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: checklist",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/requirements/generate",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 83,
+   "quando": "2026-11-11T03:42:27.414Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "2de10d56-d0d2-4895-abc0-0057adc86f59",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+      "requirementCode": "LEASE_PF_PJ_DOCS",
+      "description": "Documentos PF/PJ das partes (locador/locatário).",
+      "requirementType": "PF_DOCUMENT",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:27.345Z",
+      "created_at": "2026-11-11T03:42:27.345Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "14f9b056-4013-494d-9825-5ad7b0608d06",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+      "requirementCode": "LEASE_GUARANTEE",
+      "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+      "requirementType": "GUARANTEE",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:27.349Z",
+      "created_at": "2026-11-11T03:42:27.349Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "fc1505d0-cba5-480e-801c-7f98cefc7eb0",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+      "requirementCode": "LEASE_INSPECTION",
+      "description": "Vistoria de entrada do imóvel.",
+      "requirementType": "INSPECTION",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:27.353Z",
+      "created_at": "2026-11-11T03:42:27.353Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "15f974f3-986c-4555-b602-a80e9ee5dc43",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+      "requirementCode": "LEASE_OWNERSHIP",
+      "description": "Comprovação de titularidade do imóvel.",
+      "requirementType": "OWNERSHIP_PROOF",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:27.358Z",
+      "created_at": "2026-11-11T03:42:27.358Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     },
+     {
+      "id": "428c158d-ff7a-4862-a654-5a2cd77ba44e",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+      "requirementCode": "LEASE_OBLIGATIONS",
+      "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+      "requirementType": "OBLIGATIONS",
+      "status": "PENDING",
+      "requiredStage": "LEGAL_REVIEW",
+      "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:27.362Z",
+      "created_at": "2026-11-11T03:42:27.362Z",
+      "satisfiedByFileId": null,
+      "satisfiedAt": null,
+      "waivedReason": null
+     }
+    ]
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-e0",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/2de10d56-d0d2-4895-abc0-0057adc86f59/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:27.434Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "2de10d56-d0d2-4895-abc0-0057adc86f59",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "requirementCode": "LEASE_PF_PJ_DOCS",
+     "description": "Documentos PF/PJ das partes (locador/locatário).",
+     "requirementType": "PF_DOCUMENT",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:27.345Z",
+     "updated_at": "2026-11-11T03:42:27.428Z",
+     "contract_id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-e1",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/14f9b056-4013-494d-9825-5ad7b0608d06/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:27.455Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "14f9b056-4013-494d-9825-5ad7b0608d06",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "requirementCode": "LEASE_GUARANTEE",
+     "description": "Garantia locatícia (fiador, seguro-fiança, caução ou título de capitalização).",
+     "requirementType": "GUARANTEE",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:27.349Z",
+     "updated_at": "2026-11-11T03:42:27.441Z",
+     "contract_id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-e2",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/fc1505d0-cba5-480e-801c-7f98cefc7eb0/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:27.477Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "fc1505d0-cba5-480e-801c-7f98cefc7eb0",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "requirementCode": "LEASE_INSPECTION",
+     "description": "Vistoria de entrada do imóvel.",
+     "requirementType": "INSPECTION",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:27.353Z",
+     "updated_at": "2026-11-11T03:42:27.463Z",
+     "contract_id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-e3",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/15f974f3-986c-4555-b602-a80e9ee5dc43/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:27.491Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "15f974f3-986c-4555-b602-a80e9ee5dc43",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "requirementCode": "LEASE_OWNERSHIP",
+     "description": "Comprovação de titularidade do imóvel.",
+     "requirementType": "OWNERSHIP_PROOF",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:27.358Z",
+     "updated_at": "2026-11-11T03:42:27.484Z",
+     "contract_id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-e4",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: dispensa justificada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/requirements/428c158d-ff7a-4862-a654-5a2cd77ba44e/waive",
+   "corpoEnviado": {
+    "reason": "Dispensa fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:27.505Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "428c158d-ff7a-4862-a654-5a2cd77ba44e",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "requirementCode": "LEASE_OBLIGATIONS",
+     "description": "Definição de responsáveis pelas obrigações locatícias (IPTU/condomínio/água/luz/gás).",
+     "requirementType": "OBLIGATIONS",
+     "status": "WAIVED",
+     "satisfiedByFileId": null,
+     "satisfiedAt": null,
+     "waivedReason": "Dispensa fictícia da captura",
+     "requiredStage": "LEGAL_REVIEW",
+     "ruleVersionId": "9a0f2fe4-b6d7-4121-b79e-0f71be4b3463",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:27.362Z",
+     "updated_at": "2026-11-11T03:42:27.500Z",
+     "contract_id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "satisfied_by_file_id": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-f",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: arquivo do contrato",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "contrato.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "Q29udHJhdG8gODU0MzI2OWN0WA==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 38,
+   "quando": "2026-11-11T03:42:27.543Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "35e7843c-df30-49d9-ad88-d8bbcf2fdb26",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/40c6aaaf-e867-424d-84d5-95474dfd611b-contrato.pdf",
+     "fileName": "contrato.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 19,
+     "checksumSha256": "dd4e2575a4142870bf67225d8e86eb98dbd25a2166bdd79cb4b2f926aa17504a",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:27.518Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:27.519Z",
+     "created_at": "2026-11-11T03:42:27.519Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-g",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: versão 1",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/versions",
+   "corpoEnviado": {
+    "content": "Contrato de locação 8543269ctX v1",
+    "documentFileId": "35e7843c-df30-49d9-ad88-d8bbcf2fdb26"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 29,
+   "quando": "2026-11-11T03:42:27.572Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "1bb46cf4-b4be-4b37-859b-d6609b8ee36c",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "versionNumber": 1,
+     "documentFileId": "35e7843c-df30-49d9-ad88-d8bbcf2fdb26",
+     "content": "Contrato de locação 8543269ctX v1",
+     "contentHash": "473030c2192b9fb3d7055528c82f157c289f74d225f73e214cb10dbce3abac15",
+     "contentFileId": "5421d560-95b6-41fe-92b8-bda5faec3e75",
+     "status": "DRAFT",
+     "templateId": null,
+     "templateVersionId": null,
+     "clauseVersionIds": null,
+     "conditionContext": null,
+     "excludedClauses": null,
+     "effectiveFrom": "2026-11-11T03:42:27.567Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:27.567Z",
+     "created_at": "2026-11-11T03:42:27.567Z",
+     "signedDocumentFileId": null,
+     "approvedBy": null,
+     "approvedAt": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-h",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: DOCUMENTS_PENDING",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/transition",
+   "corpoEnviado": {
+    "targetStatus": "DOCUMENTS_PENDING"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 58,
+   "quando": "2026-11-11T03:42:27.630Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": null,
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0006",
+     "status": "DOCUMENTS_PENDING",
+     "totalValue": "2000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 1,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:27.244Z",
+     "updated_at": "2026-11-11T03:42:27.586Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null,
+     "versions": [
+      {
+       "id": "1bb46cf4-b4be-4b37-859b-d6609b8ee36c",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+       "versionNumber": 1,
+       "documentFileId": "35e7843c-df30-49d9-ad88-d8bbcf2fdb26",
+       "contentHash": "473030c2192b9fb3d7055528c82f157c289f74d225f73e214cb10dbce3abac15",
+       "content": "Contrato de locação 8543269ctX v1",
+       "signedDocumentFileId": null,
+       "status": "DRAFT",
+       "approvedBy": null,
+       "approvedAt": null,
+       "contentFileId": "5421d560-95b6-41fe-92b8-bda5faec3e75",
+       "templateVersionId": null,
+       "templateId": null,
+       "clauseVersionIds": null,
+       "conditionContext": null,
+       "excludedClauses": null,
+       "effectiveFrom": "2026-11-11T03:42:27.567Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:27.567Z",
+       "updated_at": "2026-11-11T03:42:27.567Z",
+       "contract_id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+       "document_file_id": "35e7843c-df30-49d9-ad88-d8bbcf2fdb26",
+       "template_id": null,
+       "template": null
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-330-i",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Preparação: LEGAL_REVIEW",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/7de30a98-8be3-4bbe-b24a-50965b99caef/transition",
+   "corpoEnviado": {
+    "targetStatus": "LEGAL_REVIEW"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:27.674Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": null,
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0006",
+     "status": "LEGAL_REVIEW",
+     "totalValue": "2000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:27.244Z",
+     "updated_at": "2026-11-11T03:42:27.643Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null,
+     "versions": [
+      {
+       "id": "1bb46cf4-b4be-4b37-859b-d6609b8ee36c",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "contractId": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+       "versionNumber": 1,
+       "documentFileId": "35e7843c-df30-49d9-ad88-d8bbcf2fdb26",
+       "contentHash": "473030c2192b9fb3d7055528c82f157c289f74d225f73e214cb10dbce3abac15",
+       "content": "Contrato de locação 8543269ctX v1",
+       "signedDocumentFileId": null,
+       "status": "DRAFT",
+       "approvedBy": null,
+       "approvedAt": null,
+       "contentFileId": "5421d560-95b6-41fe-92b8-bda5faec3e75",
+       "templateVersionId": null,
+       "templateId": null,
+       "clauseVersionIds": null,
+       "conditionContext": null,
+       "excludedClauses": null,
+       "effectiveFrom": "2026-11-11T03:42:27.567Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "created_at": "2026-11-11T03:42:27.567Z",
+       "updated_at": "2026-11-11T03:42:27.567Z",
+       "contract_id": "7de30a98-8be3-4bbe-b24a-50965b99caef",
+       "document_file_id": "35e7843c-df30-49d9-ad88-d8bbcf2fdb26",
+       "template_id": null,
+       "template": null
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0022-0656df"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-013",
+   "req": [
+    "M5-A0018-77e34f",
+    "M5-A0019-64e8b2",
+    "M5-A0020-87a024",
+    "M5-A0021-e335f3",
+    "M5-A0022-0656df",
+    "M5-A0023-6eecaf",
+    "M5-A0024-a3b990",
+    "M5-A0025-7cf0c1",
+    "M5-A0026-efe161"
+   ],
+   "modulo": "10-contratos-tipos",
+   "perfil": "A:leitura",
+   "descricao": "Os 9 contratos criados, um por tipo do livro, gravados em DRAFT com numeração por prefixo do tipo (RLS do tenant A)",
+   "sql": "SELECT contract_type, status, contract_number, construction_project_id IS NOT NULL AS com_obra FROM legal.contracts WHERE id IN (:ids) ORDER BY contract_type",
+   "resultado": [
+    {
+     "contract_type": "CONSTRUCTION",
+     "status": "DRAFT",
+     "contract_number": "OBR-2026-0001",
+     "com_obra": true
+    },
+    {
+     "contract_type": "LEASE_COMMERCIAL",
+     "status": "DRAFT",
+     "contract_number": "LOC-2026-0002",
+     "com_obra": false
+    },
+    {
+     "contract_type": "LEASE_RESIDENTIAL",
+     "status": "DRAFT",
+     "contract_number": "LOC-2026-0001",
+     "com_obra": false
+    },
+    {
+     "contract_type": "LEASE_SEASONAL",
+     "status": "DRAFT",
+     "contract_number": "LOC-2026-0003",
+     "com_obra": false
+    },
+    {
+     "contract_type": "PROPERTY_ADMIN",
+     "status": "DRAFT",
+     "contract_number": "ADM-2026-0001",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_CASH",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0001",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_FINANCED",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0002",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_INSTALLMENTS",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0004",
+     "com_obra": false
+    },
+    {
+     "contract_type": "SALE_TRADE",
+     "status": "DRAFT",
+     "contract_number": "VEN-2026-0003",
+     "com_obra": false
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:23.995Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

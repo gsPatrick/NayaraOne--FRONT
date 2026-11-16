@@ -1,0 +1,216 @@
+{
+ "id": "M4-G§1.8",
+ "secao": "Guia §1 Ordem de implementação",
+ "requisito": "\"8. Implementar bank_transactions import/webhook idempotente.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-007: importação de extrato em lote (CSV) é idempotente — reimportar o MESMO arquivo não duplica",
+   "status": "passou",
+   "duracaoMs": 30,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/finance.bankWebhookSignature.test.js",
+   "nome": "bank webhook: verifyBankWebhookSignature aceita HMAC válido e rejeita ausente/errado/sem secret (timing-safe)",
+   "status": "passou",
+   "duracaoMs": 3,
+   "commitDoArquivo": "9a1ec08c"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P30",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§1.8",
+    "M4-G§17.8"
+   ],
+   "titulo": "Callback do banco com assinatura FORJADA: recusado, nada muda",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/finance/webhooks/bank-payment",
+   "cabecalhosEnviados": {
+    "x-webhook-signature": "sha256=000000…(assinatura HMAC calculada no envio)"
+   },
+   "corpoEnviado": {
+    "externalSubmissionId": "sandbox-payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+    "status": "CONFIRMED"
+   },
+   "esperado": {
+    "status": [
+     401,
+     403
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 401,
+   "codigo": "BANK_PAYMENT_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 46,
+   "quando": "2026-11-11T01:35:08.302Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "BANK_PAYMENT_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura HMAC do webhook bancário ausente ou inválida.",
+     "traceId": "6c156323-10fe-461b-8ca9-09368c6db75d"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "C10",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.8",
+    "M4-G§1.8",
+    "M4-G§19.F5"
+   ],
+   "titulo": "Importa o extrato CSV (1ª vez): 6 transações bancárias com fingerprint",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/import",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+    "csvText": "externalTransactionId,transactionDate,description,amount\nEXT-EX-0871300,2026-11-10,PIX recebido referencia externa,101.46\nEXT-FO-0871300,2026-11-10,PIX recebido ref 8ff509ab-299c-478d-b7c0-1f6373e1d9dd,202.46\nEXT-PR-0871300,2026-11-10,PIX recebido sem referencia,303.46\nEXT-AM-0871300,2026-11-10,PIX recebido valor repetido,404.46\nEXT-SEM-0871300,2026-11-10,Credito sem lancamento correspondente,505.46\nEXT-DV-0871300,2026-11-10,PIX recebido valor diferente,605.46\n"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 120,
+   "quando": "2026-11-11T01:35:11.013Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "imported": [
+      {
+       "id": "94edf404-d379-497d-9177-bdc35f058458",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-EX-0871300",
+       "amount": "101.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "PIX recebido referencia externa",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:10.911Z",
+       "created_at": "2026-11-11T01:35:10.911Z",
+       "fingerprint": "4434f84f4a78b16ccb472f5b57d148da5a3d9ff161e05fc98b86ab5c25ccee7d"
+      },
+      {
+       "id": "c08bbd0d-df65-4d73-b0e2-ecd80c656b88",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-FO-0871300",
+       "amount": "202.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "PIX recebido ref 8ff509ab-299c-478d-b7c0-1f6373e1d9dd",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:10.921Z",
+       "created_at": "2026-11-11T01:35:10.921Z",
+       "fingerprint": "fddaa43e1487e27f468f8261e668b5f459adb56bb48c1478935556a010ae2872"
+      },
+      {
+       "id": "08314b06-c49b-4e49-93cb-c7c72c5f18eb",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-PR-0871300",
+       "amount": "303.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "PIX recebido sem referencia",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:10.928Z",
+       "created_at": "2026-11-11T01:35:10.928Z",
+       "fingerprint": "b66c2acfda13154b5461ea79a4accd8803f9af48f1a5cab805ec7346938a580e"
+      },
+      {
+       "id": "7abfd3ee-ea2c-4402-b4c5-c5b1f3d92c2e",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-AM-0871300",
+       "amount": "404.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "PIX recebido valor repetido",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:10.942Z",
+       "created_at": "2026-11-11T01:35:10.942Z",
+       "fingerprint": "7cc4328a5bbcdb444a801bdd5dbb08448810f2acbf0222026578eb4496fe609a"
+      },
+      {
+       "id": "be92f80c-48bc-4ab6-84b0-a7b0102d5e56",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-SEM-0871300",
+       "amount": "505.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "Credito sem lancamento correspondente",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:10.955Z",
+       "created_at": "2026-11-11T01:35:10.955Z",
+       "fingerprint": "e65e3f3dfbcd96b9695949fed8c63745f7a17ca1a25367e3cb8644b83f899b09"
+      },
+      {
+       "id": "cff6aa38-fd87-4f6d-b9b9-ea476c91c88f",
+       "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+       "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+       "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+       "externalTransactionId": "EXT-DV-0871300",
+       "amount": "605.46",
+       "transactionDate": "2026-11-10T15:00:00.000Z",
+       "description": "PIX recebido valor diferente",
+       "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+       "updated_at": "2026-11-11T01:35:10.965Z",
+       "created_at": "2026-11-11T01:35:10.965Z",
+       "fingerprint": "114b70670334051f6d1f8892305e8a6912c33cfd8c6871c188c5ecab894475ae"
+      }
+     ],
+     "duplicates": [],
+     "total": 6,
+     "statementImport": {
+      "id": "fa6e68ad-06b5-467f-99e2-85c7e75c57bc",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": "6a54ebaa-9479-4573-8cca-4f663e4a9452",
+      "periodStart": "2026-11-10",
+      "periodEnd": "2026-11-10",
+      "periodDeclared": false,
+      "closingBalance": null,
+      "linesTotal": 6,
+      "linesImported": 6,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:10.975Z"
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

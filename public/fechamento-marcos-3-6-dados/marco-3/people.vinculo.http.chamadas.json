@@ -1,0 +1,1756 @@
+{
+ "geradoEm": "2026-11-12T10:21:29.127Z",
+ "arquivoDeTeste": "test/people.vinculo.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-12T10:21:23.999Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]",
+    "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "1c538a46-7939-41b8-a5f6-c333aa08011b",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "name": "CI vínculo 1794478880496934",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "roles": [
+      "CI VINCULO 1794478880496934 4"
+     ],
+     "permissions": [
+      "people:create",
+      "people:read",
+      "people:update",
+      "people:delete"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:24.219Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]",
+    "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "f3df20a2-6999-4463-ac60-738f92de1419",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "name": "CI vínculo 1794478880496934",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+     "roles": [
+      "CI VINCULO 1794478880496934 5"
+     ],
+     "permissions": [
+      "people:create",
+      "people:read",
+      "people:update",
+      "people:delete",
+      "people:link"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:24.490Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]",
+    "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "984eb912-5b58-4e1c-a709-873460dd5f94",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "bf9ad68e-eec0-4dde-9e37-b52fc4ff18f1",
+      "name": "CI vínculo sem 1794478880496934",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+     "roles": [
+      "CI VINCULO 1794478880496934 4"
+     ],
+     "permissions": [
+      "people:create",
+      "people:read",
+      "people:update",
+      "people:delete"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.419Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Joana Vinculo 1794478880496934 Prado",
+    "taxIdNormalized": "13236361379",
+    "riskFlagsJson": {
+     "category": "SO_DE_A"
+    }
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "d96d87c8-39c1-4b12-ac17-2d0e6386db68",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personType": "PF",
+     "legalName": "Joana Vinculo 1794478880496934 Prado",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-79",
+     "taxIdNormalizedHash": "****8405",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": {
+      "category": "SO_DE_A"
+     },
+     "lockVersion": 0,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:24.518Z",
+     "updated_at": "2026-11-12T10:21:24.518Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.524Z",
+   "requisicao": "POST /api/v1/people/d96d87c8-39c1-4b12-ac17-2d0e6386db68/contacts",
+   "corpoEnviado": {
+    "contactType": "EMAIL",
+    "valueNormalized": "[e-mail omitido]",
+    "isPrimary": true
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "71db1524-f23a-4323-bf58-c679bbb16cf5",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "d96d87c8-39c1-4b12-ac17-2d0e6386db68",
+     "contactType": "EMAIL",
+     "valueNormalized": "[e-mail omitido]",
+     "isPrimary": true,
+     "consentStatus": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:25.432Z",
+     "created_at": "2026-11-12T10:21:25.432Z",
+     "verifiedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.632Z",
+   "requisicao": "POST /api/v1/people/d96d87c8-39c1-4b12-ac17-2d0e6386db68/addresses",
+   "corpoEnviado": {
+    "street": "Rua de A",
+    "number": "1",
+    "city": "São Paulo",
+    "state": "SP"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "111d583d-8c9d-4906-8b82-43c2fc7961d5",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "d96d87c8-39c1-4b12-ac17-2d0e6386db68",
+     "zipCode": null,
+     "street": "Rua de A",
+     "number": "1",
+     "complement": null,
+     "neighborhood": null,
+     "city": "São Paulo",
+     "state": "SP",
+     "isCurrent": true,
+     "validFrom": null,
+     "validUntil": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:25.579Z",
+     "created_at": "2026-11-12T10:21:25.579Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.675Z",
+   "requisicao": "POST /api/v1/people/d96d87c8-39c1-4b12-ac17-2d0e6386db68/roles",
+   "corpoEnviado": {
+    "roleCode": "CLIENTE"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "2a5bb02c-a836-4d5f-ad0c-88c216139fd3",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "d96d87c8-39c1-4b12-ac17-2d0e6386db68",
+     "roleCode": "CLIENTE",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:25.643Z",
+     "created_at": "2026-11-12T10:21:25.643Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.716Z",
+   "requisicao": "POST /api/v1/people/d96d87c8-39c1-4b12-ac17-2d0e6386db68/consents",
+   "corpoEnviado": {
+    "channel": "EMAIL",
+    "purpose": "MARKETING",
+    "status": "OPT_IN"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "684ff8ee-258e-4bb1-9802-a5f470980542",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "d96d87c8-39c1-4b12-ac17-2d0e6386db68",
+     "channel": "EMAIL",
+     "purpose": "MARKETING",
+     "status": "OPT_IN",
+     "recordedAt": "2026-11-12T10:21:25.685Z",
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:25.686Z",
+     "created_at": "2026-11-12T10:21:25.686Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.856Z",
+   "requisicao": "POST /api/v1/files",
+   "corpoEnviado": {
+    "fileName": "rg-1794478880496934.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQKMSAwIG9iajw8Pj5lbmRvYmoKdHJhaWxlcjw8Pj4KJSVFT0YK",
+    "category": "people"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "b888e46d-a00e-41c7-b0f8-287e23add409",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "storageKey": "generic/3fa84ef7-7bbc-4b3b-9b39-d414859370d6/e5176fa8-73cb-41f5-b41e-baa57bb50f7e-rg-1794478880496934.pdf",
+     "fileName": "rg-1794478880496934.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 45,
+     "checksumSha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-12T10:21:25.758Z",
+     "uploadedByUserId": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:25.759Z",
+     "created_at": "2026-11-12T10:21:25.759Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.912Z",
+   "requisicao": "POST /api/v1/people/d96d87c8-39c1-4b12-ac17-2d0e6386db68/documents",
+   "corpoEnviado": {
+    "documentType": "RG",
+    "fileId": "b888e46d-a00e-41c7-b0f8-287e23add409"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "1f4c2b52-ff3f-4cde-8620-1f3437250428",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "d96d87c8-39c1-4b12-ac17-2d0e6386db68",
+     "documentType": "RG",
+     "fileId": "b888e46d-a00e-41c7-b0f8-287e23add409",
+     "versionNo": 1,
+     "issuedAt": null,
+     "expiresAt": null,
+     "verificationStatus": "PENDING",
+     "extractedDataJson": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:25.898Z",
+     "created_at": "2026-11-12T10:21:25.898Z",
+     "verifiedBy": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.931Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Outro",
+    "taxIdNormalized": "13236361379"
+   },
+   "status": 409,
+   "codigo": "PERSON_TAX_ID_IN_GROUP",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_TAX_ID_IN_GROUP",
+     "message": "Este CPF/CNPJ já tem cadastro em outra empresa do grupo. Para usar esse cadastro aqui, vincule-o a esta empresa informando o CPF/CNPJ e o nome como está no documento.",
+     "details": {
+      "podeVincular": true
+     },
+     "traceId": "327c9ed6-9434-45a2-a9d2-c71dd2fc90ac"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.940Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "13236361379",
+    "legalName": "Joana Vinculo 1794478880496934 Prado"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "people:link"
+     },
+     "traceId": "ebf9602d-ed71-4db1-ab24-29d95a23c2a9"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:25.972Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "13236361379",
+    "legalName": "Joana Outra"
+   },
+   "status": 422,
+   "codigo": "PERSON_LINK_NOT_MATCHED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_LINK_NOT_MATCHED",
+     "message": "Não encontramos no grupo um cadastro com este CPF/CNPJ e este nome. Confira o nome como está no documento.",
+     "traceId": "efc44aeb-3664-4616-8eba-3b3b676f6920"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.008Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "79570226420",
+    "legalName": "Joana Vinculo 1794478880496934 Prado"
+   },
+   "status": 422,
+   "codigo": "PERSON_LINK_NOT_MATCHED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_LINK_NOT_MATCHED",
+     "message": "Não encontramos no grupo um cadastro com este CPF/CNPJ e este nome. Confira o nome como está no documento.",
+     "traceId": "712bcd2c-3805-4a80-899a-e442b45efe08"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.208Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Paulo Vinculo 1794478880496934 Reis",
+    "taxIdNormalized": "79814867772",
+    "riskFlagsJson": {
+     "category": "SO_DE_A"
+    }
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personType": "PF",
+     "legalName": "Paulo Vinculo 1794478880496934 Reis",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-72",
+     "taxIdNormalizedHash": "****9744",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": {
+      "category": "SO_DE_A"
+     },
+     "lockVersion": 0,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:26.031Z",
+     "updated_at": "2026-11-12T10:21:26.031Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.302Z",
+   "requisicao": "POST /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/contacts",
+   "corpoEnviado": {
+    "contactType": "EMAIL",
+    "valueNormalized": "[e-mail omitido]",
+    "isPrimary": true
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "4e7c538c-0651-4a01-a935-3147b715d7c4",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+     "contactType": "EMAIL",
+     "valueNormalized": "[e-mail omitido]",
+     "isPrimary": true,
+     "consentStatus": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:26.216Z",
+     "created_at": "2026-11-12T10:21:26.216Z",
+     "verifiedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.383Z",
+   "requisicao": "POST /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/addresses",
+   "corpoEnviado": {
+    "street": "Rua de A",
+    "number": "1",
+    "city": "São Paulo",
+    "state": "SP"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "cd24a0f8-fc33-46d2-9af1-60e71a53169e",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+     "zipCode": null,
+     "street": "Rua de A",
+     "number": "1",
+     "complement": null,
+     "neighborhood": null,
+     "city": "São Paulo",
+     "state": "SP",
+     "isCurrent": true,
+     "validFrom": null,
+     "validUntil": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:26.333Z",
+     "created_at": "2026-11-12T10:21:26.333Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.429Z",
+   "requisicao": "POST /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/roles",
+   "corpoEnviado": {
+    "roleCode": "CLIENTE"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "c552e64e-35f7-4fa5-9c83-1d8b4c5f9687",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+     "roleCode": "CLIENTE",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:26.392Z",
+     "created_at": "2026-11-12T10:21:26.392Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.482Z",
+   "requisicao": "POST /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/consents",
+   "corpoEnviado": {
+    "channel": "EMAIL",
+    "purpose": "MARKETING",
+    "status": "OPT_IN"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "556cd2f2-c79d-4c4d-8310-f045438bbfb6",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+     "channel": "EMAIL",
+     "purpose": "MARKETING",
+     "status": "OPT_IN",
+     "recordedAt": "2026-11-12T10:21:26.445Z",
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:26.445Z",
+     "created_at": "2026-11-12T10:21:26.445Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.620Z",
+   "requisicao": "POST /api/v1/files",
+   "corpoEnviado": {
+    "fileName": "rg-1794478880496934.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQKMSAwIG9iajw8Pj5lbmRvYmoKdHJhaWxlcjw8Pj4KJSVFT0YK",
+    "category": "people"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "1cb392d9-ab74-4473-a972-82df0d47ca39",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "storageKey": "generic/3fa84ef7-7bbc-4b3b-9b39-d414859370d6/1595415b-04ce-44fa-9041-175908fb0b3f-rg-1794478880496934.pdf",
+     "fileName": "rg-1794478880496934.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 45,
+     "checksumSha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-12T10:21:26.549Z",
+     "uploadedByUserId": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:26.550Z",
+     "created_at": "2026-11-12T10:21:26.550Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:26.657Z",
+   "requisicao": "POST /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/documents",
+   "corpoEnviado": {
+    "documentType": "RG",
+    "fileId": "1cb392d9-ab74-4473-a972-82df0d47ca39"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "10463291-4bcf-48d2-abbc-8e5ab2dc64f8",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+     "documentType": "RG",
+     "fileId": "1cb392d9-ab74-4473-a972-82df0d47ca39",
+     "versionNo": 1,
+     "issuedAt": null,
+     "expiresAt": null,
+     "verificationStatus": "PENDING",
+     "extractedDataJson": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:26.641Z",
+     "created_at": "2026-11-12T10:21:26.641Z",
+     "verifiedBy": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.482Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "79814867772",
+    "legalName": "  paulo REIS ",
+    "reason": "Cliente de A em B",
+    "contacts": [
+     {
+      "contactType": "PHONE",
+      "valueNormalized": "+5511988887777",
+      "isPrimary": true
+     }
+    ],
+    "address": {
+     "street": "Rua de B",
+     "city": "Campinas",
+     "state": "SP"
+    }
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"personType\":\"PF\",\"legalName\":\"Paulo Vinculo 1794478880496934 Reis\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-72\",\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"contacts\":[{\"id\":\"30eeadbe-37c0-4f30-ab2b-e8b7a5e2f1a6\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"companyId\":\"c1bb3df8-b56a-41ac-92e5-eca0e56e54b0\",\"personId\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"contactType\":\"PHONE\",\"valueNormalized\":\"+5511988887777\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"updatedBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:21:26.681Z\",\"updated_at\":\"2026-11-12T10:21:26.681Z\",\"deleted_at\":null,\"person_id\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\"}],\"documents\":[],\"roles\":[],\"addresses\":[{\"id\":\"f0700aac-2cba-4b4e-a6f2-bcf87f072f99\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"companyId\":\"c1bb3df8-b56a-41ac-92e5-eca0e56e54b0\",\"personId\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"zipCode\":null,\"street\":\"Rua de B\",\"number\":null,\"complement\":null,\"neighborhood\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"isCurrent\":true,\"validFrom\":null,\"validUntil\":null,\"createdBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"updatedBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"created_at\":\"2026-11-12T10:21:26.686Z\",\"updated_at\":\"2026-11-12T10:21:26.686Z\",\"person_id\":\"7deeea5b-83b3-46c0-9bcc…"
+  },
+  {
+   "em": "2026-11-12T10:21:27.523Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/contacts",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "30eeadbe-37c0-4f30-ab2b-e8b7a5e2f1a6",
+      "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+      "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+      "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+      "contactType": "PHONE",
+      "valueNormalized": "+5511988887777",
+      "isPrimary": true,
+      "consentStatus": null,
+      "verifiedAt": null,
+      "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "deletedBy": null,
+      "created_at": "2026-11-12T10:21:26.681Z",
+      "updated_at": "2026-11-12T10:21:26.681Z",
+      "deleted_at": null,
+      "person_id": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.574Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/addresses",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "f0700aac-2cba-4b4e-a6f2-bcf87f072f99",
+      "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+      "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+      "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+      "zipCode": null,
+      "street": "Rua de B",
+      "number": null,
+      "complement": null,
+      "neighborhood": null,
+      "city": "Campinas",
+      "state": "SP",
+      "isCurrent": true,
+      "validFrom": null,
+      "validUntil": null,
+      "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "created_at": "2026-11-12T10:21:26.686Z",
+      "updated_at": "2026-11-12T10:21:26.686Z",
+      "person_id": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.603Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/documents",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": []
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.629Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/roles",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": []
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.656Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/consents",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": []
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.665Z",
+   "requisicao": "GET /api/v1/files/1cb392d9-ab74-4473-a972-82df0d47ca39",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "FILE_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "FILE_NOT_FOUND",
+     "message": "Arquivo não encontrado.",
+     "traceId": "5030e93c-bf47-4016-8a7a-2d0f46afcde7"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.676Z",
+   "requisicao": "GET /api/v1/files/1cb392d9-ab74-4473-a972-82df0d47ca39/content",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "FILE_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "FILE_NOT_FOUND",
+     "message": "Arquivo não encontrado.",
+     "traceId": "182f944d-fd9a-4493-b589-2d87a0ad3e86"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.685Z",
+   "requisicao": "GET /api/v1/files/1cb392d9-ab74-4473-a972-82df0d47ca39/download",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "FILE_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "FILE_NOT_FOUND",
+     "message": "Arquivo não encontrado.",
+     "traceId": "6bc21a47-e6ee-48bf-89a6-65708a53fbfa"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.774Z",
+   "requisicao": "GET /api/v1/people",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":[{\"id\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"personType\":\"PF\",\"legalName\":\"Paulo Vinculo 1794478880496934 Reis\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-72\",\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"contacts\":[{\"id\":\"30eeadbe-37c0-4f30-ab2b-e8b7a5e2f1a6\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"companyId\":\"c1bb3df8-b56a-41ac-92e5-eca0e56e54b0\",\"personId\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"contactType\":\"PHONE\",\"valueNormalized\":\"+5511988887777\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"updatedBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:21:26.681Z\",\"updated_at\":\"2026-11-12T10:21:26.681Z\",\"deleted_at\":null,\"person_id\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\"}],\"documents\":[],\"roles\":[],\"addresses\":[{\"id\":\"f0700aac-2cba-4b4e-a6f2-bcf87f072f99\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"companyId\":\"c1bb3df8-b56a-41ac-92e5-eca0e56e54b0\",\"personId\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"zipCode\":null,\"street\":\"Rua de B\",\"number\":null,\"complement\":null,\"neighborhood\":null,\"city\":\"Campinas\",\"state\":\"SP\",\"isCurrent\":true,\"validFrom\":null,\"validUntil\":null,\"createdBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"updatedBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"created_at\":\"2026-11-12T10:21:26.686Z\",\"updated_at\":\"2026-11-12T10:21:26.686Z\",\"person_id\":\"7deeea5b-83b3-46c0-9bc…"
+  },
+  {
+   "em": "2026-11-12T10:21:27.785Z",
+   "requisicao": "PATCH /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+   "corpoEnviado": {
+    "preferredName": "Invasor"
+   },
+   "status": 403,
+   "codigo": "PERSON_BASE_OWNER_ONLY",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_BASE_OWNER_ONLY",
+     "message": "O cadastro base desta pessoa é mantido por outra empresa do grupo. Aqui você altera os contatos, endereços, documentos, papéis e consentimentos desta empresa.",
+     "traceId": "3fcb98a7-8884-416a-b022-c813304856fc"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.806Z",
+   "requisicao": "DELETE /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+   "corpoEnviado": null,
+   "status": 403,
+   "codigo": "PERSON_BASE_OWNER_ONLY",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_BASE_OWNER_ONLY",
+     "message": "O cadastro base desta pessoa é mantido por outra empresa do grupo. Aqui você altera os contatos, endereços, documentos, papéis e consentimentos desta empresa.",
+     "traceId": "8372edfa-bfcc-4b8b-bd80-6131b8fc463c"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.883Z",
+   "requisicao": "POST /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/contacts",
+   "corpoEnviado": {
+    "contactType": "EMAIL",
+    "valueNormalized": "[e-mail omitido]"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "146d5340-9903-4364-b9f1-0d014af74616",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+     "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+     "contactType": "EMAIL",
+     "valueNormalized": "[e-mail omitido]",
+     "isPrimary": false,
+     "consentStatus": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:27.827Z",
+     "created_at": "2026-11-12T10:21:27.827Z",
+     "verifiedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.902Z",
+   "requisicao": "DELETE /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+   "corpoEnviado": null,
+   "status": 409,
+   "codigo": "PERSON_LINKED_ELSEWHERE",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_LINKED_ELSEWHERE",
+     "message": "Esta pessoa também tem vínculo com outra empresa do grupo. O cadastro base não pode ser excluído nem mesclado enquanto esse vínculo existir.",
+     "traceId": "5b20ad2d-6aaf-428d-83f6-6dfc58b32f5e"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:27.969Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"companyId\":\"3513c36a-8312-44e0-8e00-fa3a10e15f67\",\"personType\":\"PF\",\"legalName\":\"Paulo Vinculo 1794478880496934 Reis\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-72\",\"taxIdNormalizedHash\":\"****9744\",\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":{\"category\":\"SO_DE_A\"},\"lockVersion\":0,\"createdBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"updatedBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:21:26.031Z\",\"updated_at\":\"2026-11-12T10:21:26.031Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"4e7c538c-0651-4a01-a935-3147b715d7c4\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"companyId\":\"3513c36a-8312-44e0-8e00-fa3a10e15f67\",\"personId\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",\"contactType\":\"EMAIL\",\"valueNormalized\":\"[e-mail omitido]\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"updatedBy\":\"d477de83-9887-4419-9b88-3c1b2585db1a\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:21:26.216Z\",\"updated_at\":\"2026-11-12T10:21:26.216Z\",\"deleted_at\":null,\"person_id\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\"}],\"documents\":[{\"id\":\"10463291-4bcf-48d2-abbc-8e5ab2dc64f8\",\"groupId\":\"3fa84ef7-7bbc-4b3b-9b39-d414859370d6\",\"companyId\":\"3513c36a-8312-44e0-8e00-fa3a10e15f67\",\"personId\":\"7deeea5b-83b3-46c0-9bcc-541513d1ccfc\",…"
+  },
+  {
+   "em": "2026-11-12T10:21:28.012Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/addresses",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "cd24a0f8-fc33-46d2-9af1-60e71a53169e",
+      "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+      "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+      "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+      "zipCode": null,
+      "street": "Rua de A",
+      "number": "1",
+      "complement": null,
+      "neighborhood": null,
+      "city": "São Paulo",
+      "state": "SP",
+      "isCurrent": true,
+      "validFrom": null,
+      "validUntil": null,
+      "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "created_at": "2026-11-12T10:21:26.333Z",
+      "updated_at": "2026-11-12T10:21:26.333Z",
+      "person_id": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.030Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/documents",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "10463291-4bcf-48d2-abbc-8e5ab2dc64f8",
+      "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+      "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+      "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+      "documentType": "RG",
+      "fileId": "1cb392d9-ab74-4473-a972-82df0d47ca39",
+      "versionNo": 1,
+      "issuedAt": null,
+      "expiresAt": null,
+      "verificationStatus": "PENDING",
+      "verifiedBy": null,
+      "extractedDataJson": null,
+      "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "deletedBy": null,
+      "created_at": "2026-11-12T10:21:26.641Z",
+      "updated_at": "2026-11-12T10:21:26.641Z",
+      "deleted_at": null,
+      "person_id": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.051Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/roles",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "c552e64e-35f7-4fa5-9c83-1d8b4c5f9687",
+      "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+      "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+      "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+      "roleCode": "CLIENTE",
+      "startsAt": null,
+      "endsAt": null,
+      "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "deletedBy": null,
+      "created_at": "2026-11-12T10:21:26.392Z",
+      "updated_at": "2026-11-12T10:21:26.392Z",
+      "deleted_at": null,
+      "person_id": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.085Z",
+   "requisicao": "GET /api/v1/people/7deeea5b-83b3-46c0-9bcc-541513d1ccfc/consents",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "556cd2f2-c79d-4c4d-8310-f045438bbfb6",
+      "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+      "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+      "personId": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc",
+      "channel": "EMAIL",
+      "purpose": "MARKETING",
+      "status": "OPT_IN",
+      "recordedAt": "2026-11-12T10:21:26.445Z",
+      "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+      "created_at": "2026-11-12T10:21:26.445Z",
+      "updated_at": "2026-11-12T10:21:26.445Z",
+      "person_id": "7deeea5b-83b3-46c0-9bcc-541513d1ccfc"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.125Z",
+   "requisicao": "GET /api/v1/files/1cb392d9-ab74-4473-a972-82df0d47ca39",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "1cb392d9-ab74-4473-a972-82df0d47ca39",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "storageKey": "generic/3fa84ef7-7bbc-4b3b-9b39-d414859370d6/1595415b-04ce-44fa-9041-175908fb0b3f-rg-1794478880496934.pdf",
+     "fileName": "rg-1794478880496934.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 45,
+     "checksumSha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+     "encryptedAtRest": true,
+     "scanStatus": "CLEAN",
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scannedAt": "2026-11-12T10:21:26.549Z",
+     "uploadedByUserId": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:26.550Z",
+     "updated_at": "2026-11-12T10:21:26.550Z",
+     "deleted_at": null,
+     "uploaded_by_user_id": "d477de83-9887-4419-9b88-3c1b2585db1a"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.245Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Rita Vinculo 1794478880496934 Lima",
+    "taxIdNormalized": "65221566281",
+    "riskFlagsJson": {
+     "category": "SO_DE_A"
+    }
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personType": "PF",
+     "legalName": "Rita Vinculo 1794478880496934 Lima",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-81",
+     "taxIdNormalizedHash": "****2340",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": {
+      "category": "SO_DE_A"
+     },
+     "lockVersion": 0,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:28.139Z",
+     "updated_at": "2026-11-12T10:21:28.139Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.312Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/contacts",
+   "corpoEnviado": {
+    "contactType": "EMAIL",
+    "valueNormalized": "[e-mail omitido]",
+    "isPrimary": true
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "077e9e2b-ff8b-46e5-8b6f-1f7bb3c5d85a",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "contactType": "EMAIL",
+     "valueNormalized": "[e-mail omitido]",
+     "isPrimary": true,
+     "consentStatus": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:28.252Z",
+     "created_at": "2026-11-12T10:21:28.252Z",
+     "verifiedAt": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.408Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/addresses",
+   "corpoEnviado": {
+    "street": "Rua de A",
+    "number": "1",
+    "city": "São Paulo",
+    "state": "SP"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "e1ef88ce-9152-4fb4-8e64-891385d4b63a",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "zipCode": null,
+     "street": "Rua de A",
+     "number": "1",
+     "complement": null,
+     "neighborhood": null,
+     "city": "São Paulo",
+     "state": "SP",
+     "isCurrent": true,
+     "validFrom": null,
+     "validUntil": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:28.357Z",
+     "created_at": "2026-11-12T10:21:28.357Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.479Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/roles",
+   "corpoEnviado": {
+    "roleCode": "CLIENTE"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "4b4b7994-5adc-4ddc-809f-bd3560ab5fa9",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "roleCode": "CLIENTE",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:28.416Z",
+     "created_at": "2026-11-12T10:21:28.416Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.500Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/consents",
+   "corpoEnviado": {
+    "channel": "EMAIL",
+    "purpose": "MARKETING",
+    "status": "OPT_IN"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "7b8203d8-a1f0-4c8c-b6f6-47c275e14478",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "channel": "EMAIL",
+     "purpose": "MARKETING",
+     "status": "OPT_IN",
+     "recordedAt": "2026-11-12T10:21:28.486Z",
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:28.486Z",
+     "created_at": "2026-11-12T10:21:28.486Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.571Z",
+   "requisicao": "POST /api/v1/files",
+   "corpoEnviado": {
+    "fileName": "rg-1794478880496934.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQKMSAwIG9iajw8Pj5lbmRvYmoKdHJhaWxlcjw8Pj4KJSVFT0YK",
+    "category": "people"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "4fb06296-6c3a-4dfc-aab6-80a6ccb1c918",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "storageKey": "generic/3fa84ef7-7bbc-4b3b-9b39-d414859370d6/e125c4e7-ff39-474c-b05e-fe7267cde028-rg-1794478880496934.pdf",
+     "fileName": "rg-1794478880496934.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 45,
+     "checksumSha256": "5a838678058f6de375e8635b5f2fea47a4e5f07cb1a882a44b10f39abc6f34ff",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-12T10:21:28.518Z",
+     "uploadedByUserId": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:28.519Z",
+     "created_at": "2026-11-12T10:21:28.519Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.638Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/documents",
+   "corpoEnviado": {
+    "documentType": "RG",
+    "fileId": "4fb06296-6c3a-4dfc-aab6-80a6ccb1c918"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "ea2c6022-e45c-4635-a9a0-25c506a9df31",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "companyId": "3513c36a-8312-44e0-8e00-fa3a10e15f67",
+     "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "documentType": "RG",
+     "fileId": "4fb06296-6c3a-4dfc-aab6-80a6ccb1c918",
+     "versionNo": 1,
+     "issuedAt": null,
+     "expiresAt": null,
+     "verificationStatus": "PENDING",
+     "extractedDataJson": null,
+     "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+     "updated_at": "2026-11-12T10:21:28.611Z",
+     "created_at": "2026-11-12T10:21:28.611Z",
+     "verifiedBy": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.811Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "65221566281",
+    "legalName": "Rita Vinculo 1794478880496934 Lima",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": "[e-mail omitido]"
+     }
+    ]
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "personType": "PF",
+     "legalName": "Rita Vinculo 1794478880496934 Lima",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-81",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "contacts": [
+      {
+       "id": "2835ee5c-d0eb-46d4-865f-c32726d141b3",
+       "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+       "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+       "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+       "contactType": "EMAIL",
+       "valueNormalized": "[e-mail omitido]",
+       "isPrimary": false,
+       "consentStatus": null,
+       "verifiedAt": null,
+       "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+       "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+       "deletedBy": null,
+       "created_at": "2026-11-12T10:21:28.680Z",
+       "updated_at": "2026-11-12T10:21:28.680Z",
+       "deleted_at": null,
+       "person_id": "8cdb76a2-7b79-49fb-b588-85229508ea8d"
+      }
+     ],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 50,
+      "missing": [
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "VINCULADA",
+      "vinculadaEm": "2026-11-12T10:21:28.653Z"
+     }
+    },
+    "meta": {
+     "resultado": "VINCULADA"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.834Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/unlink",
+   "corpoEnviado": {},
+   "status": 400,
+   "codigo": "PERSON_LINK_VALIDATION",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_LINK_VALIDATION",
+     "message": "Informe o motivo para desfazer o vínculo (mínimo de 5 caracteres).",
+     "details": {
+      "fields": [
+       {
+        "field": "reason",
+        "message": "Informe o motivo."
+       }
+      ]
+     },
+     "traceId": "9e77d675-beb6-4d16-869f-b91fbb1d37f3"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.848Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/unlink",
+   "corpoEnviado": {
+    "reason": "Encerrar o responsável"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "people:link"
+     },
+     "traceId": "7f18557f-5b3a-4fb4-b209-26d7c2697818"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.876Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/unlink",
+   "corpoEnviado": {
+    "reason": "Cliente encerrou a relação com B"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "vinculo": "ENCERRADO"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.893Z",
+   "requisicao": "GET /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "84f86b84-883b-4401-b7e4-fce044a64783"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.905Z",
+   "requisicao": "POST /api/v1/people/8cdb76a2-7b79-49fb-b588-85229508ea8d/contacts",
+   "corpoEnviado": {
+    "contactType": "EMAIL",
+    "valueNormalized": "[e-mail omitido]"
+   },
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "261fd4b7-0c8d-4dcb-98db-32d8c36b35c1"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:28.985Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "65221566281",
+    "legalName": "Rita Vinculo 1794478880496934 Lima"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "personType": "PF",
+     "legalName": "Rita Vinculo 1794478880496934 Lima",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-81",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "contacts": [
+      {
+       "id": "2835ee5c-d0eb-46d4-865f-c32726d141b3",
+       "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+       "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+       "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+       "contactType": "EMAIL",
+       "valueNormalized": "[e-mail omitido]",
+       "isPrimary": false,
+       "consentStatus": null,
+       "verifiedAt": null,
+       "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+       "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+       "deletedBy": null,
+       "created_at": "2026-11-12T10:21:28.680Z",
+       "updated_at": "2026-11-12T10:21:28.680Z",
+       "deleted_at": null,
+       "person_id": "8cdb76a2-7b79-49fb-b588-85229508ea8d"
+      }
+     ],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 50,
+      "missing": [
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "VINCULADA",
+      "vinculadaEm": "2026-11-12T10:21:28.915Z"
+     }
+    },
+    "meta": {
+     "resultado": "REATIVADA"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:29.067Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "65221566281",
+    "legalName": "Rita Vinculo 1794478880496934 Lima"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+     "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+     "personType": "PF",
+     "legalName": "Rita Vinculo 1794478880496934 Lima",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-81",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "contacts": [
+      {
+       "id": "2835ee5c-d0eb-46d4-865f-c32726d141b3",
+       "groupId": "3fa84ef7-7bbc-4b3b-9b39-d414859370d6",
+       "companyId": "c1bb3df8-b56a-41ac-92e5-eca0e56e54b0",
+       "personId": "8cdb76a2-7b79-49fb-b588-85229508ea8d",
+       "contactType": "EMAIL",
+       "valueNormalized": "[e-mail omitido]",
+       "isPrimary": false,
+       "consentStatus": null,
+       "verifiedAt": null,
+       "createdBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+       "updatedBy": "d477de83-9887-4419-9b88-3c1b2585db1a",
+       "deletedBy": null,
+       "created_at": "2026-11-12T10:21:28.680Z",
+       "updated_at": "2026-11-12T10:21:28.680Z",
+       "deleted_at": null,
+       "person_id": "8cdb76a2-7b79-49fb-b588-85229508ea8d"
+      }
+     ],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 50,
+      "missing": [
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "VINCULADA",
+      "vinculadaEm": "2026-11-12T10:21:28.915Z"
+     }
+    },
+    "meta": {
+     "resultado": "JA_NESTA_EMPRESA"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:29.094Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "70180042416",
+    "legalName": "Ninguém"
+   },
+   "status": 422,
+   "codigo": "PERSON_LINK_NOT_MATCHED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_LINK_NOT_MATCHED",
+     "message": "Não encontramos no grupo um cadastro com este CPF/CNPJ e este nome. Confira o nome como está no documento.",
+     "traceId": "0c0245db-227e-465e-a2c9-86b6e01deda4"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:29.116Z",
+   "requisicao": "POST /api/v1/people/links",
+   "corpoEnviado": {
+    "taxIdNormalized": "25467340328",
+    "legalName": "Ninguém"
+   },
+   "status": 429,
+   "codigo": "PERSON_LINK_RATE_LIMIT",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_LINK_RATE_LIMIT",
+     "message": "Você chegou ao limite de 4 tentativas sem conferência em 60 minutos. Espere e tente de novo, ou peça ajuda a quem administra o cadastro.",
+     "details": {
+      "tentativasMax": 4,
+      "janelaMinutos": 60
+     },
+     "traceId": "37a38b69-1a4f-4d0b-a731-0d88a2bbf292"
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,168 @@
+{
+  "id": "M6-35",
+  "requisito": "API mínima: POST /projects/:id/measurements.",
+  "secaoDoLivro": "Guia do Marcelo (Obras) §10 APIs mínimas",
+  "implementacao": "construction.routes.js → construction.controller.js#createStageMeasurementByProject",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/medicoes: tela que chama a rota",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/projects/:id/measurements cria a medição (201)",
+      "resultado": "passou",
+      "duracaoMs": 685,
+      "executadoEm": "2026-11-11T00:13:30.066Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H086",
+      "H099"
+    ],
+    "resumo": [
+      "H086 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements → 201",
+      "H099 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:15.109Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H086",
+      "requisitos": [
+        "M6-35",
+        "M6-10",
+        "M6-11",
+        "M6-49"
+      ],
+      "cenario": "Criar medição da Fundação (DRAFT) com itens",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+        "measuredPct": 100,
+        "measuredAt": "2026-11-09",
+        "idempotencyKey": "med-c4fcd6",
+        "items": [
+          {
+            "description": "Sapatas S1 a S8",
+            "quantity": 8,
+            "unitPrice": 4500
+          },
+          {
+            "description": "Vigas baldrame",
+            "quantity": 1,
+            "unitPrice": 6000
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 172,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "a0c65b14-66c6-4c12-95ab-b370aa3260ef",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "measuredPct": "100.000000",
+          "measuredAt": "2026-11-09",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "DRAFT",
+          "revisionNumber": 1,
+          "totalAmount": "42000.00",
+          "costCenterId": null,
+          "idempotencyKey": "med-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:15.103Z",
+          "created_at": "2026-11-11T00:12:15.011Z",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": null,
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:15.109Z"
+    },
+    {
+      "id": "H099",
+      "requisitos": [
+        "M6-35"
+      ],
+      "cenario": "Criar medição parcial da Alvenaria (50%)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/measurements",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+        "measuredPct": 50,
+        "measuredAt": "2026-11-10",
+        "idempotencyKey": "med2-c4fcd6",
+        "items": [
+          {
+            "description": "Alvenaria térreo",
+            "quantity": 1,
+            "unitPrice": 15000
+          }
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 241,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "c545d5b4-b823-4bec-88af-c2efc2107883",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "measuredPct": "50.000000",
+          "measuredAt": "2026-11-10",
+          "measuredByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "notes": null,
+          "status": "DRAFT",
+          "revisionNumber": 1,
+          "totalAmount": "15000.00",
+          "costCenterId": null,
+          "idempotencyKey": "med2-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:17.152Z",
+          "created_at": "2026-11-11T00:12:17.111Z",
+          "approvedByUserId": null,
+          "decidedAt": null,
+          "rejectionReason": null,
+          "submittedAt": null,
+          "reviewedAt": null,
+          "reviewedByUserId": null,
+          "reviewNotes": null,
+          "approvedAt": null,
+          "payableFinancialEntryId": null,
+          "parentMeasurementId": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:17.241Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.403Z"
+}

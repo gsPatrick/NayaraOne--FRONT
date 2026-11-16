@@ -1,0 +1,66 @@
+{
+  "id": "M6-96",
+  "requisito": "CI verifica regra de negócio fixada em código (margem/comissão de Obras).",
+  "secaoDoLivro": "Anexo I §23 Scanner de hard-code",
+  "implementacao": "scripts/scanConstructionHardcode.js: inteiros de 4+ dígitos terminados em 00, valor com decimais (parte inteira de 3+ dígitos) e percentual inteiro (nome de taxa/margem/comissão/desconto ou \"n / 100\"); linha certa com comentário de bloco; DEFAULT_MAX_AUTO_APPROVE_AMOUNT removido (alçada é configuração da empresa)",
+  "telaParaReteste": "CI: node scripts/scanConstructionHardcode.js",
+  "commitApi": "6952bb50",
+  "branchApi": "m6fix/verificacao",
+  "commitFront": "1d3d1f2",
+  "branchFront": "m6fix/verificacao",
+  "status": "Atendido",
+  "motivoDaVerificacao": "ver Maturacao/fechamento-m3-m6/verificacao/marco-6.md",
+  "testes": [
+    {
+      "arquivo": "test/construction.hardcodeScanner.test.js",
+      "nome": "M6-96: 1500, 2500, 1000.0 e percentual inteiro (15) são acusados, um por linha, com a linha certa",
+      "resultadoHead": "passou",
+      "duracaoMs": 89.81,
+      "resultadoBase": "FALHA (scanConstructionHardcode: nenhum hard-code suspeito encontrado em src/features/construction/.\n\n\n0 !== 1\n)"
+    },
+    {
+      "arquivo": "test/construction.hardcodeScanner.test.js",
+      "nome": "M6-96: o padrão da alçada (R$ 1.000,00) não está mais no código de Obras",
+      "resultadoHead": "passou",
+      "duracaoMs": 8.069,
+      "resultadoBase": "FALHA (Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   'lossRecords.service.js'\n+ ]\n- []\n)"
+    },
+    {
+      "arquivo": "test/construction.hardcodeScanner.test.js",
+      "nome": "M6-96: o módulo de Obras atual passa no scanner de hard-code (exit 0)",
+      "resultadoHead": "passou",
+      "duracaoMs": 137.09,
+      "resultadoBase": "PASSA"
+    },
+    {
+      "arquivo": "test/construction.m6v.alcada.test.js",
+      "nome": "M6-96: sem alçada configurada não há valor fixo no código — perda de qualquer valor aguarda aprovação",
+      "resultadoHead": "passou",
+      "duracaoMs": 79.853,
+      "resultadoBase": "o arquivo não carrega na base (o código da regra não existe em 41addaa2)"
+    }
+  ],
+  "provasDoVerificador": [],
+  "evidenciaAoVivo": {
+    "tipo": "Execução real dos testes no commit corrigido e na base (banco descartável, RLS real, antivírus real)",
+    "resultado": "4/4 passaram no HEAD 6952bb50; na base 41addaa2: falham",
+    "comando": "node scripts/withDisposableDb.js --port 5575 -- env CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 DISPOSABLE_DB=1 bash -c \"node scripts/seed-ci-two-tenants.js && NODE_ENV=test node --test --test-concurrency=1 <116 arquivos de Obras e vizinhos> verificacao/provas/v5-provas.test.js\" (fila global vez.sh, worktree destacado no commit 5630ac0d)",
+    "dataHora": "2026-11-12T07:21:42-03:00"
+  },
+  "telaPlaywright": "não se aplica (tela listada em telaParaReteste)",
+  "decisoes": [
+    "DI-M6V-6",
+    "DI-M6V-12"
+  ],
+  "migrations": [
+    "migrations/20260101006600-m6v-tipo-de-obra-e-checklist-por-etapa.js",
+    "migrations/20260101006601-m6v-responsavel-da-etapa.js",
+    "migrations/20260101006602-m6v-baseline-imutavel-e-revisoes.js",
+    "migrations/20260101006603-m6v-evidencia-da-medicao.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006604-finance-source-event-id-e-obra-na-baixa-parcial.js",
+    "migrations/20260101006605-m6v-alcada-permissao-propria-e-quem-propoe.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006606-finance-indices-da-obra-no-ledger.js",
+    "migrations/20260101006607-m6v-indices-da-saude-da-obra.js"
+  ],
+  "geradoEm": "2026-11-12T10:41:46.762Z"
+}

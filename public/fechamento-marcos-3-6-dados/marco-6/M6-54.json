@@ -1,0 +1,142 @@
+{
+  "id": "M6-54",
+  "requisito": "\"Editar baseline → bloquear/Change Order.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "budgetLines.service.js#updateBudgetLine/createBudgetLine (BUDGET_LINE_BASELINE_LOCKED)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/orcamento: tentar editar valor de item aprovado",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54: editar plannedAmount de linha de orçamento com baseline APPROVED é bloqueado",
+      "resultado": "passou",
+      "duracaoMs": 704,
+      "executadoEm": "2026-11-11T00:12:00.430Z"
+    },
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-54: campos não financeiros de uma linha com baseline APPROVED continuam editáveis",
+      "resultado": "passou",
+      "duracaoMs": 236,
+      "executadoEm": "2026-11-11T00:12:00.708Z"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: PATCH /construction/budget-lines/:id com baseline APPROVED é bloqueado (400/422 BUDGET_LINE_BASELINE_LOCKED)",
+      "resultado": "passou",
+      "duracaoMs": 221,
+      "executadoEm": "2026-11-11T00:13:31.217Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H020",
+      "H021",
+      "H022"
+    ],
+    "resumo": [
+      "H020 PATCH /api/v1/construction/budget-lines/7f7fa67c-b907-4e63-9415-f541ad1fa01f → 409 BUDGET_LINE_BASELINE_LOCKED",
+      "H021 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines → 409 BUDGET_LINE_BASELINE_LOCKED",
+      "H022 PATCH /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f → 409 PROJECT_BUDGET_AMOUNT_BASELINE_LOCKED"
+    ],
+    "dataHora": "2026-11-11T00:12:04.145Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H020",
+      "requisitos": [
+        "M6-17",
+        "M6-54",
+        "M6-82"
+      ],
+      "cenario": "NEGATIVO: editar valor de item do orçamento base aprovado",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/budget-lines/7f7fa67c-b907-4e63-9415-f541ad1fa01f",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "plannedAmount": 99999
+      },
+      "statusHttp": 409,
+      "codigoErro": "BUDGET_LINE_BASELINE_LOCKED",
+      "esperado": "409 BUDGET_LINE_BASELINE_LOCKED",
+      "conferiu": true,
+      "duracaoMs": 280,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "BUDGET_LINE_BASELINE_LOCKED",
+          "message": "Esta linha pertence a um orçamento já aprovado (baseline imutável) — altere o valor só via Change Order aprovado.",
+          "traceId": "bbaf5bd2-89e3-44de-88c0-d32f162a834b"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:04.145Z"
+    },
+    {
+      "id": "H021",
+      "requisitos": [
+        "M6-17",
+        "M6-54",
+        "M6-82"
+      ],
+      "cenario": "NEGATIVO: incluir item novo no orçamento base aprovado",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+        "category": "Extra",
+        "plannedAmount": 1000
+      },
+      "statusHttp": 409,
+      "codigoErro": "BUDGET_LINE_BASELINE_LOCKED",
+      "esperado": "409 BUDGET_LINE_BASELINE_LOCKED",
+      "conferiu": true,
+      "duracaoMs": 271,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "BUDGET_LINE_BASELINE_LOCKED",
+          "message": "Este orçamento já está aprovado (baseline imutável) — novas linhas de custo só via Change Order aprovado.",
+          "traceId": "f175d25a-88be-40a1-b411-219058b1255f"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:04.416Z"
+    },
+    {
+      "id": "H022",
+      "requisitos": [
+        "M6-17",
+        "M6-54"
+      ],
+      "cenario": "NEGATIVO: alterar o valor do contrato da obra depois do baseline",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "budgetAmount": 150000
+      },
+      "statusHttp": 409,
+      "codigoErro": "PROJECT_BUDGET_AMOUNT_BASELINE_LOCKED",
+      "esperado": "409 PROJECT_BUDGET_AMOUNT_BASELINE_LOCKED",
+      "conferiu": true,
+      "duracaoMs": 18,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PROJECT_BUDGET_AMOUNT_BASELINE_LOCKED",
+          "message": "O orçamento agregado desta obra já está aprovado (baseline imutável) — \"Orçamento (R$)\" não pode mais ser alterado por aqui, só via Change Order aprovado.",
+          "traceId": "e1fdb680-f246-4524-8947-460d45b57379"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:04.434Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.422Z"
+}

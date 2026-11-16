@@ -1,0 +1,361 @@
+{
+  "id": "M6-100",
+  "requisito": "Painéis \"Obras\" e \"Pós-obra\" separados no read model.",
+  "secaoDoLivro": "Dashboards + BI §5 Painéis principais (\"Obras\" e \"Pós-obra\")",
+  "implementacao": "GET /construction/projects/:id/post-obra-health; GET /construction/dashboard (obras + posObra)",
+  "telaParaReteste": "Painel → /painel/obras/dashboard: blocos Obras e Pós-obra",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.dashboard.test.js",
+      "nome": "dashboard: posObra agrega chamados de garantia de MÚLTIPLAS obras e quebra recorrência por causa/equipe/material",
+      "resultado": "passou",
+      "duracaoMs": 173,
+      "executadoEm": "2026-11-11T00:12:45.408Z"
+    },
+    {
+      "arquivo": "test/construction.e2e.test.js",
+      "nome": "M6-98: jornada E2E completa — orçamento→material→diário→medição→pagamento→qualidade→entrega→pós-obra",
+      "resultado": "passou",
+      "duracaoMs": 2338,
+      "executadoEm": "2026-11-11T00:13:05.012Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H111",
+      "H171",
+      "H173",
+      "H174"
+    ],
+    "resumo": [
+      "H111 GET /api/v1/construction/dashboard → 200",
+      "H171 GET /api/v1/construction/maintenance-cases?projectId=acb529ee-9a5a-4513-9d58-1764116cd61f → 200",
+      "H173 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/post-obra-health → 200",
+      "H174 GET /api/v1/construction/dashboard → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:18.560Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H111",
+      "requisitos": [
+        "M6-42",
+        "M6-100"
+      ],
+      "cenario": "Painel agregado de Obras em COMPETENCIA",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/dashboard",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 200,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "obras": {
+            "totalProjects": 2,
+            "projectsInProgress": 2,
+            "projectsByStatus": {
+              "ACTIVE": 1,
+              "PLANNED": 1
+            },
+            "overdueProjectsCount": 0,
+            "avgPhysicalProgressPct": 50,
+            "avgPlannedProgressPct": 100,
+            "baselineBudgetTotal": 96000,
+            "approvedChangesTotal": 6000,
+            "committedCostTotal": 89500,
+            "actualFinancialCostTotal": 56200,
+            "costBasis": {
+              "base": "COMPETENCIA",
+              "openPayablesTotal": 56200,
+              "pendingApprovedMeasurementsTotal": 56200,
+              "includedInActualFinancialCost": true
+            },
+            "consumedInventoryCostTotal": 1617,
+            "forecastToCompleteTotal": 67317,
+            "projectedTotalCostTotal": 125134,
+            "projectedMarginTotal": -29634,
+            "projectedMarginPct": -31.03,
+            "measurementsByStatus": {
+              "SUPERSEDED": 1,
+              "PAYABLE": 2
+            },
+            "openNonconformities": 0,
+            "wastagePct": 5.21
+          },
+          "posObra": {
+            "totalCases": 0,
+            "openCases": 0,
+            "closedCases": 0,
+            "casesByEscalationLevel": {
+              "NONE": 0,
+              "WARNING": 0,
+              "CRITICAL": 0,
+              "OVERDUE": 0
+            },
+            "totalLaborCost": 0,
+            "totalMaterialCost": 0,
+            "totalWarrantyCost": 0,
+            "recurrenceByRootCause": [],
+            "recurrenceByTeam": [],
+            "recurrenceByMaterial": []
+          },
+          "updatedAt": "2026-11-11T00:12:18.554Z"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:18.560Z"
+    },
+    {
+      "id": "H171",
+      "requisitos": [
+        "M6-52",
+        "M6-100",
+        "M6-103"
+      ],
+      "cenario": "Lista de chamados de pós-obra (paginada)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/maintenance-cases?projectId=acb529ee-9a5a-4513-9d58-1764116cd61f",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 45,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "openedByPersonId": null,
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "description": "Trinca estrutural na viga da garagem",
+            "status": "OPEN",
+            "warrantyDeadlineAt": null,
+            "category": "STRUCTURAL",
+            "severity": "CRITICAL",
+            "slaDueAt": "2026-11-10T21:12:28.126Z",
+            "escalationLevel": "OVERDUE",
+            "beforeMediaFileIds": [
+              "f827978c-a8b7-45b3-bee9-dd069444adb6"
+            ],
+            "afterMediaFileIds": [],
+            "laborCost": null,
+            "materialCost": null,
+            "rootCauseCode": null,
+            "resolutionType": "REIMBURSEMENT",
+            "resolutionAmount": "5000.00",
+            "resolutionStatus": "APPROVED",
+            "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "resolutionFinancialEntryId": "d9a98017-a66d-4cb7-ab31-64ce07e07308",
+            "lockVersion": 3,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:27.884Z",
+            "updated_at": "2026-11-11T00:12:28.208Z",
+            "deleted_at": null,
+            "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "opened_by_person_id": null,
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          },
+          {
+            "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "openedByPersonId": null,
+            "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "description": "Infiltração na laje do banheiro social",
+            "status": "CLOSED",
+            "warrantyDeadlineAt": null,
+            "category": "WATERPROOFING",
+            "severity": "HIGH",
+            "slaDueAt": "2026-11-16T00:12:26.351Z",
+            "escalationLevel": "NONE",
+            "beforeMediaFileIds": [
+              "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+            ],
+            "afterMediaFileIds": [
+              "12207804-959e-4b64-93d7-76f8e2d78a6d"
+            ],
+            "laborCost": "650.00",
+            "materialCost": "210.00",
+            "rootCauseCode": "WORKMANSHIP",
+            "resolutionType": "DISCOUNT",
+            "resolutionAmount": "400.00",
+            "resolutionStatus": "APPROVED",
+            "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "resolutionFinancialEntryId": "35367e4d-dc95-4938-96cc-2e2b5d99a1c4",
+            "lockVersion": 4,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:26.358Z",
+            "updated_at": "2026-11-11T00:12:27.789Z",
+            "deleted_at": null,
+            "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "opened_by_person_id": null,
+            "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          }
+        ],
+        "pagination": {
+          "page": 1,
+          "pageSize": 50,
+          "total": 2
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.383Z"
+    },
+    {
+      "id": "H173",
+      "requisitos": [
+        "M6-100",
+        "M6-99"
+      ],
+      "cenario": "Painel separado de pós-obra (custos, SLA, recorrência)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/post-obra-health",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 105,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "totalCases": 2,
+          "openCases": 1,
+          "closedCases": 1,
+          "avgResolutionHours": 0,
+          "totalLaborCost": 1300,
+          "totalMaterialCost": 210,
+          "totalWarrantyCost": 1510,
+          "casesByEscalationLevel": {
+            "NONE": 1,
+            "WARNING": 0,
+            "CRITICAL": 0,
+            "OVERDUE": 1
+          },
+          "totalWarrantyActions": 1,
+          "updatedAt": "2026-11-11T00:12:28.623Z"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.627Z"
+    },
+    {
+      "id": "H174",
+      "requisitos": [
+        "M6-100",
+        "M6-99"
+      ],
+      "cenario": "Painel agregado de Obras e Pós-obra (todas as obras da empresa)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/dashboard",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 88,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "obras": {
+            "totalProjects": 3,
+            "projectsInProgress": 2,
+            "projectsByStatus": {
+              "PLANNED": 2,
+              "WARRANTY": 1
+            },
+            "overdueProjectsCount": 1,
+            "avgPhysicalProgressPct": 50,
+            "avgPlannedProgressPct": 100,
+            "baselineBudgetTotal": 96000,
+            "approvedChangesTotal": 6000,
+            "committedCostTotal": 89500,
+            "actualFinancialCostTotal": 0,
+            "costBasis": {
+              "base": "CAIXA",
+              "openPayablesTotal": 61600,
+              "pendingApprovedMeasurementsTotal": 56200,
+              "includedInActualFinancialCost": false
+            },
+            "consumedInventoryCostTotal": 1617,
+            "forecastToCompleteTotal": 11117,
+            "projectedTotalCostTotal": 12734,
+            "projectedMarginTotal": 82766,
+            "projectedMarginPct": 86.67,
+            "measurementsByStatus": {
+              "SUPERSEDED": 1,
+              "PAYABLE": 2
+            },
+            "openNonconformities": 0,
+            "wastagePct": 5.21
+          },
+          "posObra": {
+            "totalCases": 2,
+            "openCases": 1,
+            "closedCases": 1,
+            "casesByEscalationLevel": {
+              "NONE": 1,
+              "WARNING": 0,
+              "CRITICAL": 0,
+              "OVERDUE": 1
+            },
+            "totalLaborCost": 1300,
+            "totalMaterialCost": 210,
+            "totalWarrantyCost": 1510,
+            "recurrenceByRootCause": [
+              {
+                "cause": "DESCONHECIDA",
+                "count": 1
+              },
+              {
+                "cause": "WORKMANSHIP",
+                "count": 1
+              }
+            ],
+            "recurrenceByTeam": [
+              {
+                "team": "DESCONHECIDA",
+                "count": 1
+              }
+            ],
+            "recurrenceByMaterial": [
+              {
+                "material": "DESCONHECIDA",
+                "count": 1
+              }
+            ]
+          },
+          "updatedAt": "2026-11-11T00:12:28.714Z"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.715Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.461Z"
+}

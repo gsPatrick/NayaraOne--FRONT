@@ -1,0 +1,101 @@
+{
+ "arquivo": "test/m3.crmTs.livro.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-11T12:49:33.862Z",
+   "metodo": "PUT",
+   "caminho": "/api/v1/settings/ia.habilitada",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:34.038Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/ai/budgets",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "AI_BUDGET_EXISTS"
+  },
+  {
+   "em": "2026-11-11T12:49:35.043Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/properties",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:35.178Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/properties/a084d29a-8287-4a28-a7ac-95c08b5f5eea/offers",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:35.425Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/ai/runs",
+   "perfil": "A:maker",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:35.496Z",
+   "metodo": "PUT",
+   "caminho": "/api/v1/settings/ia.habilitada",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:35.680Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/people",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:35.740Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/opportunities",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": null
+  },
+  {
+   "em": "2026-11-11T12:49:35.757Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/opportunities/53177b53-0731-461c-9882-09db862f0029",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:35.772Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/opportunities/53177b53-0731-461c-9882-09db862f0029/timeline",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:35.788Z",
+   "metodo": "GET",
+   "caminho": "/api/v1/messages?opportunityId=53177b53-0731-461c-9882-09db862f0029",
+   "perfil": "A:maker",
+   "status": 404,
+   "codigo": "OPPORTUNITY_NOT_FOUND"
+  },
+  {
+   "em": "2026-11-11T12:49:36.006Z",
+   "metodo": "POST",
+   "caminho": "/api/v1/exports",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "GOV_DLP_PERMISSION"
+  }
+ ]
+}

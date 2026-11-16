@@ -1,0 +1,101 @@
+{
+ "id": "M4-§8.11",
+ "secao": "§8 Fluxo de pagamento",
+ "requisito": "\"11. Conciliação bancária confirma movimento externo.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/financeE2E.flow.test.js",
+   "nome": "Financeiro E2E: lançamento -> intenção -> callback sandbox HMAC -> ledger -> extrato -> conciliação -> relatório",
+   "status": "passou",
+   "duracaoMs": 1156,
+   "commitDoArquivo": "4f73948a"
+  },
+  {
+   "arquivo": "test/marco4.httpRoutes.test.js",
+   "nome": "GAP fechado via HTTP: autoReconcileSuggestion concilia sozinho um match EXATO, pela rota",
+   "status": "passou",
+   "duracaoMs": 170,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C30",
+   "tipo": "http",
+   "linhas": [
+    "M4-§11.1",
+    "M4-G§1.9",
+    "M4-§8.11"
+   ],
+   "titulo": "Auto-conciliação do EXATO: confirmada sozinha (fonte confiável), método AUTO_EXACT",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/94edf404-d379-497d-9177-bdc35f058458/auto-reconcile",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 49,
+   "quando": "2026-11-11T01:35:11.487Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "bankTransactionId": "94edf404-d379-497d-9177-bdc35f058458",
+     "finalClass": "EXACT",
+     "candidates": [
+      {
+       "financialEntryId": "f795b08f-94ee-4629-9144-f3dc1be91760",
+       "score": 1,
+       "criteria": {
+        "amountMatch": true,
+        "referenceMatch": true,
+        "byExternalId": true,
+        "counterpartyMatch": true,
+        "dateMatch": true
+       },
+       "class": "EXACT",
+       "reasons": [
+        "Valor igual",
+        "ID externo do extrato igual ao do lançamento",
+        "Mesma conta bancária",
+        "Data dentro da janela de tolerância"
+       ]
+      }
+     ],
+     "autoReconciled": true,
+     "method": "AUTO_EXACT",
+     "reconciliation": {
+      "id": "b95c4375-e1d3-44d1-b434-6da541014072",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "financialEntryId": "f795b08f-94ee-4629-9144-f3dc1be91760",
+      "bankTransactionId": "94edf404-d379-497d-9177-bdc35f058458",
+      "matchedAt": "2026-11-11T01:35:11.461Z",
+      "matchedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "matchMethod": "AUTO_EXACT",
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updated_at": "2026-11-11T01:35:11.462Z",
+      "created_at": "2026-11-11T01:35:11.462Z",
+      "matchGroupId": null
+     }
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

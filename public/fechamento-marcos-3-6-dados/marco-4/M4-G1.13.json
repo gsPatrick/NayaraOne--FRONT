@@ -1,0 +1,86 @@
+{
+ "id": "M4-G§1.13",
+ "secao": "Guia §1 Ordem de implementação",
+ "requisito": "\"13. Implementar closing_periods.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F02-6: controle positivo — com tudo conferido o período vai a REVIEW, fecha em CLOSED e grava snapshot íntegro",
+   "status": "passou",
+   "duracaoMs": 105,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "F03-3",
+   "tipo": "http",
+   "linhas": [
+    "M4-§16.1",
+    "M4-G§1.13"
+   ],
+   "titulo": "Pedido de fechamento de 2071-05: vai para REVIEW (aguarda aprovação)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/period-closures",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "referenceMonth": "2071-05"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 38,
+   "quando": "2026-11-11T01:35:14.434Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b301ccb0-2eb7-40fc-aa6e-8653a9f487f7",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "referenceMonth": "2071-05",
+     "status": "REVIEW",
+     "thirdPartyCheckedAt": "2026-11-11T01:35:14.350Z",
+     "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "thirdPartyCheckNote": "Caixa de terceiros conferido contra o extrato (captura do Marco 4)",
+     "thirdPartyBalanceAtCheck": "1650.00",
+     "commissionsReviewedAt": "2026-11-11T01:35:14.380Z",
+     "commissionsReviewedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "commissionsReviewNote": "Comissões e repasses revisados (captura do Marco 4)",
+     "commissionsFingerprintAtReview": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+     "currentSnapshotId": null,
+     "reviewRequestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "reviewRequestedAt": "2026-11-11T01:35:14.413Z",
+     "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": null,
+     "closedByUserId": null,
+     "reopenedAt": null,
+     "reopenedByUserId": null,
+     "reopenReason": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:14.345Z",
+     "updated_at": "2026-11-11T01:35:14.413Z",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

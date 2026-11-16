@@ -1,0 +1,34 @@
+{
+ "id": "M5-A0096-30165c",
+ "linhaCaderno": 226,
+ "requisito": "• Pendência gera alerta/cobrança; não some quando contrato encerra.",
+ "correcao": "src/features/billing/obligations/leaseObligationOverdue.js processLeaseObligations (ciclo vencido: alerta, cobrança, evento); limite da troca = locacao.titularidade.prazo_dias",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.obrigacoes.test.js",
+   "nome": "M5-A0096/M5-A0228: vencimento sem comprovante depois da carência gera alerta, cobrança e lease.obligation.overdue (CYCLE) uma vez; a carência é parâmetro",
+   "status": "pass",
+   "ms": 320.638,
+   "commitDoTeste": "38897d8d",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.obrigacoes.test.js",
+   "nome": "M5-A0228/DEC-074: troca de titularidade atrasada (prazo configurável, não mais 30 fixo) e reembolso não recebido também publicam o evento, com alerta e cobrança",
+   "status": "pass",
+   "ms": 224.016,
+   "commitDoTeste": "38897d8d",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "arquivo de teste não carrega na base (a funcionalidade não existia)"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.028Z"
+}

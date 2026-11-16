@@ -1,0 +1,18 @@
+{
+ "id": "M4-G§17.2",
+ "substitui": "evidencias/marco-4/M4-G17.2.json (fica intacta)",
+ "motivo": "Correção DI-M4CC-7 (branch m4fix/conciliacao-comissao): o estágio typecheck da esteira do Financeiro passa a rodar tsc --checkJs strict sobre todo src/modules/finance (antes só node --check e require).",
+ "medidoEm": {
+  "commit": "2a8c0cf4",
+  "quando": "2026-11-11T10:52:12.400Z",
+  "ambiente": "worktree da API, sem banco (estágio estático)"
+ },
+ "comoReproduzir": "cd NayaraOne--API && node scripts/financeiro/ci/typecheck.js   (ou npm run typecheck:finance)",
+ "saidaDoEstagio": [
+  "[typecheck] tsc --checkJs strict (scripts/financeiro/ci/typecheck/tsconfig.json): sem erro de tipo.",
+  "[typecheck] node --check em 84 arquivos: 84 ok, 0 com erro.",
+  "[typecheck] require em 88 módulos de src/modules/finance: 88 carregaram, 0 falharam."
+ ],
+ "configuracao": "scripts/financeiro/ci/typecheck/tsconfig.json: strict true, noImplicitAny false, noResolve, include src/modules/finance/**/*.js; globals.d.ts declara sequelize e crypto; nenhum @ts-ignore/@ts-nocheck no módulo",
+ "provaNaBase": "test/m4.ciEsteiraFinanceiro.test.js \"M4-G§17.2 typecheck: um erro de tipo de verdade (sintaxe válida) reprova o estágio 2\" falha em 41addaa2 (esperava exit 1, veio 0: a base só fazia node --check) e passa no commit 64ce9f48"
+}

@@ -1,0 +1,468 @@
+{
+ "id": "M4-G§11",
+ "secao": "Guia §11 Comissão proporcional",
+ "requisito": "calculateCommission via REG-FIN-001: ruleVersionId, baseAmount = recebido, percentage = decisão",
+ "substitui": "evidencias/marco-4/M4-G11.json",
+ "motivo": "Correções DI-M4CC (branch m4fix/conciliacao-comissao): regra AUTO_STRONG parametrizada e fonte confiável (Guia §9, §11, FIN-009), UNIQUE completo do fingerprint e conta da própria empresa (Guia §10, FIN-002), comissão REG-FIN-001 em decimal exato (Guia §11, §18), NAY lendo o read model (Guia §13). Captura em banco descartável no commit indicado; a evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "7982eef4",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T10:38:24.663Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-G§11 --sufixo m4cc",
+ "respostasHttp": [
+  {
+   "id": "T46",
+   "tipo": "http",
+   "linhas": [
+    "M4-§14.2",
+    "M4-G§11",
+    "M4-§5.12"
+   ],
+   "titulo": "Comissão do corretor nasce do fato gerador com ruleVersionId, base e percentual da regra",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+    "sourceEntryId": "b41b2ce0-6d0a-4d20-b47d-3ce1dcaa3b51",
+    "component": "BROKER",
+    "installmentsCount": 2,
+    "firstDueAt": "2026-11-16T10:37:19.554Z",
+    "idempotencyKey": "m4-com-3281596",
+    "contractId": "a810fee0-6a28-4f66-891f-d2433f5ee8d4"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 329,
+   "quando": "2026-11-11T10:37:19.922Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "114a373f-cceb-46e0-a256-bf5493dd8805",
+      "lockVersion": 0,
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "opportunityId": null,
+      "contractId": "a810fee0-6a28-4f66-891f-d2433f5ee8d4",
+      "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+      "baseAmount": "1000.00",
+      "percentage": "5.000000",
+      "totalAmount": "50.00",
+      "ruleVersionId": "baaa8cb9-427e-4699-a989-edffcf8022d5",
+      "sourceEntryId": "b41b2ce0-6d0a-4d20-b47d-3ce1dcaa3b51",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4-com-3281596",
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updated_at": "2026-11-11T10:37:19.604Z",
+      "created_at": "2026-11-11T10:37:19.604Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "6503169f-ac55-4595-b150-c9f8d542a49f",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "114a373f-cceb-46e0-a256-bf5493dd8805",
+       "installmentNumber": 1,
+       "amount": "25.00",
+       "dueAt": "2026-11-16T10:37:19.554Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:37:19.611Z",
+       "created_at": "2026-11-11T10:37:19.611Z"
+      },
+      {
+       "id": "6298e96d-bea3-4824-a4a2-5ac30c601792",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "114a373f-cceb-46e0-a256-bf5493dd8805",
+       "installmentNumber": 2,
+       "amount": "25.00",
+       "dueAt": "2026-12-16T10:37:19.554Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:37:19.615Z",
+       "created_at": "2026-11-11T10:37:19.615Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K09b",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§18.1",
+    "M4-G§20.8"
+   ],
+   "titulo": "Comissão de 50% sobre R$ 0,29 = R$ 0,15 (decimal exato, um arredondamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+    "sourceEntryId": "0e522622-5aac-4ba0-8337-78cb5bc1fae2",
+    "component": "BROKER",
+    "idempotencyKey": "m4cc-K09-3281596"
+   },
+   "esperado": {
+    "status": 201,
+    "conteudo": "totalAmount = 0.15"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "totalAmount = 0.15",
+    "passou": true
+   },
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 383,
+   "quando": "2026-11-11T10:38:21.694Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "4aa950cd-03c1-4279-b2aa-596af9466ef1",
+      "lockVersion": 0,
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "opportunityId": null,
+      "contractId": null,
+      "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+      "baseAmount": "0.29",
+      "percentage": "50.000000",
+      "totalAmount": "0.15",
+      "ruleVersionId": "0cca643d-344c-41d2-99d7-fc5faf7b7281",
+      "sourceEntryId": "0e522622-5aac-4ba0-8337-78cb5bc1fae2",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4cc-K09-3281596",
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updated_at": "2026-11-11T10:38:21.661Z",
+      "created_at": "2026-11-11T10:38:21.661Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "6983feca-8abb-4c7f-b11d-72eb574f828f",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "4aa950cd-03c1-4279-b2aa-596af9466ef1",
+       "installmentNumber": 1,
+       "amount": "0.15",
+       "dueAt": "2026-11-11T10:38:21.664Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:38:21.665Z",
+       "created_at": "2026-11-11T10:38:21.665Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K10b",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§18.1",
+    "M4-G§20.8"
+   ],
+   "titulo": "Comissão de 50% sobre R$ 0,01 = R$ 0,01 (decimal exato, um arredondamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+    "sourceEntryId": "fdada3c3-634a-4672-b696-898a813861a6",
+    "component": "BROKER",
+    "idempotencyKey": "m4cc-K10-3281596"
+   },
+   "esperado": {
+    "status": 201,
+    "conteudo": "totalAmount = 0.01"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "totalAmount = 0.01",
+    "passou": true
+   },
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 219,
+   "quando": "2026-11-11T10:38:22.380Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "1049d5f3-7392-4956-baf2-ecf7afd48172",
+      "lockVersion": 0,
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "opportunityId": null,
+      "contractId": null,
+      "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+      "baseAmount": "0.01",
+      "percentage": "50.000000",
+      "totalAmount": "0.01",
+      "ruleVersionId": "0cca643d-344c-41d2-99d7-fc5faf7b7281",
+      "sourceEntryId": "fdada3c3-634a-4672-b696-898a813861a6",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4cc-K10-3281596",
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updated_at": "2026-11-11T10:38:22.334Z",
+      "created_at": "2026-11-11T10:38:22.334Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "b8892c35-e0b2-4abc-93d2-705eeeb8c4f3",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "1049d5f3-7392-4956-baf2-ecf7afd48172",
+       "installmentNumber": 1,
+       "amount": "0.01",
+       "dueAt": "2026-11-11T10:38:22.335Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:38:22.336Z",
+       "created_at": "2026-11-11T10:38:22.336Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K11b",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§18.1",
+    "M4-G§20.8"
+   ],
+   "titulo": "Comissão de 50% sobre R$ 1,13 = R$ 0,57 (decimal exato, um arredondamento)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/commissions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+    "sourceEntryId": "c32c9028-b943-4ccc-be88-a59609659760",
+    "component": "BROKER",
+    "idempotencyKey": "m4cc-K11-3281596"
+   },
+   "esperado": {
+    "status": 201,
+    "conteudo": "totalAmount = 0.57"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "totalAmount = 0.57",
+    "passou": true
+   },
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 346,
+   "quando": "2026-11-11T10:38:23.094Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commission": {
+      "id": "7a70b7fd-fd5f-41c2-bd29-2258c5d0e886",
+      "lockVersion": 0,
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "opportunityId": null,
+      "contractId": null,
+      "beneficiaryUserId": "eb92a1ea-930d-4f6a-bf41-ac990b6af1b2",
+      "baseAmount": "1.13",
+      "percentage": "50.000000",
+      "totalAmount": "0.57",
+      "ruleVersionId": "0cca643d-344c-41d2-99d7-fc5faf7b7281",
+      "sourceEntryId": "c32c9028-b943-4ccc-be88-a59609659760",
+      "component": "BROKER",
+      "status": "PENDING",
+      "idempotencyKey": "m4cc-K11-3281596",
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "updated_at": "2026-11-11T10:38:22.881Z",
+      "created_at": "2026-11-11T10:38:22.881Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "installments": [
+      {
+       "id": "d8f1e2f1-4d1f-4fbc-99e0-bdbc42f03879",
+       "lockVersion": 0,
+       "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+       "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+       "commissionId": "7a70b7fd-fd5f-41c2-bd29-2258c5d0e886",
+       "installmentNumber": 1,
+       "amount": "0.57",
+       "dueAt": "2026-11-11T10:38:22.892Z",
+       "paidAt": null,
+       "financialEntryId": null,
+       "status": "PENDING",
+       "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+       "updated_at": "2026-11-11T10:38:22.892Z",
+       "created_at": "2026-11-11T10:38:22.892Z"
+      }
+     ]
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K12",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§20.8"
+   ],
+   "titulo": "Regra de comissão vigente: código REG-FIN-001 e arredondamento da versão",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/commission-rule",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200,
+    "conteudo": "ruleCode REG-FIN-001, rounding HALF_UP"
+   },
+   "conferenciaDoConteudo": {
+    "regra": "ruleCode REG-FIN-001, rounding HALF_UP",
+    "passou": true
+   },
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 274,
+   "quando": "2026-11-11T10:38:23.369Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "ruleVersionId": "0cca643d-344c-41d2-99d7-fc5faf7b7281",
+     "versionNumber": 2,
+     "effectiveFrom": "2026-11-11T10:38:21.215Z",
+     "ruleCode": "REG-FIN-001",
+     "components": {
+      "BROKER": 50
+     },
+     "base": "SOURCE_ENTRY_AMOUNT",
+     "rounding": "HALF_UP"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": [
+  "K08"
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q42",
+   "linhas": [
+    "M4-G§11",
+    "M4-G§20.8"
+   ],
+   "descricao": "Regra de comissão no Motor de Regras: código REG-FIN-001 (DEC-005), nenhuma comissão em REG-FIN-002",
+   "sql": "select r.code, count(v.id)::int as versoes from core.rules r join core.rule_versions v on v.rule_id = r.id where v.action_json ? 'components' group by r.code",
+   "contexto": "RLS do tenant (company 0d559c6b-d0a3-4440-82a9-1de1a27d0e59)",
+   "resultado": [
+    {
+     "code": "REG-FIN-001",
+     "versoes": 2
+    }
+   ],
+   "invariante": "só REG-FIN-001 tem versões de comissão",
+   "invarianteOk": true,
+   "quando": "2026-11-11T10:38:23.672Z"
+  }
+ ],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM1 percentual/base/versão nunca vêm do pedido; sem regra publicada falha fechado",
+   "status": "passou",
+   "duracaoMs": 25,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM2 comissão calculada pelo Motor de Regras grava rule_version_id; nova versão não altera a antiga; banco exige a versão",
+   "status": "passou",
+   "duracaoMs": 193,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/frente3.financeRules.test.js",
+   "nome": "F3-CM3 pagamento da comissão proporcional ao valor efetivamente recebido",
+   "status": "passou",
+   "duracaoMs": 396,
+   "commitDoArquivo": "e834c687"
+  }
+ ]
+}

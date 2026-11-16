@@ -1,0 +1,50 @@
+{
+  "capturadoEm": "2026-11-11T12:48:44.885Z",
+  "pedido": {
+    "taskType": "sugerir_proxima_acao"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "83c4f207-ebbb-4faa-abfb-6d4192f360de",
+        "status": "COMPLETED",
+        "answer": "Próxima ação sugerida: Retomar contato [1]. Sem contato há 10 dias (o alerta é a partir de 7 dias).",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "crm.opportunities",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Oportunidade 157c1943-fe95-41d3-ac07-29568d84fd3b. Etapa NEW. Última interação: nenhuma. Dias sem contato: 10. Documentos pendentes: nenhum.",
+            "retrievedAt": "2026-11-11T12:48:44.632Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:44.632Z",
+        "proposals": [
+          {
+            "id": "4c5af25b-b16c-4230-bb7f-e808149da34b",
+            "kind": "NEXT_ACTION",
+            "status": "PENDING"
+          }
+        ],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": null,
+        "replayed": false
+      }
+    }
+  }
+}

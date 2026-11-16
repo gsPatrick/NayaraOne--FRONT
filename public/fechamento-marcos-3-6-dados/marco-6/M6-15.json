@@ -1,0 +1,369 @@
+{
+  "id": "M6-15",
+  "requisito": "Tabela warranty_cases. Campos: projectId, propertyId, category, severity, openedAt, slaDueAt, responsibleUserId, beforeMedia, afterMedia, laborCost, materialCost, rootCauseCode, status (Guia §9).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.maintenance_cases (src/models/MaintenanceCase.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/pos-obra/novo: novo chamado de garantia",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: createMaintenanceCase calcula sla_due_at e escalation_level a partir da severidade",
+      "resultado": "passou",
+      "duracaoMs": 155,
+      "executadoEm": "2026-11-11T00:14:40.548Z"
+    },
+    {
+      "arquivo": "test/construction.httpRoutes.test.js",
+      "nome": "HTTP real: POST /construction/warranty-cases cria o caso de garantia/pós-obra (201)",
+      "resultado": "passou",
+      "duracaoMs": 61,
+      "executadoEm": "2026-11-11T00:13:30.948Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H144",
+      "H146"
+    ],
+    "resumo": [
+      "H144 POST /api/v1/files → 201",
+      "H146 POST /api/v1/construction/warranty-cases → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:26.292Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H144",
+      "requisitos": [
+        "M6-15",
+        "M6-26"
+      ],
+      "cenario": "Envio da foto/documento \"garantia-infiltracao-antes\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "garantia-infiltracao-antes.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 178,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "3a30696a-1d4a-4a49-831f-5fdf878617a0",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/277a85e5-9676-4fec-b93c-013d128620d2-garantia-infiltracao-antes.jpg",
+          "fileName": "garantia-infiltracao-antes.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "108e85c5ff9236dff94fce578eea4aac828098d82f3aabc0e38c015759d381b5",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:26.139Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.140Z",
+          "created_at": "2026-11-11T00:12:26.140Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.292Z"
+    },
+    {
+      "id": "H146",
+      "requisitos": [
+        "M6-40",
+        "M6-15",
+        "M6-26",
+        "M6-80",
+        "M6-52"
+      ],
+      "cenario": "Abrir chamado de garantia estruturado (categoria, severidade, SLA, responsável, foto \"antes\", custos)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/warranty-cases",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+        "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+        "description": "Infiltração na laje do banheiro social",
+        "severity": "HIGH",
+        "category": "WATERPROOFING",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeMediaFileIds": [
+          "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+        ],
+        "laborCost": 0,
+        "materialCost": 0
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 59,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "afterMediaFileIds": [],
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "OPEN",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "rootCauseCode": null,
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "laborCost": "0.00",
+          "materialCost": "0.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.358Z",
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.369Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    },
+    {
+      "id": "C015",
+      "requisitos": [
+        "M6-15",
+        "M6-26",
+        "M6-63",
+        "M6-88",
+        "M6-111"
+      ],
+      "descricao": "Chamados de garantia: categoria, severidade, SLA, responsável, causa, custos, fotos que existem; escalonamento do vencido",
+      "sql": "SELECT severity, category, status, root_cause_code, sla_due_at IS NOT NULL AS sla, responsible_user_id IS NOT NULL AS responsavel, labor_cost, material_cost, escalation_level, (SELECT count(*) FROM people.files f WHERE f.id = ANY(m.before_media_file_ids || m.after_media_file_ids))::int AS fotos_existentes, cardinality(m.before_media_file_ids || m.after_media_file_ids) AS fotos, (SELECT count(*) FROM construction.warranty_actions a WHERE a.warranty_case_id = m.id)::int AS acoes FROM construction.maintenance_cases m WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "severity": "HIGH",
+          "category": "WATERPROOFING",
+          "status": "CLOSED",
+          "root_cause_code": "WORKMANSHIP",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": "650.00",
+          "material_cost": "210.00",
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        },
+        {
+          "severity": "CRITICAL",
+          "category": "STRUCTURAL",
+          "status": "CLOSED",
+          "root_cause_code": "DESIGN_FLAW",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": null,
+          "material_cost": null,
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        }
+      ],
+      "invariante": "dois chamados fechados com causa, fotos antes/depois existentes e ação de atendimento",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.200Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.382Z"
+}

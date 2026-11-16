@@ -1,0 +1,277 @@
+{
+ "id": "M5-A0069-ea344f",
+ "secao": "P1 > 8. Assinatura digital/manual",
+ "linhaCaderno": 159,
+ "requisito": "• Assinatura vincula signatário + contract_version_id + content_hash.",
+ "demandas": "M5-D016;M5-D018",
+ "implementacao": "src/modules/legal/signatures/framework/signature.request.js:50 requestEnvelope (person_id + contract_version_id + content_hash por signatário); src/modules/legal/signatures/signature.service.js:378 recordManualSignature",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contract-versions/:id/send-signature exige versão vigente de contrato APPROVED e cria as assinaturas presas à versão e ao hash",
+   "status": "pass",
+   "ms": 555.894,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-02 §8 assinatura manual exige evidence_file_id, signatário parte do contrato e coletor; liga hash da versão e leva a SIGNED",
+   "status": "pass",
+   "ms": 254.847,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-205",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:25.485Z"
+  },
+  {
+   "passo": "CT-326",
+   "metodo": "POST",
+   "rota": "/legal/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/manual-signatures",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:27.073Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0069-ea344f.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.rotasLivro.test.js test/m45.cadernoM5Gaps.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-132, CT-205, CT-326, CT-328)"
+ },
+ "passos": [
+  {
+   "id": "CT-205",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Primeira assinatura confirmada com o hash da versão",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T03:42:25.485Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "signature": {
+      "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+      "signedAt": "2026-11-11T03:42:25.469Z",
+      "status": "SIGNED",
+      "externalSignatureId": "sbx-sig-ae7beb6c48f75b88",
+      "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+      "signatureMethod": "ELECTRONIC",
+      "evidenceFileId": null,
+      "collectedByUserId": null,
+      "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+      "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+      "signerEmail": null,
+      "evidenceJson": {
+       "providerCode": "signature-sandbox",
+       "simulated": true,
+       "signedAtProvider": "2026-11-11T03:42:25.471Z",
+       "authMethod": "SANDBOX_SIMULATED",
+       "documentSha256": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "receivedAt": "2026-11-11T03:42:25.471Z"
+      },
+      "evidenceComplete": true,
+      "evidenceType": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": null,
+      "created_at": "2026-11-11T03:42:25.223Z",
+      "updated_at": "2026-11-11T03:42:25.471Z",
+      "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+     },
+     "contractTransitioned": false,
+     "alreadyProcessed": false
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0069-ea344f"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-326",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Assinatura manual do locador com a via assinada (evidence_file_id) e o coletor identificado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/manual-signatures",
+   "corpoEnviado": {
+    "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+    "evidenceFileId": "04d4d023-c3ed-432f-9bee-c496650d0ef6"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T03:42:27.073Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "signature": {
+      "id": "9f0da315-2c79-4445-8720-dd59459a6d83",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+      "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+      "signedAt": "2026-11-11T03:42:27.062Z",
+      "status": "SIGNED",
+      "externalSignatureId": "manual:48d86aa4-de30-413c-af20-9d5ea2e7bfc6",
+      "providerEnvelopeId": null,
+      "signatureMethod": "MANUAL",
+      "evidenceFileId": "04d4d023-c3ed-432f-9bee-c496650d0ef6",
+      "collectedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "contentHash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+      "envelopeId": null,
+      "signerEmail": null,
+      "evidenceJson": {
+       "signedAt": "2026-11-11T03:42:27.055Z",
+       "receivedAt": "2026-11-11T03:42:27.055Z",
+       "evidenceType": "MANUAL_UPLOAD",
+       "documentSha256": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+       "evidenceFileId": "04d4d023-c3ed-432f-9bee-c496650d0ef6",
+       "collectedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "evidenceFileSha256": "da499f83f316e3f90082faeb65384fdb66699b7f701aa357d053dd79604ee11b"
+      },
+      "evidenceComplete": true,
+      "evidenceType": "MANUAL_UPLOAD",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": null,
+      "created_at": "2026-11-11T03:42:27.056Z",
+      "updated_at": "2026-11-11T03:42:27.063Z",
+      "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+      "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+     },
+     "contractTransitioned": false,
+     "alreadyProcessed": false
+    }
+   },
+   "req": [
+    "M5-A0071-4e2ad6",
+    "M5-A0069-ea344f"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-132",
+   "req": [
+    "M5-A0069-ea344f",
+    "M5-A0302-11ebaa",
+    "M5-A0254-adf071"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Cada assinatura liga signatário + contract_version_id + content_hash da versão",
+   "sql": "SELECT id, person_id, contract_version_id, content_hash, status, envelope_id IS NOT NULL AS com_envelope, external_signature_id FROM legal.signatures WHERE contract_version_id = :v ORDER BY created_at",
+   "resultado": [
+    {
+     "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+     "person_id": "831f6109-2e18-4197-84c9-564b89db0076",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-ae7beb6c48f75b88"
+    },
+    {
+     "id": "bde0ac1f-a166-41f5-ac2f-0f569771d38f",
+     "person_id": "8fec3c7f-398f-41af-a16b-72b40d755010",
+     "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "content_hash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+     "status": "PENDING",
+     "com_envelope": true,
+     "external_signature_id": "sbx-sig-902c25d73e267f69"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.323Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-328",
+   "req": [
+    "M5-A0071-4e2ad6",
+    "M5-A0069-ea344f",
+    "M5-A0302-11ebaa"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "Assinaturas manuais com evidence_file_id, coletor, versão e hash; contrato SIGNED",
+   "sql": "SELECT s.signature_method, s.evidence_file_id IS NOT NULL AS com_evidencia, s.collected_by_user_id, s.contract_version_id, s.content_hash, s.status, (SELECT status FROM legal.contracts WHERE id = :id) AS contrato FROM legal.signatures s WHERE s.contract_version_id = :v3 AND s.signature_method = 'MANUAL' ORDER BY s.created_at",
+   "resultado": [
+    {
+     "signature_method": "MANUAL",
+     "com_evidencia": true,
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "status": "SIGNED",
+     "contrato": "SIGNED"
+    },
+    {
+     "signature_method": "MANUAL",
+     "com_evidencia": true,
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "status": "SIGNED",
+     "contrato": "SIGNED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:27.170Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

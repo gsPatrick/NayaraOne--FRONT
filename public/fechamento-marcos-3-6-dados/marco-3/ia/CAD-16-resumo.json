@@ -1,0 +1,65 @@
+{
+  "capturadoEm": "2026-11-11T12:48:44.324Z",
+  "pedido": {
+    "taskType": "resumir_oportunidade"
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "8912c9e1-e530-420d-a131-331cde64622d",
+        "status": "COMPLETED",
+        "answer": "Resumo da oportunidade de QA-M3CB Cliente 179440132365828135 [1]: etapa NEW; sem valor estimado; última interação em 11/11/2026 (0 dias sem contato) [2].\nSem pendências registradas.",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "crm.opportunities",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Oportunidade 98a1dc89-047c-44e6-85da-41585d3de0d2. Cliente: QA-M3CB Cliente 179440132365828135. Etapa: NEW. Última atividade: 11/11/2026.",
+            "retrievedAt": "2026-11-11T12:48:44.113Z"
+          },
+          {
+            "ref": 2,
+            "type": "READ_MODEL",
+            "title": "crm.interactions",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Interações recentes: 11/11/2026 mensagem recebida por WhatsApp. Dias sem contato: 0.",
+            "retrievedAt": "2026-11-11T12:48:44.113Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:44.113Z",
+        "proposals": [],
+        "cost": {
+          "amount": "0.000000",
+          "currency": "BRL"
+        },
+        "routingPath": "RULE",
+        "structured": {
+          "cliente": "QA-M3CB Cliente 179440132365828135",
+          "etapa": "NEW",
+          "valorEstimado": null,
+          "ultimaInteracaoEm": "2026-11-11T12:48:43.797Z",
+          "diasSemContato": 0,
+          "pendencias": []
+        },
+        "replayed": false
+      }
+    }
+  }
+}

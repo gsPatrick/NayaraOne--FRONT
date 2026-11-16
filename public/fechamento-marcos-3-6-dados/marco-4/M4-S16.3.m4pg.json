@@ -1,0 +1,247 @@
+{
+ "id": "M4-§16.3",
+ "secao": "§16 Fechamento",
+ "requisito": "\"CLOSED bloqueia alteração comum de competência/ledger.\"",
+ "substitui": "evidencias/marco-4/M4-S16.3.json",
+ "motivo": "Correção M4PG (verificação independente do Marco 4): CLOSED bloqueia alteração comum de competência (teste certo; a citação de compras saiu). A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "f1f33f82",
+  "branchApi": "m4fix/pagamentos-verificacao",
+  "commitFront": "c574a8a",
+  "quando": "2026-11-11T12:09:43Z",
+  "ambiente": "Postgres 16 descartável (scripts/withDisposableDb.js; migrations do zero, seeds do CI e de dois tenants; RLS real, role de runtime sem bypass), API Express real em processo; ClamAV real na 3310."
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4pg.estornoReabertura.http.test.js",
+   "nome": "M4-§16.3: período CLOSED bloqueia criar e editar lançamento da competência (alteração comum)",
+   "noCommit": "passou",
+   "duracaoMs": 2663,
+   "naBase41addaa2": "passou",
+   "erroNaBase": null
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "C07-1",
+   "titulo": "§16.3: criar lançamento na competência CLOSED é bloqueado",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 10,
+    "resultCenterId": "5a4a4f20-3bf0-485d-bc27-7401024a163c",
+    "competenceMonth": "2073-07",
+    "dueAt": "2073-07-10T15:00:00.000Z",
+    "description": "captura"
+   },
+   "status": 409,
+   "codigo": "FINANCE_PERIOD_CLOSED",
+   "quando": "2026-11-11T10:54:38.291Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_PERIOD_CLOSED",
+     "message": "O período 07/2073 está fechado — nenhum lançamento pode ser criado ou editado nesse mês. Reabra o período (com justificativa) se a correção for mesmo necessária.",
+     "details": {
+      "referenceMonth": "2073-07"
+     }
+    }
+   }
+  },
+  {
+   "id": "C07-2",
+   "titulo": "§16.3: editar lançamento da competência CLOSED é bloqueado",
+   "metodo": "PATCH",
+   "rota": "/finance/entries/206fc29f-ac3f-47c7-8ea1-38c4c845b516",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "description": "edição comum"
+   },
+   "status": 409,
+   "codigo": "FINANCE_PERIOD_CLOSED",
+   "quando": "2026-11-11T10:54:38.620Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_PERIOD_CLOSED",
+     "message": "O período 07/2073 está fechado — nenhum lançamento pode ser criado ou editado nesse mês. Reabra o período (com justificativa) se a correção for mesmo necessária.",
+     "details": {
+      "referenceMonth": "2073-07"
+     }
+    }
+   }
+  },
+  {
+   "id": "C07-3",
+   "titulo": "finance:approve não reabre mais (permissão própria)",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/reopen",
+   "perfil": "somenteSettleApprove",
+   "corpoEnviado": {
+    "referenceMonth": "2073-07",
+    "reason": "Nota fiscal do fornecedor chegou depois do fechamento e muda a competência."
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "quando": "2026-11-11T10:54:38.631Z",
+   "resposta": {
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "finance:periodReopen"
+     }
+    }
+   }
+  },
+  {
+   "id": "C07-4",
+   "titulo": "Motivo curto é recusado",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/reopen",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "referenceMonth": "2073-07",
+    "reason": "curto"
+   },
+   "status": 400,
+   "codigo": "FINANCE_PERIOD_REOPEN_REASON_TOO_SHORT",
+   "quando": "2026-11-11T10:54:38.652Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_PERIOD_REOPEN_REASON_TOO_SHORT",
+     "message": "Explique a reabertura com pelo menos 20 caracteres.",
+     "details": {
+      "minChars": 20
+     }
+    }
+   }
+  },
+  {
+   "id": "C07-5",
+   "titulo": "Pedido (finance:periodReopen + MFA): 202, mês continua CLOSED",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/reopen",
+   "perfil": "prepara",
+   "corpoEnviado": {
+    "referenceMonth": "2073-07",
+    "reason": "Nota fiscal do fornecedor chegou depois do fechamento e muda a competência."
+   },
+   "status": 202,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:38.722Z",
+   "resposta": {
+    "id": "41888004-76e3-410d-b9dd-65d52a8c75b2",
+    "status": "PENDING",
+    "amount": null,
+    "snapshotHash": "4671ab866575a7d7b565c6855fd204bc1a097fcec920fd251e598bbeafe64cb0",
+    "riskLevel": "CRITICAL",
+    "requiredApprovals": 1,
+    "riskSource": "PARAMETERS",
+    "relatedEntityType": "PeriodReopen",
+    "reason": "Nota fiscal do fornecedor chegou depois do fechamento e muda a competência."
+   }
+  },
+  {
+   "id": "C07-6",
+   "titulo": "Quem pediu não aprova",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/reopen-requests/41888004-76e3-410d-b9dd-65d52a8c75b2/approve",
+   "perfil": "prepara",
+   "status": 403,
+   "codigo": "FINANCE_APPROVAL_SELF_APPROVAL_FORBIDDEN",
+   "quando": "2026-11-11T10:54:38.952Z",
+   "resposta": {
+    "error": {
+     "code": "FINANCE_APPROVAL_SELF_APPROVAL_FORBIDDEN",
+     "message": "Quem solicitou não pode aprovar a própria solicitação (segregação de funções — maker-checker)."
+    }
+   }
+  },
+  {
+   "id": "C07-7",
+   "titulo": "Outra pessoa com finance:periodReopen + MFA aprova: mês reaberto",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/reopen-requests/41888004-76e3-410d-b9dd-65d52a8c75b2/approve",
+   "perfil": "aprova",
+   "status": 200,
+   "codigo": null,
+   "quando": "2026-11-11T10:54:39.499Z",
+   "resposta": {
+    "request": {
+     "id": "41888004-76e3-410d-b9dd-65d52a8c75b2",
+     "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+     "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+     "relatedEntityType": "PeriodReopen",
+     "relatedEntityId": "2c4393d8-34de-4423-b16c-52fd745b9a34",
+     "requestedByUserId": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "status": "APPROVED",
+     "riskLevel": "CRITICAL",
+     "lockVersionAtRequest": null,
+     "snapshotJson": {
+      "status": "CLOSED",
+      "closedAt": "2026-11-11T10:54:38.033Z",
+      "closureId": "2c4393d8-34de-4423-b16c-52fd745b9a34",
+      "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+      "referenceMonth": "2073-07",
+      "currentSnapshotId": "888f8eee-4055-49d8-bbb2-64dab74b8c08"
+     },
+     "snapshotHash": "4671ab866575a7d7b565c6855fd204bc1a097fcec920fd251e598bbeafe64cb0",
+     "requiredApprovals": 1,
+     "ruleVersionId": null,
+     "riskSource": "PARAMETERS",
+     "reason": "Nota fiscal do fornecedor chegou depois do fechamento e muda a competência.",
+     "amount": null,
+     "payloadJson": {
+      "referenceMonth": "2073-07"
+     },
+     "createdBy": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d",
+     "updatedBy": "977f75b7-1853-4171-8021-eb8d1efb817e",
+     "created_at": "2026-11-11T10:54:38.674Z",
+     "updated_at": "2026-11-11T10:54:39.262Z",
+     "requested_by_user_id": "31f277c5-16c5-4cbc-bc06-3a95e26cfe6d"
+    },
+    "closure": {
+     "id": "2c4393d8-34de-4423-b16c-52fd745b9a34",
+     "groupId": "90a60f19-58fe-4145-ad37-844c0c2b441e",
+     "companyId": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33",
+     "referenceMonth": "2073-07",
+     "status": "OPEN",
+     "thirdPartyCheckedAt": null,
+     "thirdPartyCheckedByUserId": null,
+     "thirdPartyCheckNote": null,
+     "thirdPartyBalanceAtCheck": null,
+     "commissionsReviewedAt": null,
+     "commissionsReviewedByUserId": null,
+     "commissionsReviewNote": null,
+     "commissionsFingerprintAtReview": null,
+     "currentSnapshotId": null,
+     "reviewRequestedByUserId": null,
+     "reviewRequestedAt": null,
+     "thirdPartyFingerprintAtCheck": null,
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": "2026-11-11T10:54:38.033Z",
+     "closedByUserId": "9f065044-5d08-47bf-9c92-fc8a1b013dc4",
+     "reopenedAt": "2026-11-11T10:54:39.397Z",
+     "reopenedByUserId": "977f75b7-1853-4171-8021-eb8d1efb817e",
+     "reopenReason": "Nota fiscal do fornecedor chegou depois do fechamento e muda a competência.",
+     "createdBy": "0a86d875-be75-43dc-a154-abdc95452481",
+     "updatedBy": "977f75b7-1853-4171-8021-eb8d1efb817e",
+     "created_at": "2026-11-11T10:54:37.234Z",
+     "updated_at": "2026-11-11T10:54:39.397Z",
+     "company_id": "5aaaf3bb-13a3-473b-9cc1-4bf9e4a41f33"
+    },
+    "approvedCount": 1,
+    "required": 1
+   }
+  }
+ ],
+ "sondasDoVerificador": null,
+ "sanitizacao": [
+  "Sem token de acesso, sem token de impacto da confirmação de nível 3 (só \"enviada\"), sem segredo TOTP, sem senha e sem string de conexão.",
+  "Usuários fictícios m4-<perfil>-<sufixo>@nayaraone.dev numa empresa isolada criada no banco descartável; MFA recente por linhas no banco descartável (nunca pelo endpoint de MFA)."
+ ]
+}

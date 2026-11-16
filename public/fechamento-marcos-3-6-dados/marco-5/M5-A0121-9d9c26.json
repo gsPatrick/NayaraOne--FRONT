@@ -1,0 +1,232 @@
+{
+  "id": "M5-A0121-9d9c26",
+  "capturadoEm": "2026-11-11T10:27:20.385Z",
+  "passos": [
+    {
+      "id": "CT5-34",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "Maker escreve uma cláusula (nasce não homologada)",
+      "perfil": "A:maker",
+      "metodo": "POST",
+      "rota": "/legal/clauses",
+      "corpoEnviado": {
+        "code": "CAP-NAY-179439281927829009",
+        "title": "DA VIGÊNCIA",
+        "bodyText": "O contrato vigora por 30 meses.",
+        "category": "GENERAL"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=7dd28e17-2652-4f00-9247-95afd18897b3, homologationStatus=PENDING, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, clauseLibraryId=9da8011b-0b3a-4c81-8c4d-7f33da887126",
+      "quando": "2026-11-11T10:26:59.446Z"
+    },
+    {
+      "id": "CT5-35",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "Sem a alçada jurídica não homologa",
+      "perfil": "A:maker",
+      "metodo": "POST",
+      "rota": "/legal/clauses/7dd28e17-2652-4f00-9247-95afd18897b3/homologate",
+      "corpoEnviado": {},
+      "status": 403,
+      "codigo": "PERMISSION_DENIED",
+      "esperado": {
+        "status": 403,
+        "codigo": "PERMISSION_DENIED"
+      },
+      "ok": true,
+      "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+      "quando": "2026-11-11T10:26:59.779Z"
+    },
+    {
+      "id": "CT5-36",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "Checker (outra pessoa, legal:approve) homologa a versão",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/legal/clauses/7dd28e17-2652-4f00-9247-95afd18897b3/homologate",
+      "corpoEnviado": {},
+      "status": 200,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 200
+      },
+      "ok": true,
+      "resumo": "id=7dd28e17-2652-4f00-9247-95afd18897b3, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, code=CAP-NAY-179439281927829009, clauseLibraryId=9da8011b-0b3a-4c81-8c4d-7f33da887126",
+      "quando": "2026-11-11T10:27:00.194Z"
+    },
+    {
+      "id": "CT5-37",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "Homologação é única",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/legal/clauses/7dd28e17-2652-4f00-9247-95afd18897b3/homologate",
+      "corpoEnviado": {},
+      "status": 409,
+      "codigo": "LEGAL_CLAUSE_ALREADY_HOMOLOGATED",
+      "esperado": {
+        "status": 409,
+        "codigo": "LEGAL_CLAUSE_ALREADY_HOMOLOGATED"
+      },
+      "ok": true,
+      "resumo": "erro LEGAL_CLAUSE_ALREADY_HOMOLOGATED: A versão v1 da cláusula \"CAP-NAY-179439281927829009\" já está homologada.",
+      "quando": "2026-11-11T10:27:00.462Z"
+    },
+    {
+      "id": "CT5-38",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "Contrato para a minuta (tipo sem modelo publicado: a minuta usa a biblioteca homologada inteira)",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/contracts",
+      "corpoEnviado": {
+        "contractType": "LEASE_COMMERCIAL",
+        "totalValue": 1
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=9539cc82-3b48-4055-bf2a-481e748546f2, lockVersion=0, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, contractType=LEASE_COMMERCIAL",
+      "quando": "2026-11-11T10:27:01.287Z"
+    },
+    {
+      "id": "CT5-39",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "NAY sugere a minuta (texto) com a biblioteca homologada; IA desligada = regra",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/legal/nay/contracts/9539cc82-3b48-4055-bf2a-481e748546f2/draft-suggestions",
+      "corpoEnviado": {},
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=a805e22b-5d6e-466d-9ac1-a206565f7183, contractId=9539cc82-3b48-4055-bf2a-481e748546f2, status=PENDING_REVIEW, metodo=RULE_BASED, motivoDoModo=IA_DESLIGADA",
+      "quando": "2026-11-11T10:27:02.391Z"
+    },
+    {
+      "id": "CT5-41",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "Descartar exige motivo",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/legal/nay/draft-suggestions/a805e22b-5d6e-466d-9ac1-a206565f7183/discard",
+      "corpoEnviado": {},
+      "status": 400,
+      "codigo": "LEGAL_NAY_DRAFT_REASON_REQUIRED",
+      "esperado": {
+        "status": 400,
+        "codigo": "LEGAL_NAY_DRAFT_REASON_REQUIRED"
+      },
+      "ok": true,
+      "resumo": "erro LEGAL_NAY_DRAFT_REASON_REQUIRED: Informe o motivo do descarte (\"reason\", de 5 a 500 caracteres).",
+      "quando": "2026-11-11T10:27:02.857Z"
+    },
+    {
+      "id": "CT5-42",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "Pessoa aceita: a minuta vira versão RASCUNHO do contrato",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/legal/nay/draft-suggestions/a805e22b-5d6e-466d-9ac1-a206565f7183/accept",
+      "corpoEnviado": {
+        "documentFileId": "7621fd4f-964d-432d-990f-0b14c4eab441",
+        "reason": "Revisada"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "",
+      "quando": "2026-11-11T10:27:05.893Z"
+    },
+    {
+      "id": "CT5-43",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "titulo": "A decisão sobre a minuta é única",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/legal/nay/draft-suggestions/a805e22b-5d6e-466d-9ac1-a206565f7183/accept",
+      "corpoEnviado": {},
+      "status": 409,
+      "codigo": "LEGAL_NAY_DRAFT_ALREADY_DECIDED",
+      "esperado": {
+        "status": 409,
+        "codigo": "LEGAL_NAY_DRAFT_ALREADY_DECIDED"
+      },
+      "ok": true,
+      "resumo": "erro LEGAL_NAY_DRAFT_ALREADY_DECIDED: A minuta já foi aceita.",
+      "quando": "2026-11-11T10:27:06.144Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "CT5-40",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "Minuta pendente de revisão, só com versões homologadas (texto literal no conteúdo) e nada criado no contrato",
+      "sql": "SELECT s.status, s.method, s.content LIKE '%O contrato vigora por 30 meses.%' AS tem_texto_homologado, (SELECT bool_and(cv.homologation_status = 'HOMOLOGATED') FROM legal.clause_versions cv WHERE cv.id::text IN (SELECT x->>'contractClauseId' FROM jsonb_array_elements(s.clause_version_ids) x)) AS so_homologadas, (SELECT count(*)::int FROM legal.contract_versions WHERE contract_id = s.contract_id) AS versoes_do_contrato FROM legal.nay_draft_suggestions s WHERE s.id = :id",
+      "resultado": [
+        {
+          "status": "PENDING_REVIEW",
+          "method": "RULE_BASED",
+          "tem_texto_homologado": true,
+          "so_homologadas": true,
+          "versoes_do_contrato": 0
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:27:02.688Z"
+    },
+    {
+      "id": "CT5-44",
+      "req": [
+        "M5-A0121-9d9c26"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "Versão nascida da minuta: DRAFT (ainda precisa da aprovação da versão) com as versões de cláusula homologadas",
+      "sql": "SELECT v.status, jsonb_array_length(v.clause_version_ids) AS clausulas, s.status AS minuta FROM legal.nay_draft_suggestions s JOIN legal.contract_versions v ON v.id = s.contract_version_id WHERE s.id = :id",
+      "resultado": [
+        {
+          "status": "DRAFT",
+          "clausulas": 1,
+          "minuta": "ACCEPTED"
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:27:06.205Z"
+    }
+  ]
+}

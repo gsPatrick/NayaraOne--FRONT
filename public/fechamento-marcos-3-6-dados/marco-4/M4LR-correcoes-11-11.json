@@ -1,0 +1,506 @@
+{
+ "gerado": "11/11/2026",
+ "branch": "m4fix/ledger-relatorios",
+ "commitApi": "3e8fd809",
+ "commitFront": "48db1a3",
+ "base": "41addaa2",
+ "ambiente": "banco descartável (scripts/withDisposableDb.js), papel nayara_runtime sem BYPASSRLS, ClamAV real; fila global vez.sh",
+ "sondasDoVerificador": {
+  "P0_constraints": [
+   {
+    "conname": "financial_entries_amount_positive_ck",
+    "def": "CHECK (((amount > (0)::numeric) OR (ledger_exclusion_reason IS NOT NULL)))"
+   },
+   {
+    "conname": "financial_entries_bank_confirmed_account_ck",
+    "def": "CHECK (((settlement_method IS NULL) OR ((settlement_method)::text <> ALL ((ARRAY['BANK_CONFIRMED'::character varying, 'SANDBOX_CONFIRMED'::character varying])::text[])) OR (bank_account_id IS NOT NULL)))"
+   },
+   {
+    "conname": "financial_entries_chart_version_ck",
+    "def": "CHECK (((created_at < '2026-11-11 11:55:24.440799+00'::timestamp with time zone) OR (chart_of_account_id IS NULL) OR (chart_of_account_version_id IS NOT NULL)))"
+   },
+   {
+    "conname": "financial_entries_movement_kind_ck",
+    "def": "CHECK (((movement_kind IS NULL) OR ((movement_kind)::text = ANY ((ARRAY['PARTIAL'::character varying, 'COMPLEMENT'::character varying, 'EXCESS'::character varying, 'REVERSAL'::character varying])::text[]))))"
+   }
+  ],
+  "P0_cols": [
+   {
+    "column_name": "bank_account_id",
+    "is_nullable": "YES",
+    "data_type": "uuid",
+    "numeric_precision": null,
+    "numeric_scale": null
+   },
+   {
+    "column_name": "entry_type",
+    "is_nullable": "NO",
+    "data_type": "character varying",
+    "numeric_precision": null,
+    "numeric_scale": null
+   },
+   {
+    "column_name": "amount",
+    "is_nullable": "NO",
+    "data_type": "numeric",
+    "numeric_precision": 18,
+    "numeric_scale": 2
+   },
+   {
+    "column_name": "idempotency_key",
+    "is_nullable": "NO",
+    "data_type": "character varying",
+    "numeric_precision": null,
+    "numeric_scale": null
+   },
+   {
+    "column_name": "created_by",
+    "is_nullable": "NO",
+    "data_type": "uuid",
+    "numeric_precision": null,
+    "numeric_scale": null
+   }
+  ],
+  "P0_idx": [
+   {
+    "indexname": "financial_entries_company_idempotency_uk",
+    "indexdef": "CREATE UNIQUE INDEX financial_entries_company_idempotency_uk ON finance.financial_entries USING btree (company_id, idempotency_key) WHERE (idempotency_key IS NOT NULL)"
+   },
+   {
+    "indexname": "financial_entries_company_ledger_key_uk",
+    "indexdef": "CREATE UNIQUE INDEX financial_entries_company_ledger_key_uk ON finance.financial_entries USING btree (company_id, COALESCE(settlement_idempotency_key, idempotency_key))"
+   }
+  ],
+  "P1_middleware_1e-3": false,
+  "P1_middleware_0.001": false,
+  "P1_create": {
+   "ok": false,
+   "code": "FINANCE_ENTRY_VALIDATION",
+   "msg": "Informe um valor maior que zero."
+  },
+  "P1_partial_4e-3": {
+   "ok": false,
+   "code": "FINANCE_ENTRY_VALIDATION",
+   "msg": "Informe um valor maior que zero."
+  },
+  "P2_reverse_pending": {
+   "ok": false,
+   "code": "FINANCE_ENTRY_NOT_REALIZED",
+   "msg": "Este lançamento ainda não foi realizado (não há pagamento nem recebimento no ledger): não há movimento para estornar. Para tirá-lo de a pagar/a receber, anule o"
+  },
+  "P2_ledger": [],
+  "P3_reverse_parent_partial": {
+   "originalStatus": "REVERSED",
+   "reversalAmount": "0.10",
+   "reversalType": "DEBIT"
+  },
+  "P3_ledger": [
+   {
+    "id": "149bb5af-513a-44b9-b6a5-9f0fa8e5992e",
+    "financial_entry_id": "d707fc43-a1eb-4b51-bc0c-471d8a69b9f4",
+    "movement_type": "PARTIAL_RECEIVABLE",
+    "direction": "CREDIT",
+    "amount": "0.10",
+    "idempotency_key": "baixa-parcial:68375d2adf9feb6eff50c9ac63f7917c0409aebf6be32ffbc9d289be25d9c801",
+    "bank_account_id": null,
+    "reverses_ledger_id": null
+   },
+   {
+    "id": "76b95175-b423-4a35-b09a-d8e03916ff4b",
+    "financial_entry_id": "d707fc43-a1eb-4b51-bc0c-471d8a69b9f4",
+    "movement_type": "REVERSAL",
+    "direction": "DEBIT",
+    "amount": "0.10",
+    "idempotency_key": "reversal:149bb5af-513a-44b9-b6a5-9f0fa8e5992e:total",
+    "bank_account_id": null,
+    "reverses_ledger_id": "149bb5af-513a-44b9-b6a5-9f0fa8e5992e"
+   }
+  ],
+  "P3_ledger_net_cents": 0,
+  "P4_reverse_child": {
+   "childStatus": "REVERSED",
+   "reversalAmount": "0.10"
+  },
+  "P4_parent_after": {
+   "status": "PARTIALLY_SETTLED",
+   "remaining": "0.10"
+  },
+  "P4_settle_again": {
+   "status": "SETTLED",
+   "remaining": "0.00"
+  },
+  "P5_settle": {
+   "status": "SETTLED",
+   "idempotencyKey": "lancamento:570ea1da-c547-47f7-826c-2f6eeb8b4a2c"
+  },
+  "P5_ledger": [
+   {
+    "id": "570ea1da-c547-47f7-826c-2f6eeb8b4a2c",
+    "financial_entry_id": "570ea1da-c547-47f7-826c-2f6eeb8b4a2c",
+    "movement_type": "RECEIVABLE",
+    "direction": "CREDIT",
+    "amount": "12.34",
+    "idempotency_key": "baixa-integral:interna:570ea1da-c547-47f7-826c-2f6eeb8b4a2c",
+    "bank_account_id": null,
+    "reverses_ledger_id": null
+   }
+  ],
+  "P5_ledger_tenant_stats": [
+   {
+    "n": 7,
+    "sem_chave": 0,
+    "sem_conta": 7,
+    "sem_autor": 0,
+    "nao_positivo": 0
+   }
+  ],
+  "P6_0_antes": {
+   "receivablePending": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "due7": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "due30": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "overdue": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "delinquency": 0,
+   "breathing": 0,
+   "margin": []
+  },
+  "P6_1_criado": {
+   "receivablePending": {
+    "count": 1,
+    "total": 0.3,
+    "weighted": 0.3
+   },
+   "due7": {
+    "count": 1,
+    "total": 0.3,
+    "weighted": 0.3
+   },
+   "due30": {
+    "count": 1,
+    "total": 0.3,
+    "weighted": 0.3
+   },
+   "overdue": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "delinquency": 0,
+   "breathing": -0.3,
+   "margin": []
+  },
+  "P6_2_apos_0_10": {
+   "receivablePending": {
+    "count": 1,
+    "total": 0.2,
+    "weighted": 0.2
+   },
+   "due7": {
+    "count": 1,
+    "total": 0.2,
+    "weighted": 0.2
+   },
+   "due30": {
+    "count": 1,
+    "total": 0.2,
+    "weighted": 0.2
+   },
+   "overdue": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "delinquency": 0,
+   "breathing": -0.2,
+   "margin": [
+    {
+     "resultCenterId": "a95ecb74-a21a-4ea2-86b2-a872bea61ee3",
+     "revenueRealized": 0.1,
+     "costsAttributed": 0,
+     "margin": 0.1
+    }
+   ]
+  },
+  "P6_3_apos_0_20": {
+   "receivablePending": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "due7": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "due30": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "overdue": {
+    "count": 0,
+    "total": 0,
+    "weighted": 0
+   },
+   "delinquency": 0,
+   "breathing": 0,
+   "margin": [
+    {
+     "resultCenterId": "a95ecb74-a21a-4ea2-86b2-a872bea61ee3",
+     "revenueRealized": 0.3,
+     "costsAttributed": 0,
+     "margin": 0.3
+    }
+   ]
+  },
+  "P6_ledger": [
+   {
+    "movement_type": "PARTIAL_RECEIVABLE",
+    "direction": "CREDIT",
+    "amount": "0.20"
+   },
+   {
+    "movement_type": "PARTIAL_RECEIVABLE",
+    "direction": "CREDIT",
+    "amount": "0.10"
+   }
+  ],
+  "P7_antes_da_troca": {
+   "status": "APPROVED",
+   "beneficiarySnapshot": null,
+   "snapshotHasPix": false
+  },
+  "P7_troca": {
+   "accountStatus": "PENDING_COOLDOWN",
+   "pixKey": "[e-mail omitido]"
+  },
+  "P7_depois_da_troca": {
+   "intentStatus": "APPROVED",
+   "hashAindaConfere": true,
+   "approvalRequests": []
+  },
+  "P7_envio_ao_banco_depois": {
+   "ok": false,
+   "code": "ROLLBACK",
+   "msg": "rollback-proposital",
+   "snap": {
+    "personId": null,
+    "name": "verif1 favorecido 179439818759185990",
+    "bankCode": "001",
+    "branch": "0001",
+    "account": "NOVA-179439818759185990",
+    "pixKey": "[e-mail omitido]"
+   },
+   "st": "SUBMITTING"
+  },
+  "P8_elegiveis": [
+   {
+    "id": "PAI",
+    "availableAmount": 1500
+   }
+  ],
+  "P8_soma_elegivel": 1500,
+  "P8_repasse_com_todas_as_fontes": {
+   "grossAmount": "1500.00",
+   "netAmount": "1500.00",
+   "status": "PENDING"
+  },
+  "P9": {
+   "riskLevelGravado": "LOW",
+   "decisao": "APPROVED",
+   "aprovadoComUmAprovadorSemMfa": true
+  },
+  "P10_variacoes": {
+   "texto": "Resultado realizado de 2026-11: R$ 0.30; de 2026-10: R$ 0.00 (variação R$ 0.30).",
+   "numeros": [
+    {
+     "indicador": "recebido_2026-11",
+     "valor": 0.3,
+     "natureza": "REALIZADO",
+     "fontes": [
+      {
+       "tabela": "finance.financial_entries"
+      }
+     ]
+    },
+    {
+     "indicador": "pago_2026-11",
+     "valor": 0,
+     "natureza": "REALIZADO",
+     "fontes": [
+      {
+       "tabela": "finance.financial_entries"
+      }
+     ]
+    },
+    {
+     "indicador": "recebido_2026-10",
+     "valor": 0,
+     "natureza": "REALIZADO",
+     "fontes": [
+      {
+       "tabela": "finance.financial_entries"
+      }
+     ]
+    },
+    {
+     "indicador": "pago_2026-10",
+     "valor": 0,
+     "natureza": "REALIZADO",
+     "fontes": [
+      {
+       "tabela": "finance.financial_entries"
+      }
+     ]
+    },
+    {
+     "indicador": "variacaoResultado",
+     "valor": 0.3,
+     "natureza": "REALIZADO",
+     "fontes": [
+      {
+       "tabela": "finance.financial_entries"
+      }
+     ]
+    }
+   ]
+  },
+  "P11_role": [
+   {
+    "u": "nayara_runtime",
+    "bypass": false,
+    "su": false
+   }
+  ],
+  "P11_privilegios": [
+   {
+    "upd": true,
+    "del": true
+   }
+  ],
+  "P11_update": {
+   "ok": false,
+   "code": "SequelizeDatabaseError",
+   "msg": "finance.bank_transactions é o extrato importado imutável (Caderno M4 §5): a linha não pode ser alterada (id=32875c6e-b8f8-4fcb-bbe6-1e0d4a16ea2e)."
+  },
+  "P11_delete": {
+   "ok": false,
+   "code": "SequelizeDatabaseError",
+   "msg": "finance.bank_transactions é o extrato importado imutável (Caderno M4 §5): DELETE não é permitido (id=32875c6e-b8f8-4fcb-bbe6-1e0d4a16ea2e)."
+  },
+  "P12": {
+   "freeCash": 0,
+   "thirdPartyHeld": 1000,
+   "grossBankBalance": 0
+  },
+  "P13": {
+   "totalComissao": "100.00",
+   "parcela": "PAID",
+   "statusComissaoDepois": "PENDING",
+   "provisionadasAntes": {
+    "count": 1,
+    "total": 100
+   },
+   "provisionadasDepoisDePaga": {
+    "count": 0,
+    "total": 0
+   }
+  }
+ },
+ "testesNoCommit": {
+  "M4-§17.5 valor fora do padrão: PAYABLE de 30.000 numa conta com histórico de 100 nasce retido e bloqueado, com caso AMOUNT_OUTLIER CRITICAL (e fornecedor novo) em GET /finance/anomaly-cases; valor dentro do padrão não retém": "passou",
+  "M4-§17.5 pagamento retido não liquida (409 FINANCE_ENTRY_REQUIRES_MANUAL_REVIEW) até a liberação humana com MFA; liberado, preparar a intenção não abre outro caso": "passou",
+  "M4-§17.5 (§17.6 fornecedor novo de alto valor): primeiro pagamento de 15.000 para conta sem histórico fica retido; conta definida depois (PATCH) também é avaliada": "passou",
+  "M4-§17.5 lançamento que nasceu sem avaliação (legado/outro módulo) é avaliado ao preparar a intenção, sem duplicar caso no pedido de aprovação, e o envio ao banco do pagamento retido é recusado": "passou",
+  "M4-§7 (sonda P0): idempotency_key e created_by NOT NULL; CHECK amount > 0; chave do movimento única por empresa; a view tem source_event_id": "passou",
+  "M4-FIN-008 (sonda P1): \"1e-3\" e \"4e-3\" são recusados no filtro de centavos e no serviço — nenhum lançamento nem baixa de 0,00": "passou",
+  "M4-FIN-004 (sonda P5): baixa integral pela API exige chave; o movimento do ledger nunca fica sem chave nem sem autor": "passou",
+  "M4-§5.8 (sonda P11): o papel de runtime não altera nem apaga linha do extrato importado (finance.bank_transactions)": "passou",
+  "M4-§7 bank_account_id (DI-M4LR-1): pagamento confirmado pelo banco sempre tem conta (CHECK); com o parâmetro ligado, nenhuma baixa entra no ledger sem conta": "passou",
+  "M4-§6.1 (sonda P2): estornar lançamento PENDING (nunca realizado) não lança REVERSAL no ledger; o previsto sai de a receber": "passou",
+  "M4-§6.3 (sonda P3): estornar o pai parcial (R$ 0,30 com 0,10 baixado) estorna a baixa — o ledger da família fecha em 0, nunca −0,20": "passou",
+  "M4-§6.3 (sonda P4): estornar UMA baixa (0,10) do pai quitado (0,10 + 0,20) recalcula o pai e o saldo de 0,10 volta a ser baixável": "passou",
+  "M4-§6 complemento: quita o saldo depois de baixa parcial (movimento COMPLEMENT no ledger), com chave e o saldo conferido": "passou",
+  "M4-§6 complemento depois de estorno: baixa 0,30 inteira em parcial, estorna e o complemento devolve o direito ao ledger": "passou",
+  "M4-FIN-004/Guia §8: estorno parcial e total de um movimento nascem com chave; estorno parcial no pai com baixas é recusado": "passou",
+  "M4-§7 migration de legado: corrige antes das constraints, audita, não apaga nada e volta pelo down": "passou",
+  "§19 + §18.1 (sondas P6 e P10): o R$ 0,30 antes, com baixa parcial de 0,10, quitado e estornado — relatório, NAY e read model contam igual": "passou",
+  "§19.1 + §13.5 (sonda P12): caução de 1.000 em 400 + 600 aparece como 1.000 de terceiros; o caixa disponível soma só o conciliado, uma vez": "passou",
+  "§19.6, §19.8, §19.9 e §19.3 (sonda P13): inadimplência só dos recebíveis, comissão paga sai do provisionado, repasse aprovado e não pago entra, peso por status": "passou",
+  "M4-§12.3 (sonda P8): aluguel de 1.500 recebido em 750 + 750 tem 1.500 elegíveis; repasse de 3.000 é recusado e o de 1.500 passa": "passou",
+  "M4-§12.3: recebido só em parte (750 de 1.500) tem 750 elegíveis; a baixa estornada sai do teto": "passou",
+  "M4-20b: getWeeklyHealthReport cobre os indicadores que faltavam (30/60 dias, conciliação pendente, comissão provisionada, repasse pendente, anomalia aberta)": "passou",
+  "M4-20c: freeCash soma o extrato bancário real e exclui dinheiro de terceiro retido; marginBySector agrupa por centro de resultado": "passou"
+ },
+ "testesNaBase41addaa2": {
+  "M4-§7 (sonda P0): idempotency_key e created_by NOT NULL; CHECK amount > 0; chave do movimento única por empresa; a view tem source_event_id": "falhou",
+  "M4-FIN-008 (sonda P1): \"1e-3\" e \"4e-3\" são recusados no filtro de centavos e no serviço — nenhum lançamento nem baixa de 0,00": "falhou",
+  "M4-FIN-004 (sonda P5): baixa integral pela API exige chave; o movimento do ledger nunca fica sem chave nem sem autor": "falhou",
+  "M4-§5.8 (sonda P11): o papel de runtime não altera nem apaga linha do extrato importado (finance.bank_transactions)": "falhou",
+  "M4-§7 bank_account_id (DI-M4LR-1): pagamento confirmado pelo banco sempre tem conta (CHECK); com o parâmetro ligado, nenhuma baixa entra no ledger sem conta": "falhou",
+  "M4-§6.1 (sonda P2): estornar lançamento PENDING (nunca realizado) não lança REVERSAL no ledger; o previsto sai de a receber": "falhou",
+  "M4-§6.3 (sonda P3): estornar o pai parcial (R$ 0,30 com 0,10 baixado) estorna a baixa — o ledger da família fecha em 0, nunca −0,20": "falhou",
+  "M4-§6.3 (sonda P4): estornar UMA baixa (0,10) do pai quitado (0,10 + 0,20) recalcula o pai e o saldo de 0,10 volta a ser baixável": "falhou",
+  "M4-§6 complemento: quita o saldo depois de baixa parcial (movimento COMPLEMENT no ledger), com chave e o saldo conferido": "falhou",
+  "M4-§6 complemento depois de estorno: baixa 0,30 inteira em parcial, estorna e o complemento devolve o direito ao ledger": "falhou",
+  "M4-FIN-004/Guia §8: estorno parcial e total de um movimento nascem com chave; estorno parcial no pai com baixas é recusado": "falhou",
+  "§19 + §18.1 (sondas P6 e P10): o R$ 0,30 antes, com baixa parcial de 0,10, quitado e estornado — relatório, NAY e read model contam igual": "falhou",
+  "§19.1 + §13.5 (sonda P12): caução de 1.000 em 400 + 600 aparece como 1.000 de terceiros; o caixa disponível soma só o conciliado, uma vez": "falhou",
+  "§19.6, §19.8, §19.9 e §19.3 (sonda P13): inadimplência só dos recebíveis, comissão paga sai do provisionado, repasse aprovado e não pago entra, peso por status": "falhou",
+  "M4-§12.3 (sonda P8): aluguel de 1.500 recebido em 750 + 750 tem 1.500 elegíveis; repasse de 3.000 é recusado e o de 1.500 passa": "falhou",
+  "M4-§12.3: recebido só em parte (750 de 1.500) tem 750 elegíveis; a baixa estornada sai do teto": "passou",
+  "M4-§7 migration de legado (m4lr.migracaoLedgerLegado.test.js)": "falhou ao carregar: a migration 20260101010520 não existe na base"
+ },
+ "motivosDaFalhaNaBase": [
+  "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+  "actual: { created_by: 'YES', idempotency_key: 'YES' },",
+  "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+  "actual: true,",
+  "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+  "actual: 200,",
+  "AssertionError [ERR_ASSERTION]: UPDATE recusado",
+  "actual: '',",
+  "AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+  "actual: undefined,",
+  "AssertionError [ERR_ASSERTION]: Missing expected rejection: sem pedido de anular o previsto, não há o que estornar",
+  "actual: undefined,",
+  "AssertionError [ERR_ASSERTION]: a baixa de 0,10 foi estornada",
+  "actual: 'SETTLED',",
+  "AssertionError [ERR_ASSERTION]: status derivado do ledger",
+  "actual: 'SETTLED',",
+  "AssertionError [ERR_ASSERTION]: {\"success\":false,\"error\":{\"code\":\"ROUTE_NOT_FOUND\",\"message\":\"Rota não encontrada.\",\"traceId\":\"b909bb71-937e-435a-9cdf-5bf25add4de5\"}}",
+  "actual: 404,",
+  "AssertionError [ERR_ASSERTION]: nada realizado depois do estorno da única baixa",
+  "actual: 'SETTLED',",
+  "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+  "actual: [ { idempotency_key: null, amount: '30.00' }, { idempotency_key: null, amount: '70.00' } ],",
+  "AssertionError [ERR_ASSERTION]: com 0,10 recebido o saldo de 0,20 continua a receber",
+  "actual: { aReceber: 0, receber7d: 0, receber30d: 0, receber60d: 0, necessidade: 0, margem: 0.1 },",
+  "AssertionError [ERR_ASSERTION]: terceiros retidos 1.000, nunca 2.000",
+  "actual: 2000,",
+  "AssertionError [ERR_ASSERTION]: conta a pagar vencida não é inadimplência de cliente",
+  "actual: 0.33,",
+  "AssertionError [ERR_ASSERTION]: só o recebimento, pelo que as baixas realizaram",
+  "actual: [ { id: '9485e4cf-7535-4ef6-9b3f-7bcf262c82bc', availableAmount: 1500 }, { id: '3f1c6dac-db97-4d4e-9ff9-e4a97ff53dc9', availableAmount: 750 }, { id: '1b77a947-f902-4edb-85d6-e0c716cabda2', availableAmount: 750 } ],"
+ ],
+ "execucoes": {
+  "sondasETestesNoCommit": "ce0bdfa0 (lotR2: 288 testes, 287 passaram; a falha FIN-TS-014 era a palavra NAY num comentário de ledger-sql.js, corrigida em 7c3516ff e repassada)",
+  "commitFinal": "3e8fd809 (depois de ce0bdfa0: comentário do ledger-sql, referência do caixa livre do BI, impacto do estorno e massa do m9d623; lotR3 de confirmação em andamento na entrega)",
+  "base": "41addaa2 (lotBase: 17 testes, 1 passou, 16 falharam por asserção; a migration falha ao carregar)"
+ }
+}

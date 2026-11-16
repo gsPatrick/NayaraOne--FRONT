@@ -1,0 +1,72 @@
+{
+  "linha": "M3-13",
+  "capturadoEm": "2026-11-11T11:10:36.872Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "proposta sem imóvel é recusada",
+      "pedido": "POST /api/v1/crm/proposals",
+      "corpo": {
+        "opportunityId": "202e4a98-f9f9-4457-96e7-ebf2c98a9b14",
+        "value": 300000
+      },
+      "status": 422,
+      "codigo": "PROPOSAL_PROPERTY_REQUIRED",
+      "resposta": {
+        "message": "A proposta precisa estar ligada a um imóvel: informe \"propertyId\" ou defina o imóvel de interesse da oportunidade."
+      },
+      "em": "2026-11-11T11:10:35.581Z"
+    },
+    {
+      "titulo": "proposta com imóvel",
+      "pedido": "POST /api/v1/crm/proposals",
+      "corpo": {
+        "opportunityId": "202e4a98-f9f9-4457-96e7-ebf2c98a9b14",
+        "propertyId": "20bc7ea4-a7d6-4ab9-bb6b-80ea6e1f8a35",
+        "value": 300000
+      },
+      "status": 201,
+      "codigo": null,
+      "resposta": {
+        "id": "92307a76-a5d1-460d-ae74-4060a081d5a4",
+        "lockVersion": 0,
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "opportunityId": "202e4a98-f9f9-4457-96e7-ebf2c98a9b14",
+        "propertyId": "20bc7ea4-a7d6-4ab9-bb6b-80ea6e1f8a35",
+        "proposedByPersonId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "value": "300000.00",
+        "currency": "BRL",
+        "status": "DRAFT",
+        "versionNumber": 1,
+        "notes": null,
+        "validUntil": null,
+        "sentAt": null,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:35.596Z",
+        "created_at": "2026-11-11T11:10:35.596Z",
+        "decidedAt": null,
+        "decidedByUserId": null,
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:35.613Z"
+    },
+    {
+      "titulo": "visita sem oportunidade é recusada",
+      "pedido": "POST /api/v1/visits",
+      "corpo": {
+        "propertyId": "20bc7ea4-a7d6-4ab9-bb6b-80ea6e1f8a35",
+        "personId": "20e1c19f-03e2-410c-8e21-bbc6ade40ba8",
+        "scheduledAt": "2026-11-14T11:10:35.613Z"
+      },
+      "status": 400,
+      "codigo": "VISIT_VALIDATION",
+      "resposta": {
+        "message": "Os campos \"groupId\", \"companyId\", \"propertyId\", \"opportunityId\" e \"scheduledAt\" são obrigatórios: a visita é sempre de uma oportunidade e de um imóvel."
+      },
+      "em": "2026-11-11T11:10:35.623Z"
+    }
+  ]
+}

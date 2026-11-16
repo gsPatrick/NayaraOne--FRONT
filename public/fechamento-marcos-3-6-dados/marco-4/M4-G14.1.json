@@ -1,0 +1,213 @@
+{
+ "id": "M4-G§14.1",
+ "secao": "Guia §14 Eventos mínimos",
+ "requisito": "Evento \"finance.entry.created\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-01 eventos mínimos do Guia §14 com o nome literal: payment.prepared/approved/completed/reversed, receipt.completed, reconciliation.completed, anomaly.opened",
+   "status": "passou",
+   "duracaoMs": 511,
+   "commitDoArquivo": "6ea03ed1"
+  },
+  {
+   "arquivo": "test/homologacaoEvidencias.test.js",
+   "nome": "TEC-06/TEC-07 dispatchPendingEventsForCompany processa eventos PENDING do tenant e marca DISPATCHED",
+   "status": "passou",
+   "duracaoMs": 83,
+   "commitDoArquivo": "35aaf028"
+  },
+  {
+   "arquivo": "test/m4.eventosGuia14.test.js",
+   "nome": "M4-G§14.1 finance.entry.created: criar um lançamento publica o evento com o nome literal, uma única vez, na mesma transação",
+   "status": "passou",
+   "duracaoMs": 103,
+   "commitDoArquivo": "d7c23487"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "X01",
+   "tipo": "http",
+   "linhas": [
+    "M4-§10.1",
+    "M4-G§14.1"
+   ],
+   "titulo": "Recebível de R$ 100,00 para o recebimento excedente",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 100,
+    "description": "Recebível excedente 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 128,
+   "quando": "2026-11-11T01:35:03.406Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "0fbc8ff0-ff72-4e3d-a1eb-e59a34cbf196",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "100.00",
+     "description": "Recebível excedente 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:03.300Z",
+     "created_at": "2026-11-11T01:35:03.300Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q11",
+   "linhas": [
+    "M4-G§14.1",
+    "M4-G§14.4",
+    "M4-G§14.10"
+   ],
+   "descricao": "Eventos finance.* gravados no outbox na mesma transação (nomes literais do Guia §14)",
+   "sql": "select event_type, count(*)::int as quantidade from integration.outbox_events where event_type like 'finance.%' group by 1 order by 1",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "event_type": "finance.anomaly.opened",
+     "quantidade": 7
+    },
+    {
+     "event_type": "finance.approval_request.created",
+     "quantidade": 3
+    },
+    {
+     "event_type": "finance.approval_step.decided",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.bank_account.created",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.bank_account.sensitive_data_changed",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.commission.created",
+     "quantidade": 3
+    },
+    {
+     "event_type": "finance.entry.created",
+     "quantidade": 40
+    },
+    {
+     "event_type": "finance.entry.reversed",
+     "quantidade": 4
+    },
+    {
+     "event_type": "finance.entry.settled",
+     "quantidade": 19
+    },
+    {
+     "event_type": "finance.intercompany_transfer.approved",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.owner_repass.completed",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.owner_repasse.created",
+     "quantidade": 1
+    },
+    {
+     "event_type": "finance.payment.approved",
+     "quantidade": 9
+    },
+    {
+     "event_type": "finance.payment.completed",
+     "quantidade": 7
+    },
+    {
+     "event_type": "finance.payment.prepared",
+     "quantidade": 10
+    },
+    {
+     "event_type": "finance.payment.reversed",
+     "quantidade": 4
+    },
+    {
+     "event_type": "finance.period.closed",
+     "quantidade": 2
+    },
+    {
+     "event_type": "finance.receipt.completed",
+     "quantidade": 12
+    },
+    {
+     "event_type": "finance.reconciliation.completed",
+     "quantidade": 7
+    },
+    {
+     "event_type": "finance.reconciliation.matched",
+     "quantidade": 7
+    }
+   ],
+   "invariante": "há eventos finance.* (a lista mostra os nomes)",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.723Z"
+  }
+ ]
+}

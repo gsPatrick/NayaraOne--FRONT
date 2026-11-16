@@ -1,0 +1,116 @@
+{
+ "id": "M4-§5.18",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.budgets_forecasts — \"Orçamento/projeção.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.budgetsForecasts.test.js",
+   "nome": "createBudgetForecast + listBudgetForecasts + compareForecastToRealized: orçado x realizado no mesmo mês de competência",
+   "status": "passou",
+   "duracaoMs": 147,
+   "commitDoArquivo": "7dd7af78"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H10",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.18"
+   ],
+   "titulo": "Orçamento/projeção de despesa da competência corrente",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/budget-forecasts",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "competenceMonth": "2026-11",
+    "nature": "PAYABLE",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "description": "Orçamento de despesas 0871300",
+    "forecastedAmount": 5000
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T01:35:16.234Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "057eeb1f-3ff0-452f-beca-07d3764b0bf0",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "competenceMonth": "2026-11",
+     "nature": "PAYABLE",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "description": "Orçamento de despesas 0871300",
+     "forecastedAmount": "5000.00",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:16.207Z",
+     "created_at": "2026-11-11T01:35:16.207Z"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "H11",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.18",
+    "M4-G§20.10"
+   ],
+   "titulo": "Orçado x realizado da competência (conferido contra os lançamentos)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/budget-forecasts/compare?competenceMonth=2026-11",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T01:35:16.258Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "nature": "PAYABLE",
+      "forecasted": 5000,
+      "realized": 2175,
+      "variance": -2825
+     },
+     {
+      "nature": "RECEIVABLE",
+      "forecasted": 0,
+      "realized": 2200.6,
+      "variance": 2200.6
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

@@ -1,0 +1,115 @@
+{
+ "id": "M4-§13.1",
+ "secao": "§13 Cauções",
+ "requisito": "\"Caução recebe classificação THIRD_PARTY_FUNDS.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-16 dinheiro de terceiro exige referência e nunca entra na soma de receita própria",
+   "status": "passou",
+   "duracaoMs": 24,
+   "commitDoArquivo": "fa15be9f"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.payments.test.js",
+   "nome": "D2: caução sem contrato/titular é recusada; titular precisa ser locatário/comprador/fiador",
+   "status": "passou",
+   "duracaoMs": 23,
+   "commitDoArquivo": "7dd7af78"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "T03",
+   "tipo": "http",
+   "linhas": [
+    "M4-§13.1",
+    "M4-§5.15",
+    "M4-G§1.10"
+   ],
+   "titulo": "Caução recebida como dinheiro de terceiro (THIRD_PARTY_FUNDS) ligada a contrato e titular",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 3000,
+    "description": "Caução do contrato 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+    "isThirdPartyFunds": true,
+    "thirdPartyReference": "Caução contrato LOC-0871300",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+    "thirdPartyHolderPersonId": "7d2b1d94-518e-4e06-8ab0-2cb47a2b1759"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T01:35:12.127Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "a09d6155-4634-4591-b3f1-3bfbd215d490",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "3000.00",
+     "description": "Caução do contrato 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": true,
+     "thirdPartyReference": "Caução contrato LOC-0871300",
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": "7d2b1d94-518e-4e06-8ab0-2cb47a2b1759",
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:12.109Z",
+     "created_at": "2026-11-11T01:35:12.109Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

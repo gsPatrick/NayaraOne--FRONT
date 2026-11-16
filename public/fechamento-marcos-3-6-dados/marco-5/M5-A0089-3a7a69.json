@@ -1,0 +1,335 @@
+{
+ "id": "M5-A0089-3a7a69",
+ "secao": "P1 > 11. Vistoria",
+ "linhaCaderno": 208,
+ "requisito": "• Fotos/vídeos têm hash, timestamp e vínculo ao item.",
+ "demandas": "M5-D027",
+ "implementacao": "src/modules/legal/inspections/inspection.service.js:338 attachInspectionItemMedia grava legal.inspection_media (inspection_id, item_id, file_id, sha256, captured_at, media_type) + vínculo people.file_links; arquivo sem SHA-256 recusado; migration 20260101009991 (códigos do livro + gatilho de tradução do legado + CHECK; room_code/item_code/description; condição NEW; snapshot_hash; legal.inspection_media)",
+ "tela": "Contratos > Vistorias (/painel/contratos/vistorias, /painel/contratos/vistorias/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.vistoriasLivro.test.js",
+   "nome": "fechamento M5 §4/§11: mídia vai para legal.inspection_media com o SHA-256 do arquivo, data/hora e vínculo ao item; a revisão leva as mesmas mídias",
+   "status": "pass",
+   "ms": 46.517,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.vistorias.test.js",
+   "nome": "fechamento M5 §11: foto e vídeo do item têm hash SHA-256 do conteúdo, data/hora e vínculo ao item",
+   "status": "pass",
+   "ms": 100.16,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.inspections.test.js",
+   "nome": "vistoria: fotos/vídeos podem ser anexados a um item via File + FileLink",
+   "status": "pass",
+   "ms": 49.256,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L11: anexar mídia de vistoria com arquivo de outro tenant não vincula nada (o File não existe sob o RLS do atacante)",
+   "status": "pass",
+   "ms": 43.703,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.rodada3.test.js",
+   "nome": "fechamento M5 3ª rodada: a lista de mídias do item vem de legal.inspection_media com sha256 e data/hora (também na revisão)",
+   "status": "pass",
+   "ms": 34.872,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.rodada3.test.js",
+   "nome": "fechamento M5 3ª rodada: arquivos da garantia, via assinada do termo e mídia da vistoria têm dono — legal:read lê, outra permissão não, outra empresa nem vê",
+   "status": "pass",
+   "ms": 241.083,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-VI-15",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=df88c2c0-3015-4b9f-a0ba-70f61b0482e8",
+   "quando": "2026-11-11T03:42:31.391Z"
+  },
+  {
+   "passo": "LC-VI-16",
+   "metodo": "POST",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=1408ef20-5e38-4dde-b99e-cb90d3004716",
+   "quando": "2026-11-11T03:42:31.412Z"
+  },
+  {
+   "passo": "LC-VI-17",
+   "metodo": "POST",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "perfil": "A:gestor",
+   "status": 404,
+   "codigo": "LEGAL_INSPECTION_MEDIA_FILE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_INSPECTION_MEDIA_FILE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_INSPECTION_MEDIA_FILE_NOT_FOUND: Arquivo não encontrado.",
+   "quando": "2026-11-11T03:42:31.421Z"
+  },
+  {
+   "passo": "LC-VI-18",
+   "metodo": "GET",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:31.428Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0089-3a7a69.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo m5fech.locacao.vistoriasLivro (mídia em legal.inspection_media, a tabela do livro, com o SHA-256 conferido com o arquivo; a revisão leva as mesmas mídias) e m5fech.locacao.vistorias (hash, data/hora e vínculo). 3ª rodada: GET /legal/inspections/items/:id/media devolve a linha de legal.inspection_media (sha256, capturedAt, tipo, item), também para as mídias copiadas na revisão; o arquivo da mídia tem dono na consulta de arquivos.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.vistoriasLivro.test.js test/m5fech.locacao.vistorias.test.js test/legal.inspections.test.js test/adversarial.legal.test.js test/m5fech.locacao.rodada3.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-VI-15, LC-VI-16, LC-VI-17, LC-VI-18, LC-VI-19)"
+ },
+ "passos": [
+  {
+   "id": "LC-VI-15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Foto do piso da sala (imagem fictícia)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "piso-sala.jpg",
+    "mimeType": "image/jpeg",
+    "contentBase64": "SlBFRyBmaWN0w61jaW8gODU0OTQzMg==",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 43,
+   "quando": "2026-11-11T03:42:31.391Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "df88c2c0-3015-4b9f-a0ba-70f61b0482e8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/5a890ee7-7e8b-4645-af0a-fd3a2d9bba45-piso-sala.jpg",
+     "fileName": "piso-sala.jpg",
+     "mimeType": "image/jpeg",
+     "sizeBytes": 22,
+     "checksumSha256": "c3ab52dd3c804f7e036fda3971e5ecce6145db996ce4a7abbafca88e407fc400",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:31.366Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.366Z",
+     "created_at": "2026-11-11T03:42:31.366Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0089-3a7a69"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Anexa a foto ao item da vistoria",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "corpoEnviado": {
+    "fileId": "df88c2c0-3015-4b9f-a0ba-70f61b0482e8",
+    "mediaType": "PHOTO"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:31.412Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "1408ef20-5e38-4dde-b99e-cb90d3004716",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "fileId": "df88c2c0-3015-4b9f-a0ba-70f61b0482e8",
+     "relatedEntityType": "InspectionItem",
+     "relatedEntityId": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+     "purpose": "PHOTO",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:31.406Z",
+     "created_at": "2026-11-11T03:42:31.406Z",
+     "deletedBy": null,
+     "deleted_at": null,
+     "inspectionMediaId": "5a7de2bf-2aae-454e-ad64-a1fd94748014",
+     "sha256": "c3ab52dd3c804f7e036fda3971e5ecce6145db996ce4a7abbafca88e407fc400",
+     "capturedAt": "2026-11-11T03:42:31.408Z"
+    }
+   },
+   "req": [
+    "M5-A0089-3a7a69"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Arquivo inexistente não vira mídia do item",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "corpoEnviado": {
+    "fileId": "00000000-0000-4000-8000-000000000003",
+    "mediaType": "PHOTO"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_INSPECTION_MEDIA_FILE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_INSPECTION_MEDIA_FILE_NOT_FOUND",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:31.421Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_INSPECTION_MEDIA_FILE_NOT_FOUND",
+     "message": "Arquivo não encontrado.",
+     "traceId": "f43a6635-f598-480e-a05a-86c6ddee2a38"
+    }
+   },
+   "req": [
+    "M5-A0089-3a7a69"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-VI-18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Lista as mídias do item a partir de legal.inspection_media, com sha256 e data/hora",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/inspections/items/3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9/media",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:31.428Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "1408ef20-5e38-4dde-b99e-cb90d3004716",
+      "inspectionMediaId": "5a7de2bf-2aae-454e-ad64-a1fd94748014",
+      "fileLinkId": "1408ef20-5e38-4dde-b99e-cb90d3004716",
+      "inspectionId": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+      "itemId": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+      "fileId": "df88c2c0-3015-4b9f-a0ba-70f61b0482e8",
+      "sha256": "c3ab52dd3c804f7e036fda3971e5ecce6145db996ce4a7abbafca88e407fc400",
+      "capturedAt": "2026-11-11T03:42:31.408Z",
+      "mediaType": "PHOTO",
+      "purpose": "PHOTO",
+      "relatedEntityType": "InspectionItem",
+      "relatedEntityId": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "created_at": "2026-11-11T03:42:31.408Z"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0089-3a7a69"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "LC-VI-19",
+   "req": [
+    "M5-A0089-3a7a69"
+   ],
+   "modulo": "21-locacao-vistorias",
+   "perfil": "A:leitura",
+   "descricao": "Mídia na tabela do livro legal.inspection_media: vistoria, item, arquivo, SHA-256 (confere com o arquivo), data/hora e tipo",
+   "sql": "SELECT m.inspection_id, m.item_id, m.file_id, m.sha256, m.captured_at, m.media_type, f.checksum_sha256 = m.sha256 AS hash_confere FROM legal.inspection_media m JOIN people.files f ON f.id = m.file_id WHERE m.item_id = :item",
+   "resultado": [
+    {
+     "inspection_id": "dd23f80f-6f30-42d8-ba5a-801592ca9fce",
+     "item_id": "3babfbc7-9b06-4ea8-99fa-a7f61e1a09c9",
+     "file_id": "df88c2c0-3015-4b9f-a0ba-70f61b0482e8",
+     "sha256": "c3ab52dd3c804f7e036fda3971e5ecce6145db996ce4a7abbafca88e407fc400",
+     "captured_at": {},
+     "media_type": "PHOTO",
+     "hash_confere": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:31.430Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

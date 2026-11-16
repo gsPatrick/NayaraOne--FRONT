@@ -1,0 +1,162 @@
+{
+ "id": "M4-G§1.14",
+ "secao": "Guia §1 Ordem de implementação",
+ "requisito": "\"14. Implementar anomaly_cases.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.httpRoutes.test.js",
+   "nome": "Anomaly cases via HTTP: listar e resolver um caso real",
+   "status": "passou",
+   "duracaoMs": 49,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "H30",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-013",
+    "M4-§5.19",
+    "M4-G§1.14"
+   ],
+   "titulo": "Casos de anomalia da empresa (troca de favorecido, confirmação pós-fechamento etc.)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/anomaly-cases",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 95,
+   "quando": "2026-11-11T01:35:16.653Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "fa32467d-eefe-4a5f-9fe0-cd0b6256b3bb",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "POST_CLOSING_BANK_CONFIRMATION",
+      "riskLevel": "MEDIUM",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "733070b0-488f-41d9-8c85-699b4adb6a85",
+      "reason": "Confirmação do banco chegou depois do fechamento de 2072-05 — liquidado no período corrente com referência ao período original (Caderno §16).",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T01:35:15.760Z",
+      "updated_at": "2026-11-11T01:35:15.760Z",
+      "createdAt": "2026-11-11T01:35:15.760Z",
+      "updatedAt": "2026-11-11T01:35:15.760Z",
+      "caseTypeLabel": "Confirmação do banco após o fechamento",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "733070b0-488f-41d9-8c85-699b4adb6a85",
+       "description": "Pagamento confirmado após o fechamento 0871300",
+       "amount": "420.00",
+       "status": "SETTLED"
+      }
+     },
+     {
+      "id": "cd99d38d-6605-43c2-8cde-76ae37197852",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "RECURRING_MANUAL_RECONCILIATION",
+      "riskLevel": "MEDIUM",
+      "relatedEntityType": null,
+      "relatedEntityId": null,
+      "reason": "Conciliação manual recorrente: 3 conciliações feitas à mão nos últimos 30 dias (limiar 3). Vale revisar a qualidade dos dados do extrato e dos lançamentos, que o motor de sugestão não está casando sozinho.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:11.843Z",
+      "updated_at": "2026-11-11T01:35:11.843Z",
+      "createdAt": "2026-11-11T01:35:11.843Z",
+      "updatedAt": "2026-11-11T01:35:11.843Z",
+      "caseTypeLabel": "Conciliação manual recorrente",
+      "resolvedByName": null,
+      "relatedEntry": null
+     },
+     {
+      "id": "52e1cf23-f503-4ba9-a2a5-82fc6a0f60b7",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "AMOUNT_OUTLIER",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+      "reason": "Primeiro pagamento desta conta bancária já no valor de 25000.00 (limite FIN-005 para conta sem histórico: 10000.00).",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": null,
+      "updatedBy": null,
+      "created_at": "2026-11-11T01:35:10.274Z",
+      "updated_at": "2026-11-11T01:35:10.274Z",
+      "createdAt": "2026-11-11T01:35:10.274Z",
+      "updatedAt": "2026-11-11T01:35:10.274Z",
+      "caseTypeLabel": "Valor fora do padrão",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+       "description": "Pagamento alto na conta nova 0871300",
+       "amount": "25000.00",
+       "status": "PENDING"
+      }
+     },
+     {
+      "id": "a98bf931-270d-4570-a178-c23a5b5f001f",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "caseType": "BENEFICIARY_CHANGED",
+      "riskLevel": "HIGH",
+      "relatedEntityType": "FinancialEntry",
+      "relatedEntityId": "416a15cd-40b3-4308-95df-d5be124d6d61",
+      "reason": "A conta bancária do favorecido foi trocada depois da criação do lançamento. As aprovações anteriores foram invalidadas e o pagamento exige revisão manual antes de ser liquidado.",
+      "status": "OPEN",
+      "resolvedAt": null,
+      "resolvedBy": null,
+      "resolutionNote": null,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:09.933Z",
+      "updated_at": "2026-11-11T01:35:09.933Z",
+      "createdAt": "2026-11-11T01:35:09.933Z",
+      "updatedAt": "2026-11-11T01:35:09.933Z",
+      "caseTypeLabel": "Conta bancária do favorecido trocada",
+      "resolvedByName": null,
+      "relatedEntry": {
+       "id": "416a15cd-40b3-4308-95df-d5be124d6d61",
+       "description": "Pagamento com troca de favorecido 0871300",
+       "amount": "980.00",
+       "status": "PENDING"
+      }
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

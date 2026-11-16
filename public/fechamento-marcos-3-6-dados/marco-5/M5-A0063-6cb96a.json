@@ -1,0 +1,355 @@
+{
+ "id": "M5-A0063-6cb96a",
+ "secao": "P1 > 6. Modelos e cláusulas",
+ "linhaCaderno": 130,
+ "requisito": "• Cláusula condicional usa regras declarativas, não texto livre executável.",
+ "demandas": "M5-D010",
+ "implementacao": "src/modules/legal/contracts/application/clauseConditions.js:76 validateCondition (regras declarativas sobre CONDITION_VARIABLES, sem eval); src/modules/legal/contracts/application/contractClauses.service.js:214 approveClauseCondition",
+ "tela": "Contratos > Cláusulas (/painel/contratos/clausulas)",
+ "testes": [
+  {
+   "arquivo": "test/legal.clauseConditions.test.js",
+   "nome": "F01: texto livre/executável é recusado — a regra só aceita dado estruturado",
+   "status": "pass",
+   "ms": 4.682,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.clauseConditions.test.js",
+   "nome": "F01: variável desconhecida, operador desconhecido e valor fora da lista são recusados na gravação",
+   "status": "pass",
+   "ms": 3.007,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G2: cláusula condicional por regra declarativa entra ou sai do documento conforme o contrato",
+   "status": "pass",
+   "ms": 69.308,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/ciTwoTenantsFinanceLegal.test.js",
+   "nome": "CI dois tenants (Jurídico): condição de cláusula — maker não aprova, checker não aprova a própria, checker aprova a do maker, tenant B não aprova a de A",
+   "status": "pass",
+   "ms": 48.202,
+   "commitDoTeste": "9ef507fb"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-419",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "perfil": "A:maker",
+   "status": 400,
+   "codigo": "LEGAL_CLAUSE_CONDITION_INVALID",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CLAUSE_CONDITION_INVALID"
+   },
+   "resumo": "erro LEGAL_CLAUSE_CONDITION_INVALID: A condição deve ser um objeto estruturado { match, rules } — texto livre não é aceito.",
+   "quando": "2026-11-11T03:42:28.476Z"
+  },
+  {
+   "passo": "CT-420",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "perfil": "A:maker",
+   "status": 400,
+   "codigo": "LEGAL_CLAUSE_CONDITION_INVALID",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CLAUSE_CONDITION_INVALID"
+   },
+   "resumo": "erro LEGAL_CLAUSE_CONDITION_INVALID: Variável desconhecida na regra 1: \"inventada\". Permitidas: contractType, guaranteeType, hasGuarantor",
+   "quando": "2026-11-11T03:42:28.484Z"
+  },
+  {
+   "passo": "CT-421",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20, code=CT-FIANCA-8543269m, versionNumber=1",
+   "quando": "2026-11-11T03:42:28.497Z"
+  },
+  {
+   "passo": "CT-423",
+   "metodo": "POST",
+   "rota": "/legal/clauses/8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20/approve-condition",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "id=8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20, code=CT-FIANCA-8543269m, versionNumber=1",
+   "quando": "2026-11-11T03:42:28.513Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0063-6cb96a.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.clauseConditions.test.js test/marco5.auditGapClosureR1.test.js test/ciTwoTenantsFinanceLegal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-419, CT-420, CT-421, CT-423, CT-424)"
+ },
+ "passos": [
+  {
+   "id": "CT-419",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Condição com texto livre executável é recusada",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "corpoEnviado": {
+    "code": "CT-EXEC-8543269m",
+    "title": "x",
+    "bodyText": "x",
+    "category": "GENERAL",
+    "condition": "contractType === \"LEASE\" && process.exit()"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CLAUSE_CONDITION_INVALID"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CLAUSE_CONDITION_INVALID",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:28.476Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CLAUSE_CONDITION_INVALID",
+     "message": "A condição deve ser um objeto estruturado { match, rules } — texto livre não é aceito.",
+     "traceId": "3763cca9-0b41-4c21-9ca3-3c409e88275c"
+    }
+   },
+   "req": [
+    "M5-A0063-6cb96a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-420",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Variável fora do vocabulário declarado é recusada",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "corpoEnviado": {
+    "code": "CT-VAR-8543269m",
+    "title": "x",
+    "bodyText": "x",
+    "category": "GENERAL",
+    "condition": {
+     "match": "all",
+     "rules": [
+      {
+       "variable": "inventada",
+       "operator": "eq",
+       "value": "x"
+      }
+     ]
+    }
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CLAUSE_CONDITION_INVALID"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CLAUSE_CONDITION_INVALID",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:28.484Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CLAUSE_CONDITION_INVALID",
+     "message": "Variável desconhecida na regra 1: \"inventada\". Permitidas: contractType, guaranteeType, hasGuarantor, propertyPurpose, tenantPersonType, termMonths, totalValue.",
+     "traceId": "5cbe4dd0-86bb-49b4-a79a-693e72dd871f"
+    }
+   },
+   "req": [
+    "M5-A0063-6cb96a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-421",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cláusula condicional por regra declarativa nasce pendente de aprovação",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses",
+   "corpoEnviado": {
+    "code": "CT-FIANCA-8543269m",
+    "title": "Fiança",
+    "bodyText": "Obrigações do fiador (texto fictício).",
+    "category": "GUARANTEE",
+    "condition": {
+     "match": "all",
+     "rules": [
+      {
+       "variable": "guaranteeType",
+       "operator": "eq",
+       "value": "GUARANTOR"
+      }
+     ]
+    }
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:28.497Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "clauseLibraryId": "25e8dc5c-32ff-42cf-8682-641f8f099d5f",
+     "code": "CT-FIANCA-8543269m",
+     "title": "Fiança",
+     "bodyText": "Obrigações do fiador (texto fictício).",
+     "category": "GUARANTEE",
+     "versionNumber": 1,
+     "isActive": true,
+     "conditionJson": {
+      "match": "all",
+      "rules": [
+       {
+        "value": "GUARANTOR",
+        "operator": "eq",
+        "variable": "guaranteeType"
+       }
+      ]
+     },
+     "conditionStatus": "PENDING_APPROVAL",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.494Z",
+     "conditionApprovedBy": null,
+     "conditionApprovedAt": null
+    }
+   },
+   "req": [
+    "M5-A0063-6cb96a",
+    "M5-A0144-8b5890"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-423",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checker aprova a regra criada pelo maker (governança)",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/clauses/8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20/approve-condition",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:28.513Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8cb1e3d7-3657-4f4a-bbf0-e74dc165ce20",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "code": "CT-FIANCA-8543269m",
+     "clauseLibraryId": "25e8dc5c-32ff-42cf-8682-641f8f099d5f",
+     "title": "Fiança",
+     "bodyText": "Obrigações do fiador (texto fictício).",
+     "category": "GUARANTEE",
+     "versionNumber": 1,
+     "isActive": true,
+     "conditionJson": {
+      "match": "all",
+      "rules": [
+       {
+        "value": "GUARANTOR",
+        "operator": "eq",
+        "variable": "guaranteeType"
+       }
+      ]
+     },
+     "conditionStatus": "APPROVED",
+     "conditionApprovedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "conditionApprovedAt": "2026-11-11T03:42:28.510Z",
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.494Z"
+    }
+   },
+   "req": [
+    "M5-A0144-8b5890",
+    "M5-A0063-6cb96a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-424",
+   "req": [
+    "M5-A0063-6cb96a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "perfil": "A:leitura",
+   "descricao": "A condição gravada é dado estruturado (JSON de regras), com aprovador distinto do autor",
+   "sql": "SELECT condition_json, condition_status, condition_approved_by, created_by FROM legal.clause_versions WHERE id = :id",
+   "resultado": [
+    {
+     "condition_json": {
+      "match": "all",
+      "rules": [
+       {
+        "value": "GUARANTOR",
+        "operator": "eq",
+        "variable": "guaranteeType"
+       }
+      ]
+     },
+     "condition_status": "APPROVED",
+     "condition_approved_by": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "created_by": "dcb43a4d-b913-4215-a61a-53b96e2153d5"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:28.515Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

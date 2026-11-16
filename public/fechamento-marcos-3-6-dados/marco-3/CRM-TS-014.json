@@ -1,0 +1,141 @@
+{
+  "id": "CRM-TS-014",
+  "secao": "Livro §19 Adversariais",
+  "requisito": "Price race: 2 alterações simultâneas → lock/version history correto.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 66,
+      "casos": [
+        "preco_concorrente"
+      ],
+      "descricao": "Alteração de preço concorrente 1",
+      "metodo": "PATCH",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers/d4eef318-1bfb-496a-9031-395197337f89",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "askingPrice": 911000
+      },
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "d4eef318-1bfb-496a-9031-395197337f89",
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+          "offerType": "SALE",
+          "askingPrice": 911000,
+          "confidentialMinPrice": null,
+          "acceptsFinancing": true,
+          "acceptsTrade": null,
+          "status": "ACTIVE",
+          "startsAt": null,
+          "endsAt": null,
+          "lockVersion": 2,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:16:23.617Z",
+          "updated_at": "2026-11-11T00:16:23.824Z",
+          "deleted_at": null,
+          "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:23.801Z"
+    },
+    {
+      "seq": 67,
+      "casos": [
+        "preco_concorrente"
+      ],
+      "descricao": "Alteração de preço concorrente 2 (ao mesmo tempo)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/properties/167ce16f-f474-42d8-94f0-56df5b36a635/offers/d4eef318-1bfb-496a-9031-395197337f89",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "askingPrice": 912000
+      },
+      "status": 200,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "d4eef318-1bfb-496a-9031-395197337f89",
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+          "offerType": "SALE",
+          "askingPrice": 912000,
+          "confidentialMinPrice": null,
+          "acceptsFinancing": true,
+          "acceptsTrade": null,
+          "status": "ACTIVE",
+          "startsAt": null,
+          "endsAt": null,
+          "lockVersion": 3,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:16:23.617Z",
+          "updated_at": "2026-11-11T00:16:23.855Z",
+          "deleted_at": null,
+          "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:23.801Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "casos": [
+        "preco_concorrente"
+      ],
+      "descricao": "Histórico depois das duas alterações simultâneas: cada linha guarda o preço anterior real (sem perda de atualização)",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "sql": "SELECT old_price, new_price, changed_at FROM real_estate.property_price_history WHERE offer_id = $1 ORDER BY changed_at",
+      "parametros": [
+        "d4eef318-1bfb-496a-9031-395197337f89"
+      ],
+      "resultado": [
+        {
+          "old_price": null,
+          "new_price": "930000.00",
+          "changed_at": "2026-11-11T00:16:23.618Z"
+        },
+        {
+          "old_price": "930000.00",
+          "new_price": "915000.00",
+          "changed_at": "2026-11-11T00:16:23.711Z"
+        },
+        {
+          "old_price": "915000.00",
+          "new_price": "911000.00",
+          "changed_at": "2026-11-11T00:16:23.819Z"
+        },
+        {
+          "old_price": "911000.00",
+          "new_price": "912000.00",
+          "changed_at": "2026-11-11T00:16:23.846Z"
+        }
+      ],
+      "dataHora": "2026-11-11T00:16:23.909Z"
+    }
+  ]
+}

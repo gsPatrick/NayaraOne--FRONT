@@ -1,0 +1,329 @@
+{
+  "id": "M6-16",
+  "requisito": "Tabela obrigatória construction.warranty_actions (\"RLS e company_id obrigatórios\", §2).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.warranty_actions (src/models/WarrantyAction.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/pos-obra/<id>: registrar atendimento",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: createWarrantyAction registra ação de atendimento vinculada ao chamado",
+      "resultado": "passou",
+      "duracaoMs": 41,
+      "executadoEm": "2026-11-11T00:14:41.524Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H147",
+      "H148",
+      "H178"
+    ],
+    "resumo": [
+      "H147 POST /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c/actions → 201",
+      "H148 GET /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c/actions → 200",
+      "H178 POST /api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406/actions → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:26.632Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H147",
+      "requisitos": [
+        "M6-16",
+        "M6-26",
+        "M6-52"
+      ],
+      "cenario": "Registrar ação de atendimento (mão de obra, custo)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c/actions",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "description": "Refeita a manta asfáltica da laje",
+        "cost": 650
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 263,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "98db3e07-3b3b-4ab4-9a1e-6f7e719e7b81",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "warrantyCaseId": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "description": "Refeita a manta asfáltica da laje",
+          "performedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "performedAt": "2026-11-11T00:12:26.615Z",
+          "cost": "650.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.615Z",
+          "created_at": "2026-11-11T00:12:26.615Z",
+          "assignedTeam": null,
+          "materialUsed": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.632Z"
+    },
+    {
+      "id": "H148",
+      "requisitos": [
+        "M6-16"
+      ],
+      "cenario": "Ações do chamado",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c/actions",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 60,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "98db3e07-3b3b-4ab4-9a1e-6f7e719e7b81",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "warrantyCaseId": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+            "description": "Refeita a manta asfáltica da laje",
+            "performedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "performedAt": "2026-11-11T00:12:26.615Z",
+            "cost": "650.00",
+            "assignedTeam": null,
+            "materialUsed": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:26.615Z",
+            "updated_at": "2026-11-11T00:12:26.615Z",
+            "deleted_at": null,
+            "warranty_case_id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+            "performed_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:26.692Z"
+    },
+    {
+      "id": "H178",
+      "requisitos": [
+        "M6-16"
+      ],
+      "cenario": "Ação no chamado crítico",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406/actions",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "description": "Reforço com fibra de carbono",
+        "cost": 3200
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 16,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "33407aef-907a-4aea-8e6c-422c01986844",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "warrantyCaseId": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+          "description": "Reforço com fibra de carbono",
+          "performedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "performedAt": "2026-11-11T00:12:28.951Z",
+          "cost": "3200.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:28.951Z",
+          "created_at": "2026-11-11T00:12:28.951Z",
+          "assignedTeam": null,
+          "materialUsed": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.956Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.383Z"
+}

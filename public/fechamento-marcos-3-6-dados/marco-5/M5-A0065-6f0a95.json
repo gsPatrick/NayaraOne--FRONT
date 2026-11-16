@@ -1,0 +1,279 @@
+{
+ "id": "M5-A0065-6f0a95",
+ "secao": "P1 > 6. Modelos e cláusulas",
+ "linhaCaderno": 134,
+ "requisito": "• Alteração jurídica posterior não muda contratos já assinados.",
+ "demandas": "M5-D008;M5-D003;M5-D010",
+ "implementacao": "src/modules/legal/contracts/application/contractClauses.service.js:99 createClauseVersion não toca versões de contrato; trigger append-only em legal.contract_versions",
+ "tela": "Contratos > Cláusulas (/painel/contratos/clausulas)",
+ "testes": [
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G2: publicar nova versão de cláusula NÃO altera templates/versões de contrato que já usaram a versão anterior",
+   "status": "pass",
+   "ms": 181.418,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.clauseConditions.test.js",
+   "nome": "F01: mudar a condição cria nova versão; a versão anterior e o documento já emitido ficam intactos (hash igual)",
+   "status": "pass",
+   "ms": 191.284,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.clauseConditionsGeneration.test.js",
+   "nome": "F01-G8 (I1): versão substituída bloqueia o modelo; o upgrade é deliberado e a nova regra só vale depois de aprovada; documento emitido não muda",
+   "status": "pass",
+   "ms": 289.544,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-411",
+   "metodo": "POST",
+   "rota": "/legal/clauses/CT-MULTA-8543269m/versions",
+   "perfil": "A:maker",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=8b95daf8-45e9-4b4f-a312-bf9ca805866d, code=CT-MULTA-8543269m, versionNumber=2",
+   "quando": "2026-11-11T03:42:28.327Z"
+  },
+  {
+   "passo": "CT-319",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=be472354-4a5a-4a34-a734-97a9e276fddb, versionNumber=3",
+   "quando": "2026-11-11T03:42:26.797Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0065-6f0a95.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/marco5.auditGapClosureR1.test.js test/legal.clauseConditions.test.js test/legal.clauseConditionsGeneration.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-411, CT-412, CT-417, CT-319, CT-321)"
+ },
+ "passos": [
+  {
+   "id": "CT-411",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Alteração jurídica da cláusula vira nova versão (v2); a v1 é preservada",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/clauses/CT-MULTA-8543269m/versions",
+   "corpoEnviado": {
+    "bodyText": "Multa de 2% sobre o aluguel em atraso (texto fictício, nova redação)."
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:28.327Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8b95daf8-45e9-4b4f-a312-bf9ca805866d",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "clauseLibraryId": "d4929b6d-7fbe-49aa-b732-a69d46dbc85c",
+     "code": "CT-MULTA-8543269m",
+     "title": "Multa por atraso",
+     "bodyText": "Multa de 2% sobre o aluguel em atraso (texto fictício, nova redação).",
+     "category": "PENALTY",
+     "versionNumber": 2,
+     "isActive": true,
+     "conditionJson": null,
+     "conditionStatus": null,
+     "createdBy": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "created_at": "2026-11-11T03:42:28.312Z",
+     "conditionApprovedBy": null,
+     "conditionApprovedAt": null
+    }
+   },
+   "req": [
+    "M5-A0061-dc1f5a",
+    "M5-A0144-8b5890",
+    "M5-A0065-6f0a95"
+   ],
+   "modulo": "14-contratos-modelos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-319",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Conteúdo muda durante a assinatura: nova versão cancela o envelope pendente e o contrato volta a APPROVED",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/versions",
+   "corpoEnviado": {
+    "content": "Versão 3 com conteúdo alterado 1794368546717",
+    "documentFileId": "9e49452d-68e3-4667-848a-a7a5dca21308"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 80,
+   "quando": "2026-11-11T03:42:26.797Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "versionNumber": 3,
+     "documentFileId": "9e49452d-68e3-4667-848a-a7a5dca21308",
+     "content": "Versão 3 com conteúdo alterado 1794368546717",
+     "contentHash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "contentFileId": "c485394b-25a5-4a63-9e7f-35c509d9c32d",
+     "status": "DRAFT",
+     "templateId": null,
+     "templateVersionId": null,
+     "clauseVersionIds": null,
+     "conditionContext": null,
+     "excludedClauses": null,
+     "effectiveFrom": "2026-11-11T03:42:26.749Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:26.749Z",
+     "created_at": "2026-11-11T03:42:26.749Z",
+     "signedDocumentFileId": null,
+     "approvedBy": null,
+     "approvedAt": null
+    }
+   },
+   "req": [
+    "M5-A0072-5023f6",
+    "M5-A0065-6f0a95"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-412",
+   "req": [
+    "M5-A0065-6f0a95",
+    "M5-A0061-dc1f5a"
+   ],
+   "modulo": "14-contratos-modelos",
+   "perfil": "A:leitura",
+   "descricao": "v1 preservada (desativada) e v2 vigente; a versão do contrato já gerada continua com o texto e o hash da v1",
+   "sql": "SELECT (SELECT json_agg(json_build_object('v', version_number, 'ativa', is_active) ORDER BY version_number) FROM legal.clause_versions WHERE code = :code) AS clausulas, (SELECT content_hash FROM legal.contract_versions WHERE id = :v) AS hash_contrato, (SELECT position('10%' in content) > 0 FROM legal.contract_versions WHERE id = :v) AS texto_v1",
+   "resultado": [
+    {
+     "clausulas": [
+      {
+       "v": 1,
+       "ativa": false
+      },
+      {
+       "v": 2,
+       "ativa": true
+      }
+     ],
+     "hash_contrato": "696a642a2dd0c0edb2ea51ad17a499452949bcdc3cac9d4946a644c01bd46122",
+     "texto_v1": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:28.334Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-417",
+   "req": [
+    "M5-A0062-45c618",
+    "M5-A0065-6f0a95"
+   ],
+   "modulo": "14-contratos-modelos",
+   "perfil": "A:leitura",
+   "descricao": "Versão 1 do modelo (publicada) com o vínculo original; versão 2 (rascunho) com a multa v2 e o foro; a versão do contrato gerada antes continua intacta",
+   "sql": "SELECT tv.version_number, tv.status, array_agg(l.contract_clause_id ORDER BY l.sort_order) AS clausulas, (SELECT content_hash FROM legal.contract_versions WHERE id = :v) AS hash_contrato FROM legal.template_versions tv LEFT JOIN legal.contract_template_clauses l ON l.template_version_id = tv.id WHERE tv.template_id = :t GROUP BY tv.version_number, tv.status ORDER BY tv.version_number",
+   "resultado": [
+    {
+     "version_number": 1,
+     "status": "PUBLISHED",
+     "clausulas": [
+      "478273bf-b8b7-47f1-a537-79e5ee28574c"
+     ],
+     "hash_contrato": "696a642a2dd0c0edb2ea51ad17a499452949bcdc3cac9d4946a644c01bd46122"
+    },
+    {
+     "version_number": 2,
+     "status": "DRAFT",
+     "clausulas": [
+      "8b95daf8-45e9-4b4f-a312-bf9ca805866d",
+      "57d364da-ee10-4ca3-86f5-33981218f408"
+     ],
+     "hash_contrato": "696a642a2dd0c0edb2ea51ad17a499452949bcdc3cac9d4946a644c01bd46122"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:28.398Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-321",
+   "req": [
+    "M5-A0165-e8bc3f",
+    "M5-A0264-72ee37",
+    "M5-A0299-827218",
+    "M5-A0065-6f0a95"
+   ],
+   "modulo": "13-contratos-versoes",
+   "perfil": "A:leitura",
+   "descricao": "Versões 1, 2 e 3 preservadas com o hash original (append-only); nenhuma sobrescrita",
+   "sql": "SELECT version_number, content_hash, encode(sha256(convert_to(content, 'UTF8')), 'hex') AS recalculado FROM legal.contract_versions WHERE contract_id = :id ORDER BY version_number",
+   "resultado": [
+    {
+     "version_number": 1,
+     "content_hash": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9",
+     "recalculado": "19a329a1ee0adf0c73c29b9811e254ad396491d94b2506442b47263f1678deb9"
+    },
+    {
+     "version_number": 2,
+     "content_hash": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088",
+     "recalculado": "833d6a7ebf4b777b52b28f89ca2ba4861d4ef3a5efa420dfbbc889bce161a088"
+    },
+    {
+     "version_number": 3,
+     "content_hash": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee",
+     "recalculado": "bfc93e2c948dfeac57558027411a0bd6dbaf5bf8c76151d4f0c0d16b4faefcee"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.803Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

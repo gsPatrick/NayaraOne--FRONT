@@ -1,0 +1,34 @@
+{
+ "id": "M5-A0091-ff8232",
+ "linhaCaderno": 212,
+ "requisito": "• Correção após assinatura cria addendum/revision, não altera laudo original.",
+ "correcao": "src/modules/legal/inspections/inspectionReportFreeze.js assertReportNotFrozen em inspection.service.js generateInspectionReport; gatilho legal.inspection_laudo_assinado_imutavel (migrations/20260101015600)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.laudo.test.js",
+   "nome": "M5-A0091/§11: laudo de vistoria assinada é emitido uma vez e não é regerado; o banco também recusa trocar o hash",
+   "status": "pass",
+   "ms": 2447.754,
+   "commitDoTeste": "7806a21e",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Missing expected rejection. generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, operator: 'rejects', diff: 'simple' }"
+   }
+  },
+  {
+   "arquivo": "test/m5vp.laudo.test.js",
+   "nome": "M5-A0091/§11: vistoria assinada que ainda não tinha laudo gera o primeiro laudo normalmente",
+   "status": "pass",
+   "ms": 61.91,
+   "commitDoTeste": "7806a21e",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Missing expected rejection. generatedMessage: false, code: 'ERR_ASSERTION', actual: undefined, operator: 'rejects', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.972Z"
+}

@@ -1,0 +1,435 @@
+{
+ "id": "M5-A0191-6312f6",
+ "secao": "P2 > 1. Ordem exata de implementação",
+ "linhaCaderno": 437,
+ "requisito": "12. evidence_packages.",
+ "demandas": "M5-D038;M5-D220",
+ "implementacao": "agregação dos requisitos M5-A0113-48df89 (linha 272), M5-A0114-596454 (linha 274), M5-A0115-37e523 (linha 276), M5-A0116-245bce (linha 278), M5-A0117-3055e0 (linha 280), M5-A0118-0dd094 (linha 282), M5-A0050-1f193f (linha 104)",
+ "tela": "sem tela própria (agregação; ver as linhas que compõem o item)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR custódia: original preservado com SHA-256; versão derivada é outro arquivo e o original não muda; conteúdo que não bate com o hash é recusado (§16)",
+   "status": "pass",
+   "ms": 84.851,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR dossiê: item com fileId usa hash, nome e data do servidor (o hash do chamador é ignorado); arquivo inexistente é 400; pacote antigo de 4 campos mantém o hash (§16/Guia §13)",
+   "status": "pass",
+   "ms": 17.726,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR dossiê: cada exportação gera package_id e hash de manifesto novos; acesso e exportação ficam na cadeia de custódia e na auditoria (§16)",
+   "status": "pass",
+   "ms": 19.973,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR legal hold: processo em hold bloqueia descarte (409 GOV_HOLD_BLOCKS_DISPOSAL) e mudança de status; liberado, a checagem passa (§16)",
+   "status": "pass",
+   "ms": 19.026,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.meta.tabelasDoLivro.test.js",
+   "nome": "§4 tabela do livro legal.evidence_packages: existe com o nome do livro, é tabela, tem company_id e RLS ENABLE+FORCE",
+   "status": "pass",
+   "ms": 0.402,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E02",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=d6a25622-d956-4302-9b0f-faafa54380ad",
+   "quando": "2026-11-11T03:42:38.583Z"
+  },
+  {
+   "passo": "JR-E09",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-package",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "quando": "2026-11-11T03:42:38.755Z"
+  },
+  {
+   "passo": "JR-E13",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "id=c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "quando": "2026-11-11T03:42:38.794Z"
+  },
+  {
+   "passo": "JR-E27",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/legal-hold",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED: Um motivo é obrigatório para ativar a retenção legal (legal hold).",
+   "quando": "2026-11-11T03:42:38.970Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0191-6312f6.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "Item de agregação do Guia: atendido porque todos os requisitos que o compõem estão atendidos, com as provas listadas.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.custodia.test.js test/m5fech.meta.tabelasDoLivro.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E02, JR-E09, JR-E21, JR-E13, JR-E27, MT-T21-SQL)"
+ },
+ "passos": [
+  {
+   "id": "JR-E02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Envia a foto original da prova (SHA-256 calculado pelo servidor no upload)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "foto-original-mwbkpkp8rgtk.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "JVBERi0xLjQgRm90byBvcmlnaW5hbCBmaWN0w61jaWEgbXdia3BrcDhyZ3Rr",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 39,
+   "quando": "2026-11-11T03:42:38.583Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "d6a25622-d956-4302-9b0f-faafa54380ad",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/4ccb5fab-3cf8-41b4-bf6f-8598dc55e666-foto-original-mwbkpkp8rgtk.pdf",
+     "fileName": "foto-original-mwbkpkp8rgtk.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 45,
+     "checksumSha256": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:38.561Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:38.561Z",
+     "created_at": "2026-11-11T03:42:38.561Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0113-48df89",
+    "M5-A0307-653b7c",
+    "M5-A0116-245bce"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Gera dossiê (POST /legal/cases/:id/evidence-package): o item com fileId leva hash, nome, data e origem do SERVIDOR; o hash enviado pelo cliente é ignorado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/evidence-package",
+   "corpoEnviado": {
+    "manifestItems": [
+     {
+      "type": "PHOTO",
+      "description": "Foto original do dano",
+      "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+      "hash": "hash-inventado-pelo-cliente"
+     },
+     {
+      "type": "NOTE",
+      "description": "Nota do perito (sem arquivo)"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 26,
+   "quando": "2026-11-11T03:42:38.755Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c2c501d7-6d10-4577-80c7-fb33b2f48390",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "manifestJson": [
+      {
+       "hash": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+       "type": "PHOTO",
+       "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+       "source": "people.files",
+       "createdAt": "2026-11-11T03:42:38.561Z",
+       "description": "Foto original do dano",
+       "referenceId": null,
+       "originalName": "foto-original-mwbkpkp8rgtk.pdf"
+      },
+      {
+       "hash": null,
+       "type": "NOTE",
+       "description": "Nota do perito (sem arquivo)",
+       "referenceId": null
+      }
+     ],
+     "packageHash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:38.744Z"
+    }
+   },
+   "req": [
+    "M5-A0219-23235a",
+    "M5-A0114-596454",
+    "M5-A0207-e7daa6",
+    "M5-A0174-4f13e8",
+    "M5-A0272-9dda58",
+    "M5-A0113-48df89",
+    "M5-A0231-5a2c1a",
+    "M5-A0141-07d730",
+    "M5-A0273-a39e38"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E21",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exporta o dossiê duas vezes (camada de serviço, o que a rota entrega após o MFA): export_package_id e export_manifest_hash novos a cada vez, package_hash igual e íntegro",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "evidence.exportEvidencePackage(pacote) x2 + verifyEvidencePackageIntegrity",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:38.943Z",
+   "corpo": {
+    "result": {
+     "exportPackageIds": [
+      "1ccc3c5c-e301-45fc-a575-b1c989b298be",
+      "902ccfb1-4f53-4947-80eb-44613834679a"
+     ],
+     "exportManifestHashes": [
+      "e7ce8b7503348f03fff6cb4d587076b209463f462e2bc852a7f6efd7f7ff2fe2",
+      "8e1cc2e04bc741662c4856b0b4a39bcbd7474cdf930cab096af020d9e39cbe8d"
+     ],
+     "packageHash": [
+      "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636",
+      "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636"
+     ],
+     "integridade": true,
+     "export1": {
+      "formatVersion": 1,
+      "exportPackageId": "1ccc3c5c-e301-45fc-a575-b1c989b298be",
+      "exportManifestHash": "e7ce8b7503348f03fff6cb4d587076b209463f462e2bc852a7f6efd7f7ff2fe2",
+      "evidencePackageId": "8bda8b63-38bc-4671-b5d0-2ca9f747b696",
+      "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "createdAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "itemCount": 1,
+      "manifest": [
+       {
+        "hash": null,
+        "type": "NOTE",
+        "description": "Ata de reunião fictícia",
+        "referenceId": null
+       }
+      ],
+      "packageHash": "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636",
+      "exportedAt": "2026-11-11T03:42:38.939Z",
+      "exportedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b"
+     }
+    }
+   },
+   "req": [
+    "M5-A0115-37e523",
+    "M5-A0117-3055e0",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-E13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura humana do dossiê entra na cadeia de custódia (VIEWED)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:38.794Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c2c501d7-6d10-4577-80c7-fb33b2f48390",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "manifestJson": [
+      {
+       "hash": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+       "type": "PHOTO",
+       "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+       "source": "people.files",
+       "createdAt": "2026-11-11T03:42:38.561Z",
+       "description": "Foto original do dano",
+       "referenceId": null,
+       "originalName": "foto-original-mwbkpkp8rgtk.pdf"
+      },
+      {
+       "hash": null,
+       "type": "NOTE",
+       "description": "Nota do perito (sem arquivo)",
+       "referenceId": null
+      }
+     ],
+     "packageHash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:38.744Z",
+     "legal_case_id": "b684c133-de9b-461e-bd47-84912b4c9ed1"
+    }
+   },
+   "req": [
+    "M5-A0117-3055e0"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E27",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Legal hold sem motivo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/cases/b684c133-de9b-461e-bd47-84912b4c9ed1/legal-hold",
+   "corpoEnviado": {
+    "legalHold": true
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:38.970Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_LEGAL_HOLD_REASON_REQUIRED",
+     "message": "Um motivo é obrigatório para ativar a retenção legal (legal hold).",
+     "traceId": "5bb99f8d-00a1-4034-8770-51d05108ee37"
+    }
+   },
+   "req": [
+    "M5-A0118-0dd094"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "MT-T21-SQL",
+   "grupos": [],
+   "f": [],
+   "descricao": "Catálogo: legal.evidence_packages existe com o nome do livro, é tabela (relkind r), tem company_id e RLS ENABLE+FORCE",
+   "sql": "SELECT 'legal.evidence_packages' AS tabela_do_livro, to_regclass('legal.evidence_packages') IS NOT NULL AS existe_com_o_nome_do_livro, c.relkind::text AS tipo, c.relrowsecurity AS rls_enable, c.relforcerowsecurity AS rls_force, EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid AND a.attname = 'company_id' AND NOT a.attisdropped) AS tem_company_id, NULL AS tabela_que_guarda_hoje, f.relkind::text AS tipo_da_que_guarda, f.relrowsecurity AS rls_enable_da_que_guarda, f.relforcerowsecurity AS rls_force_da_que_guarda FROM (SELECT 1) x LEFT JOIN pg_class c ON c.oid = to_regclass('legal.evidence_packages') LEFT JOIN pg_class f ON f.oid = to_regclass(NULL)",
+   "resultado": [
+    {
+     "tabela_do_livro": "legal.evidence_packages",
+     "existe_com_o_nome_do_livro": true,
+     "tipo": "r",
+     "rls_enable": true,
+     "rls_force": true,
+     "tem_company_id": true,
+     "tabela_que_guarda_hoje": null,
+     "tipo_da_que_guarda": null,
+     "rls_enable_da_que_guarda": null,
+     "rls_force_da_que_guarda": null
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:40.625Z",
+   "req": [
+    "M5-A0050-1f193f"
+   ],
+   "modulo": "90-meta-tabelas",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

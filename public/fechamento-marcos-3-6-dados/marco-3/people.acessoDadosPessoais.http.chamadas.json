@@ -1,0 +1,493 @@
+{
+ "geradoEm": "2026-11-12T10:20:17.840Z",
+ "arquivoDeTeste": "test/people.acessoDadosPessoais.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-12T10:20:13.142Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "82cf514d-7193-4c37-9891-0da9bb23dce6",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+      "name": "CI gestor — tenant A",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "roles": [
+      "CI GESTOR"
+     ],
+     "permissions": [
+      "legal:create",
+      "legal:read",
+      "legal:update",
+      "legal:sign",
+      "legal:approve",
+      "legal:deliverKeys",
+      "users:read",
+      "people:create",
+      "people:read",
+      "people:update",
+      "properties:create",
+      "properties:read",
+      "properties:update",
+      "finance:create",
+      "finance:read",
+      "finance:update",
+      "finance:settle",
+      "finance:reconcile",
+      "finance:approve",
+      "finance:bankAccounts",
+      "billing:create",
+      "billing:read",
+      "billing:update",
+      "billing:approve",
+      "finance:chartOfAccounts",
+      "legal:waive",
+      "billing:cadence:manage",
+      "lease.keys.deliver",
+      "legal:evidence:export"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:13.458Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "104e4bf3-c42e-4d3f-b2ba-6ccbfc73f895",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "80abbd3f-3342-4267-a724-8a64de71ad25",
+      "name": "CI mascarado — tenant A",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "roles": [
+      "CI LEITURA MASCARADA"
+     ],
+     "permissions": [
+      "people:read",
+      "properties:read",
+      "finance:read"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:13.810Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "532f2f40-2eec-44d3-b990-f6482f59b5c2",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "8746fdd9-60f6-4222-bc4a-5aaab4e055aa",
+      "name": "CI claro — tenant A",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "roles": [
+      "CI LEITURA EM CLARO"
+     ],
+     "permissions": [
+      "people:read",
+      "properties:read",
+      "finance:read",
+      "governance:dlp:view-restricted"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:14.048Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "c4f94d64-b12a-4d51-bf37-5cd89c53c1e3",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "2f20b898-d259-4894-b274-45b5e4a4fbbc",
+      "name": "CI leitura — tenant A",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "roles": [
+      "CI LEITURA"
+     ],
+     "permissions": [
+      "legal:read",
+      "finance:read",
+      "procurement:read"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:14.359Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "64342786-2d5b-40d9-8c1a-3d02ee0752aa",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "94eb6457-860a-40d0-939e-88a255e17684",
+      "name": "CI gestor — tenant B",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "c7e13f50-c180-4e1f-b60a-52db22f00354",
+     "companyId": "c7ae2a9e-6096-4778-b894-307e48ab57ea",
+     "roles": [
+      "CI GESTOR"
+     ],
+     "permissions": [
+      "legal:create",
+      "legal:read",
+      "legal:update",
+      "legal:sign",
+      "legal:approve",
+      "legal:deliverKeys",
+      "users:read",
+      "people:create",
+      "people:read",
+      "people:update",
+      "properties:create",
+      "properties:read",
+      "properties:update",
+      "finance:create",
+      "finance:read",
+      "finance:update",
+      "finance:settle",
+      "finance:reconcile",
+      "finance:approve",
+      "finance:bankAccounts",
+      "billing:create",
+      "billing:read",
+      "billing:update",
+      "billing:approve",
+      "finance:chartOfAccounts",
+      "legal:waive",
+      "billing:cadence:manage",
+      "lease.keys.deliver",
+      "legal:evidence:export"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:15.629Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Acesso1794478809519 Dados Teixeira",
+    "taxIdNormalized": "65858076424",
+    "birthOrFoundationDate": "1979-06-15",
+    "contacts": [
+     {
+      "contactType": "EMAIL",
+      "valueNormalized": "[e-mail omitido]",
+      "isPrimary": true
+     }
+    ]
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Acesso1794478809519 Dados Teixeira\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-24\",\"taxIdNormalizedHash\":\"****2894\",\"birthOrFoundationDate\":\"1979-06-15\",\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.415Z\",\"updated_at\":\"2026-11-12T10:20:14.415Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"3282f1b1-0043-438d-b57f-2e6e7c58f35f\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"contactType\":\"EMAIL\",\"valueNormalized\":\"[e-mail omitido]\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.435Z\",\"updated_at\":\"2026-11-12T10:20:14.435Z\",\"deleted_at\":null,\"person_id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\"}],\"documents\":[],\"roles\":[],\"addresses\":[],\"dataQuality\":{\"score\":50,\"missing\":[{\"key\":\"address\",\"label\":\"Ao menos um endereço cadastrado\"},{\"key\":\"document\",\"label\":\"Ao menos um documento anexado\"},{\"key\":\"role\",\"label…"
+  },
+  {
+   "em": "2026-11-12T10:20:15.816Z",
+   "requisicao": "POST /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d/documents/ingest",
+   "corpoEnviado": {
+    "fileName": "rg.pdf",
+    "mimeType": "application/pdf",
+    "documentType": "RG",
+    "contentBase64": "eyJfX21vY2tPY3IiOnsiZmllbGRzIjp7Im5hbWUiOiJBY2Vzc28xNzk0NDc4ODA5NTE5IERhZG9zIFRlaXhlaXJhIiwidGF4SWQiOiI2NTg1ODA3NjQyNCJ9LCJjb25maWRlbmNlIjowLjk1fX0="
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "document": {
+      "id": "8f4e2d63-c912-4e35-87f8-e5168b5c1692",
+      "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+      "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+      "personId": "431a7697-cc81-40cd-a63d-04a4928e2a4d",
+      "documentType": "RG",
+      "fileId": "f96341de-07fd-4b40-9189-2d230b2d43fe",
+      "versionNo": 1,
+      "verificationStatus": "PENDING",
+      "extractedDataJson": "••••••",
+      "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+      "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+      "updated_at": "2026-11-12T10:20:15.704Z",
+      "created_at": "2026-11-12T10:20:15.704Z",
+      "issuedAt": null,
+      "expiresAt": null,
+      "verifiedBy": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "fileId": "f96341de-07fd-4b40-9189-2d230b2d43fe",
+     "pendingTask": null
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:15.844Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d",
+   "corpoEnviado": null,
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "people:read"
+     },
+     "traceId": "8ea8a0d4-1b49-427b-84c6-df854df14d15"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:15.856Z",
+   "requisicao": "GET /api/v1/people",
+   "corpoEnviado": null,
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "people:read"
+     },
+     "traceId": "aa5356e8-e8da-4889-a529-e90e477c72b0"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:15.906Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d/documents",
+   "corpoEnviado": null,
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "people:read"
+     },
+     "traceId": "ccb83b1a-79f1-4c86-9203-96e9b2343b7c"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:15.920Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d/contacts",
+   "corpoEnviado": null,
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "people:read"
+     },
+     "traceId": "fdf8d7e7-d31a-4ec2-93c3-185fbde72b40"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:16.058Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Acesso1794478809519 Dados Teixeira\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-24\",\"taxIdNormalizedHash\":\"****2894\",\"birthOrFoundationDate\":\"1979-06-15\",\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.415Z\",\"updated_at\":\"2026-11-12T10:20:14.415Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"3282f1b1-0043-438d-b57f-2e6e7c58f35f\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"contactType\":\"EMAIL\",\"valueNormalized\":\"[e-mail omitido]\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.435Z\",\"updated_at\":\"2026-11-12T10:20:14.435Z\",\"deleted_at\":null,\"person_id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\"}],\"documents\":[{\"id\":\"8f4e2d63-c912-4e35-87f8-e5168b5c1692\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"document…"
+  },
+  {
+   "em": "2026-11-12T10:20:16.235Z",
+   "requisicao": "GET /api/v1/people",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":[{\"id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Acesso1794478809519 Dados Teixeira\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-24\",\"taxIdNormalizedHash\":\"****2894\",\"birthOrFoundationDate\":\"1979-06-15\",\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.415Z\",\"updated_at\":\"2026-11-12T10:20:14.415Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"3282f1b1-0043-438d-b57f-2e6e7c58f35f\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"contactType\":\"EMAIL\",\"valueNormalized\":\"[e-mail omitido]\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.435Z\",\"updated_at\":\"2026-11-12T10:20:14.435Z\",\"deleted_at\":null,\"person_id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\"}],\"documents\":[{\"id\":\"8f4e2d63-c912-4e35-87f8-e5168b5c1692\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"documen…"
+  },
+  {
+   "em": "2026-11-12T10:20:16.348Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d/documents",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "8f4e2d63-c912-4e35-87f8-e5168b5c1692",
+      "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+      "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+      "personId": "431a7697-cc81-40cd-a63d-04a4928e2a4d",
+      "documentType": "RG",
+      "fileId": "f96341de-07fd-4b40-9189-2d230b2d43fe",
+      "versionNo": 1,
+      "issuedAt": null,
+      "expiresAt": null,
+      "verificationStatus": "PENDING",
+      "verifiedBy": null,
+      "extractedDataJson": "••••••",
+      "createdBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+      "updatedBy": "b0188f69-19ef-4330-a96a-6fe0d910f39e",
+      "deletedBy": null,
+      "created_at": "2026-11-12T10:20:15.704Z",
+      "updated_at": "2026-11-12T10:20:15.704Z",
+      "deleted_at": null,
+      "person_id": "431a7697-cc81-40cd-a63d-04a4928e2a4d"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:16.624Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":{\"id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Acesso1794478809519 Dados Teixeira\",\"preferredName\":null,\"taxIdNormalized\":\"65858076424\",\"taxIdNormalizedHash\":\"2a87f17269cc8a18917f4e3125be8efd2ef6035c7762178ecbdf95488d289b4f\",\"birthOrFoundationDate\":\"1979-06-15\",\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.415Z\",\"updated_at\":\"2026-11-12T10:20:14.415Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[{\"id\":\"3282f1b1-0043-438d-b57f-2e6e7c58f35f\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personId\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\",\"contactType\":\"EMAIL\",\"valueNormalized\":\"[e-mail omitido]\",\"isPrimary\":true,\"consentStatus\":null,\"verifiedAt\":null,\"createdBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"updatedBy\":\"b0188f69-19ef-4330-a96a-6fe0d910f39e\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:20:14.435Z\",\"updated_at\":\"2026-11-12T10:20:14.435Z\",\"deleted_at\":null,\"person_id\":\"431a7697-cc81-40cd-a63d-04a4928e2a4d\"}],\"documents\":[{\"id\":\"8f4e2d63-c912-4e35-87f8-e5168b5c1692\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"perso…"
+  },
+  {
+   "em": "2026-11-12T10:20:16.654Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "78b2bede-c859-42e5-99b7-5ffe58364956"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:16.684Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d/documents",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "f8e4b23a-0890-4e2e-a7ad-31de36f729dc"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:16.699Z",
+   "requisicao": "GET /api/v1/people/431a7697-cc81-40cd-a63d-04a4928e2a4d/contacts",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "a8c65cd8-dafb-4695-a6c8-4b05510cc392"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:20:17.508Z",
+   "requisicao": "GET /api/v1/people",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": []
+   }
+  }
+ ]
+}

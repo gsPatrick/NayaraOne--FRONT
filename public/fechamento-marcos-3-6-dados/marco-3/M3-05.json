@@ -1,0 +1,239 @@
+{
+ "id": "M3-05",
+ "meta": {
+  "geradoEm": "2026-11-11T09:25:32.895Z",
+  "inicioCaptura": "2026-11-11T09:24:54.065Z",
+  "ambiente": "API local ligada a um PostgreSQL descartável criado do zero pelas migrations (RLS FORCE, papel de runtime sem BYPASSRLS), antivírus ClamAV real. Nada foi gravado na homologação.",
+  "commitApi": "119c0fb2",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "leituraImoveis": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "config": "Empresa A — administrador de Configurações (settings:read e settings:update)"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 2,
+   "casos": [
+    "unidade"
+   ],
+   "descricao": "Cria unidade (empresa vem da sessão)",
+   "metodo": "POST",
+   "rota": "/api/v1/units",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "name": "Filial Fictícia mwbwxtfpoyf0",
+    "code": "F-oyf0"
+   },
+   "status": 201,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "b35bf69c-0e38-4638-ba5d-7837234ace71",
+     "lockVersion": 0,
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "name": "Filial Fictícia mwbwxtfpoyf0",
+     "code": "F-oyf0",
+     "status": "ACTIVE",
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updated_at": "2026-11-11T09:24:58.317Z",
+     "created_at": "2026-11-11T09:24:58.317Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "dataHora": "2026-11-11T09:24:58.309Z"
+  },
+  {
+   "seq": 3,
+   "casos": [
+    "unidade"
+   ],
+   "descricao": "Altera o nome da unidade",
+   "metodo": "PATCH",
+   "rota": "/api/v1/units/b35bf69c-0e38-4638-ba5d-7837234ace71",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "name": "Filial Centro mwbwxtfpoyf0"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "b35bf69c-0e38-4638-ba5d-7837234ace71",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "name": "Filial Centro mwbwxtfpoyf0",
+     "code": "F-oyf0",
+     "status": "ACTIVE",
+     "lockVersion": 1,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:24:58.317Z",
+     "updated_at": "2026-11-11T09:24:58.329Z",
+     "deleted_at": null,
+     "company_id": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "group_id": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec"
+    }
+   },
+   "dataHora": "2026-11-11T09:24:58.321Z"
+  },
+  {
+   "seq": 4,
+   "casos": [
+    "unidade"
+   ],
+   "descricao": "Inativa a unidade",
+   "metodo": "PATCH",
+   "rota": "/api/v1/units/b35bf69c-0e38-4638-ba5d-7837234ace71",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "status": "INACTIVE"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "b35bf69c-0e38-4638-ba5d-7837234ace71",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "name": "Filial Centro mwbwxtfpoyf0",
+     "code": "F-oyf0",
+     "status": "INACTIVE",
+     "lockVersion": 2,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:24:58.317Z",
+     "updated_at": "2026-11-11T09:24:58.340Z",
+     "deleted_at": null,
+     "company_id": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "group_id": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec"
+    }
+   },
+   "dataHora": "2026-11-11T09:24:58.333Z"
+  },
+  {
+   "seq": 5,
+   "casos": [
+    "unidade"
+   ],
+   "descricao": "Status fora do catálogo é recusado",
+   "metodo": "PATCH",
+   "rota": "/api/v1/units/b35bf69c-0e38-4638-ba5d-7837234ace71",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "status": "APAGADA"
+   },
+   "status": 400,
+   "codigoErro": "UNIT_VALIDATION",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "UNIT_VALIDATION",
+     "message": "O campo \"status\" deve ser um de: ACTIVE, INACTIVE.",
+     "traceId": "896fedc6-4377-42df-8024-c5167c20a9af"
+    }
+   },
+   "dataHora": "2026-11-11T09:24:58.343Z"
+  },
+  {
+   "seq": 6,
+   "casos": [
+    "unidade"
+   ],
+   "descricao": "Perfil sem units:update não altera (403)",
+   "metodo": "PATCH",
+   "rota": "/api/v1/units/b35bf69c-0e38-4638-ba5d-7837234ace71",
+   "perfil": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "corpoEnviado": {
+    "status": "ACTIVE"
+   },
+   "status": 403,
+   "codigoErro": "PERMISSION_DENIED",
+   "corpoResposta": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "units:update"
+     },
+     "traceId": "42523945-a619-4a4e-8c0f-1e51885dc710"
+    }
+   },
+   "dataHora": "2026-11-11T09:24:58.353Z"
+  },
+  {
+   "seq": 7,
+   "casos": [
+    "unidade"
+   ],
+   "descricao": "Exclui a unidade (exclusão lógica)",
+   "metodo": "DELETE",
+   "rota": "/api/v1/units/b35bf69c-0e38-4638-ba5d-7837234ace71",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "b35bf69c-0e38-4638-ba5d-7837234ace71"
+    }
+   },
+   "dataHora": "2026-11-11T09:24:58.361Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "unidade"
+   ],
+   "descricao": "Auditoria da unidade com antes e depois",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "SELECT action, before_json->>'name' AS nome_antes, after_json->>'name' AS nome_depois, before_json->>'status' AS status_antes, after_json->>'status' AS status_depois FROM audit.audit_log WHERE entity_type = 'Unit' AND entity_id = $1 ORDER BY occurred_at",
+   "parametros": [
+    "b35bf69c-0e38-4638-ba5d-7837234ace71"
+   ],
+   "resultado": [
+    {
+     "action": "unit.create",
+     "nome_antes": null,
+     "nome_depois": "Filial Fictícia mwbwxtfpoyf0",
+     "status_antes": null,
+     "status_depois": "ACTIVE"
+    },
+    {
+     "action": "unit.update",
+     "nome_antes": "Filial Fictícia mwbwxtfpoyf0",
+     "nome_depois": "Filial Centro mwbwxtfpoyf0",
+     "status_antes": "ACTIVE",
+     "status_depois": "ACTIVE"
+    },
+    {
+     "action": "unit.inactivate",
+     "nome_antes": "Filial Centro mwbwxtfpoyf0",
+     "nome_depois": "Filial Centro mwbwxtfpoyf0",
+     "status_antes": "ACTIVE",
+     "status_depois": "INACTIVE"
+    },
+    {
+     "action": "unit.delete",
+     "nome_antes": "Filial Centro mwbwxtfpoyf0",
+     "nome_depois": "Filial Centro mwbwxtfpoyf0",
+     "status_antes": "INACTIVE",
+     "status_depois": "INACTIVE"
+    }
+   ],
+   "dataHora": "2026-11-11T09:24:58.438Z"
+  }
+ ]
+}

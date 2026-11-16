@@ -1,0 +1,67 @@
+{
+ "id": "M4-§5.3",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.result_centers — \"Centros de resultado.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.httpRoutes.test.js",
+   "nome": "Marco 4 ponta a ponta via HTTP real: plano de contas -> centros -> lançamento -> listagem -> orçamento -> relatório",
+   "status": "passou",
+   "duracaoMs": 553,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N06",
+   "tipo": "http",
+   "linhas": [
+    "M4-§5.3"
+   ],
+   "titulo": "Centro de resultado criado (finance.result_centers)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/result-centers",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "code": "RC2-0871300",
+    "name": "Centro de resultado Locação"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 35,
+   "quando": "2026-11-11T01:35:01.342Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "code": "RC2-0871300",
+     "name": "Centro de resultado Locação",
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:01.319Z",
+     "created_at": "2026-11-11T01:35:01.319Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

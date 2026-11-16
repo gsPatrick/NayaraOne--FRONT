@@ -1,0 +1,164 @@
+{
+  "id": "M6-59",
+  "requisito": "\"Foto reutilizada suspeita → alerta.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §12 Testes adversariais",
+  "implementacao": "evidenceReuse.service.js (hash SHA-256 do upload) em NC e RDO",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: NC com foto já usada mostra o alerta",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.evidenceReuse.test.js",
+      "nome": "M6-59: evidência reutilizada entre duas não conformidades gera alerta, sem bloquear",
+      "resultado": "passou",
+      "duracaoMs": 652,
+      "executadoEm": "2026-11-11T00:13:14.947Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceReuse.test.js",
+      "nome": "M6-59: arquivos genuinamente distintos não geram alerta falso-positivo",
+      "resultado": "passou",
+      "duracaoMs": 273,
+      "executadoEm": "2026-11-11T00:13:15.221Z"
+    },
+    {
+      "arquivo": "test/construction.dailyReports.test.js",
+      "nome": "GAP M6-59 (RDO): evidência reutilizada entre dois RDOs da mesma obra gera alerta, sem bloquear",
+      "resultado": "passou",
+      "duracaoMs": 73,
+      "executadoEm": "2026-11-11T00:12:39.128Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H122"
+    ],
+    "resumo": [
+      "H122 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 201"
+    ],
+    "dataHora": "2026-11-11T00:12:22.488Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H122",
+      "requisitos": [
+        "M6-59"
+      ],
+      "cenario": "Foto reutilizada: outra NC com a MESMA foto gera alerta de reuso (sem bloquear)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "severity": "LOW",
+        "description": "Respingo",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeEvidenceFileIds": [
+          "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+        ]
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 316,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "48ef9acb-a9eb-4fea-9095-884ce5f1dcee",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": null,
+          "severity": "LOW",
+          "description": "Respingo",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-12-11T00:12:22.471Z",
+          "status": "OPEN",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [],
+          "requiresAcceptance": false,
+          "causeCode": null,
+          "teamLabel": null,
+          "evidenceReuseFlagged": true,
+          "evidenceReuseReferenceId": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "evidenceReuseDetails": {
+            "matchedAt": "2026-11-11T00:12:22.459Z",
+            "overlappingFileIds": [
+              "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+            ]
+          },
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:22.471Z",
+          "created_at": "2026-11-11T00:12:22.471Z",
+          "acceptedByUserId": null,
+          "closedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.488Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C014",
+      "requisitos": [
+        "M6-13",
+        "M6-24",
+        "M6-59",
+        "M6-12",
+        "M6-25"
+      ],
+      "descricao": "Não conformidades: severidade, responsável, SLA, evidências que existem em people.files, aceite e alerta de foto reutilizada",
+      "sql": "SELECT severity, status, responsible_user_id IS NOT NULL AS responsavel, sla_due_at IS NOT NULL AS sla, requires_acceptance, accepted_by_user_id IS NOT NULL AS aceita, evidence_reuse_flagged AS foto_reutilizada, (SELECT count(*) FROM people.files f WHERE f.id = ANY(n.before_evidence_file_ids || n.after_evidence_file_ids))::int AS fotos_existentes, cardinality(n.before_evidence_file_ids || n.after_evidence_file_ids) AS fotos FROM construction.nonconformities n WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "severity": "CRITICAL",
+          "status": "CLOSED",
+          "responsavel": true,
+          "sla": true,
+          "requires_acceptance": false,
+          "aceita": true,
+          "foto_reutilizada": false,
+          "fotos_existentes": 2,
+          "fotos": 2
+        },
+        {
+          "severity": "HIGH",
+          "status": "CLOSED",
+          "responsavel": true,
+          "sla": true,
+          "requires_acceptance": true,
+          "aceita": true,
+          "foto_reutilizada": false,
+          "fotos_existentes": 2,
+          "fotos": 2
+        },
+        {
+          "severity": "LOW",
+          "status": "CLOSED",
+          "responsavel": true,
+          "sla": true,
+          "requires_acceptance": false,
+          "aceita": true,
+          "foto_reutilizada": true,
+          "fotos_existentes": 2,
+          "fotos": 2
+        }
+      ],
+      "invariante": "toda NC com responsável e SLA; toda foto referenciada existe; a NC com foto repetida está sinalizada",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.199Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.424Z"
+}

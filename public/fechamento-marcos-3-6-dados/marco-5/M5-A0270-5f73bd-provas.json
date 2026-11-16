@@ -1,0 +1,20 @@
+{
+ "linha": "M5-A0270-5f73bd",
+ "marco": 5,
+ "provas": [
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-5/M5-A0270-5f73bd.json",
+   "bytes": 29700,
+   "sha256": "1a0477652919f903885bc8c42eb23acf61a870ca9da12b82a4d8cb8025e93d54",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-5/M5-A0270-5f73bd.json",
+   "mascarado": false
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-5/m5vp/M5-A0270-5f73bd.json",
+   "bytes": 2511,
+   "sha256": "2bfdf02a42e094cdadda9534d30749d7f29f17254617ebc223977b10ef9b8185",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-5/m5vp/M5-A0270-5f73bd.json",
+   "mascarado": false
+  }
+ ]
+}

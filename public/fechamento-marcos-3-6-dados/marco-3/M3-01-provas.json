@@ -1,0 +1,20 @@
+{
+ "linha": "M3-01",
+ "marco": 3,
+ "provas": [
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/people.cadastroDedupMerge.http.chamadas.json",
+   "bytes": 32495,
+   "sha256": "8bb11b9182dc41f7c57c7cf5324561abdd1f03d15cdc5bb72c5c44d987c84e88",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3pe/people.cadastroDedupMerge.http.chamadas.json",
+   "mascarado": true
+  },
+  {
+   "arquivo": "fechamento-marcos-3-6-dados/marco-3/contagem-cpf-cnpj-invalidos.json",
+   "bytes": 181,
+   "sha256": "88f7bc676e1d554c2933ba65900396e06c7fa3b93c33b88168568926a1096d5d",
+   "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-3/m3pe/contagem-cpf-cnpj-invalidos.json",
+   "mascarado": false
+  }
+ ]
+}

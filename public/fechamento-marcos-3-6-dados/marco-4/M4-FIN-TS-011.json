@@ -1,0 +1,63 @@
+{
+ "id": "M4-FIN-TS-011",
+ "secao": "§20 Testes adversariais",
+ "requisito": "FIN-TS-011: Reabrir — usuário comum negado.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.httpRoutes.test.js",
+   "nome": "FIN-TS-011: POST /finance/period-closures/reopen responde 403 para usuário sem finance:approve",
+   "status": "passou",
+   "duracaoMs": 6,
+   "commitDoArquivo": "e834c687"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "F07",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-011"
+   ],
+   "titulo": "Usuário comum (maker) tenta reabrir: negado",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/reopen",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "referenceMonth": "2071-05",
+    "reason": "Tentativa de reabertura por usuário comum"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T01:35:14.578Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "finance:approve"
+     },
+     "traceId": "08f22dd2-43a4-415c-9ba3-6efaf321b5b1"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

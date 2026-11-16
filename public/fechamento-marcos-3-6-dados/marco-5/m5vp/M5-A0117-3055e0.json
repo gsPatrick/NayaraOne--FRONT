@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0117-3055e0",
+ "linhaCaderno": 280,
+ "requisito": "• Acesso/exportação são auditados.",
+ "correcao": "evidence-package.service.js listEvidencePackagesAudited/logCaseEvidenceAccess (GET /legal/cases/:id/evidence-packages e dossiê da NAY)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.evidencias.test.js",
+   "nome": "M5-A0117/§16: a lista de dossiês do processo grava o acesso (cadeia de custódia + auditoria), também pela rota HTTP",
+   "status": "pass",
+   "ms": 88.473,
+   "commitDoTeste": "70bb844a",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: a listagem entra na cadeia de custódia 0 !== 1 generatedMessage: false, code: 'ERR_ASSERTION', actual: 0, expected: 1, operator: 'strictEqual', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.184Z"
+}

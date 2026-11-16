@@ -1,0 +1,402 @@
+{
+ "id": "M4-G§10",
+ "secao": "Guia §10 Importação idempotente",
+ "requisito": "fingerprint(bankAccountId + providerTransactionId + …) UNIQUE",
+ "substitui": "evidencias/marco-4/M4-G10.json",
+ "motivo": "Correções DI-M4CC (branch m4fix/conciliacao-comissao): regra AUTO_STRONG parametrizada e fonte confiável (Guia §9, §11, FIN-009), UNIQUE completo do fingerprint e conta da própria empresa (Guia §10, FIN-002), comissão REG-FIN-001 em decimal exato (Guia §11, §18), NAY lendo o read model (Guia §13). Captura em banco descartável no commit indicado; a evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "7982eef4",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T10:38:24.663Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-G§10 --sufixo m4cc",
+ "respostasHttp": [
+  {
+   "id": "C11",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-007",
+    "M4-G§10",
+    "M4-§10.5"
+   ],
+   "titulo": "Reimporta o MESMO extrato: todas duplicadas, nenhuma transação nova (UNIQUE conta + fingerprint)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions/import",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "55b31d7a-8d3d-4363-a1a1-972031a20192",
+    "csvText": "externalTransactionId,transactionDate,description,amount\nEXT-EX-3281596,2026-11-11,PIX recebido referencia externa,101.86\nEXT-FO-3281596,2026-11-11,PIX recebido ref 3726ebbb-3cf9-46bb-a90f-8335262b4beb,202.86\nEXT-PR-3281596,2026-11-11,PIX recebido sem referencia,303.86\nEXT-AM-3281596,2026-11-11,PIX recebido valor repetido,404.86\nEXT-SEM-3281596,2026-11-11,Credito sem lancamento correspondente,505.86\nEXT-DV-3281596,2026-11-11,PIX recebido valor diferente,605.86\n"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 751,
+   "quando": "2026-11-11T10:37:00.073Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "imported": [],
+     "duplicates": [
+      {
+       "externalTransactionId": "EXT-EX-3281596",
+       "existingId": "95d3e06f-2173-4a5e-b01b-4f80842b5bed"
+      },
+      {
+       "externalTransactionId": "EXT-FO-3281596",
+       "existingId": "390d59cd-6db9-4720-ba82-93a91633cad5"
+      },
+      {
+       "externalTransactionId": "EXT-PR-3281596",
+       "existingId": "5302f6e0-6e29-4f56-bce1-433e241f1f69"
+      },
+      {
+       "externalTransactionId": "EXT-AM-3281596",
+       "existingId": "32b029f5-75e2-4e3a-aa2e-7c58fc7b5c1b"
+      },
+      {
+       "externalTransactionId": "EXT-SEM-3281596",
+       "existingId": "1a48ca0f-0eb1-465f-9ece-575d05c226a1"
+      },
+      {
+       "externalTransactionId": "EXT-DV-3281596",
+       "existingId": "9fcda096-6bf3-48cf-abff-48b1d247c5f1"
+      }
+     ],
+     "total": 6,
+     "statementImport": {
+      "id": "79ff4c03-4d43-44f6-acff-b0e22a186729",
+      "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+      "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+      "bankAccountId": "55b31d7a-8d3d-4363-a1a1-972031a20192",
+      "periodStart": "2026-11-11",
+      "periodEnd": "2026-11-11",
+      "periodDeclared": false,
+      "closingBalance": null,
+      "linesTotal": 6,
+      "linesImported": 0,
+      "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+      "created_at": "2026-11-11T10:36:59.844Z"
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K05",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§10"
+   ],
+   "titulo": "Linha de extrato sem id externo (1ª vez)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "55b31d7a-8d3d-4363-a1a1-972031a20192",
+    "amount": "-808.77",
+    "transactionDate": "2026-11-11",
+    "description": "TARIFA SEM ID EXTERNO"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 302,
+   "quando": "2026-11-11T10:38:21.093Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "86028e0a-c028-4c85-a814-6eff3b4a954a",
+     "groupId": "4468a476-161f-4a29-9de9-bb0a5d0267e0",
+     "companyId": "0d559c6b-d0a3-4440-82a9-1de1a27d0e59",
+     "bankAccountId": "55b31d7a-8d3d-4363-a1a1-972031a20192",
+     "externalTransactionId": null,
+     "fingerprint": "a3bbf29e4cec5efbf817b88b500a30a60f464eb3e2e488e774b2f91b5fd6af2b",
+     "amount": "-808.77",
+     "transactionDate": "2026-11-11T15:00:00.000Z",
+     "description": "TARIFA SEM ID EXTERNO",
+     "source": "MANUAL",
+     "sourceTrusted": false,
+     "createdBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updatedBy": "dcd990c9-8373-46c4-8597-64d439796aff",
+     "updated_at": "2026-11-11T10:38:20.876Z",
+     "created_at": "2026-11-11T10:38:20.876Z"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K06",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§10"
+   ],
+   "titulo": "A MESMA linha sem id externo de novo: recusada (UNIQUE(bank_account_id, fingerprint) completo)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "55b31d7a-8d3d-4363-a1a1-972031a20192",
+    "amount": "-808.77",
+    "transactionDate": "2026-11-11",
+    "description": "TARIFA SEM ID EXTERNO"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "FINANCE_BANK_TRANSACTION_DUPLICATE"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 409,
+   "codigo": "FINANCE_BANK_TRANSACTION_DUPLICATE",
+   "ok": true,
+   "ms": 57,
+   "quando": "2026-11-11T10:38:21.150Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_BANK_TRANSACTION_DUPLICATE",
+     "message": "Esta mesma linha de extrato (conta, data, valor, sentido e descrição) já foi registrada — duplicidade bloqueada.",
+     "details": {
+      "existingId": "86028e0a-c028-4c85-a814-6eff3b4a954a"
+     },
+     "traceId": "240d6ee8-5850-4b05-94f6-8c892ff458c8"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "K07",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§10",
+    "M4-§21.15",
+    "M4-G§20.13"
+   ],
+   "titulo": "Empresa B tenta gravar linha de extrato na conta bancária da empresa A: 404, nada gravado (achado crítico do pentest corrigido)",
+   "perfil": "B:gestor",
+   "metodo": "POST",
+   "rota": "/finance/bank-transactions",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "bankAccountId": "55b31d7a-8d3d-4363-a1a1-972031a20192",
+    "amount": "-1.23",
+    "transactionDate": "2026-11-11",
+    "description": "Tentativa de B"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 404,
+   "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+   "ok": true,
+   "ms": 51,
+   "quando": "2026-11-11T10:38:21.201Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
+     "message": "Conta bancária não encontrada.",
+     "traceId": "7c4a8868-011e-4dad-a14d-43e51c308c3d"
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": "nenhum",
+ "consultasBanco": [
+  {
+   "id": "Q40",
+   "linhas": [
+    "M4-G§10"
+   ],
+   "descricao": "Índice único do fingerprint do extrato sem condição (Guia §10)",
+   "sql": "select indexdef from pg_indexes where schemaname = 'finance' and indexname = 'bank_transactions_account_fingerprint_uk'",
+   "contexto": "RLS do tenant (company 0d559c6b-d0a3-4440-82a9-1de1a27d0e59)",
+   "resultado": [
+    {
+     "indexdef": "CREATE UNIQUE INDEX bank_transactions_account_fingerprint_uk ON finance.bank_transactions USING btree (bank_account_id, fingerprint)"
+    }
+   ],
+   "invariante": "UNIQUE (bank_account_id, fingerprint), sem WHERE",
+   "invarianteOk": true,
+   "quando": "2026-11-11T10:38:23.569Z"
+  },
+  {
+   "id": "Q41",
+   "linhas": [
+    "M4-G§10"
+   ],
+   "descricao": "Linhas da conta com a descrição da tarifa repetida: só uma",
+   "sql": "select count(*)::int as n from finance.bank_transactions where bank_account_id = :a and description = 'TARIFA SEM ID EXTERNO'",
+   "contexto": "RLS do tenant (company 0d559c6b-d0a3-4440-82a9-1de1a27d0e59)",
+   "resultado": [
+    {
+     "n": 1
+    }
+   ],
+   "invariante": "exatamente 1 linha",
+   "invarianteOk": true,
+   "quando": "2026-11-11T10:38:23.570Z"
+  },
+  {
+   "id": "Q13",
+   "linhas": [
+    "M4-G§10",
+    "M4-§7"
+   ],
+   "descricao": "Índices únicos de idempotência no schema finance (extrato, lançamentos, intenções, comissões, repasses)",
+   "sql": "select tablename, indexname, indexdef from pg_indexes where schemaname = 'finance' and indexdef ilike '%unique%' and tablename in ('bank_transactions','financial_entries','payment_intents','commissions','owner_repasses') order by 1, 2",
+   "contexto": "RLS do tenant (company 0d559c6b-d0a3-4440-82a9-1de1a27d0e59)",
+   "resultado": [
+    {
+     "tablename": "bank_transactions",
+     "indexname": "bank_transactions_account_external_id_uk",
+     "indexdef": "CREATE UNIQUE INDEX bank_transactions_account_external_id_uk ON finance.bank_transactions USING btree (bank_account_id, external_transaction_id) WHERE (external_transaction_id IS NOT NULL)"
+    },
+    {
+     "tablename": "bank_transactions",
+     "indexname": "bank_transactions_account_fingerprint_uk",
+     "indexdef": "CREATE UNIQUE INDEX bank_transactions_account_fingerprint_uk ON finance.bank_transactions USING btree (bank_account_id, fingerprint)"
+    },
+    {
+     "tablename": "bank_transactions",
+     "indexname": "bank_transactions_pkey",
+     "indexdef": "CREATE UNIQUE INDEX bank_transactions_pkey ON finance.bank_transactions USING btree (id)"
+    },
+    {
+     "tablename": "commissions",
+     "indexname": "commissions_company_idempotency_unique",
+     "indexdef": "CREATE UNIQUE INDEX commissions_company_idempotency_unique ON finance.commissions USING btree (company_id, idempotency_key) WHERE (idempotency_key IS NOT NULL)"
+    },
+    {
+     "tablename": "commissions",
+     "indexname": "commissions_pkey",
+     "indexdef": "CREATE UNIQUE INDEX commissions_pkey ON finance.commissions USING btree (id)"
+    },
+    {
+     "tablename": "financial_entries",
+     "indexname": "financial_entries_company_idempotency_uk",
+     "indexdef": "CREATE UNIQUE INDEX financial_entries_company_idempotency_uk ON finance.financial_entries USING btree (company_id, idempotency_key) WHERE (idempotency_key IS NOT NULL)"
+    },
+    {
+     "tablename": "financial_entries",
+     "indexname": "financial_entries_pkey",
+     "indexdef": "CREATE UNIQUE INDEX financial_entries_pkey ON finance.financial_entries USING btree (id)"
+    },
+    {
+     "tablename": "financial_entries",
+     "indexname": "financial_entries_settlement_evidence_root_unique",
+     "indexdef": "CREATE UNIQUE INDEX financial_entries_settlement_evidence_root_unique ON finance.financial_entries USING btree (settlement_evidence_file_id) WHERE ((parent_entry_id IS NULL) AND (settlement_evidence_file_id IS NOT NULL))"
+    },
+    {
+     "tablename": "owner_repasses",
+     "indexname": "owner_repasses_company_idempotency_uk",
+     "indexdef": "CREATE UNIQUE INDEX owner_repasses_company_idempotency_uk ON finance.owner_repasses USING btree (company_id, idempotency_key) WHERE (idempotency_key IS NOT NULL)"
+    },
+    {
+     "tablename": "owner_repasses",
+     "indexname": "owner_repasses_financial_entry_uq",
+     "indexdef": "CREATE UNIQUE INDEX owner_repasses_financial_entry_uq ON finance.owner_repasses USING btree (financial_entry_id) WHERE (financial_entry_id IS NOT NULL)"
+    },
+    {
+     "tablename": "owner_repasses",
+     "indexname": "owner_repasses_one_per_period_uq",
+     "indexdef": "CREATE UNIQUE INDEX owner_repasses_one_per_period_uq ON finance.owner_repasses USING btree (company_id, owner_person_id, property_id, COALESCE(contract_id, '00000000-0000-0000-0000-000000000000'::uuid), reference_month) WHERE (((status)::text <> 'CANCELLED'::text) AND (created_at >= '2026-11-11 10:30:07.797997+00'::timestamp with time zone))"
+    },
+    {
+     "tablename": "owner_repasses",
+     "indexname": "owner_repasses_pkey",
+     "indexdef": "CREATE UNIQUE INDEX owner_repasses_pkey ON finance.owner_repasses USING btree (id)"
+    },
+    {
+     "tablename": "payment_intents",
+     "indexname": "payment_intents_company_idempotency_unique",
+     "indexdef": "CREATE UNIQUE INDEX payment_intents_company_idempotency_unique ON finance.payment_intents USING btree (company_id, idempotency_key)"
+    },
+    {
+     "tablename": "payment_intents",
+     "indexname": "payment_intents_one_open_per_entry",
+     "indexdef": "CREATE UNIQUE INDEX payment_intents_one_open_per_entry ON finance.payment_intents USING btree (financial_entry_id) WHERE ((status)::text = ANY ((ARRAY['PENDING'::character varying, 'APPROVED'::character varying, 'SUBMITTING'::character varying, 'SUBMITTED'::character varying])::text[]))"
+    },
+    {
+     "tablename": "payment_intents",
+     "indexname": "payment_intents_pkey",
+     "indexdef": "CREATE UNIQUE INDEX payment_intents_pkey ON finance.payment_intents USING btree (id)"
+    }
+   ],
+   "invariante": "unicidade no extrato e nas chaves de idempotência",
+   "invarianteOk": true,
+   "quando": "2026-11-11T10:38:24.042Z"
+  }
+ ],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-007: importação de extrato em lote (CSV) é idempotente — reimportar o MESMO arquivo não duplica",
+   "status": "passou",
+   "duracaoMs": 30,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.acceptance.batch2.test.js",
+   "nome": "M4-12 createBankTransaction bloqueia reimportação da mesma transação (externalTransactionId único)",
+   "status": "passou",
+   "duracaoMs": 18,
+   "commitDoArquivo": "dda254ae"
+  },
+  {
+   "arquivo": "test/m4.extratoUnicidadePorConta.test.js",
+   "nome": "M4-G§10 a empresa B importa a PRÓPRIA conta com o mesmo id externo de uma linha da empresa A: 201 com 1 linha nova (antes 409 UNIQUE_CONSTRAINT_VIOLATION); B não enxerga a linha de A",
+   "status": "passou",
+   "duracaoMs": 2609,
+   "commitDoArquivo": "9583e8d1"
+  },
+  {
+   "arquivo": "test/m4.extratoUnicidadePorConta.test.js",
+   "nome": "M4-G§10 reimportar na MESMA conta continua deduplicando (201, 1 duplicada, 0 novas) e a linha avulsa com a mesma chave na mesma conta é 409 FINANCE_BANK_TRANSACTION_DUPLICATE; outra conta da mesma empresa aceita",
+   "status": "passou",
+   "duracaoMs": 218,
+   "commitDoArquivo": "9583e8d1"
+  },
+  {
+   "arquivo": "test/m4.extratoUnicidadePorConta.test.js",
+   "nome": "M4-G§10 toda linha grava o fingerprint do Guia (sha256 de conta, id externo, data, valor, sentido e descrição); o banco barra a mesma chave na mesma conta mesmo sem passar pelo serviço",
+   "status": "passou",
+   "duracaoMs": 81,
+   "commitDoArquivo": "9583e8d1"
+  }
+ ]
+}

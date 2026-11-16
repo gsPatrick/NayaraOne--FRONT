@@ -1,0 +1,177 @@
+{
+ "id": "M4-FIN-TS-009",
+ "secao": "§20 Testes adversariais",
+ "requisito": "FIN-TS-009: Estorno — novo reversal; original intacto.",
+ "substitui": "evidencias/marco-4/M4-FIN-TS-009.json",
+ "motivo": "Recaptura: a evidência anterior trazia o token assinado da confirmação de nível 3 (impactToken) sem redação; o capturador foi corrigido e a evidência refeita contra o código atual, em banco descartável. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "a3342c49",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T08:20:27.195Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-FIN-TS-009 --sufixo r2",
+ "respostasHttp": [
+  {
+   "id": "L02-b",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-010",
+    "M4-FIN-TS-009",
+    "M4-G§16.7"
+   ],
+   "titulo": "Estorno controlado cria lançamento de reversão apontando o original",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/399c5084-dbaa-4190-8e39-9ef9e1678145/reverse",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "reason": "Estorno de teste da captura do Marco 4: lançamento registrado com valor errado.",
+    "confirmation": {
+     "typedCode": "LAN-399C5084",
+     "justification": "Estorno de teste da captura do Marco 4: lançamento registrado com valor errado.",
+     "impactToken": "[REDACTED]",
+     "understood": true
+    }
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 95,
+   "quando": "2026-11-11T08:19:41.849Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "399c5084-dbaa-4190-8e39-9ef9e1678145",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "250.00",
+      "description": "Recebível antecipado 5128289",
+      "dueAt": "2026-12-11T08:19:41.042Z",
+      "competenceMonth": "2026-12",
+      "settledAt": "2026-11-11T08:19:41.409Z",
+      "status": "REVERSED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 2,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:19:41.066Z",
+      "updated_at": "2026-11-11T08:19:41.803Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "reversal": {
+      "id": "c96e28df-2cce-4de6-92ef-b42e2570b448",
+      "isThirdPartyFunds": false,
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "entryType": "DEBIT",
+      "nature": "ADJUSTMENT",
+      "amount": "250.00",
+      "description": null,
+      "dueAt": null,
+      "competenceMonth": "2026-12",
+      "settledAt": "2026-11-11T08:19:41.800Z",
+      "status": "SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": "399c5084-dbaa-4190-8e39-9ef9e1678145",
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "constructionProjectId": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updated_at": "2026-11-11T08:19:41.801Z",
+      "created_at": "2026-11-11T08:19:41.801Z",
+      "originRef": null,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": "nenhum",
+ "consultasBanco": [],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/adversarial.finance.test.js",
+   "nome": "ADV-F11 lançamento já liquidado não pode ser editado nem \"re-liquidado\", e o estorno não apaga o original",
+   "status": "passou",
+   "duracaoMs": 249,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/finance.entries.test.js",
+   "nome": "estorno: lançamento estornado não pode ser estornado de novo",
+   "status": "passou",
+   "duracaoMs": 229,
+   "commitDoArquivo": "f656f46c"
+  }
+ ]
+}

@@ -1,0 +1,1078 @@
+{
+ "id": "M5-A0208-04872a",
+ "secao": "P2 > 14. APIs mínimas [tabela: Endpoint | Função]",
+ "linhaCaderno": 680,
+ "requisito": "POST /contracts | Criar.",
+ "demandas": "M5-D001;M5-D047",
+ "implementacao": "src/modules/legal/shared/legal.routes.js POST /contracts (literal do Guia §14) -> legalController.createContract, legal:create",
+ "tela": "Contratos > Novo contrato (/painel/contratos/lista/novo)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contracts e POST /contracts/:id/versions criam contrato e versão pelo mesmo serviço (permissão e hash do servidor)",
+   "status": "pass",
+   "ms": 3396.122,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/ciTwoTenantsFinanceLegal.test.js",
+   "nome": "CI dois tenants (Jurídico): maker cria contrato; leitura recebe 403 ao criar e consegue ler",
+   "status": "pass",
+   "ms": 64.724,
+   "commitDoTeste": "9ef507fb"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-002",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=8675831d-7c60-4c0f-9a20-f40d1756d6d2, contractType=SALE_CASH",
+   "quando": "2026-11-11T03:42:23.835Z"
+  },
+  {
+   "passo": "CT-019",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_VALIDATION"
+   },
+   "resumo": "erro LEGAL_CONTRACT_VALIDATION: \"contractType\" deve ser um de: SALE, SALE_CASH, SALE_FINANCED, SALE_TRADE, SALE_INSTALLMENTS, LEASE,",
+   "quando": "2026-11-11T03:42:24.105Z"
+  },
+  {
+   "passo": "CT-020",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:24.111Z"
+  },
+  {
+   "passo": "CT-021",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "esperado": {
+    "status": 401
+   },
+   "resumo": "erro MISSING_ACCESS_TOKEN: Token de acesso ausente.",
+   "quando": "2026-11-11T03:42:24.114Z"
+  },
+  {
+   "passo": "CT-003",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=32ec3345-9de3-49bd-b298-cc8f0eb5713f, contractType=SALE_FINANCED",
+   "quando": "2026-11-11T03:42:23.856Z"
+  },
+  {
+   "passo": "CT-004",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=0e2568c4-0f0e-4e55-afe8-526eec9a4fd8, contractType=SALE_TRADE",
+   "quando": "2026-11-11T03:42:23.874Z"
+  },
+  {
+   "passo": "CT-005",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=82c12fd4-6e8b-4c00-bb43-6e202bc6f9c9, contractType=SALE_INSTALLMENTS",
+   "quando": "2026-11-11T03:42:23.894Z"
+  },
+  {
+   "passo": "CT-006",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=e0f7c475-2dcf-4435-a1bf-d81c9975fc17, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:23.910Z"
+  },
+  {
+   "passo": "CT-007",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=b6fdf69a-69a9-4339-b0e5-c858be498baa, contractType=LEASE_COMMERCIAL",
+   "quando": "2026-11-11T03:42:23.928Z"
+  },
+  {
+   "passo": "CT-008",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=66a86a32-adde-4145-96a9-5386e935fcfc, contractType=LEASE_SEASONAL",
+   "quando": "2026-11-11T03:42:23.940Z"
+  },
+  {
+   "passo": "CT-009",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=bbe07957-d886-4bff-a5bf-11afc4bd1086, contractType=PROPERTY_ADMIN",
+   "quando": "2026-11-11T03:42:23.953Z"
+  },
+  {
+   "passo": "CT-012",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=8c850a5f-6bd9-4939-a2c1-ccf26c7b5333, contractType=CONSTRUCTION",
+   "quando": "2026-11-11T03:42:23.991Z"
+  },
+  {
+   "passo": "CT-014b",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=7dcb3f6e-d576-44b3-9d65-9ca81179aa42, contractType=ADDENDUM",
+   "quando": "2026-11-11T03:42:24.021Z"
+  },
+  {
+   "passo": "CT-015b",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=f7c1f98e-6ce3-421a-b31a-288fe7ffcbba, contractType=KEY_DELIVERY",
+   "quando": "2026-11-11T03:42:24.044Z"
+  },
+  {
+   "passo": "CT-016b",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=bc6b05c2-71d7-482a-80d3-36517f137149, contractType=USED_PROPERTY_DELIVERY",
+   "quando": "2026-11-11T03:42:24.065Z"
+  },
+  {
+   "passo": "CT-103",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=89be6fd4-d483-4ecc-adcc-3ae9db3f8700, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:24.328Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0208-04872a.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Rota literal do livro acrescentada (apelido de POST /legal/contracts, mesmo controller/permissão/serviço) e teste novo: test/m5fech.contratos.rotasLivro.test.js \"Guia §14: POST /contracts e POST /contracts/:id/versions criam contrato e versão pelo mesmo serviço (permissão e hash do servidor)\".",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.rotasLivro.test.js test/ciTwoTenantsFinanceLegal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-002, CT-019, CT-020, CT-021, CT-003, CT-004, CT-005, CT-006, CT-007, CT-008, CT-009, CT-012, CT-014b, CT-015b, CT-016b, CT-103)"
+ },
+ "passos": [
+  {
+   "id": "CT-002",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo SALE_CASH pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_CASH",
+    "totalValue": 2000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 28,
+   "quando": "2026-11-11T03:42:23.835Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8675831d-7c60-4c0f-9a20-f40d1756d6d2",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_CASH",
+     "contractNumber": "VEN-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "2000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.824Z",
+     "created_at": "2026-11-11T03:42:23.824Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0018-77e34f",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-019",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tipo fora do catálogo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "TIPO_INVENTADO"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_VALIDATION",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:24.105Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_VALIDATION",
+     "message": "\"contractType\" deve ser um de: SALE, SALE_CASH, SALE_FINANCED, SALE_TRADE, SALE_INSTALLMENTS, LEASE, LEASE_RESIDENTIAL, LEASE_COMMERCIAL, LEASE_SEASONAL, PROPERTY_ADMIN, SERVICE, CONSTRUCTION, ADDENDUM, KEY_DELIVERY, USED_PROPERTY_DELIVERY.",
+     "traceId": "1e5e1e5c-feab-42e8-81f2-4c20834c19db"
+    }
+   },
+   "req": [
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-020",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Perfil leitura (sem legal:create) não cria contrato pela rota do livro",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_CASH"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:24.111Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:create"
+     },
+     "traceId": "a50a7af1-60df-4891-882b-bdc02bb5de30"
+    }
+   },
+   "req": [
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-021",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Sem login a rota do livro recusa",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_CASH"
+   },
+   "esperado": {
+    "status": 401
+   },
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "ok": true,
+   "ms": 3,
+   "quando": "2026-11-11T03:42:24.114Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "2a8be03f-277d-405b-bc35-ff5905313558"
+    }
+   },
+   "req": [
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-003",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo SALE_FINANCED pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_FINANCED",
+    "totalValue": 3000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:23.856Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "32ec3345-9de3-49bd-b298-cc8f0eb5713f",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_FINANCED",
+     "contractNumber": "VEN-2026-0002",
+     "status": "DRAFT",
+     "totalValue": "3000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.846Z",
+     "created_at": "2026-11-11T03:42:23.846Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0019-64e8b2",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-004",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo SALE_TRADE pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_TRADE",
+    "totalValue": 4000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:23.874Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "0e2568c4-0f0e-4e55-afe8-526eec9a4fd8",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_TRADE",
+     "contractNumber": "VEN-2026-0003",
+     "status": "DRAFT",
+     "totalValue": "4000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.866Z",
+     "created_at": "2026-11-11T03:42:23.866Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0020-87a024",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-005",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo SALE_INSTALLMENTS pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "SALE_INSTALLMENTS",
+    "totalValue": 5000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:23.894Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "82c12fd4-6e8b-4c00-bb43-6e202bc6f9c9",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "SALE_INSTALLMENTS",
+     "contractNumber": "VEN-2026-0004",
+     "status": "DRAFT",
+     "totalValue": "5000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.884Z",
+     "created_at": "2026-11-11T03:42:23.884Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0021-e335f3",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-006",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo LEASE_RESIDENTIAL pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_RESIDENTIAL",
+    "totalValue": 6000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:23.910Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "contractNumber": "LOC-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "6000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.901Z",
+     "created_at": "2026-11-11T03:42:23.901Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0022-0656df",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-007",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo LEASE_COMMERCIAL pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_COMMERCIAL",
+    "totalValue": 7000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:23.928Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b6fdf69a-69a9-4339-b0e5-c858be498baa",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_COMMERCIAL",
+     "contractNumber": "LOC-2026-0002",
+     "status": "DRAFT",
+     "totalValue": "7000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.920Z",
+     "created_at": "2026-11-11T03:42:23.920Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0023-6eecaf",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-008",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo LEASE_SEASONAL pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_SEASONAL",
+    "totalValue": 8000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:23.940Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "66a86a32-adde-4145-96a9-5386e935fcfc",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_SEASONAL",
+     "contractNumber": "LOC-2026-0003",
+     "status": "DRAFT",
+     "totalValue": "8000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.933Z",
+     "created_at": "2026-11-11T03:42:23.933Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0024-a3b990",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-009",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato do tipo PROPERTY_ADMIN pela rota literal do livro (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "PROPERTY_ADMIN",
+    "totalValue": 9000,
+    "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:23.953Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "bbe07957-d886-4bff-a5bf-11afc4bd1086",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "PROPERTY_ADMIN",
+     "contractNumber": "ADM-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "9000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.947Z",
+     "created_at": "2026-11-11T03:42:23.947Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0025-7cf0c1",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-012",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato CONSTRUCTION vinculado à obra (POST /contracts)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "CONSTRUCTION",
+    "totalValue": 250000,
+    "constructionProjectId": "3e9938bf-5151-4890-a9ea-24a321fb714b"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:23.991Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "8c850a5f-6bd9-4939-a2c1-ccf26c7b5333",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": "3e9938bf-5151-4890-a9ea-24a321fb714b",
+     "parentContractId": null,
+     "contractType": "CONSTRUCTION",
+     "contractNumber": "OBR-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "250000.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:23.983Z",
+     "created_at": "2026-11-11T03:42:23.983Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0026-efe161",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-014b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato ADDENDUM vinculado ao contrato principal (herda o imóvel; número ADT)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "ADDENDUM",
+    "totalValue": 1,
+    "parentContractId": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.021Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "7dcb3f6e-d576-44b3-9d65-9ca81179aa42",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17",
+     "contractType": "ADDENDUM",
+     "contractNumber": "ADT-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "1.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.013Z",
+     "created_at": "2026-11-11T03:42:24.013Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0027-72d604",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-015b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato KEY_DELIVERY vinculado ao contrato principal (herda o imóvel; número CHV)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "KEY_DELIVERY",
+    "totalValue": 1,
+    "parentContractId": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.044Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f7c1f98e-6ce3-421a-b31a-288fe7ffcbba",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17",
+     "contractType": "KEY_DELIVERY",
+     "contractNumber": "CHV-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "1.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.036Z",
+     "created_at": "2026-11-11T03:42:24.036Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0028-81a9e0",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-016b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cria contrato USED_PROPERTY_DELIVERY vinculado ao contrato principal (herda o imóvel; número IMU)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "USED_PROPERTY_DELIVERY",
+    "totalValue": 1,
+    "parentContractId": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:24.065Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "bc6b05c2-71d7-482a-80d3-36517f137149",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": "74eb7e63-c04b-4810-b0d7-d63310404bab",
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17",
+     "contractType": "USED_PROPERTY_DELIVERY",
+     "contractNumber": "IMU-2026-0001",
+     "status": "DRAFT",
+     "totalValue": "1.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.058Z",
+     "created_at": "2026-11-11T03:42:24.058Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0029-b27d16",
+    "M5-A0208-04872a"
+   ],
+   "modulo": "10-contratos-tipos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-103",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Contrato de locação nasce em DRAFT (montagem)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_RESIDENTIAL",
+    "totalValue": 1500
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:24.328Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "contractNumber": "LOC-2026-0004",
+     "status": "DRAFT",
+     "totalValue": "1500.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.319Z",
+     "created_at": "2026-11-11T03:42:24.319Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0051-1355bb",
+    "M5-A0208-04872a",
+    "M5-A0126-035294",
+    "M5-A0220-741ba3",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

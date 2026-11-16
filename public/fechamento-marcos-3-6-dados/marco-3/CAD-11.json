@@ -1,0 +1,43 @@
+{
+  "linha": "CAD-11",
+  "capturadoEm": "2026-11-11T11:10:36.872Z",
+  "pilha": "descartável local (API m3fix/crm-oportunidades, banco descartável com RLS real)",
+  "passos": [
+    {
+      "titulo": "administrador define a gerência a partir de 2 h de atraso",
+      "pedido": "PUT /api/v1/settings/crm.tarefa_vencida.escalar_gerencia_apos_horas",
+      "corpo": {
+        "value": 2
+      },
+      "status": 200,
+      "codigo": null,
+      "resposta": {
+        "id": "0f0b26da-500f-41aa-b07f-96ee6c8bce76",
+        "groupId": "02d9b642-bb78-4416-8732-aab801adda4d",
+        "companyId": "e1a29cef-7cf7-46bd-b8ba-781ddb7333f4",
+        "key": "crm.tarefa_vencida.escalar_gerencia_apos_horas",
+        "value": 2,
+        "createdBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updatedBy": "edd0c6db-c042-4e74-a649-523867044483",
+        "updated_at": "2026-11-11T11:10:36.768Z",
+        "created_at": "2026-11-11T11:10:36.768Z",
+        "deletedBy": null,
+        "deleted_at": null
+      },
+      "em": "2026-11-11T11:10:36.817Z"
+    },
+    {
+      "titulo": "formato inválido de motivos é recusado",
+      "pedido": "PUT /api/v1/settings/crm.motivos.perda",
+      "corpo": {
+        "value": "preço alto"
+      },
+      "status": 400,
+      "codigo": "SETTING_INVALID_VALUE",
+      "resposta": {
+        "message": "O valor de \"crm.motivos.perda\" deve ser uma lista \"CODIGO=Rótulo\" separada por vírgula (até 30 motivos, código em maiúsculas com letras, números e _, sem repetir). Exemplo: PRICE_TOO_HIGH=Preço alto,COMPETITOR=Concorrente."
+      },
+      "em": "2026-11-11T11:10:36.849Z"
+    }
+  ]
+}

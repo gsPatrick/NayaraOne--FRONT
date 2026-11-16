@@ -1,0 +1,56 @@
+{
+ "id": "M5-A0002-dc355e",
+ "linhaCaderno": 15,
+ "requisito": "Este bloco deve garantir que nenhum contrato avance sem documentação e aprovações obrigatórias, que a locação mantenha histórico completo de garantias e obrigações, que vistorias sejam comparáveis e assinadas, e que processos/prazos jurídicos possuam rastreabilidade, evidência e alertas.",
+ "correcao": "as quatro garantias do objetivo provadas por teste próprio (test/m5vp.objetivo.test.js): checklist e versão aprovada (contract.service transitionContractStatus), histórico de garantias (guaranteeStateGuards.js, gatilho 20260101015600) e de obrigações (legal.lease_obligation_cycles), vistorias assinadas e comparáveis (inspection.service compareInspections), prazos com origem, alerta e ocorrência (legalDeadlineAlertJob.js)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.objetivo.test.js",
+   "nome": "M5-A0002 (1): contrato não avança sem os documentos obrigatórios nem sem a versão aprovada",
+   "status": "pass",
+   "ms": 232.757,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "pass",
+    "erro": null
+   }
+  },
+  {
+   "arquivo": "test/m5vp.objetivo.test.js",
+   "nome": "M5-A0002 (2): histórico completo de garantias (substituída preservada e imutável) e de obrigações (cada vencimento fica registrado)",
+   "status": "pass",
+   "ms": 331.054,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "Missing expected rejection."
+   }
+  },
+  {
+   "arquivo": "test/m5vp.objetivo.test.js",
+   "nome": "M5-A0002 (3): vistorias de entrada e saída são assinadas (congeladas) e comparáveis item a item",
+   "status": "pass",
+   "ms": 161.287,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "pass",
+    "erro": null
+   }
+  },
+  {
+   "arquivo": "test/m5vp.objetivo.test.js",
+   "nome": "M5-A0002 (4): prazo jurídico com origem, alerta ao responsável, evento de vencido e conclusão só com evidência",
+   "status": "pass",
+   "ms": 144.78,
+   "commitDoTeste": "28c894ea",
+   "naBase41addaa2": {
+    "status": "pass",
+    "erro": null
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.735Z"
+}

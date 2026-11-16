@@ -1,0 +1,250 @@
+{
+ "id": "M5-A0197-0e0edb",
+ "secao": "P2 > 3. Contract state machine",
+ "linhaCaderno": 489,
+ "requisito": "function assertTransition(from, to) { if (!transitions[from]?.includes(to)) throw new InvalidStateTransition(); }",
+ "demandas": "M5-D002",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js:417 transitionContractStatus / src/modules/legal/contracts/application/contract.service.js:532 applyGatedTransition: par fora da tabela -> 409 LEGAL_CONTRACT_INVALID_TRANSITION",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/legal.contracts.test.js",
+   "nome": "máquina de estados: transições inválidas são bloqueadas (DRAFT -> ACTIVE direto, SUSPENDED -> CLOSED direto)",
+   "status": "pass",
+   "ms": 49.315,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L04: pular a máquina de estados (DRAFT -> ACTIVE e DRAFT -> SIGNED direto) é rejeitado",
+   "status": "pass",
+   "ms": 27.592,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.auditGapClosureR1.test.js",
+   "nome": "G5: saltos proibidos continuam bloqueados de ponta a ponta (DRAFT direto para ACTIVE/SIGNED)",
+   "status": "pass",
+   "ms": 44.579,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-112",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "resumo": "erro LEGAL_CONTRACT_INVALID_TRANSITION: Transição de status inválida: \"DOCUMENTS_PENDING\" -> \"ACTIVE\". Transições permitidas a partir de \"DO",
+   "quando": "2026-11-11T03:42:24.601Z"
+  },
+  {
+   "passo": "CT-118",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "resumo": "erro LEGAL_CONTRACT_INVALID_TRANSITION: Transição de status inválida: \"DOCUMENTS_PENDING\" -> \"APPROVED\". Transições permitidas a partir de \"",
+   "quando": "2026-11-11T03:42:24.797Z"
+  },
+  {
+   "passo": "CT-223",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "resumo": "erro LEGAL_CONTRACT_INVALID_TRANSITION: Transição de status inválida: \"CLOSED\" -> \"ACTIVE\". Transições permitidas a partir de \"CLOSED\": (nen",
+   "quando": "2026-11-11T03:42:25.998Z"
+  },
+  {
+   "passo": "CT-117",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:checker",
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "resumo": "erro LEGAL_CONTRACT_INVALID_TRANSITION: Transição de status inválida: \"DOCUMENTS_PENDING\" -> \"DOCUMENTS_PENDING\". Transições permitidas a pa",
+   "quando": "2026-11-11T03:42:24.782Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0197-0e0edb.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.contracts.test.js test/adversarial.legal.test.js test/marco5.auditGapClosureR1.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-112, CT-118, CT-223, CT-117)"
+ },
+ "passos": [
+  {
+   "id": "CT-112",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Salto proibido DOCUMENTS_PENDING -> ACTIVE: transição inválida",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "ACTIVE"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:24.601Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_INVALID_TRANSITION",
+     "message": "Transição de status inválida: \"DOCUMENTS_PENDING\" -> \"ACTIVE\". Transições permitidas a partir de \"DOCUMENTS_PENDING\": LEGAL_REVIEW.",
+     "traceId": "2d5291b6-7d6e-449e-ba11-ced67cb952ca"
+    }
+   },
+   "req": [
+    "M5-A0197-0e0edb",
+    "M5-A0263-1349d7"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-118",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DOCUMENTS_PENDING -> APPROVED (pular revisão jurídica) é inválido",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "APPROVED"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:24.797Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_INVALID_TRANSITION",
+     "message": "Transição de status inválida: \"DOCUMENTS_PENDING\" -> \"APPROVED\". Transições permitidas a partir de \"DOCUMENTS_PENDING\": LEGAL_REVIEW.",
+     "traceId": "496e83cf-b643-4d92-a069-211f5cd9421c"
+    }
+   },
+   "req": [
+    "M5-A0197-0e0edb"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-223",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "De CLOSED não há transição",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "ACTIVE"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:25.998Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_INVALID_TRANSITION",
+     "message": "Transição de status inválida: \"CLOSED\" -> \"ACTIVE\". Transições permitidas a partir de \"CLOSED\": (nenhuma).",
+     "traceId": "1bfa3bbd-ebfc-4c52-8815-24965cc8b18b"
+    }
+   },
+   "req": [
+    "M5-A0197-0e0edb",
+    "M5-A0060-eea580"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-117",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "DOCUMENTS_PENDING -> DOCUMENTS_PENDING não existe",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "DOCUMENTS_PENDING"
+   },
+   "esperado": {
+    "status": 409,
+    "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION"
+   },
+   "status": 409,
+   "codigo": "LEGAL_CONTRACT_INVALID_TRANSITION",
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:24.782Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_INVALID_TRANSITION",
+     "message": "Transição de status inválida: \"DOCUMENTS_PENDING\" -> \"DOCUMENTS_PENDING\". Transições permitidas a partir de \"DOCUMENTS_PENDING\": LEGAL_REVIEW.",
+     "traceId": "973d454d-80e1-4442-98ed-6cebeadaffa9"
+    }
+   },
+   "req": [
+    "M5-A0196-8a7471",
+    "M5-A0197-0e0edb"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

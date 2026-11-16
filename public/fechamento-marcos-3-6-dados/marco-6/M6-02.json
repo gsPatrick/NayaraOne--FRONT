@@ -1,0 +1,470 @@
+{
+  "id": "M6-02",
+  "requisito": "Tabela obrigatória construction.project_stages (\"RLS e company_id obrigatórios\", §2).",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §3 Tabelas obrigatórias",
+  "implementacao": "construction.project_stages (src/models/ProjectStage.js); mapeamento livro → tabela física em src/features/construction/README.md",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/etapas/<etapa>: etapa com código, custo previsto, prazo e responsável",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-TAB0701: iniciar etapa (PENDING -> IN_PROGRESS) exige stageCode/plannedCost/startsAt/endsAt",
+      "resultado": "passou",
+      "duracaoMs": 60,
+      "executadoEm": "2026-11-11T00:13:52.156Z"
+    },
+    {
+      "arquivo": "test/construction.measurements.test.js",
+      "nome": "M6-NOVO-8: createProjectStage recusa sequence duplicado na mesma obra; sem informar sequence, auto-incrementa",
+      "resultado": "passou",
+      "duracaoMs": 347,
+      "executadoEm": "2026-11-11T00:13:51.589Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H035",
+      "H036",
+      "H037",
+      "H042"
+    ],
+    "resumo": [
+      "H035 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages → 201",
+      "H036 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages → 201",
+      "H037 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages → 201",
+      "H042 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:09.337Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H035",
+      "requisitos": [
+        "M6-02",
+        "M6-19"
+      ],
+      "cenario": "Criar etapa \"Fundação\" (código, custo previsto, prazo, responsável)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "name": "Fundação",
+        "stageCode": "FUN-c4fcd6",
+        "sequence": 1,
+        "plannedPct": 100,
+        "plannedCost": 45000,
+        "startsAt": "2026-10-05",
+        "endsAt": "2027-02-28",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 44,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "publicVisible": false,
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "name": "Fundação",
+          "stageCode": "FUN-c4fcd6",
+          "plannedCost": "45000.00",
+          "sequence": 1,
+          "plannedPct": "100.000000",
+          "measuredPct": null,
+          "status": "PENDING",
+          "startsAt": "2026-10-05T00:00:00.000Z",
+          "endsAt": "2027-02-28T00:00:00.000Z",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:09.312Z",
+          "created_at": "2026-11-11T00:12:09.312Z",
+          "publicSince": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.337Z"
+    },
+    {
+      "id": "H036",
+      "requisitos": [
+        "M6-02",
+        "M6-19"
+      ],
+      "cenario": "Criar etapa \"Alvenaria\" (código, custo previsto, prazo, responsável)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "name": "Alvenaria",
+        "stageCode": "ALV-c4fcd6",
+        "sequence": 2,
+        "plannedPct": 100,
+        "plannedCost": 35000,
+        "startsAt": "2026-10-05",
+        "endsAt": "2027-02-28",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 29,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "publicVisible": false,
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "name": "Alvenaria",
+          "stageCode": "ALV-c4fcd6",
+          "plannedCost": "35000.00",
+          "sequence": 2,
+          "plannedPct": "100.000000",
+          "measuredPct": null,
+          "status": "PENDING",
+          "startsAt": "2026-10-05T00:00:00.000Z",
+          "endsAt": "2027-02-28T00:00:00.000Z",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:09.358Z",
+          "created_at": "2026-11-11T00:12:09.358Z",
+          "publicSince": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.366Z"
+    },
+    {
+      "id": "H037",
+      "requisitos": [
+        "M6-02",
+        "M6-19"
+      ],
+      "cenario": "Criar etapa \"Cobertura\" (código, custo previsto, prazo, responsável)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "name": "Cobertura",
+        "stageCode": "COB-c4fcd6",
+        "sequence": 3,
+        "plannedPct": 100,
+        "plannedCost": 6000,
+        "startsAt": "2026-10-05",
+        "endsAt": "2027-02-28",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 182,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "e16ccea5-a649-4817-8ca2-b9a797854c1e",
+          "publicVisible": false,
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "name": "Cobertura",
+          "stageCode": "COB-c4fcd6",
+          "plannedCost": "6000.00",
+          "sequence": 3,
+          "plannedPct": "100.000000",
+          "measuredPct": null,
+          "status": "PENDING",
+          "startsAt": "2026-10-05T00:00:00.000Z",
+          "endsAt": "2027-02-28T00:00:00.000Z",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:09.377Z",
+          "created_at": "2026-11-11T00:12:09.377Z",
+          "publicSince": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:09.548Z"
+    },
+    {
+      "id": "H042",
+      "requisitos": [
+        "M6-02",
+        "M6-44",
+        "M6-103"
+      ],
+      "cenario": "Cronograma: etapas da obra",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/stages",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 17,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Fundação",
+            "stageCode": "FUN-c4fcd6",
+            "plannedCost": "45000.00",
+            "sequence": 1,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.312Z",
+            "updated_at": "2026-11-11T00:12:09.312Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          },
+          {
+            "id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Alvenaria",
+            "stageCode": "ALV-c4fcd6",
+            "plannedCost": "35000.00",
+            "sequence": 2,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.358Z",
+            "updated_at": "2026-11-11T00:12:09.358Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          },
+          {
+            "id": "e16ccea5-a649-4817-8ca2-b9a797854c1e",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "name": "Cobertura",
+            "stageCode": "COB-c4fcd6",
+            "plannedCost": "6000.00",
+            "sequence": 3,
+            "plannedPct": "100.000000",
+            "measuredPct": null,
+            "status": "PENDING",
+            "startsAt": "2026-10-05T00:00:00.000Z",
+            "endsAt": "2027-02-28T00:00:00.000Z",
+            "publicVisible": false,
+            "publicSince": null,
+            "lockVersion": 0,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:09.377Z",
+            "updated_at": "2026-11-11T00:12:09.377Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:09.933Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C001",
+      "requisitos": [
+        "M6-01",
+        "M6-02",
+        "M6-03",
+        "M6-04",
+        "M6-05",
+        "M6-06",
+        "M6-07",
+        "M6-08",
+        "M6-09",
+        "M6-10",
+        "M6-11",
+        "M6-12",
+        "M6-13",
+        "M6-14",
+        "M6-15",
+        "M6-16",
+        "M6-92",
+        "M6-103",
+        "M6-95"
+      ],
+      "descricao": "As 16 tabelas do Caderno existem no schema construction (nome físico mapeado no README do módulo), com company_id, unit_id e RLS ENABLE + FORCE",
+      "sql": "SELECT c.relname AS tabela, c.relrowsecurity AS rls, c.relforcerowsecurity AS force, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'company_id') AS company_id, EXISTS (SELECT 1 FROM information_schema.columns k WHERE k.table_schema = 'construction' AND k.table_name = c.relname AND k.column_name = 'unit_id') AS unit_id, (SELECT count(*) FROM pg_policies p WHERE p.schemaname = 'construction' AND p.tablename = c.relname)::int AS politicas FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'construction' AND c.relkind = 'r' AND c.relname = ANY($1) ORDER BY 1",
+      "resultado": [
+        {
+          "tabela": "budget_lines",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "budgets",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "change_orders",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_materials",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_reports",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "daily_workers",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "loss_records",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "maintenance_cases",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "measurement_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "nonconformities",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "project_stages",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "projects",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": true,
+          "politicas": 1
+        },
+        {
+          "tabela": "quality_checklist_items",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_dependencies",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "stage_measurements",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        },
+        {
+          "tabela": "warranty_actions",
+          "rls": true,
+          "force": true,
+          "company_id": true,
+          "unit_id": false,
+          "politicas": 1
+        }
+      ],
+      "invariante": "as 16 tabelas existem, todas com company_id, RLS ENABLE + FORCE e ao menos uma política",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.166Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.375Z"
+}

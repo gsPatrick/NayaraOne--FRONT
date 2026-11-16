@@ -1,0 +1,222 @@
+{
+ "quando": "2026-11-11T02:19:05.477Z",
+ "pares": [
+  {
+   "antigo": "legal.contract_amendments",
+   "livro": "legal.addenda"
+  },
+  {
+   "antigo": "legal.legal_case_parties",
+   "livro": "legal.case_parties"
+  },
+  {
+   "antigo": "finance.utility_obligations",
+   "livro": "legal.lease_obligations"
+  },
+  {
+   "antigo": "legal.contract_clauses",
+   "livro": "legal.clause_versions"
+  }
+ ],
+ "etapas": [
+  {
+   "etapa": "migrado (nome do livro)",
+   "fotos": [
+    {
+     "nome": "legal.addenda",
+     "oid": 19597,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 3,
+     "fks_que_apontam": "legal.addendum_signatures.addendum_signatures_addendum_id_fkey",
+     "gatilhos": 0,
+     "linhas": 1
+    },
+    {
+     "nome": "legal.case_parties",
+     "oid": 19629,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 2,
+     "fks_que_apontam": null,
+     "gatilhos": 0,
+     "linhas": 1
+    },
+    {
+     "nome": "legal.lease_obligations",
+     "oid": 19101,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 2,
+     "fks_que_apontam": "finance.utility_accounts.utility_accounts_utility_obligation_id_fkey,finance.utility_reimbursements.utility_reimbursements_utility_obligation_id_fkey,finance.ownership_transfer_tasks.ownership_transfer_tasks_utility_obligation_id_fkey",
+     "gatilhos": 0,
+     "linhas": 1
+    },
+    {
+     "nome": "legal.clause_versions",
+     "oid": 19525,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 3,
+     "fks_que_apontam": "legal.contract_template_clauses.contract_template_clauses_contract_clause_id_fkey",
+     "gatilhos": 1,
+     "linhas": 1
+    }
+   ]
+  },
+  {
+   "etapa": "down até 20260101009981-legal-aprovacao-por-versao-e-arquivo-da-versao.js (nomes antigos)",
+   "fotos": [
+    {
+     "antigo": "legal.contract_amendments",
+     "livro": "legal.addenda",
+     "velho": {
+      "nome": "legal.contract_amendments",
+      "oid": 19597,
+      "tipo": "r",
+      "rls": true,
+      "force": true,
+      "policies": 1,
+      "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+      "indices": 3,
+      "fks_que_apontam": null,
+      "gatilhos": 0,
+      "linhas": 1
+     },
+     "livroAindaExiste": false
+    },
+    {
+     "antigo": "legal.legal_case_parties",
+     "livro": "legal.case_parties",
+     "velho": {
+      "nome": "legal.legal_case_parties",
+      "oid": 19629,
+      "tipo": "r",
+      "rls": true,
+      "force": true,
+      "policies": 1,
+      "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+      "indices": 2,
+      "fks_que_apontam": null,
+      "gatilhos": 0,
+      "linhas": 1
+     },
+     "livroAindaExiste": false
+    },
+    {
+     "antigo": "finance.utility_obligations",
+     "livro": "legal.lease_obligations",
+     "velho": {
+      "nome": "finance.utility_obligations",
+      "oid": 19101,
+      "tipo": "r",
+      "rls": true,
+      "force": true,
+      "policies": 1,
+      "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+      "indices": 2,
+      "fks_que_apontam": "finance.utility_accounts.utility_accounts_utility_obligation_id_fkey,finance.utility_reimbursements.utility_reimbursements_utility_obligation_id_fkey,finance.ownership_transfer_tasks.ownership_transfer_tasks_utility_obligation_id_fkey",
+      "gatilhos": 0,
+      "linhas": 1
+     },
+     "livroAindaExiste": false
+    },
+    {
+     "antigo": "legal.contract_clauses",
+     "livro": "legal.clause_versions",
+     "velho": {
+      "nome": "legal.contract_clauses",
+      "oid": 19525,
+      "tipo": "r",
+      "rls": true,
+      "force": true,
+      "policies": 1,
+      "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+      "indices": 2,
+      "fks_que_apontam": "legal.contract_template_clauses.contract_template_clauses_contract_clause_id_fkey",
+      "gatilhos": 1,
+      "linhas": 1
+     },
+     "livroAindaExiste": false
+    }
+   ]
+  },
+  {
+   "etapa": "refeito (db:migrate)",
+   "fotos": [
+    {
+     "nome": "legal.addenda",
+     "oid": 19597,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 3,
+     "fks_que_apontam": "legal.addendum_signatures.addendum_signatures_addendum_id_fkey",
+     "gatilhos": 0,
+     "linhas": 1
+    },
+    {
+     "nome": "legal.case_parties",
+     "oid": 19629,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 2,
+     "fks_que_apontam": null,
+     "gatilhos": 0,
+     "linhas": 1
+    },
+    {
+     "nome": "legal.lease_obligations",
+     "oid": 19101,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 2,
+     "fks_que_apontam": "finance.utility_accounts.utility_accounts_utility_obligation_id_fkey,finance.utility_reimbursements.utility_reimbursements_utility_obligation_id_fkey,finance.ownership_transfer_tasks.ownership_transfer_tasks_utility_obligation_id_fkey",
+     "gatilhos": 0,
+     "linhas": 1
+    },
+    {
+     "nome": "legal.clause_versions",
+     "oid": 19525,
+     "tipo": "r",
+     "rls": true,
+     "force": true,
+     "policies": 1,
+     "grants_runtime": "DELETE,INSERT,SELECT,UPDATE",
+     "indices": 3,
+     "fks_que_apontam": "legal.contract_template_clauses.contract_template_clauses_contract_clause_id_fkey",
+     "gatilhos": 1,
+     "linhas": 1
+    }
+   ]
+  }
+ ],
+ "erros": [],
+ "sementes": {
+  "contrato": "36a89a6a-b94e-415f-9e17-0d596067d196",
+  "pessoa": "211fa293-14d0-4f21-9b94-ffb1c67bc9a8",
+  "processo": "eeaca3e4-de96-42de-a375-1ba040c79a8f"
+ },
+ "visaoFinanceUtilityObligations": "v",
+ "resultado": "OK"
+}

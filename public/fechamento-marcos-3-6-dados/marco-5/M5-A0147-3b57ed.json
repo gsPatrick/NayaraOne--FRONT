@@ -1,0 +1,438 @@
+{
+ "id": "M5-A0147-3b57ed",
+ "secao": "P1 > 19. Segurança e permissões [tabela: Ação | Controle]",
+ "linhaCaderno": 347,
+ "requisito": "Exportar dossiê | Permissão específica + audit/MFA conforme risco.",
+ "demandas": "M5-D040;X45-D007",
+ "implementacao": "src/modules/legal/shared/legal.routes.js GET /legal/evidence-packages/:id/export com requirePermission('legal:evidence:export') (permissão própria no catálogo, migration 20260101009999, concedida ao ADMIN; seed-dev e perfil CI GESTOR) -> src/modules/legal/shared/legal.controller.js exportEvidencePackage -> src/features/core-governance/dlp/downloads/dossier.guard.js (classe herdada; HIGH/RESTRICTED: finalidade, justificativa, MFA e auditoria); docs/API_PERMISSOES.md regerado",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JUR-TS-011: exportar dossiê sem a permissão específica legal:evidence:export é negado (403 PERMISSION_DENIED, inclusive só com legal:read) sem registro EXPORTED; outra empresa/inexistente 404; com a permissão a DLP ainda exige finalidade e MFA (classe HIGH)",
+   "status": "pass",
+   "ms": 133.609,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/adversarial.legal.test.js",
+   "nome": "ADV-L14: exportar/visualizar dossiê de um caso de outro tenant falha e NÃO deixa rastro na cadeia de custódia do dono",
+   "status": "pass",
+   "ms": 27.94,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E14",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "A:mascarado",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.799Z"
+  },
+  {
+   "passo": "JR-E15",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_EVIDENCE_PACKAGE_NOT_FOUND: Pacote de evidências não encontrado.",
+   "quando": "2026-11-11T03:42:38.806Z"
+  },
+  {
+   "passo": "JR-E16",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "esperado": {
+    "status": 401
+   },
+   "resumo": "erro MISSING_ACCESS_TOKEN: Token de acesso ausente.",
+   "quando": "2026-11-11T03:42:38.810Z"
+  },
+  {
+   "passo": "JR-E17",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "perfil": "A:gestor",
+   "status": 422,
+   "codigo": "GOV_DLP_PURPOSE_REQUIRED",
+   "esperado": {
+    "status": 422,
+    "codigo": "GOV_DLP_PURPOSE_REQUIRED"
+   },
+   "resumo": "erro GOV_DLP_PURPOSE_REQUIRED: Informe a finalidade e uma justificativa com pelo menos 20 caracteres.",
+   "quando": "2026-11-11T03:42:38.851Z"
+  },
+  {
+   "passo": "JR-E18",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "perfil": "A:gestor",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "resumo": "erro MFA_STEP_UP_REQUIRED: Confirme o código de verificação para continuar.",
+   "quando": "2026-11-11T03:42:38.876Z"
+  },
+  {
+   "passo": "JR-E20",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "perfil": "A:gestor",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "resumo": "erro MFA_STEP_UP_REQUIRED: Confirme o código de verificação para continuar.",
+   "quando": "2026-11-11T03:42:38.928Z"
+  },
+  {
+   "passo": "JR-E20b",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:38.934Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0147-3b57ed.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: a exportação exigia só legal:read; passou a exigir a permissão específica legal:evidence:export (403 PERMISSION_DENIED só com legal:read), mantendo a DLP/MFA por cima.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.rotas.test.js test/adversarial.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E14, JR-E15, JR-E16, JR-E17, JR-E18, JR-E20, JR-E20b, JR-E23)"
+ },
+ "passos": [
+  {
+   "id": "JR-E14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: perfil sem legal:read exporta o dossiê: negado",
+   "perfil": "A:mascarado",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:38.799Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:evidence:export"
+     },
+     "traceId": "fd831be6-e29e-4f64-b72a-5c7ebe8e65b6"
+    }
+   },
+   "req": [
+    "M5-A0176-ee3342",
+    "M5-A0275-303a9e",
+    "M5-A0159-a8f148",
+    "M5-A0147-3b57ed"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: tenant B exporta o dossiê de A: não existe",
+   "perfil": "B:gestor",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.806Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_EVIDENCE_PACKAGE_NOT_FOUND",
+     "message": "Pacote de evidências não encontrado.",
+     "traceId": "43c9a2bf-6ff2-4588-b803-183f8334b5d8"
+    }
+   },
+   "req": [
+    "M5-A0159-a8f148",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-011: anônimo exporta o dossiê: negado",
+   "perfil": "anonimo",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 401
+   },
+   "status": 401,
+   "codigo": "MISSING_ACCESS_TOKEN",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T03:42:38.810Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MISSING_ACCESS_TOKEN",
+     "message": "Token de acesso ausente.",
+     "traceId": "af049c53-8338-426e-ac5e-2b0a213a09db"
+    }
+   },
+   "req": [
+    "M5-A0159-a8f148"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dossiê com arquivo HIGH: exportar sem finalidade/justificativa é recusado pela DLP",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 422,
+    "codigo": "GOV_DLP_PURPOSE_REQUIRED"
+   },
+   "status": 422,
+   "codigo": "GOV_DLP_PURPOSE_REQUIRED",
+   "ok": true,
+   "ms": 41,
+   "quando": "2026-11-11T03:42:38.851Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "GOV_DLP_PURPOSE_REQUIRED",
+     "message": "Informe a finalidade e uma justificativa com pelo menos 20 caracteres.",
+     "details": {
+      "blockReason": "PURPOSE",
+      "exportJobId": "f7015176-eb61-41df-9d42-ca933f6c1dd0"
+     },
+     "traceId": "4c6771c3-eaaa-4ca2-ae85-cb6f6d0a8ab3"
+    }
+   },
+   "req": [
+    "M5-A0147-3b57ed",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Com finalidade e justificativa, a exportação ainda exige MFA recente (recusa real, sem forjar MFA)",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:38.876Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Confirme o código de verificação para continuar.",
+     "details": {
+      "blockReason": "MFA",
+      "exportJobId": "1fc2931d-952b-4d65-9220-8f9652010620"
+     },
+     "traceId": "7907b6e7-5416-4cda-b7cd-35835e136331"
+    }
+   },
+   "req": [
+    "M5-A0147-3b57ed",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E20",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Dossiê sem arquivo herda a classe padrão da empresa (HIGH): com a permissão, finalidade e justificativa, falta só o MFA recente (recusa real)",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "MFA_STEP_UP_REQUIRED"
+   },
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T03:42:38.928Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "MFA_STEP_UP_REQUIRED",
+     "message": "Confirme o código de verificação para continuar.",
+     "details": {
+      "blockReason": "MFA",
+      "exportJobId": "b5049d37-c59f-4520-a49f-09b590b7630d"
+     },
+     "traceId": "c05b6a6e-a4fb-4c69-bcaa-88d115a52d0a"
+    }
+   },
+   "req": [
+    "M5-A0147-3b57ed",
+    "M5-A0159-a8f148",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E20b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Permissão específica: perfil com legal:read mas sem legal:evidence:export não exporta",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/export?purpose=JURIDICO&justification=Entrega%20do%20dossi%C3%AA%20ao%20advogado%20da%20causa",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:38.934Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:evidence:export"
+     },
+     "traceId": "39d8a9eb-9ad4-4677-8eff-f82cc112152d"
+    }
+   },
+   "req": [
+    "M5-A0147-3b57ed",
+    "M5-A0159-a8f148"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E23",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exportação do dossiê com arquivo HIGH pela camada de serviço (o que a rota entrega depois do MFA): manifesto íntegro contra o hash gravado",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "evidence.exportEvidencePackage(pacote) + verifyEvidencePackageIntegrity(export, package_hash)",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:38.948Z",
+   "corpo": {
+    "result": {
+     "exportPackageId": "cd7349bd-9528-487f-b95c-76ab2673a9ba",
+     "exportManifestHash": "a854f54afdaed1be7e8a5b640073cc6dd9b72bc57f47fc4148781194c5a5ded6",
+     "itemCount": 2,
+     "integridade": {
+      "valid": true,
+      "recomputedHash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d",
+      "expectedHash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d"
+     }
+    }
+   },
+   "req": [
+    "M5-A0147-3b57ed",
+    "M5-A0115-37e523",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "servico"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

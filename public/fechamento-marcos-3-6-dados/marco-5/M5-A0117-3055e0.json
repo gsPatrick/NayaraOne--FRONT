@@ -1,0 +1,296 @@
+{
+ "id": "M5-A0117-3055e0",
+ "secao": "P1 > 16. Cadeia de custódia / dossiê de provas",
+ "linhaCaderno": 280,
+ "requisito": "• Acesso/exportação são auditados.",
+ "demandas": "X45-D025;X45-D007;M5-D039",
+ "implementacao": "src/modules/legal/cases/evidence-package.service.js logEvidenceAccess (VIEWED/EXPORTED append-only + audit legal.evidence_package.access); export passa pelo guard da DLP (src/features/core-governance/dlp/downloads/dossier.guard.js) que registra o pedido",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.custodia.test.js",
+   "nome": "JR dossiê: cada exportação gera package_id e hash de manifesto novos; acesso e exportação ficam na cadeia de custódia e na auditoria (§16)",
+   "status": "pass",
+   "ms": 19.973,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "M5-28: cada acesso ao dossiê grava uma linha nova na cadeia de custódia (histórico nunca sobrescrito)",
+   "status": "pass",
+   "ms": 28.086,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/auditoriaNayara.marco5.coverage.test.js",
+   "nome": "dossiê: pacote de evidências a partir de anexos reais do contrato grava hash real e cadeia de custódia completa (VIEWED/EXPORTED)",
+   "status": "pass",
+   "ms": 55.011,
+   "commitDoTeste": "1d4a4ed0"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-E13",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "id=c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "quando": "2026-11-11T03:42:38.794Z"
+  },
+  {
+   "passo": "JR-E24",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/access-log",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 2 item(ns)",
+   "quando": "2026-11-11T03:42:38.958Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0117-3055e0.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.custodia.test.js test/marco5.legal.test.js test/auditoriaNayara.marco5.coverage.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-E13, JR-E21, JR-E24, JR-E25)"
+ },
+ "passos": [
+  {
+   "id": "JR-E13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura humana do dossiê entra na cadeia de custódia (VIEWED)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/c2c501d7-6d10-4577-80c7-fb33b2f48390",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:38.794Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c2c501d7-6d10-4577-80c7-fb33b2f48390",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+     "manifestJson": [
+      {
+       "hash": "c401edf9a08a1570dc4db7d1d03b8a332e8528d1f07c87ee91b62eca783d2aa6",
+       "type": "PHOTO",
+       "fileId": "d6a25622-d956-4302-9b0f-faafa54380ad",
+       "source": "people.files",
+       "createdAt": "2026-11-11T03:42:38.561Z",
+       "description": "Foto original do dano",
+       "referenceId": null,
+       "originalName": "foto-original-mwbkpkp8rgtk.pdf"
+      },
+      {
+       "hash": null,
+       "type": "NOTE",
+       "description": "Nota do perito (sem arquivo)",
+       "referenceId": null
+      }
+     ],
+     "packageHash": "7d57d0dcb3f80f6452d3829ab42b6e3db79d99f02fd8bdc62cf52eb023d4932d",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:38.744Z",
+     "legal_case_id": "b684c133-de9b-461e-bd47-84912b4c9ed1"
+    }
+   },
+   "req": [
+    "M5-A0117-3055e0"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-E21",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "Exporta o dossiê duas vezes (camada de serviço, o que a rota entrega após o MFA): export_package_id e export_manifest_hash novos a cada vez, package_hash igual e íntegro",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "evidence.exportEvidencePackage(pacote) x2 + verifyEvidencePackageIntegrity",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:38.943Z",
+   "corpo": {
+    "result": {
+     "exportPackageIds": [
+      "1ccc3c5c-e301-45fc-a575-b1c989b298be",
+      "902ccfb1-4f53-4947-80eb-44613834679a"
+     ],
+     "exportManifestHashes": [
+      "e7ce8b7503348f03fff6cb4d587076b209463f462e2bc852a7f6efd7f7ff2fe2",
+      "8e1cc2e04bc741662c4856b0b4a39bcbd7474cdf930cab096af020d9e39cbe8d"
+     ],
+     "packageHash": [
+      "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636",
+      "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636"
+     ],
+     "integridade": true,
+     "export1": {
+      "formatVersion": 1,
+      "exportPackageId": "1ccc3c5c-e301-45fc-a575-b1c989b298be",
+      "exportManifestHash": "e7ce8b7503348f03fff6cb4d587076b209463f462e2bc852a7f6efd7f7ff2fe2",
+      "evidencePackageId": "8bda8b63-38bc-4671-b5d0-2ca9f747b696",
+      "legalCaseId": "b684c133-de9b-461e-bd47-84912b4c9ed1",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "createdAt": {},
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "itemCount": 1,
+      "manifest": [
+       {
+        "hash": null,
+        "type": "NOTE",
+        "description": "Ata de reunião fictícia",
+        "referenceId": null
+       }
+      ],
+      "packageHash": "e42bcf0fb2c63c4d82df71dbf040bf29b7624a8a3a8d0203efa18f0875cb4636",
+      "exportedAt": "2026-11-11T03:42:38.939Z",
+      "exportedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b"
+     }
+    }
+   },
+   "req": [
+    "M5-A0115-37e523",
+    "M5-A0117-3055e0",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-E24",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Cadeia de custódia do dossiê: quem acessou/exportou e quando (append-only)",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/evidence-packages/8bda8b63-38bc-4671-b5d0-2ca9f747b696/access-log",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:38.958Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "1ccc3c5c-e301-45fc-a575-b1c989b298be",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "evidencePackageId": "8bda8b63-38bc-4671-b5d0-2ca9f747b696",
+      "accessedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "action": "EXPORTED",
+      "accessedAt": "2026-11-11T03:42:38.936Z",
+      "evidence_package_id": "8bda8b63-38bc-4671-b5d0-2ca9f747b696",
+      "accessed_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b"
+     },
+     {
+      "id": "902ccfb1-4f53-4947-80eb-44613834679a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "evidencePackageId": "8bda8b63-38bc-4671-b5d0-2ca9f747b696",
+      "accessedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "action": "EXPORTED",
+      "accessedAt": "2026-11-11T03:42:38.940Z",
+      "evidence_package_id": "8bda8b63-38bc-4671-b5d0-2ca9f747b696",
+      "accessed_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0117-3055e0",
+    "M5-A0307-653b7c",
+    "M5-A0178-2ca3fa",
+    "M5-A0276-8957f9"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-E25",
+   "req": [
+    "M5-A0117-3055e0",
+    "M5-A0159-a8f148"
+   ],
+   "modulo": "30-juridico-3-dossie",
+   "perfil": "A:gestor",
+   "descricao": "Custódia: VIEWED/EXPORTED com usuário e data; as exportações recusadas (sem permissão, DLP, MFA) não geraram EXPORTED; cada acesso tem auditoria",
+   "sql": "SELECT l.evidence_package_id = :pkgNota AS do_dossie_nota, l.action, l.accessed_by_user_id IS NOT NULL AS tem_usuario, l.accessed_at::text AS accessed_at, (SELECT count(*) FROM audit.audit_log a WHERE a.entity_id = l.id AND a.action = 'legal.evidence_package.access') AS auditorias FROM legal.evidence_package_access_log l WHERE l.evidence_package_id IN (:pkg, :pkgNota) ORDER BY l.accessed_at",
+   "resultado": [
+    {
+     "do_dossie_nota": false,
+     "action": "VIEWED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.789+00",
+     "auditorias": "1"
+    },
+    {
+     "do_dossie_nota": true,
+     "action": "EXPORTED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.936+00",
+     "auditorias": "1"
+    },
+    {
+     "do_dossie_nota": true,
+     "action": "EXPORTED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.94+00",
+     "auditorias": "1"
+    },
+    {
+     "do_dossie_nota": false,
+     "action": "EXPORTED",
+     "tem_usuario": true,
+     "accessed_at": "2026-11-11 03:42:38.945+00",
+     "auditorias": "1"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:38.962Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

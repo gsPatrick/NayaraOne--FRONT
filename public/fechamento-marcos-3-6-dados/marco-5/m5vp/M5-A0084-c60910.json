@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0084-c60910",
+ "linhaCaderno": 195,
+ "requisito": "• Fotos obrigatórias quando política exigir.",
+ "correcao": "src/modules/legal/leasing/keyDeliveryPhotos.js resolveKeyDeliveryPhotoPolicy/assertPhotoPolicy; parâmetros legal.chaves.fotos_minimas.<TIPO> (legalRules.settings.js)",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.chaves.test.js",
+   "nome": "M5-A0084/§10: política de fotos por tipo de contrato com quantidade mínima, configurável pela empresa",
+   "status": "pass",
+   "ms": 338.951,
+   "commitDoTeste": "633cc5e5",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal: + actual - expected [ false, +   undefined, -   0, 'NOT_REQUIRED_LEASE_CHECKIN_SIGNED' ] generatedMessage: true, code: 'ERR_ASSERTION', actual: [ false, undefined, 'NOT_REQUIRED_LEASE_CHECKIN_SIGNED' ], expected: [ false, 0, 'NOT_REQUIRED_LEASE_CHECKIN_SIGNED' ], operator: 'deepStrictEqual', diff: 'simple' }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:39.917Z"
+}

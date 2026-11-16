@@ -1,0 +1,44 @@
+{
+  "id": "M6-42",
+  "requisito": "\"Read model de custo: baselineBudget + approvedChanges + committedCost + actualFinancialCost + consumedInventoryCost + forecastToComplete + projectedTotalCost + projectedMargin + updatedAt.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §5; Guia do Marcelo (Obras) §7",
+  "implementacao": "projectHealth.service.js: baselineBudget = baseline aprovada (Budget.baselineAmount), approvedChanges = aditivos, currentApprovedBudget = soma; dashboard.service.js idem no agregado",
+  "telaParaReteste": "Painel → obra → Saúde da obra: Orçamento base, Mudanças aprovadas e Orçamento vigente",
+  "commitApi": "6952bb50",
+  "branchApi": "m6fix/verificacao",
+  "commitFront": "1d3d1f2",
+  "branchFront": "m6fix/verificacao",
+  "status": "Atendido",
+  "motivoDaVerificacao": "ver Maturacao/fechamento-m3-m6/verificacao/marco-6.md",
+  "testes": [
+    {
+      "arquivo": "test/construction.m6v.baseline.test.js",
+      "nome": "M6-42: painel mostra baselineBudget = baseline original e approvedChanges = aditivos, sem contar duas vezes",
+      "resultadoHead": "passou",
+      "duracaoMs": 417.3,
+      "resultadoBase": "FALHA (Expected values to be strictly equal:\n\n86000 !== 80000\n)"
+    }
+  ],
+  "provasDoVerificador": [],
+  "evidenciaAoVivo": {
+    "tipo": "Execução real dos testes no commit corrigido e na base (banco descartável, RLS real, antivírus real)",
+    "resultado": "1/1 passaram no HEAD 6952bb50; na base 41addaa2: falham",
+    "comando": "node scripts/withDisposableDb.js --port 5575 -- env CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 DISPOSABLE_DB=1 bash -c \"node scripts/seed-ci-two-tenants.js && NODE_ENV=test node --test --test-concurrency=1 <116 arquivos de Obras e vizinhos> verificacao/provas/v5-provas.test.js\" (fila global vez.sh, worktree destacado no commit 5630ac0d)",
+    "dataHora": "2026-11-12T07:21:42-03:00"
+  },
+  "telaPlaywright": "não se aplica (tela listada em telaParaReteste)",
+  "decisoes": [
+    "DI-M6V-3"
+  ],
+  "migrations": [
+    "migrations/20260101006600-m6v-tipo-de-obra-e-checklist-por-etapa.js",
+    "migrations/20260101006601-m6v-responsavel-da-etapa.js",
+    "migrations/20260101006602-m6v-baseline-imutavel-e-revisoes.js",
+    "migrations/20260101006603-m6v-evidencia-da-medicao.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006604-finance-source-event-id-e-obra-na-baixa-parcial.js",
+    "migrations/20260101006605-m6v-alcada-permissao-propria-e-quem-propoe.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006606-finance-indices-da-obra-no-ledger.js",
+    "migrations/20260101006607-m6v-indices-da-saude-da-obra.js"
+  ],
+  "geradoEm": "2026-11-12T10:41:46.714Z"
+}

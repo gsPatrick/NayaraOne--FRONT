@@ -1,0 +1,331 @@
+{
+  "id": "M6-78",
+  "requisito": "Evento mínimo nonconformity.opened / nonconformity.closed.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §11 Eventos mínimos; Guia do Marcelo (Obras) §11",
+  "implementacao": "constructionEvents.service.js#publishNonconformityOpened/Closed (Outbox transacional, mesma transação do dado)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: abrir e fechar NC",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.minimumEvents.test.js",
+      "nome": "M6-69..M6-80: a jornada da obra grava na Outbox os 15 eventos mínimos do Caderno, com o nome exato",
+      "resultado": "passou",
+      "duracaoMs": 1392,
+      "executadoEm": "2026-11-11T00:13:57.177Z"
+    },
+    {
+      "arquivo": "test/construction.nonconformities.test.js",
+      "nome": "NC fecha normalmente quando after_evidence_file_ids está preenchido e não exige aceite",
+      "resultado": "passou",
+      "duracaoMs": 254,
+      "executadoEm": "2026-11-11T00:14:18.754Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H115",
+      "H121",
+      "H127"
+    ],
+    "resumo": [
+      "H115 POST /api/v1/construction/quality-items/b95f8db4-de93-4b9c-9c17-2e138b297049/check → 200",
+      "H121 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities → 201",
+      "H127 POST /api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:20.476Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H115",
+      "requisitos": [
+        "M6-12",
+        "M6-13",
+        "M6-78",
+        "M6-25"
+      ],
+      "cenario": "Reprovar o item (NOT_OK): abre não conformidade CRÍTICA automaticamente",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/quality-items/b95f8db4-de93-4b9c-9c17-2e138b297049/check",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "NOT_OK",
+        "notes": "Fissura na sapata S3",
+        "evidenceFileIds": [
+          "cb3bcbef-2239-4ef3-b42d-036c72944b71"
+        ]
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 602,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "b95f8db4-de93-4b9c-9c17-2e138b297049",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "item": "Prumo e nível das sapatas",
+          "category": "ESTRUTURA",
+          "status": "NOT_OK",
+          "checkedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "checkedAt": "2026-11-11T00:12:20.104Z",
+          "notes": "Fissura na sapata S3",
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:19.044Z",
+          "updated_at": "2026-11-11T00:12:20.104Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "project_stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "checked_by_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:20.476Z"
+    },
+    {
+      "id": "H121",
+      "requisitos": [
+        "M6-37",
+        "M6-13",
+        "M6-78",
+        "M6-50"
+      ],
+      "cenario": "Abrir NC com severidade, responsável, evidência \"antes\" e aceite exigido (SLA calculado pela severidade)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/nonconformities",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "severity": "HIGH",
+        "description": "Reboco solto na parede da escada",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeEvidenceFileIds": [
+          "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+        ],
+        "requiresAcceptance": true,
+        "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 443,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "severity": "HIGH",
+          "description": "Reboco solto na parede da escada",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-16T00:12:22.026Z",
+          "status": "OPEN",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [],
+          "requiresAcceptance": true,
+          "causeCode": null,
+          "teamLabel": null,
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:22.026Z",
+          "created_at": "2026-11-11T00:12:22.026Z",
+          "acceptedByUserId": null,
+          "closedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:22.172Z"
+    },
+    {
+      "id": "H127",
+      "requisitos": [
+        "M6-24",
+        "M6-38",
+        "M6-78",
+        "M6-86",
+        "M6-50",
+        "M6-98"
+      ],
+      "cenario": "Fechar NC com evidência \"depois\" e aceite (publica nonconformity.closed)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/nonconformities/1b8caa5d-1202-41e7-8d69-4d051f1b147f/close",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "afterEvidenceFileIds": [
+          "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+        ],
+        "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 65,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1b8caa5d-1202-41e7-8d69-4d051f1b147f",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "projectStageId": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "severity": "HIGH",
+          "description": "Reboco solto na parede da escada",
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "slaDueAt": "2026-11-16T00:12:22.026Z",
+          "status": "CLOSED",
+          "beforeEvidenceFileIds": [
+            "6c0b56ed-0934-4bac-8039-7d036e7e58bb"
+          ],
+          "afterEvidenceFileIds": [
+            "8a72ad60-81fa-4aa1-a2e2-a012518ae28e"
+          ],
+          "requiresAcceptance": true,
+          "acceptedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "closedAt": "2026-11-11T00:12:23.476Z",
+          "evidenceReuseFlagged": false,
+          "evidenceReuseReferenceId": null,
+          "evidenceReuseDetails": null,
+          "causeCode": null,
+          "teamLabel": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:22.026Z",
+          "updated_at": "2026-11-11T00:12:23.476Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "project_stage_id": "3fd2487d-8fb0-4890-9750-0b6799ce9e5e",
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "accepted_by_user_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:23.498Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C004",
+      "requisitos": [
+        "M6-69",
+        "M6-70",
+        "M6-71",
+        "M6-72",
+        "M6-73",
+        "M6-74",
+        "M6-75",
+        "M6-76",
+        "M6-77",
+        "M6-78",
+        "M6-79",
+        "M6-80",
+        "M6-105",
+        "M6-106"
+      ],
+      "descricao": "Eventos mínimos do Caderno §11 gravados na Outbox pela jornada (nome exato, um por agregado e chave de idempotência)",
+      "sql": "SELECT event_type, count(*)::int AS eventos, count(DISTINCT idempotency_key)::int AS chaves FROM integration.outbox_events WHERE event_type = ANY($1) AND (aggregate_id = ANY($2::uuid[]) OR payload_json->>'projectId' = ANY($3) OR payload_json->>'id' = ANY($3)) GROUP BY 1 ORDER BY 1",
+      "resultado": [
+        {
+          "event_type": "material.received",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "material.requested",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "measurement.approved",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "measurement.submitted",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.closed",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.opened",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "project.budget.approved",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.daily_log.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.delay.detected",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.delivered",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.stage.completed",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.started",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "warranty.case.closed",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "warranty.case.opened",
+          "eventos": 2,
+          "chaves": 2
+        }
+      ],
+      "invariante": "os 15 nomes presentes; eventos = chaves (nenhum evento duplicado)",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.180Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.440Z"
+}

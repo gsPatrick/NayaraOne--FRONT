@@ -1,0 +1,235 @@
+{
+  "id": "M5-A0131-5fe3f9",
+  "capturadoEm": "2026-11-11T10:27:20.380Z",
+  "passos": [
+    {
+      "id": "CT5-03",
+      "req": [
+        "M5-A0323-a65d6f",
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Perfil com contracts.version.approve aprova a versão vigente",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/contract-versions/d7163296-2eec-4260-8b1c-845edaad6ff8/approve",
+      "corpoEnviado": {},
+      "status": 200,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 200
+      },
+      "ok": true,
+      "resumo": "contractVersionId=d7163296-2eec-4260-8b1c-845edaad6ff8, contentHash=134b1860a670098d8aa5fa41d9784a697a13e65bbce1e7bb5a611678d316",
+      "quando": "2026-11-11T10:26:37.163Z"
+    },
+    {
+      "id": "CT5-04",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Envio para assinatura da versão aprovada",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/contract-versions/d7163296-2eec-4260-8b1c-845edaad6ff8/send-signature",
+      "corpoEnviado": {
+        "signerPersonIds": [
+          "5bc6a33f-266f-44b6-bc70-e8a8e061342e",
+          "940f42a0-f036-4f0b-92ea-24c7727d0556"
+        ]
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "contractVersionId=d7163296-2eec-4260-8b1c-845edaad6ff8, contentHash=134b1860a670098d8aa5fa41d9784a697a13e65bbce1e7bb5a611678d316",
+      "quando": "2026-11-11T10:26:40.362Z"
+    },
+    {
+      "id": "CT5-05",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Versão nova com o contrato em SIGNING: o contrato volta a APPROVED com a versão nova em DRAFT",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/contracts/61d4dcf8-4fe5-41ef-a274-05dc6ad413cf/versions",
+      "corpoEnviado": {
+        "content": "Versão 2 179439280155656101",
+        "documentFileId": "5d39e774-cd79-46c1-9257-27e9770c7011"
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=5afc8c61-f75c-46e7-a41c-331e0014b6aa, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, contractId=61d4dcf8-4fe5-41ef-a274-05dc6ad413cf, versionNumber=2",
+      "quando": "2026-11-11T10:26:43.139Z"
+    },
+    {
+      "id": "CT5-07",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Contrato de locação para o ciclo de vida",
+      "perfil": "A:gestor",
+      "metodo": "POST",
+      "rota": "/contracts",
+      "corpoEnviado": {
+        "contractType": "LEASE_RESIDENTIAL",
+        "totalValue": 1000
+      },
+      "status": 201,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 201
+      },
+      "ok": true,
+      "resumo": "id=978967be-fa0c-4391-a399-5ac97c29a073, lockVersion=0, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, contractType=LEASE_RESIDENTIAL",
+      "quando": "2026-11-11T10:26:43.426Z"
+    },
+    {
+      "id": "CT5-08",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Suspender (ACTIVE -> SUSPENDED)",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/legal/contracts/978967be-fa0c-4391-a399-5ac97c29a073/suspend",
+      "corpoEnviado": {
+        "reason": "Captura M5CT"
+      },
+      "status": 200,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 200
+      },
+      "ok": true,
+      "resumo": "id=978967be-fa0c-4391-a399-5ac97c29a073, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, contractType=LEASE_RESIDENTIAL, contractNumber=LOC-2026-0002",
+      "quando": "2026-11-11T10:26:43.946Z"
+    },
+    {
+      "id": "CT5-09",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Reativar (SUSPENDED -> ACTIVE) pela rota dedicada",
+      "perfil": "A:checker",
+      "metodo": "POST",
+      "rota": "/legal/contracts/978967be-fa0c-4391-a399-5ac97c29a073/reactivate",
+      "corpoEnviado": {
+        "reason": "Captura M5CT"
+      },
+      "status": 200,
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": 200
+      },
+      "ok": true,
+      "resumo": "id=978967be-fa0c-4391-a399-5ac97c29a073, groupId=ec83fbb8-ae3e-4261-a390-9e761b52e907, companyId=7f408cf6-0ac9-49f8-9f69-ca67f74640ea, contractType=LEASE_RESIDENTIAL, contractNumber=LOC-2026-0002",
+      "quando": "2026-11-11T10:26:44.235Z"
+    },
+    {
+      "id": "CT5-11",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "titulo": "Encerrar pela transição genérica (ACTIVE -> TERMINATED; a rota /transition pede a confirmação de nível 3 digitada por pessoa)",
+      "perfil": "serviço (sem HTTP)",
+      "metodo": "CALL",
+      "rota": "contract.service.transitionContractStatus(contrato, TERMINATED)",
+      "status": "ok",
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": "ok"
+      },
+      "ok": true,
+      "resumo": "\"TERMINATED\"",
+      "quando": "2026-11-11T10:26:45.086Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "CT5-06",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "contract.version.approved: um evento, da versão APROVADA (a versão DRAFT nova não gerou evento)",
+      "sql": "SELECT e.payload_json->>'contractVersionId' AS versao, v.status FROM integration.outbox_events e JOIN legal.contract_versions v ON v.id::text = e.payload_json->>'contractVersionId' WHERE e.aggregate_id = :id AND e.event_type = 'contract.version.approved'",
+      "resultado": [
+        {
+          "versao": "d7163296-2eec-4260-8b1c-845edaad6ff8",
+          "status": "SUPERSEDED"
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:26:43.216Z"
+    },
+    {
+      "id": "CT5-10",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "A reativação publicou contract.activated",
+      "sql": "SELECT count(*)::int AS n FROM integration.outbox_events WHERE aggregate_id = :id AND event_type = 'contract.activated'",
+      "resultado": [
+        {
+          "n": 1
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:26:44.268Z"
+    },
+    {
+      "id": "CT5-12",
+      "req": [
+        "M5-A0128-8a8ccd",
+        "M5-A0131-5fe3f9",
+        "M5-A0132-460251",
+        "M5-A0311-23bfba"
+      ],
+      "perfil": "A:gestor",
+      "descricao": "A transição genérica para TERMINATED publicou contract.terminated",
+      "sql": "SELECT count(*)::int AS n FROM integration.outbox_events WHERE aggregate_id = :id AND event_type = 'contract.terminated'",
+      "resultado": [
+        {
+          "n": 1
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:26:45.164Z"
+    }
+  ]
+}

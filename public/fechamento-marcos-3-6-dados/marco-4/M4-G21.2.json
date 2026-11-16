@@ -1,0 +1,111 @@
+{
+ "id": "M4-G§21.2",
+ "secao": "Guia §21 Autochecagem",
+ "requisito": "\"Está blindado? SIM — brechas previsíveis possuem prevenção, detecção, resposta e teste.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/f06.flowSecurity.test.js",
+   "nome": "F06-PAY-01 pular a aprovação: submeter ao banco uma intenção ainda PENDING é recusado",
+   "status": "passou",
+   "duracaoMs": 2352,
+   "commitDoArquivo": "8ca398b6"
+  },
+  {
+   "arquivo": "test/adversarial.finance.test.js",
+   "nome": "ADV-F21 baixas parciais CONCORRENTES não conseguem sacar mais que o total do lançamento",
+   "status": "passou",
+   "duracaoMs": 615,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "A02",
+   "tipo": "http",
+   "linhas": [
+    "M4-§21.12",
+    "M4-G§21.2"
+   ],
+   "titulo": "Atribuição em massa: status SETTLED enviado na criação é ignorado (nasce PENDING)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 8,
+    "description": "Atribuição em massa 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "status": "SETTLED",
+    "settledAt": "2026-11-11T01:35:18.938Z"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 156,
+   "quando": "2026-11-11T01:35:19.094Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "cc75d0ae-9238-48a3-a34b-fa2329ff485e",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": null,
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "8.00",
+     "description": "Atribuição em massa 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:19.046Z",
+     "created_at": "2026-11-11T01:35:19.046Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

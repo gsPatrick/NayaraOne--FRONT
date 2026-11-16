@@ -1,0 +1,336 @@
+{
+ "id": "M5-A0142-187a38",
+ "secao": "P1 > 19. Segurança e permissões [tabela: Ação | Controle]",
+ "linhaCaderno": 340,
+ "requisito": "Aprovar versão contratual | Permissão jurídica + audit.",
+ "demandas": "M5-D004;M5-D044;X45-D040",
+ "implementacao": "POST /api/v1/contract-versions/:id/approve e POST /legal/contracts/:id/transition com requirePermission('legal:approve'); src/modules/legal/contracts/application/contract.service.js:487 auditoria legal.contract.status_change",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contract-versions/:id/approve aprova só a versão vigente, com legal:approve, auditoria e contract.version.approved",
+   "status": "pass",
+   "ms": 708.768,
+   "commitDoTeste": "52740c89"
+  },
+  {
+   "arquivo": "test/ciTwoTenantsFinanceLegal.test.js",
+   "nome": "CI dois tenants (Jurídico): tenant B não lê nem altera o contrato de A (404), e o contrato segue intacto",
+   "status": "pass",
+   "ms": 70.427,
+   "commitDoTeste": "9ef507fb"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.rodada3.test.js",
+   "nome": "Pentest (baixo): sem a permissão da rota a recusa é PERMISSION_DENIED, mesmo com arquivo de outra empresa no corpo; com a permissão o anexo é recusado",
+   "status": "pass",
+   "ms": 500.711,
+   "commitDoTeste": "cbd80b79"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-110",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:24.511Z"
+  },
+  {
+   "passo": "CT-125",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/approve",
+   "perfil": "A:maker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:25.080Z"
+  },
+  {
+   "passo": "CT-127",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/approve",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "contentHash=f2d7a516a52a412258e579bc5fe7f3817e6b381a",
+   "quando": "2026-11-11T03:42:25.129Z"
+  },
+  {
+   "passo": "CT-322b",
+   "metodo": "POST",
+   "rota": "/legal/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/manual-signatures",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:26.819Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0142-187a38.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Teste novo: test/m5fech.contratos.rotasLivro.test.js \"Guia §14: POST /contract-versions/:id/approve aprova só a versão vigente, com legal:approve, auditoria e contract.version.approved\" (permissão jurídica e auditoria com o aprovador). A aprovação é gravada na versão (APPROVED, aprovador e data) e no contrato (approved_version_id).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.rotasLivro.test.js test/ciTwoTenantsFinanceLegal.test.js test/m5fech.contratos.rodada3.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-110, CT-125, CT-127, CT-128, CT-322b)"
+ },
+ "passos": [
+  {
+   "id": "CT-110",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Maker (sem legal:approve) não faz transição de estado",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/transition",
+   "corpoEnviado": {
+    "targetStatus": "DOCUMENTS_PENDING"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:24.511Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:approve"
+     },
+     "traceId": "99b63c46-1eab-4404-907a-66a7154feb41"
+    }
+   },
+   "req": [
+    "M5-A0142-187a38"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-125",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Maker (sem legal:approve) não aprova a versão",
+   "perfil": "A:maker",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/approve",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:25.080Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:approve"
+     },
+     "traceId": "d00919b8-1e5d-4b87-9c60-92686ddd8f76"
+    }
+   },
+   "req": [
+    "M5-A0142-187a38",
+    "M5-A0210-2d5273"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-127",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Checker aprova a versão vigente (POST /contract-versions/:id/approve): contrato APPROVED",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/contract-versions/16c9eb6f-309d-4c40-9c52-3d5221ab57d6/approve",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 38,
+   "quando": "2026-11-11T03:42:25.129Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contract": {
+      "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "propertyId": null,
+      "opportunityId": null,
+      "contractType": "LEASE_RESIDENTIAL",
+      "constructionProjectId": null,
+      "approvedVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "parentContractId": null,
+      "contractNumber": "LOC-2026-0004",
+      "status": "APPROVED",
+      "totalValue": "1500.00",
+      "startsAt": null,
+      "endsAt": null,
+      "lockVersion": 5,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:24.319Z",
+      "updated_at": "2026-11-11T03:42:25.113Z",
+      "deleted_at": null,
+      "property_id": null,
+      "opportunity_id": null,
+      "construction_project_id": null,
+      "versions": [
+       {
+        "id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "contractId": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "versionNumber": 1,
+        "documentFileId": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+        "content": "Contrato de locação fictício 8543269",
+        "signedDocumentFileId": null,
+        "status": "DRAFT",
+        "approvedBy": null,
+        "approvedAt": null,
+        "contentFileId": "d56640aa-875b-4b77-9332-1c278a72e3fc",
+        "templateVersionId": null,
+        "templateId": null,
+        "clauseVersionIds": null,
+        "conditionContext": null,
+        "excludedClauses": null,
+        "effectiveFrom": "2026-11-11T03:42:25.050Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "created_at": "2026-11-11T03:42:25.051Z",
+        "updated_at": "2026-11-11T03:42:25.051Z",
+        "contract_id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+        "document_file_id": "895dc8f2-1a69-4274-aac8-b8431161599f",
+        "template_id": null,
+        "template": null
+       }
+      ]
+     },
+     "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+    }
+   },
+   "req": [
+    "M5-A0210-2d5273",
+    "M5-A0054-f96f34",
+    "M5-A0142-187a38",
+    "M5-A0323-a65d6f",
+    "M5-A0128-8a8ccd",
+    "M5-A0221-6f9a28"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-322b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: sem a permissão legal:sign a recusa é PERMISSION_DENIED (a permissão vem antes do guard de anexo)",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/legal/contract-versions/be472354-4a5a-4a34-a734-97a9e276fddb/manual-signatures",
+   "corpoEnviado": {
+    "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+    "evidenceFileId": "9e49452d-68e3-4667-848a-a7a5dca21308"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:26.819Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:sign"
+     },
+     "traceId": "da552c9b-ece7-4954-9a43-edab70c25816"
+    }
+   },
+   "req": [
+    "M5-A0071-4e2ad6",
+    "M5-A0142-187a38"
+   ],
+   "modulo": "13-contratos-versoes",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-128",
+   "req": [
+    "M5-A0142-187a38"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:checker",
+   "descricao": "Aprovação da VERSÃO: versão APPROVED com o aprovador, contrato com approved_version_id e auditorias (versão e contrato) com o aprovador",
+   "sql": "SELECT v.status, v.approved_by, c.approved_version_id = v.id AS homologada, (SELECT count(*)::int FROM audit.audit_log a WHERE a.user_id = v.approved_by AND ((a.entity_id = v.id AND a.action = 'legal.contract_version.approve') OR (a.entity_id = c.id AND a.action = 'legal.contract.status_change' AND a.after_json->>'status' = 'APPROVED'))) AS auditorias FROM legal.contract_versions v JOIN legal.contracts c ON c.id = v.contract_id WHERE v.id = :v",
+   "resultado": [
+    {
+     "status": "APPROVED",
+     "approved_by": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "homologada": true,
+     "auditorias": 2
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:25.132Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

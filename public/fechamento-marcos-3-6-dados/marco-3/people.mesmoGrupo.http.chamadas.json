@@ -1,0 +1,895 @@
+{
+ "geradoEm": "2026-11-12T10:21:15.384Z",
+ "arquivoDeTeste": "test/people.mesmoGrupo.http.test.js",
+ "chamadas": [
+  {
+   "em": "2026-11-12T10:21:12.680Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]",
+    "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "89017092-d344-477a-aec1-e14b87fb2706",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "name": "CI mesmo grupo 1794478869615492",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "roles": [
+      "CI MESMO GRUPO 1794478869615492"
+     ],
+     "permissions": [
+      "people:create",
+      "people:read",
+      "people:update",
+      "people:delete",
+      "crm:messages:read"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:12.874Z",
+   "requisicao": "POST /api/v1/auth/login",
+   "corpoEnviado": {
+    "email": "[e-mail omitido]",
+    "password": "[omitido]",
+    "companyId": "3b365623-595a-422f-8f25-a813d1185b0c"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "accessToken": "[omitido]",
+     "refreshToken": "[omitido]",
+     "sessionId": "b0367936-3e86-454a-8ca4-9484b9fd8543",
+     "migration": {
+      "newSystem": false,
+      "sectors": []
+     },
+     "user": {
+      "id": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "name": "CI mesmo grupo 1794478869615492",
+      "email": "[e-mail omitido]",
+      "mfaEnabled": false
+     },
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "3b365623-595a-422f-8f25-a813d1185b0c",
+     "roles": [
+      "CI MESMO GRUPO 1794478869615492"
+     ],
+     "permissions": [
+      "people:create",
+      "people:read",
+      "people:update",
+      "people:delete",
+      "crm:messages:read"
+     ]
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.144Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Pessoa A mesmo grupo 1794478869615492",
+    "taxIdNormalized": "35157485808"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "Pessoa A mesmo grupo 1794478869615492",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-08",
+     "taxIdNormalizedHash": "****9036",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:12.919Z",
+     "updated_at": "2026-11-12T10:21:12.919Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.184Z",
+   "requisicao": "POST /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/consents",
+   "corpoEnviado": {
+    "channel": "EMAIL",
+    "purpose": "MARKETING",
+    "status": "OPT_IN"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "a0844f26-b114-453a-9d5a-587b91c66731",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personId": "e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+     "channel": "EMAIL",
+     "purpose": "MARKETING",
+     "status": "OPT_IN",
+     "recordedAt": "2026-11-12T10:21:13.159Z",
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updated_at": "2026-11-12T10:21:13.159Z",
+     "created_at": "2026-11-12T10:21:13.159Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.198Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "5e2b4cb0-4119-49ae-8811-3c2a2876b40e"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.211Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/consents",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "a66474f7-2814-4767-a69e-1cbdc2376686"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.225Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/contacts",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "635d08d1-0b3d-4fcf-a9dc-03f4aee2b4f6"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.237Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/addresses",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "71e698a0-379f-4e59-af99-eb5991f6ca76"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.247Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/documents",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "cabff680-13e8-48fd-a91c-09095098209f"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.260Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/roles",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "45e3e612-3525-4f17-b959-347c2c76e494"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.277Z",
+   "requisicao": "POST /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/consents",
+   "corpoEnviado": {
+    "channel": "PHONE",
+    "purpose": "ISOLAMENTO",
+    "status": "OPT_IN"
+   },
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "3cb8fff3-8e56-477c-8768-5a87976aa163"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.294Z",
+   "requisicao": "POST /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/contacts",
+   "corpoEnviado": {
+    "contactType": "EMAIL",
+    "valueNormalized": "[e-mail omitido]"
+   },
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "04ea3f2f-c792-4cbf-956e-774ad818110e"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.310Z",
+   "requisicao": "PATCH /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+   "corpoEnviado": {
+    "preferredName": "Invasor"
+   },
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "7e1e267f-2bdf-491c-abe3-7b005d3a8521"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.329Z",
+   "requisicao": "DELETE /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "f4b76067-add0-4133-8d16-da5c33231188"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.886Z",
+   "requisicao": "GET /api/v1/people",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": []
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:13.915Z",
+   "requisicao": "GET /api/v1/messages?personId=e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": []
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.033Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "Pessoa A mesmo grupo 1794478869615492",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-08",
+     "taxIdNormalizedHash": "****9036",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:12.919Z",
+     "updated_at": "2026-11-12T10:21:12.919Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.072Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/consents",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "a0844f26-b114-453a-9d5a-587b91c66731",
+      "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+      "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+      "personId": "e0ed9449-94c4-4bd0-9c82-1676e9899e96",
+      "channel": "EMAIL",
+      "purpose": "MARKETING",
+      "status": "OPT_IN",
+      "recordedAt": "2026-11-12T10:21:13.159Z",
+      "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "created_at": "2026-11-12T10:21:13.159Z",
+      "updated_at": "2026-11-12T10:21:13.159Z",
+      "person_id": "e0ed9449-94c4-4bd0-9c82-1676e9899e96"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.097Z",
+   "requisicao": "GET /api/v1/people/e0ed9449-94c4-4bd0-9c82-1676e9899e96/contacts",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": []
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.321Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Pessoa A CPF 1794478869615492",
+    "taxIdNormalized": "82805900561"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "5694a49c-21be-4734-bbdb-a6feeb979cd6",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personType": "PF",
+     "legalName": "Pessoa A CPF 1794478869615492",
+     "preferredName": null,
+     "taxIdNormalized": "***.***.***-61",
+     "taxIdNormalizedHash": "****0241",
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:14.114Z",
+     "updated_at": "2026-11-12T10:21:14.114Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 33,
+      "missing": [
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.357Z",
+   "requisicao": "POST /api/v1/people/5694a49c-21be-4734-bbdb-a6feeb979cd6/consents",
+   "corpoEnviado": {
+    "channel": "EMAIL",
+    "purpose": "MARKETING",
+    "status": "OPT_IN"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "cfe3b4af-29a3-4df0-b2bc-c9463411c689",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "0e808476-95e3-4fb2-a416-0696f30b7695",
+     "personId": "5694a49c-21be-4734-bbdb-a6feeb979cd6",
+     "channel": "EMAIL",
+     "purpose": "MARKETING",
+     "status": "OPT_IN",
+     "recordedAt": "2026-11-12T10:21:14.330Z",
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updated_at": "2026-11-12T10:21:14.330Z",
+     "created_at": "2026-11-12T10:21:14.330Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.420Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Mesmo CPF em B",
+    "taxIdNormalized": "82805900561"
+   },
+   "status": 409,
+   "codigo": "PERSON_TAX_ID_IN_GROUP",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_TAX_ID_IN_GROUP",
+     "message": "Este CPF/CNPJ já tem cadastro em outra empresa do grupo. Para usar esse cadastro aqui, vincule-o a esta empresa informando o CPF/CNPJ e o nome como está no documento.",
+     "details": {
+      "podeVincular": false
+     },
+     "traceId": "fde1a8ae-818b-4934-b3f0-ab96ecfdb20f"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.693Z",
+   "requisicao": "POST /api/v1/people",
+   "corpoEnviado": {
+    "personType": "PF",
+    "legalName": "Pessoa B mesmo grupo 1794478869615492"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "890524cd-b7f9-4ac1-a46f-ae965555224d",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "3b365623-595a-422f-8f25-a813d1185b0c",
+     "personType": "PF",
+     "legalName": "Pessoa B mesmo grupo 1794478869615492",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:14.452Z",
+     "updated_at": "2026-11-12T10:21:14.452Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.786Z",
+   "requisicao": "POST /api/v1/people/890524cd-b7f9-4ac1-a46f-ae965555224d/consents",
+   "corpoEnviado": {
+    "channel": "EMAIL",
+    "purpose": "MARKETING",
+    "status": "OPT_IN"
+   },
+   "status": 201,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "a6de3e4c-f5f7-4bd4-94cf-e11024729307",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "3b365623-595a-422f-8f25-a813d1185b0c",
+     "personId": "890524cd-b7f9-4ac1-a46f-ae965555224d",
+     "channel": "EMAIL",
+     "purpose": "MARKETING",
+     "status": "OPT_IN",
+     "recordedAt": "2026-11-12T10:21:14.746Z",
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updated_at": "2026-11-12T10:21:14.746Z",
+     "created_at": "2026-11-12T10:21:14.746Z"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.854Z",
+   "requisicao": "GET /api/v1/people/890524cd-b7f9-4ac1-a46f-ae965555224d",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "890524cd-b7f9-4ac1-a46f-ae965555224d",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "3b365623-595a-422f-8f25-a813d1185b0c",
+     "personType": "PF",
+     "legalName": "Pessoa B mesmo grupo 1794478869615492",
+     "preferredName": null,
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 0,
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:14.452Z",
+     "updated_at": "2026-11-12T10:21:14.452Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.944Z",
+   "requisicao": "PATCH /api/v1/people/890524cd-b7f9-4ac1-a46f-ae965555224d",
+   "corpoEnviado": {
+    "preferredName": "Nome de uso B"
+   },
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": {
+     "id": "890524cd-b7f9-4ac1-a46f-ae965555224d",
+     "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+     "companyId": "3b365623-595a-422f-8f25-a813d1185b0c",
+     "personType": "PF",
+     "legalName": "Pessoa B mesmo grupo 1794478869615492",
+     "preferredName": "Nome de uso B",
+     "taxIdNormalized": null,
+     "taxIdNormalizedHash": null,
+     "birthOrFoundationDate": null,
+     "status": "ACTIVE",
+     "mergedIntoId": null,
+     "riskFlagsJson": null,
+     "lockVersion": 1,
+     "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+     "deletedBy": null,
+     "created_at": "2026-11-12T10:21:14.452Z",
+     "updated_at": "2026-11-12T10:21:14.863Z",
+     "deleted_at": null,
+     "merged_into_id": null,
+     "contacts": [],
+     "documents": [],
+     "roles": [],
+     "addresses": [],
+     "dataQuality": {
+      "score": 17,
+      "missing": [
+       {
+        "key": "taxId",
+        "label": "CPF/CNPJ informado"
+       },
+       {
+        "key": "contact",
+        "label": "Ao menos um contato (telefone/e-mail) cadastrado"
+       },
+       {
+        "key": "address",
+        "label": "Ao menos um endereço cadastrado"
+       },
+       {
+        "key": "document",
+        "label": "Ao menos um documento anexado"
+       },
+       {
+        "key": "role",
+        "label": "Ao menos um papel (cliente/proprietário/etc.) atribuído"
+       }
+      ],
+      "revisao": []
+     },
+     "vinculo": {
+      "origem": "PROPRIA"
+     }
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:14.972Z",
+   "requisicao": "GET /api/v1/people/890524cd-b7f9-4ac1-a46f-ae965555224d/consents",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "a6de3e4c-f5f7-4bd4-94cf-e11024729307",
+      "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+      "companyId": "3b365623-595a-422f-8f25-a813d1185b0c",
+      "personId": "890524cd-b7f9-4ac1-a46f-ae965555224d",
+      "channel": "EMAIL",
+      "purpose": "MARKETING",
+      "status": "OPT_IN",
+      "recordedAt": "2026-11-12T10:21:14.746Z",
+      "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "created_at": "2026-11-12T10:21:14.746Z",
+      "updated_at": "2026-11-12T10:21:14.746Z",
+      "person_id": "890524cd-b7f9-4ac1-a46f-ae965555224d"
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:15.028Z",
+   "requisicao": "GET /api/v1/people",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "890524cd-b7f9-4ac1-a46f-ae965555224d",
+      "groupId": "5227b950-cc2f-4e29-a90f-32d954e99a8a",
+      "companyId": "3b365623-595a-422f-8f25-a813d1185b0c",
+      "personType": "PF",
+      "legalName": "Pessoa B mesmo grupo 1794478869615492",
+      "preferredName": "Nome de uso B",
+      "taxIdNormalized": null,
+      "taxIdNormalizedHash": null,
+      "birthOrFoundationDate": null,
+      "status": "ACTIVE",
+      "mergedIntoId": null,
+      "riskFlagsJson": null,
+      "lockVersion": 1,
+      "createdBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "updatedBy": "881750d6-caa0-4b46-84bd-86c90e586e26",
+      "deletedBy": null,
+      "created_at": "2026-11-12T10:21:14.452Z",
+      "updated_at": "2026-11-12T10:21:14.863Z",
+      "deleted_at": null,
+      "merged_into_id": null,
+      "contacts": [],
+      "documents": [],
+      "roles": [],
+      "addresses": [],
+      "vinculo": {
+       "origem": "PROPRIA"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:15.037Z",
+   "requisicao": "GET /api/v1/people/890524cd-b7f9-4ac1-a46f-ae965555224d",
+   "corpoEnviado": null,
+   "status": 404,
+   "codigo": "PERSON_NOT_FOUND",
+   "resposta": {
+    "success": false,
+    "error": {
+     "code": "PERSON_NOT_FOUND",
+     "message": "Pessoa não encontrada.",
+     "traceId": "8137e1d1-771c-435c-bc41-c048e21a2f91"
+    }
+   }
+  },
+  {
+   "em": "2026-11-12T10:21:15.377Z",
+   "requisicao": "GET /api/v1/people",
+   "corpoEnviado": null,
+   "status": 200,
+   "codigo": null,
+   "resposta": "{\"success\":true,\"data\":[{\"id\":\"5694a49c-21be-4734-bbdb-a6feeb979cd6\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Pessoa A CPF 1794478869615492\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-61\",\"taxIdNormalizedHash\":\"****0241\",\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"881750d6-caa0-4b46-84bd-86c90e586e26\",\"updatedBy\":\"881750d6-caa0-4b46-84bd-86c90e586e26\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:21:14.114Z\",\"updated_at\":\"2026-11-12T10:21:14.114Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[],\"documents\":[],\"roles\":[],\"addresses\":[],\"vinculo\":{\"origem\":\"PROPRIA\"}},{\"id\":\"e0ed9449-94c4-4bd0-9c82-1676e9899e96\",\"groupId\":\"5227b950-cc2f-4e29-a90f-32d954e99a8a\",\"companyId\":\"0e808476-95e3-4fb2-a416-0696f30b7695\",\"personType\":\"PF\",\"legalName\":\"Pessoa A mesmo grupo 1794478869615492\",\"preferredName\":null,\"taxIdNormalized\":\"***.***.***-08\",\"taxIdNormalizedHash\":\"****9036\",\"birthOrFoundationDate\":null,\"status\":\"ACTIVE\",\"mergedIntoId\":null,\"riskFlagsJson\":null,\"lockVersion\":0,\"createdBy\":\"881750d6-caa0-4b46-84bd-86c90e586e26\",\"updatedBy\":\"881750d6-caa0-4b46-84bd-86c90e586e26\",\"deletedBy\":null,\"created_at\":\"2026-11-12T10:21:12.919Z\",\"updated_at\":\"2026-11-12T10:21:12.919Z\",\"deleted_at\":null,\"merged_into_id\":null,\"contacts\":[],\"documents\":[],\"roles\":[],\"addresses\":[],\"vinculo\":{\"origem\":\"PROPRIA\"}},{\"id\":\"8595eca1-…"
+  }
+ ]
+}

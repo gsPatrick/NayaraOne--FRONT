@@ -1,0 +1,66 @@
+{
+  "id": "M6-21",
+  "requisito": "\"Medição segue DRAFT → SUBMITTED → REVIEWED → APPROVED → PAYABLE; evento repetido não pode criar segunda obrigação.\" \"Alteração após SUBMITTED cria revisão; não sobrescrever evidência/quantidade silenciosamente.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §2 e §7",
+  "implementacao": "stage_measurements.evidence_file_ids (migration 20260101006603); stageMeasurements.service.js confere a evidência na criação/revisão e na aprovação (mínimo construction.medicao.evidencias_minimas); APPROVED publica measurement.approved e o consumidor do Financeiro (modules/finance/application/services/measurement-payable.consumer.js) cria a conta com source_event_id único (migration 20260101006604); CHECK stage_measurements_payable_has_entry",
+  "telaParaReteste": "Painel → obra → etapa → Registrar medição (Evidências da medição) → Enviar → Revisar → Aprovar",
+  "commitApi": "6952bb50",
+  "branchApi": "m6fix/verificacao",
+  "commitFront": "1d3d1f2",
+  "branchFront": "m6fix/verificacao",
+  "status": "Atendido",
+  "motivoDaVerificacao": "ver Maturacao/fechamento-m3-m6/verificacao/marco-6.md",
+  "testes": [
+    {
+      "arquivo": "test/construction.m6v.medicaoConta.test.js",
+      "nome": "M6-21: medição só aceita evidência real da empresa, examinada pelo antivírus; revisão não sobrescreve a evidência",
+      "resultadoHead": "passou",
+      "duracaoMs": 377.98,
+      "resultadoBase": "FALHA (Missing expected rejection.)"
+    },
+    {
+      "arquivo": "test/construction.m6v.medicaoConta.test.js",
+      "nome": "M6-21: aprovação confere a evidência (mínimo configurado e arquivo ainda válido)",
+      "resultadoHead": "passou",
+      "duracaoMs": 205.023,
+      "resultadoBase": "FALHA (Chave de configuração desconhecida: \"construction.medicao.evidencias_minimas\".)"
+    },
+    {
+      "arquivo": "test/construction.m6v.medicaoConta.test.js",
+      "nome": "M6-21: a conta a pagar nasce do consumidor do Financeiro para measurement.approved, com source_event_id; reentrega não duplica",
+      "resultadoHead": "passou",
+      "duracaoMs": 195.212,
+      "resultadoBase": "FALHA (Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- '62960a69-286f-4c92-8030-4e96fb09a748'\n)"
+    },
+    {
+      "arquivo": "test/construction.e2e.test.js",
+      "nome": "M6-98: jornada E2E completa — orçamento→material→diário→medição→pagamento→qualidade→entrega→pós-obra",
+      "resultadoHead": "passou",
+      "duracaoMs": 1234.078,
+      "resultadoBase": "FALHA (etapa com responsável (Caderno §2)\n+ actual - expected\n\n+ undefined\n- '19653ea5-c5d2-4043-b55c-b14a662fb845'\n)"
+    }
+  ],
+  "provasDoVerificador": [],
+  "evidenciaAoVivo": {
+    "tipo": "Execução real dos testes no commit corrigido e na base (banco descartável, RLS real, antivírus real)",
+    "resultado": "4/4 passaram no HEAD 6952bb50; na base 41addaa2: falham",
+    "comando": "node scripts/withDisposableDb.js --port 5575 -- env CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 DISPOSABLE_DB=1 bash -c \"node scripts/seed-ci-two-tenants.js && NODE_ENV=test node --test --test-concurrency=1 <116 arquivos de Obras e vizinhos> verificacao/provas/v5-provas.test.js\" (fila global vez.sh, worktree destacado no commit 5630ac0d)",
+    "dataHora": "2026-11-12T07:21:42-03:00"
+  },
+  "telaPlaywright": "não se aplica (tela listada em telaParaReteste)",
+  "decisoes": [
+    "DI-M6V-4",
+    "DI-M6V-5"
+  ],
+  "migrations": [
+    "migrations/20260101006600-m6v-tipo-de-obra-e-checklist-por-etapa.js",
+    "migrations/20260101006601-m6v-responsavel-da-etapa.js",
+    "migrations/20260101006602-m6v-baseline-imutavel-e-revisoes.js",
+    "migrations/20260101006603-m6v-evidencia-da-medicao.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006604-finance-source-event-id-e-obra-na-baixa-parcial.js",
+    "migrations/20260101006605-m6v-alcada-permissao-propria-e-quem-propoe.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006606-finance-indices-da-obra-no-ledger.js",
+    "migrations/20260101006607-m6v-indices-da-saude-da-obra.js"
+  ],
+  "geradoEm": "2026-11-12T10:41:46.754Z"
+}

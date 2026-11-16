@@ -1,0 +1,192 @@
+{
+ "id": "M4-§4.4",
+ "secao": "§4 Plano de contas",
+ "requisito": "\"Projeto/obra, imóvel, contrato, proprietário, corretor e cliente como dimensões quando aplicáveis.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.ownerRepasseEligible.test.js",
+   "nome": "M45-F4 elegíveis: só recebimentos liquidados do imóvel/contrato, até o período, com saldo",
+   "status": "passou",
+   "duracaoMs": 163,
+   "commitDoArquivo": "e834c687"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F04-1: devolução e compensação ligadas à origem, contrato e titular, com saldo e trilha",
+   "status": "passou",
+   "duracaoMs": 102,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N13",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.4"
+   ],
+   "titulo": "Dimensões do lançamento: contrato (e imóvel por ele) gravados no lançamento",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 1500,
+    "description": "Aluguel do contrato 0871300",
+    "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+    "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+    "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+    "dueAt": "2026-11-10T12:00:00-03:00"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 396,
+   "quando": "2026-11-11T01:35:02.138Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "39b64069-e468-4f3c-b0db-691437ba5e18",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "8932ee54-7849-45db-b410-0d058c045b95",
+     "costCenterId": null,
+     "resultCenterId": "04184484-f839-4f98-aef8-4af4a63e3707",
+     "contractId": "d0588c4e-3e40-4883-b9b4-529a08c0214e",
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "CREDIT",
+     "nature": "RECEIVABLE",
+     "amount": "1500.00",
+     "description": "Aluguel do contrato 0871300",
+     "dueAt": "2026-11-10T15:00:00.000Z",
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:01.921Z",
+     "created_at": "2026-11-11T01:35:01.921Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "N14",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.4"
+   ],
+   "titulo": "Pesquisa por dimensão (conta contábil) devolve só os lançamentos daquela conta",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/finance/entries?chartOfAccountId=490c2c5b-8aa8-46f2-a9b1-48fd7660dd78",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 132,
+   "quando": "2026-11-11T01:35:02.272Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "3794da36-6052-4c7b-935f-11ab8069ea67",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "bankAccountId": null,
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "resultCenterId": null,
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": "490c2c5b-8aa8-46f2-a9b1-48fd7660dd78",
+      "chartOfAccountVersionId": "aeeee8ca-348a-4c3e-bfda-c284eb9a5146",
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "DEBIT",
+      "nature": "PAYABLE",
+      "amount": "10.00",
+      "description": "Despesa na conta analítica 0871300",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 0,
+      "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+      "created_at": "2026-11-11T01:35:01.397Z",
+      "updated_at": "2026-11-11T01:35:01.397Z",
+      "bank_account_id": null,
+      "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "result_center_id": null,
+      "contract_id": null,
+      "chart_of_account_id": "490c2c5b-8aa8-46f2-a9b1-48fd7660dd78",
+      "construction_project_id": null
+     }
+    ]
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

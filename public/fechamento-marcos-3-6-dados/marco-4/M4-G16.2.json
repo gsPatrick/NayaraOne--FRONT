@@ -1,0 +1,139 @@
+{
+ "id": "M4-G§16.2",
+ "secao": "Guia §16 Testes iniciais",
+ "requisito": "\"Dois requests concorrentes não geram dois ledgers.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-002: duas execuções CONCORRENTES da mesma payment intent — uma vence, a outra é rejeitada (idempotente, não duplica ledger)",
+   "status": "passou",
+   "duracaoMs": 86,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/homologacaoEvidencias.test.js",
+   "nome": "TEC-09 duas liquidações simultâneas do mesmo lançamento: só uma tem sucesso (lockVersion otimista)",
+   "status": "passou",
+   "duracaoMs": 34,
+   "commitDoArquivo": "35aaf028"
+  },
+  {
+   "arquivo": "test/m4.settlePartialIdempotency.test.js",
+   "nome": "FIN-004 settle-partial: duas requisições SIMULTÂNEAS com a mesma chave geram uma baixa só (uma original e uma idempotentReplay)",
+   "status": "passou",
+   "duracaoMs": 77,
+   "commitDoArquivo": "76cb9777"
+  },
+  {
+   "arquivo": "test/m4.lancamentoConcorrenteChave.test.js",
+   "nome": "M4-FIN-TS-001 seis criações SIMULTÂNEAS com a mesma idempotencyKey: exatamente 1 lançamento (201) e as outras 409 FINANCE_DUPLICATE_PAYMENT com a mensagem de negócio, nunca UNIQUE_CONSTRAINT_VIOLATION",
+   "status": "passou",
+   "duracaoMs": 1341,
+   "commitDoArquivo": "f4c6266f"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P27-2",
+   "tipo": "http",
+   "linhas": [
+    "M4-FIN-TS-002",
+    "M4-G§16.2"
+   ],
+   "titulo": "Corrida: dois envios SIMULTÂNEOS da mesma intenção ao banco sandbox (requisição 2/2) — um vence",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/da58d0e3-b0ed-431d-9ebc-20e84c111029/submit-to-bank",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "paymentMethod": "PIX"
+   },
+   "esperado": {
+    "status": [
+     200,
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 557,
+   "quando": "2026-11-11T01:35:08.167Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": "Aguardando confirmação do banco",
+     "id": "da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+     "snapshotJson": {
+      "dueAt": "2026-11-13T01:35:07.127Z",
+      "amount": "1200.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento ao fornecedor 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "d47169ea87874322c1555b7b75a2ca3590cca5cb92094ef36d58ee3c93412777",
+     "status": "SUBMITTED",
+     "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "beneficiarySnapshot": {
+      "name": "Pagamento ao fornecedor 0871300",
+      "branch": "0001",
+      "pixKey": "••••••",
+      "account": "PAGAMENTOS-0871300",
+      "bankCode": "••••••",
+      "personId": null
+     },
+     "paymentMethod": "PIX",
+     "idempotencyKey": "payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "externalSubmissionId": "sandbox-payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "externalStatus": "PENDING",
+     "submittedAt": "2026-11-11T01:35:08.117Z",
+     "failedAt": null,
+     "failureReason": null,
+     "approvalRequestId": null,
+     "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "approvedAt": "2026-11-11T01:35:07.537Z",
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": "2026-11-11T01:35:07.668Z",
+     "lastReconciledAt": null,
+     "reconciliationAttempts": 0,
+     "reconciledAt": null,
+     "reconciledEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:07.236Z",
+     "updated_at": "2026-11-11T01:35:08.118Z",
+     "financial_entry_id": "de217925-818a-4dd1-baab-fe97fa407a38",
+     "approval_request_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

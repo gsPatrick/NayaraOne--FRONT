@@ -1,0 +1,260 @@
+{
+ "id": "M3-08",
+ "meta": {
+  "geradoEm": "2026-11-11T09:25:32.895Z",
+  "inicioCaptura": "2026-11-11T09:24:54.065Z",
+  "ambiente": "API local ligada a um PostgreSQL descartável criado do zero pelas migrations (RLS FORCE, papel de runtime sem BYPASSRLS), antivírus ClamAV real. Nada foi gravado na homologação.",
+  "commitApi": "119c0fb2",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "leituraImoveis": "Empresa A — só properties:read (sem properties:internal nem units:update)",
+   "config": "Empresa A — administrador de Configurações (settings:read e settings:update)"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 27,
+   "casos": [
+    "historico"
+   ],
+   "descricao": "Ofertas do imóvel",
+   "metodo": "GET",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/offers",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+      "offerType": "SALE",
+      "askingPrice": "880000.00",
+      "confidentialMinPrice": null,
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "ACTIVE",
+      "startsAt": null,
+      "endsAt": null,
+      "conditions": null,
+      "supersededByOfferId": null,
+      "supersededAt": null,
+      "lockVersion": 0,
+      "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "deletedBy": null,
+      "created_at": "2026-11-11T09:25:01.067Z",
+      "updated_at": "2026-11-11T09:25:01.067Z",
+      "deleted_at": null,
+      "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+     },
+     {
+      "id": "c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+      "offerType": "SALE",
+      "askingPrice": "900000.00",
+      "confidentialMinPrice": "850000.00",
+      "acceptsFinancing": null,
+      "acceptsTrade": null,
+      "status": "SUPERSEDED",
+      "startsAt": null,
+      "endsAt": null,
+      "conditions": "Entrada de 20%, saldo em 12 parcelas",
+      "supersededByOfferId": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "supersededAt": "2026-11-11T09:25:01.074Z",
+      "lockVersion": 0,
+      "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "deletedBy": null,
+      "created_at": "2026-11-11T09:25:00.728Z",
+      "updated_at": "2026-11-11T09:25:01.074Z",
+      "deleted_at": null,
+      "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T09:25:01.688Z"
+  },
+  {
+   "seq": 28,
+   "casos": [
+    "historico"
+   ],
+   "descricao": "Altera o preço da oferta ativa",
+   "metodo": "PATCH",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/offers/f821a773-95ea-4f06-8966-57e9c26e109b",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": {
+    "askingPrice": 870000,
+    "reasonCode": "NEGOCIACAO"
+   },
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": {
+     "id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+     "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+     "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+     "propertyId": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "offerType": "SALE",
+     "askingPrice": "870000.00",
+     "confidentialMinPrice": null,
+     "acceptsFinancing": null,
+     "acceptsTrade": null,
+     "status": "ACTIVE",
+     "startsAt": null,
+     "endsAt": null,
+     "conditions": null,
+     "supersededByOfferId": null,
+     "supersededAt": null,
+     "lockVersion": 1,
+     "createdBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "updatedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+     "deletedBy": null,
+     "created_at": "2026-11-11T09:25:01.067Z",
+     "updated_at": "2026-11-11T09:25:01.721Z",
+     "deleted_at": null,
+     "property_id": "8303af31-b5db-418a-8a42-2161a3ff3868"
+    }
+   },
+   "dataHora": "2026-11-11T09:25:01.708Z"
+  },
+  {
+   "seq": 29,
+   "casos": [
+    "historico"
+   ],
+   "descricao": "Histórico de preço visível",
+   "metodo": "GET",
+   "rota": "/api/v1/properties/8303af31-b5db-418a-8a42-2161a3ff3868/price-history",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "e5bc59ab-9036-4e5c-bf21-e9a63009d6cf",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "offerId": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "oldPrice": "880000.00",
+      "newPrice": "870000.00",
+      "reasonCode": "NEGOCIACAO",
+      "changedAt": "2026-11-11T09:25:01.716Z",
+      "changedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "created_at": "2026-11-11T09:25:01.716Z",
+      "updated_at": "2026-11-11T09:25:01.716Z",
+      "offer_id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "changed_by": "d5430018-5080-4a61-bb58-39f1c1008e24"
+     },
+     {
+      "id": "3694c66d-8468-46cc-984d-f6842066a2dc",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "offerId": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "oldPrice": null,
+      "newPrice": "880000.00",
+      "reasonCode": "OFFER_CREATED",
+      "changedAt": "2026-11-11T09:25:01.069Z",
+      "changedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "created_at": "2026-11-11T09:25:01.069Z",
+      "updated_at": "2026-11-11T09:25:01.069Z",
+      "offer_id": "f821a773-95ea-4f06-8966-57e9c26e109b",
+      "changed_by": "d5430018-5080-4a61-bb58-39f1c1008e24"
+     },
+     {
+      "id": "246a3d98-3bb6-443f-8c34-9e13435c091f",
+      "groupId": "7c74820c-4b88-4df1-afc3-0fc4b7ea62ec",
+      "companyId": "8e1b8e17-98ec-4ecb-a19a-8b53cf46eff7",
+      "offerId": "c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+      "oldPrice": null,
+      "newPrice": "900000.00",
+      "reasonCode": "OFFER_CREATED",
+      "changedAt": "2026-11-11T09:25:00.731Z",
+      "changedBy": "d5430018-5080-4a61-bb58-39f1c1008e24",
+      "created_at": "2026-11-11T09:25:00.731Z",
+      "updated_at": "2026-11-11T09:25:00.731Z",
+      "offer_id": "c49db93f-3bbb-42b1-af12-1c18620a1ea8",
+      "changed_by": "d5430018-5080-4a61-bb58-39f1c1008e24"
+     }
+    ]
+   },
+   "dataHora": "2026-11-11T09:25:01.741Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "historico"
+   ],
+   "descricao": "Evento property.price.changed no outbox (livro §7 e §14)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "SELECT event_type, payload_json->>'propertyId' AS imovel, payload_json->>'newPrice' AS novo_preco FROM integration.outbox_events WHERE event_type = 'property.price.changed' AND payload_json->>'propertyId' = $1",
+   "parametros": [
+    "8303af31-b5db-418a-8a42-2161a3ff3868"
+   ],
+   "resultado": [
+    {
+     "event_type": "property.price.changed",
+     "imovel": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "novo_preco": "900000.00"
+    },
+    {
+     "event_type": "property.price.changed",
+     "imovel": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "novo_preco": "880000.00"
+    },
+    {
+     "event_type": "property.price.changed",
+     "imovel": "8303af31-b5db-418a-8a42-2161a3ff3868",
+     "novo_preco": "870000.00"
+    }
+   ],
+   "dataHora": "2026-11-11T09:25:01.764Z"
+  },
+  {
+   "casos": [
+    "historico"
+   ],
+   "descricao": "UPDATE no histórico de preço (escrita tentada com o papel de runtime e desfeita)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "UPDATE real_estate.property_price_history SET new_price = 1 WHERE offer_id = $1",
+   "parametros": [
+    "f821a773-95ea-4f06-8966-57e9c26e109b"
+   ],
+   "resultado": {
+    "aceito": false,
+    "erroDoBanco": "PROPERTY_PRICE_HISTORY_APPEND_ONLY: real_estate.property_price_history é append-only (UPDATE não permitido)",
+    "codigo": "42501"
+   },
+   "dataHora": "2026-11-11T09:25:01.776Z"
+  },
+  {
+   "casos": [
+    "historico"
+   ],
+   "descricao": "DELETE no histórico de preço (escrita tentada com o papel de runtime e desfeita)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Empresas, Unidades, Imóveis com properties:internal, CRM)",
+   "sql": "DELETE FROM real_estate.property_price_history WHERE offer_id = $1",
+   "parametros": [
+    "f821a773-95ea-4f06-8966-57e9c26e109b"
+   ],
+   "resultado": {
+    "aceito": false,
+    "erroDoBanco": "permission denied for table property_price_history",
+    "codigo": "42501"
+   },
+   "dataHora": "2026-11-11T09:25:01.785Z"
+  }
+ ]
+}

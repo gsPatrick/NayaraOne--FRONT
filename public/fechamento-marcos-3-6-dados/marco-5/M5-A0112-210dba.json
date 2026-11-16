@@ -1,0 +1,238 @@
+{
+ "id": "M5-A0112-210dba",
+ "secao": "P1 > 15. Prazos jurídicos",
+ "linhaCaderno": 267,
+ "requisito": "• Alteração de prazo preserva anterior e justificativa.",
+ "demandas": "M5-D036;X45-D036",
+ "implementacao": "src/modules/legal/cases/deadline.service.js updateLegalDeadline (mudar due_at exige changeReason; audit.audit_log append-only guarda before_json/after_json e o motivo)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.prazos.test.js",
+   "nome": "JR prazo: remarcar sem motivo é 400; com motivo a auditoria preserva o vencimento anterior e a justificativa (§15)",
+   "status": "pass",
+   "ms": 25.604,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-D15",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_DEADLINE_CHANGE_REASON_REQUIRED: Mudar o vencimento de um prazo exige informar o motivo da mudança.",
+   "quando": "2026-11-11T03:42:37.898Z"
+  },
+  {
+   "passo": "JR-D16",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PENDING, id=832465e8-2280-4049-bcd2-8ecb455ba2e8, criticality=CRITICAL",
+   "quando": "2026-11-11T03:42:37.915Z"
+  },
+  {
+   "passo": "JR-D17",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "perfil": "A:checker",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:37.920Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0112-210dba.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "O valor anterior é preservado na trilha de auditoria append-only (before_json) com a justificativa como motivo; não há tabela de histórico própria do prazo.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.prazos.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-D15, JR-D16, JR-D17, JR-D18)"
+ },
+ "passos": [
+  {
+   "id": "JR-D15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REMARCAR sem justificativa é recusado",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "dueAt": "2026-12-01T03:42:37.884Z"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:37.898Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_DEADLINE_CHANGE_REASON_REQUIRED",
+     "message": "Mudar o vencimento de um prazo exige informar o motivo da mudança.",
+     "traceId": "1bfdd3c5-f42d-4925-9eab-01b134e5ceb6"
+    }
+   },
+   "req": [
+    "M5-A0112-210dba"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REMARCAR com justificativa",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "dueAt": "2026-12-01T03:42:37.898Z",
+    "changeReason": "Prorrogação deferida pelo juízo (fictício)"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:37.915Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "832465e8-2280-4049-bcd2-8ecb455ba2e8",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "legalCaseId": "632a809b-fcfe-4173-9852-e69456dfa385",
+     "sourceDocument": "Intimação fictícia DJe 03/11/2026",
+     "sourceEvent": null,
+     "description": "Contestação mwbkpk2qm6ml",
+     "dueAt": "2026-12-01T03:42:37.898Z",
+     "status": "PENDING",
+     "lastAlertedSeverity": null,
+     "firstOverdueAlertedAt": null,
+     "escalatedAt": null,
+     "responsibleUserId": "dcb43a4d-b913-4215-a61a-53b96e2153d5",
+     "conclusionEvidenceFileId": null,
+     "conclusionNote": null,
+     "criticality": "CRITICAL",
+     "occurrenceTaskId": null,
+     "sourceFileId": "905567a5-5f76-4ee6-9676-dd512cb8c715",
+     "sourceEventId": null,
+     "sourceEventType": null,
+     "taskId": "6144eadf-c7e1-476c-9104-3401112bec77",
+     "cancelledAt": null,
+     "cancelledBy": null,
+     "cancelReason": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:37.648Z",
+     "updated_at": "2026-11-11T03:42:37.908Z",
+     "deleted_at": null,
+     "legal_case_id": "632a809b-fcfe-4173-9852-e69456dfa385"
+    }
+   },
+   "req": [
+    "M5-A0112-210dba"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-D17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "REMARCAR pelo checker (sem legal:update) é recusado",
+   "perfil": "A:checker",
+   "metodo": "PATCH",
+   "rota": "/legal/deadlines/832465e8-2280-4049-bcd2-8ecb455ba2e8",
+   "corpoEnviado": {
+    "dueAt": "2026-12-06T03:42:37.915Z",
+    "changeReason": "tentativa"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 5,
+   "quando": "2026-11-11T03:42:37.920Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "legal:update"
+     },
+     "traceId": "70631962-6aa0-4d9e-b33e-b105d715cc97"
+    }
+   },
+   "req": [
+    "M5-A0112-210dba",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-D18",
+   "req": [
+    "M5-A0112-210dba"
+   ],
+   "modulo": "30-juridico-2-prazos",
+   "perfil": "A:gestor",
+   "descricao": "Histórico da remarcação: vencimento anterior (before_json) preservado com a justificativa e o autor",
+   "sql": "SELECT before_json->>'dueAt' AS vencimento_anterior, after_json->>'dueAt' AS vencimento_novo, reason, user_id IS NOT NULL AS tem_autor FROM audit.audit_log WHERE entity_type = 'LegalDeadline' AND entity_id = :id AND action = 'legal.deadline.update' ORDER BY occurred_at",
+   "resultado": [
+    {
+     "vencimento_anterior": "2026-11-26T03:42:37.632Z",
+     "vencimento_novo": "2026-12-01T03:42:37.898Z",
+     "reason": "Prorrogação deferida pelo juízo (fictício)",
+     "tem_autor": true
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.922Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

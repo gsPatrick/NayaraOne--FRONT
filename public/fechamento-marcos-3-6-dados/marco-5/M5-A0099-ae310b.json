@@ -1,0 +1,689 @@
+{
+ "id": "M5-A0099-ae310b",
+ "secao": "P1 > 13. Aditivos e notificações",
+ "linhaCaderno": 235,
+ "requisito": "• Motivo, vigência, cláusulas alteradas e assinaturas ficam registrados.",
+ "demandas": "M5-D101;M5-D019",
+ "implementacao": "src/modules/legal/contracts/application/contractAmendments.service.js createAmendment (motivo, changes, changedClauses, effectiveFrom/effectiveUntil) e signAmendment (uma assinatura por signatário em legal.addendum_signatures, imutável; SIGNED quando os signatários exigidos assinam)",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.contratos.modelosAditivos.test.js",
+   "nome": "§13: aditivo referencia contrato e versão base, registra motivo, vigência, cláusulas alteradas e a assinatura de cada signatário",
+   "status": "pass",
+   "ms": 656.495,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco5.legal.test.js",
+   "nome": "M5-25: aditivo SIGNED sem documento assinado é rejeitado, e aditivo sem \"changes\" também",
+   "status": "pass",
+   "ms": 49.383,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-520",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION"
+   },
+   "resumo": "erro LEGAL_CONTRACT_AMENDMENT_VALIDATION: O campo \"reason\" é obrigatório no aditivo.",
+   "quando": "2026-11-11T03:42:29.162Z"
+  },
+  {
+   "passo": "CT-521",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION"
+   },
+   "resumo": "erro LEGAL_CONTRACT_AMENDMENT_VALIDATION: \"changes\" deve ser uma lista não vazia de alterações {field, oldValue, newValue}.",
+   "quando": "2026-11-11T03:42:29.171Z"
+  },
+  {
+   "passo": "CT-522",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+   "quando": "2026-11-11T03:42:29.220Z"
+  },
+  {
+   "passo": "CT-525",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNATURES_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNATURES_REQUIRED"
+   },
+   "resumo": "erro LEGAL_CONTRACT_AMENDMENT_SIGNATURES_REQUIRED: O aditivo nasce em rascunho: registre a assinatura de cada signatário em POST /legal/amendments/:id/",
+   "quando": "2026-11-11T03:42:29.233Z"
+  },
+  {
+   "passo": "CT-526",
+   "metodo": "POST",
+   "rota": "/legal/amendments/bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9/sign",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNER_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNER_REQUIRED"
+   },
+   "resumo": "erro LEGAL_CONTRACT_AMENDMENT_SIGNER_REQUIRED: Informe o signatário (\"personId\") — a assinatura do aditivo é registrada por signatário.",
+   "quando": "2026-11-11T03:42:29.249Z"
+  },
+  {
+   "passo": "CT-528",
+   "metodo": "POST",
+   "rota": "/legal/amendments/bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9/sign",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=DRAFT, id=bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+   "quando": "2026-11-11T03:42:29.325Z"
+  },
+  {
+   "passo": "CT-528b",
+   "metodo": "POST",
+   "rota": "/legal/amendments/bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9/sign",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=SIGNED, id=bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+   "quando": "2026-11-11T03:42:29.357Z"
+  },
+  {
+   "passo": "CT-527",
+   "metodo": "POST",
+   "rota": "/files",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "id=238c0d2c-f37f-40ed-833d-116a3b70ef52",
+   "quando": "2026-11-11T03:42:29.294Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0099-ae310b.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado na segunda onda (o livro manda) e provado por teste novo: test/m5fech.contratos.modelosAditivos.test.js \"§13: aditivo referencia contrato e versão base, registra motivo, vigência, cláusulas alteradas e a assinatura de cada signatário\"; test/marco5.legal.test.js \"M5-25: aditivo SIGNED sem documento assinado é rejeitado, e aditivo sem \"changes\" também\". Vigência sem data informada = data do registro; signatários exigidos = papéis obrigatórios do tipo do contrato (sem papel fixo, todas as partes) — o livro não detalha.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.contratos.modelosAditivos.test.js test/marco5.legal.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-520, CT-521, CT-522, CT-524, CT-525, CT-526, CT-528, CT-528b, CT-528c, CT-527)"
+ },
+ "passos": [
+  {
+   "id": "CT-520",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Aditivo sem motivo é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "corpoEnviado": {
+    "changes": [
+     {
+      "field": "totalValue",
+      "newValue": 2100
+     }
+    ]
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:29.162Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_AMENDMENT_VALIDATION",
+     "message": "O campo \"reason\" é obrigatório no aditivo.",
+     "traceId": "59c3fc77-d396-4548-835d-76844ae590a6"
+    }
+   },
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-521",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Aditivo sem as alterações é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "corpoEnviado": {
+    "reason": "Reajuste"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:29.171Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_AMENDMENT_VALIDATION",
+     "message": "\"changes\" deve ser uma lista não vazia de alterações {field, oldValue, newValue}.",
+     "traceId": "44da41cb-bf60-4bc5-9215-7e4fa02de14d"
+    }
+   },
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-522",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Aditivo ao contrato assinado com motivo, alterações, cláusulas alteradas e vigência (1º aditivo)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "corpoEnviado": {
+    "reason": "Reajuste fictício do aluguel",
+    "changes": [
+     {
+      "field": "totalValue",
+      "oldValue": 2000,
+      "newValue": 2100
+     },
+     {
+      "field": "content",
+      "newValue": "tentativa de reescrever o texto do contrato"
+     }
+    ],
+    "changedClauses": [
+     {
+      "code": "MULTA",
+      "change": "Multa de 2%"
+     }
+    ],
+    "effectiveFrom": "2026-12-01",
+    "effectiveUntil": "2027-11-30"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 48,
+   "quando": "2026-11-11T03:42:29.220Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "amendmentNumber": 1,
+     "reason": "Reajuste fictício do aluguel",
+     "changesJson": [
+      {
+       "field": "totalValue",
+       "newValue": 2100,
+       "oldValue": 2000
+      },
+      {
+       "field": "content",
+       "newValue": "tentativa de reescrever o texto do contrato",
+       "oldValue": null
+      }
+     ],
+     "changedClauses": [
+      {
+       "code": "MULTA",
+       "change": "Multa de 2%",
+       "contractClauseId": null
+      }
+     ],
+     "baseContractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "effectiveFrom": "2026-12-01",
+     "effectiveUntil": "2027-11-30",
+     "documentFileId": null,
+     "status": "DRAFT",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:29.185Z"
+    }
+   },
+   "req": [
+    "M5-A0098-ef5e55",
+    "M5-A0099-ae310b",
+    "M5-A0162-0d870b",
+    "M5-A0027-72d604"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-525",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Aditivo não nasce assinado: as assinaturas são registradas por signatário",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/daaf3fcb-c3a1-4d73-93e6-d98e28f636d4/amendments",
+   "corpoEnviado": {
+    "reason": "x",
+    "changes": [
+     {
+      "field": "totalValue",
+      "newValue": 1
+     }
+    ],
+    "status": "SIGNED"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNATURES_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNATURES_REQUIRED",
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:29.233Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_AMENDMENT_SIGNATURES_REQUIRED",
+     "message": "O aditivo nasce em rascunho: registre a assinatura de cada signatário em POST /legal/amendments/:id/sign.",
+     "traceId": "9c41c2e4-26e2-4c3f-8505-224b44868da7"
+    }
+   },
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-526",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Assinatura do aditivo sem signatário é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/amendments/bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9/sign",
+   "corpoEnviado": {
+    "evidenceFileId": "7254d322-b8a8-4ed5-9530-07d5c337753b"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNER_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_AMENDMENT_SIGNER_REQUIRED",
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:29.249Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_AMENDMENT_SIGNER_REQUIRED",
+     "message": "Informe o signatário (\"personId\") — a assinatura do aditivo é registrada por signatário.",
+     "traceId": "eda3e9cb-4f7b-4dca-a7d4-0af72b7f6f7a"
+    }
+   },
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-528",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Locador assina o aditivo (via assinada + coletor): ainda falta o locatário",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/amendments/bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9/sign",
+   "corpoEnviado": {
+    "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+    "evidenceFileId": "238c0d2c-f37f-40ed-833d-116a3b70ef52"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 31,
+   "quando": "2026-11-11T03:42:29.325Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "amendmentNumber": 1,
+     "reason": "Reajuste fictício do aluguel",
+     "changesJson": [
+      {
+       "field": "totalValue",
+       "newValue": 2100,
+       "oldValue": 2000
+      },
+      {
+       "field": "content",
+       "newValue": "tentativa de reescrever o texto do contrato",
+       "oldValue": null
+      }
+     ],
+     "documentFileId": null,
+     "baseContractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "effectiveFrom": "2026-12-01",
+     "effectiveUntil": "2027-11-30",
+     "changedClauses": [
+      {
+       "code": "MULTA",
+       "change": "Multa de 2%",
+       "contractClauseId": null
+      }
+     ],
+     "status": "DRAFT",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:29.185Z",
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "document_file_id": null,
+     "signatures": [
+      {
+       "id": "1ecbe543-cfdf-42cb-8718-ae1f8c6246b4",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "addendumId": "bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+       "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+       "partyRole": "LANDLORD",
+       "evidenceFileId": "238c0d2c-f37f-40ed-833d-116a3b70ef52",
+       "collectedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "signedAt": "2026-11-11T03:42:29.313Z",
+       "created_at": "2026-11-11T03:42:29.313Z"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-528b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Locatário assina: todas as assinaturas exigidas, aditivo SIGNED",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/amendments/bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9/sign",
+   "corpoEnviado": {
+    "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+    "evidenceFileId": "238c0d2c-f37f-40ed-833d-116a3b70ef52"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 32,
+   "quando": "2026-11-11T03:42:29.357Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "amendmentNumber": 1,
+     "reason": "Reajuste fictício do aluguel",
+     "changesJson": [
+      {
+       "field": "totalValue",
+       "newValue": 2100,
+       "oldValue": 2000
+      },
+      {
+       "field": "content",
+       "newValue": "tentativa de reescrever o texto do contrato",
+       "oldValue": null
+      }
+     ],
+     "documentFileId": "238c0d2c-f37f-40ed-833d-116a3b70ef52",
+     "baseContractVersionId": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "effectiveFrom": "2026-12-01",
+     "effectiveUntil": "2027-11-30",
+     "changedClauses": [
+      {
+       "code": "MULTA",
+       "change": "Multa de 2%",
+       "contractClauseId": null
+      }
+     ],
+     "status": "SIGNED",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "created_at": "2026-11-11T03:42:29.185Z",
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "document_file_id": null,
+     "signatures": [
+      {
+       "id": "1ecbe543-cfdf-42cb-8718-ae1f8c6246b4",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "addendumId": "bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+       "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+       "partyRole": "LANDLORD",
+       "evidenceFileId": "238c0d2c-f37f-40ed-833d-116a3b70ef52",
+       "collectedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "signedAt": "2026-11-11T03:42:29.313Z",
+       "created_at": "2026-11-11T03:42:29.313Z"
+      },
+      {
+       "id": "9b94b90f-a918-49f8-ac06-ede3c97a2db8",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "addendumId": "bd2f88b7-df4b-42ce-a7ea-adf6c3ffedd9",
+       "personId": "8fec3c7f-398f-41af-a16b-72b40d755010",
+       "partyRole": "TENANT",
+       "evidenceFileId": "238c0d2c-f37f-40ed-833d-116a3b70ef52",
+       "collectedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "signedAt": "2026-11-11T03:42:29.342Z",
+       "created_at": "2026-11-11T03:42:29.342Z"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-527",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Arquivo do aditivo assinado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/files",
+   "corpoEnviado": {
+    "fileName": "aditivo.pdf",
+    "mimeType": "application/pdf",
+    "contentBase64": "QWRpdGl2byAxNzk0MzY4NTQ5MjQ5",
+    "category": "generic"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:29.294Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "classification": "CONFIDENTIAL",
+     "id": "238c0d2c-f37f-40ed-833d-116a3b70ef52",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "storageKey": "generic/a383b960-dcaa-4baf-bf77-9663ef357013/258ba818-25be-4553-8561-3d4d57d03c52-aditivo.pdf",
+     "fileName": "aditivo.pdf",
+     "mimeType": "application/pdf",
+     "sizeBytes": 21,
+     "checksumSha256": "d76a7699b23a9e316607630da455d6d6f14e097209e32f6e007dff22b022640c",
+     "encryptedAtRest": true,
+     "storageProvider": "storage-local-disk",
+     "storageConnectionId": null,
+     "scanStatus": "CLEAN",
+     "scannedAt": "2026-11-11T03:42:29.264Z",
+     "uploadedByUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:29.264Z",
+     "created_at": "2026-11-11T03:42:29.264Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-524",
+   "req": [
+    "M5-A0098-ef5e55",
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "A:leitura",
+   "descricao": "Aditivo gravado em legal.addenda: contrato, versão base (a homologada), número, motivo, alterações, cláusulas alteradas e vigência",
+   "sql": "SELECT a.contract_id, a.base_contract_version_id, c.approved_version_id, a.amendment_number, a.reason, a.changes_json, a.changed_clauses, a.effective_from::text AS de, a.effective_until::text AS ate, a.status FROM legal.addenda a JOIN legal.contracts c ON c.id = a.contract_id WHERE a.id = :id",
+   "resultado": [
+    {
+     "contract_id": "daaf3fcb-c3a1-4d73-93e6-d98e28f636d4",
+     "base_contract_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "approved_version_id": "be472354-4a5a-4a34-a734-97a9e276fddb",
+     "amendment_number": 1,
+     "reason": "Reajuste fictício do aluguel",
+     "changes_json": [
+      {
+       "field": "totalValue",
+       "newValue": 2100,
+       "oldValue": 2000
+      },
+      {
+       "field": "content",
+       "newValue": "tentativa de reescrever o texto do contrato",
+       "oldValue": null
+      }
+     ],
+     "changed_clauses": [
+      {
+       "code": "MULTA",
+       "change": "Multa de 2%",
+       "contractClauseId": null
+      }
+     ],
+     "de": "2026-12-01",
+     "ate": "2027-11-30",
+     "status": "DRAFT"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.223Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-528c",
+   "req": [
+    "M5-A0099-ae310b"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "A:leitura",
+   "descricao": "Uma assinatura por signatário em legal.addendum_signatures (papel, via, coletor) e o aditivo SIGNED",
+   "sql": "SELECT s.party_role, s.evidence_file_id, s.collected_by_user_id, a.status FROM legal.addendum_signatures s JOIN legal.addenda a ON a.id = s.addendum_id WHERE s.addendum_id = :id ORDER BY s.signed_at",
+   "resultado": [
+    {
+     "party_role": "LANDLORD",
+     "evidence_file_id": "238c0d2c-f37f-40ed-833d-116a3b70ef52",
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "status": "SIGNED"
+    },
+    {
+     "party_role": "TENANT",
+     "evidence_file_id": "238c0d2c-f37f-40ed-833d-116a3b70ef52",
+     "collected_by_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "status": "SIGNED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.359Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

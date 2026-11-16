@@ -1,0 +1,550 @@
+{
+  "id": "M6-77",
+  "requisito": "Evento mínimo material.requested / material.received.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §11 Eventos mínimos; Guia do Marcelo (Obras) §11",
+  "implementacao": "constructionEvents.service.js#publishMaterialRequested/publishMaterialReceived (Outbox transacional, mesma transação do dado)",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/materiais: Requisitar e Receber",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.minimumEvents.test.js",
+      "nome": "M6-69..M6-80: a jornada da obra grava na Outbox os 15 eventos mínimos do Caderno, com o nome exato",
+      "resultado": "passou",
+      "duracaoMs": 1392,
+      "executadoEm": "2026-11-11T00:13:57.177Z"
+    },
+    {
+      "arquivo": "test/construction.materialRequests.test.js",
+      "nome": "material-request: criar requisição publica evento material.requested",
+      "resultado": "passou",
+      "duracaoMs": 297,
+      "executadoEm": "2026-11-11T00:13:41.362Z"
+    },
+    {
+      "arquivo": "test/construction.materialRequests.test.js",
+      "nome": "material-request: receber marca RECEIVED e publica material.received (idempotente contra dupla confirmação)",
+      "resultado": "passou",
+      "duracaoMs": 297,
+      "executadoEm": "2026-11-11T00:13:42.030Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H060",
+      "H061",
+      "H062",
+      "H063",
+      "H068",
+      "H069",
+      "H071",
+      "H072"
+    ],
+    "resumo": [
+      "H060 PATCH /api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8 → 200",
+      "H061 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/material-requests → 201",
+      "H062 POST /api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/receive → 200",
+      "H063 POST /api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/receive → 409 MATERIAL_REQUEST_ALREADY_RECEIVED",
+      "H068 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/material-requests → 201",
+      "H069 POST /api/v1/construction/material-requests/0bd1aca3-7d8c-44f9-a153-84602d867de9/receive → 200",
+      "H071 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/material-requests → 201",
+      "H072 POST /api/v1/construction/material-requests/849dff1e-2afe-4932-80b0-f1982b181ed5/receive → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:12.073Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H060",
+      "requisitos": [
+        "M6-28",
+        "M6-77"
+      ],
+      "cenario": "Iniciar a etapa Fundação (PENDING → IN_PROGRESS)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/stages/a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "IN_PROGRESS"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 61,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "name": "Fundação",
+          "stageCode": "FUN-c4fcd6",
+          "plannedCost": "45000.00",
+          "sequence": 1,
+          "plannedPct": "100.000000",
+          "measuredPct": null,
+          "status": "IN_PROGRESS",
+          "startsAt": "2026-10-05T00:00:00.000Z",
+          "endsAt": "2027-02-28T00:00:00.000Z",
+          "publicVisible": false,
+          "publicSince": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:09.312Z",
+          "updated_at": "2026-11-11T00:12:12.060Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.073Z"
+    },
+    {
+      "id": "H061",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77"
+      ],
+      "cenario": "Requisição de material nascida da obra/etapa (40 sacos de cimento)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/material-requests",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "description": "Cimento CP-II 50 kg",
+        "quantity": 40,
+        "unit": "UN",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+        "idempotencyKey": "mr-a-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 31,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "48814203-8d2a-473e-ac75-919769662592",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "40.000",
+          "unit": "UN",
+          "status": "REQUESTED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "idempotencyKey": "mr-a-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:12.094Z",
+          "created_at": "2026-11-11T00:12:12.094Z",
+          "receivedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.104Z"
+    },
+    {
+      "id": "H062",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77",
+        "M6-85",
+        "M6-22",
+        "M6-98"
+      ],
+      "cenario": "Recebimento integra o Estoque: saída real do almoxarifado para a obra (OUT)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/receive",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "sourceLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 196,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "48814203-8d2a-473e-ac75-919769662592",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "40.000",
+          "unit": "UN",
+          "status": "RECEIVED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "receivedAt": "2026-11-11T00:12:12.114Z",
+          "lockVersion": 1,
+          "idempotencyKey": "mr-a-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:12.094Z",
+          "updated_at": "2026-11-11T00:12:12.114Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.300Z"
+    },
+    {
+      "id": "H063",
+      "requisitos": [
+        "M6-28",
+        "M6-77"
+      ],
+      "cenario": "NEGATIVO: confirmar de novo o recebimento (não debita duas vezes)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/48814203-8d2a-473e-ac75-919769662592/receive",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "sourceLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 409,
+      "codigoErro": "MATERIAL_REQUEST_ALREADY_RECEIVED",
+      "esperado": "409 MATERIAL_REQUEST_ALREADY_RECEIVED",
+      "conferiu": true,
+      "duracaoMs": 21,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MATERIAL_REQUEST_ALREADY_RECEIVED",
+          "message": "Esta requisição de material já foi marcada como recebida.",
+          "traceId": "362b0e0c-229d-4718-b4c3-e315ff7c1381"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:12.321Z"
+    },
+    {
+      "id": "H068",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77"
+      ],
+      "cenario": "Requisição de material nascida da obra/etapa (5 sacos de cimento)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/material-requests",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "description": "Cimento CP-II 50 kg",
+        "quantity": 5,
+        "unit": "UN",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+        "idempotencyKey": "mr-b-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 50,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "0bd1aca3-7d8c-44f9-a153-84602d867de9",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "5.000",
+          "unit": "UN",
+          "status": "REQUESTED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "idempotencyKey": "mr-b-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:13.198Z",
+          "created_at": "2026-11-11T00:12:13.198Z",
+          "receivedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.211Z"
+    },
+    {
+      "id": "H069",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77",
+        "M6-85",
+        "M6-22",
+        "M6-98"
+      ],
+      "cenario": "Recebimento integra o Estoque: saída real do almoxarifado para a obra (OUT)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/0bd1aca3-7d8c-44f9-a153-84602d867de9/receive",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "sourceLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 185,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "0bd1aca3-7d8c-44f9-a153-84602d867de9",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "5.000",
+          "unit": "UN",
+          "status": "RECEIVED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "receivedAt": "2026-11-11T00:12:13.229Z",
+          "lockVersion": 1,
+          "idempotencyKey": "mr-b-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:13.198Z",
+          "updated_at": "2026-11-11T00:12:13.229Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.396Z"
+    },
+    {
+      "id": "H071",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77"
+      ],
+      "cenario": "Requisição de material nascida da obra/etapa (3 sacos de cimento)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/material-requests",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "description": "Cimento CP-II 50 kg",
+        "quantity": 3,
+        "unit": "UN",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+        "idempotencyKey": "mr-c-c4fcd6"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 21,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "849dff1e-2afe-4932-80b0-f1982b181ed5",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "3.000",
+          "unit": "UN",
+          "status": "REQUESTED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "idempotencyKey": "mr-c-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:13.505Z",
+          "created_at": "2026-11-11T00:12:13.505Z",
+          "receivedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.513Z"
+    },
+    {
+      "id": "H072",
+      "requisitos": [
+        "M6-28",
+        "M6-53",
+        "M6-77",
+        "M6-85",
+        "M6-22",
+        "M6-98"
+      ],
+      "cenario": "Recebimento integra o Estoque: saída real do almoxarifado para a obra (OUT)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/material-requests/849dff1e-2afe-4932-80b0-f1982b181ed5/receive",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "inventoryItemId": "380c0ef3-52d2-4376-a7df-d9d57db9d5b0",
+        "sourceLocationId": "908c261b-3c4d-4b84-a01b-54254d53c59e",
+        "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 241,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "849dff1e-2afe-4932-80b0-f1982b181ed5",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stageId": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "description": "Cimento CP-II 50 kg",
+          "quantity": "3.000",
+          "unit": "UN",
+          "status": "RECEIVED",
+          "requestedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "receivedAt": "2026-11-11T00:12:13.695Z",
+          "lockVersion": 1,
+          "idempotencyKey": "mr-c-c4fcd6",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:13.505Z",
+          "updated_at": "2026-11-11T00:12:13.695Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "stage_id": "a7b1c1c1-d7ef-451c-84c0-6e94e370cad8",
+          "requested_by_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:13.754Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C004",
+      "requisitos": [
+        "M6-69",
+        "M6-70",
+        "M6-71",
+        "M6-72",
+        "M6-73",
+        "M6-74",
+        "M6-75",
+        "M6-76",
+        "M6-77",
+        "M6-78",
+        "M6-79",
+        "M6-80",
+        "M6-105",
+        "M6-106"
+      ],
+      "descricao": "Eventos mínimos do Caderno §11 gravados na Outbox pela jornada (nome exato, um por agregado e chave de idempotência)",
+      "sql": "SELECT event_type, count(*)::int AS eventos, count(DISTINCT idempotency_key)::int AS chaves FROM integration.outbox_events WHERE event_type = ANY($1) AND (aggregate_id = ANY($2::uuid[]) OR payload_json->>'projectId' = ANY($3) OR payload_json->>'id' = ANY($3)) GROUP BY 1 ORDER BY 1",
+      "resultado": [
+        {
+          "event_type": "material.received",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "material.requested",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "measurement.approved",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "measurement.submitted",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.closed",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "nonconformity.opened",
+          "eventos": 3,
+          "chaves": 3
+        },
+        {
+          "event_type": "project.budget.approved",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.daily_log.created",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "project.delay.detected",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.delivered",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.stage.completed",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "project.started",
+          "eventos": 1,
+          "chaves": 1
+        },
+        {
+          "event_type": "warranty.case.closed",
+          "eventos": 2,
+          "chaves": 2
+        },
+        {
+          "event_type": "warranty.case.opened",
+          "eventos": 2,
+          "chaves": 2
+        }
+      ],
+      "invariante": "os 15 nomes presentes; eventos = chaves (nenhum evento duplicado)",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.180Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.439Z"
+}

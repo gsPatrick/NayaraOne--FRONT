@@ -1,0 +1,361 @@
+{
+ "id": "M4-G§15.3",
+ "secao": "Guia §15 APIs mínimas",
+ "requisito": "\"POST /finance/payments/prepare\" — Preparar payment intent.",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-07 fluxo feliz: create -> approve (sem alteração) -> execute liquida o lançamento",
+   "status": "passou",
+   "duracaoMs": 82,
+   "commitDoArquivo": "fa15be9f"
+  },
+  {
+   "arquivo": "test/m4.officialRoutes.guia15.test.js",
+   "nome": "Guia §15 POST /finance/payments/prepare: cria a intenção com snapshot/hash (201); sem finance:create é 403 PERMISSION_DENIED",
+   "status": "passou",
+   "duracaoMs": 1788,
+   "commitDoArquivo": "76cb9777"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P21-1",
+   "tipo": "http",
+   "linhas": [
+    "M4-§8.4",
+    "M4-G§3",
+    "M4-G§15.3"
+   ],
+   "titulo": "Duplo clique: duas criações SIMULTÂNEAS de intenção para o mesmo lançamento (requisição 1/2) — uma só nasce",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38"
+   },
+   "esperado": {
+    "status": [
+     201,
+     409
+    ]
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 125,
+   "quando": "2026-11-11T01:35:07.305Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "reconciliationAttempts": 0,
+     "id": "da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "idempotencyKey": "payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+     "snapshotJson": {
+      "dueAt": "2026-11-13T01:35:07.127Z",
+      "amount": "1200.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento ao fornecedor 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "d47169ea87874322c1555b7b75a2ca3590cca5cb92094ef36d58ee3c93412777",
+     "status": "PENDING",
+     "approvalRequestId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:07.236Z",
+     "created_at": "2026-11-11T01:35:07.236Z",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciledAt": null,
+     "reconciledEntryId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O01",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.3"
+   ],
+   "titulo": "POST /finance/payments/prepare (caminho literal do Guia): conta a pagar",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "DEBIT",
+    "nature": "PAYABLE",
+    "amount": 455,
+    "description": "Pagamento pelas rotas oficiais 0871300",
+    "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+    "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 73,
+   "quando": "2026-11-11T01:35:17.736Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "63d5d68a-e091-47e8-a767-5dc3123113b1",
+     "requiresManualReview": false,
+     "lockVersion": 0,
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "originRef": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "455.00",
+     "description": "Pagamento pelas rotas oficiais 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:17.686Z",
+     "created_at": "2026-11-11T01:35:17.686Z",
+     "settlementMethod": null,
+     "settlementEvidenceFileId": null,
+     "settlementReason": null,
+     "settlementEvidenceAttachedBy": null,
+     "settlementEvidenceAttachedAt": null,
+     "parentEntryId": null,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O02",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.3"
+   ],
+   "titulo": "Comprovante anexado antes de preparar",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/63d5d68a-e091-47e8-a767-5dc3123113b1/settlement-evidence",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "settlementEvidenceFileId": "1052f7ce-49e8-4013-a2ef-cd48b6e2ff91",
+    "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado."
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 57,
+   "quando": "2026-11-11T01:35:17.794Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "63d5d68a-e091-47e8-a767-5dc3123113b1",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "resultCenterId": null,
+     "contractId": null,
+     "constructionProjectId": null,
+     "chartOfAccountId": null,
+     "chartOfAccountVersionId": null,
+     "originRef": null,
+     "isThirdPartyFunds": false,
+     "thirdPartyReference": null,
+     "thirdPartyOriginEntryId": null,
+     "thirdPartyHolderPersonId": null,
+     "settlementMethod": null,
+     "settlementEvidenceFileId": "1052f7ce-49e8-4013-a2ef-cd48b6e2ff91",
+     "settlementReason": "Pagamento feito fora da integração bancária; comprovante fictício anexado.",
+     "settlementEvidenceAttachedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "settlementEvidenceAttachedAt": "2026-11-11T01:35:17.761Z",
+     "thirdPartyReleaseType": null,
+     "thirdPartyCompensatedEntryId": null,
+     "entryType": "DEBIT",
+     "nature": "PAYABLE",
+     "amount": "455.00",
+     "description": "Pagamento pelas rotas oficiais 0871300",
+     "dueAt": null,
+     "competenceMonth": "2026-11",
+     "settledAt": null,
+     "status": "PENDING",
+     "idempotencyKey": null,
+     "reversalOfEntryId": null,
+     "parentEntryId": null,
+     "requiresManualReview": false,
+     "manualReviewReason": null,
+     "manualReviewClearedAt": null,
+     "manualReviewClearedBy": null,
+     "lockVersion": 1,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "created_at": "2026-11-11T01:35:17.686Z",
+     "updated_at": "2026-11-11T01:35:17.761Z",
+     "bank_account_id": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+     "cost_center_id": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+     "result_center_id": null,
+     "contract_id": null,
+     "chart_of_account_id": null,
+     "construction_project_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  },
+  {
+   "id": "O03",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§15.3",
+    "M4-G§4"
+   ],
+   "titulo": "POST /finance/payments/prepare: intenção com snapshot/hash",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/payments/prepare",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "financialEntryId": "63d5d68a-e091-47e8-a767-5dc3123113b1"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 67,
+   "quando": "2026-11-11T01:35:17.861Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "reconciliationAttempts": 0,
+     "id": "ed894c3e-33df-41fc-aae1-436ee2acbd1c",
+     "idempotencyKey": "payment-intent:ed894c3e-33df-41fc-aae1-436ee2acbd1c",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "63d5d68a-e091-47e8-a767-5dc3123113b1",
+     "snapshotJson": {
+      "dueAt": null,
+      "amount": "455.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento pelas rotas oficiais 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "63d5d68a-e091-47e8-a767-5dc3123113b1",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "988e9cd80b03202b36e267dc33ed5c71249f115a18789df756d7b45386dd7951",
+     "status": "PENDING",
+     "approvalRequestId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:17.819Z",
+     "created_at": "2026-11-11T01:35:17.819Z",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvedByUserId": null,
+     "approvedAt": null,
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciledAt": null,
+     "reconciledEntryId": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

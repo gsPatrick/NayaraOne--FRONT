@@ -1,0 +1,3602 @@
+{
+ "id": "M5-A0343-c56197",
+ "secao": "(abertura 3)",
+ "linhaCaderno": 881,
+ "requisito": "• APIs para generate billing, adjustment, collection agreement, guaranteed pay, advance, utilities, transfer complete e closeout.",
+ "demandas": "M5-D300;M5-D321;M5-D307;M5-D331;M5-D342;M5-D350;M5-D353;M5-D361",
+ "implementacao": "src/features/billing/billing.routes.js: POST /billing/schedules, /billing/schedules/:id/payments, /billing/rent-adjustments, /billing/collection-cases/:id/agreements, /billing/guaranteed-rent/:id/pay, /billing/rent-advances (+propose/accept/pay/recover), /billing/utility-obligations (+payments, ownership-transfer), /billing/ownership-transfer-tasks/:id/complete, /billing/contracts/:contractId/closeout(-eligibility)",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: gerar cobrança duas vezes para a mesma competência é bloqueado com erro claro",
+   "status": "pass",
+   "ms": 175.505,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: aluguel garantido e antecipação são produtos/tabelas separados",
+   "status": "pass",
+   "ms": 118.004,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: completeOwnershipTransfer exige comprovante (evidenceFileId) e destinatário (A05)",
+   "status": "pass",
+   "ms": 48.883,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.test.js",
+   "nome": "billing: closeout bloqueia com cobrança em aberto e libera quando quitada",
+   "status": "pass",
+   "ms": 54.396,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/billing.collectionCadenceRoutes.test.js",
+   "nome": "CAD-HTTP-04: publicar com billing:cadence:manage → 201 com etapas normalizadas (ordenadas)",
+   "status": "pass",
+   "ms": 5.572,
+   "commitDoTeste": "8c9bdf96"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.http.test.js",
+   "nome": "fechamento M5 cobrança/HTTP: encerramento recusado (409 CLOSEOUT_BLOCKED) grava closeout.blocked e a auditoria mesmo com a transação da requisição desfeita",
+   "status": "pass",
+   "ms": 439.234,
+   "commitDoTeste": "fd18a57a"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (ALTO): objeto no lugar de identificador nas rotas da locação devolve 400 com código claro, nunca 500",
+   "status": "pass",
+   "ms": 128.566,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.pentest.test.js",
+   "nome": "fechamento M5 pentest (ALTO): texto longo demais em pagamento do garantido, conta de consumo e pagamento de utilidade é 400",
+   "status": "pass",
+   "ms": 12.393,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-CO-04",
+   "metodo": "POST",
+   "rota": "/billing/schedules",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+   "quando": "2026-11-11T03:42:34.607Z"
+  },
+  {
+   "passo": "LC-RJ-03",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING_SOURCE, id=d844a533-967c-4fcc-9d08-194554dbf138",
+   "quando": "2026-11-11T03:42:35.150Z"
+  },
+  {
+   "passo": "LC-CO-17",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=AGREEMENT, id=b6b7202f-a727-4453-9581-b06e6c766dcd",
+   "quando": "2026-11-11T03:42:34.793Z"
+  },
+  {
+   "passo": "LC-GR-06",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:36.068Z"
+  },
+  {
+   "passo": "LC-GR-12",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ELIGIBILITY_PENDING, id=9cce2763-fd2e-4e50-b1d9-1546847a2377",
+   "quando": "2026-11-11T03:42:36.197Z"
+  },
+  {
+   "passo": "LC-GR-17",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances/9cce2763-fd2e-4e50-b1d9-1546847a2377/pay",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PAID, id=9cce2763-fd2e-4e50-b1d9-1546847a2377",
+   "quando": "2026-11-11T03:42:36.273Z"
+  },
+  {
+   "passo": "LC-OB-01",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.847Z"
+  },
+  {
+   "passo": "LC-OB-21",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/e90a5fa4-40a1-4e88-a322-05973545e82d/complete",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=COMPLETED, id=e90a5fa4-40a1-4e88-a322-05973545e82d",
+   "quando": "2026-11-11T03:42:34.134Z"
+  },
+  {
+   "passo": "LC-EN-08",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "CLOSEOUT_BLOCKED",
+   "esperado": {
+    "status": 409,
+    "codigo": "CLOSEOUT_BLOCKED"
+   },
+   "resumo": "erro CLOSEOUT_BLOCKED: Não é possível encerrar a locação: 2 pendência(s) — cobrança em aberto, transferência de consumo (ág",
+   "quando": "2026-11-11T03:42:36.553Z"
+  },
+  {
+   "passo": "LC-EN-19",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=COMPLETED",
+   "quando": "2026-11-11T03:42:36.982Z"
+  },
+  {
+   "passo": "LC-GR-25",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "RENT_ADVANCE_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "RENT_ADVANCE_VALIDATION"
+   },
+   "resumo": "erro RENT_ADVANCE_VALIDATION: O campo \"contractId\" deve ser um identificador válido.",
+   "quando": "2026-11-11T03:42:36.368Z"
+  },
+  {
+   "passo": "LC-OB-43",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "UTILITY_PAYMENT_VALIDATION",
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_PAYMENT_VALIDATION"
+   },
+   "resumo": "erro UTILITY_PAYMENT_VALIDATION: \"paidByParty\" deve ser quem pagou (ex.: COMPANY, TENANT, LANDLORD), até 16 letras.",
+   "quando": "2026-11-11T03:42:34.353Z"
+  },
+  {
+   "passo": "LC-OB-02",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.870Z"
+  },
+  {
+   "passo": "LC-OB-03",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.883Z"
+  },
+  {
+   "passo": "LC-OB-04",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.894Z"
+  },
+  {
+   "passo": "LC-OB-05",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.904Z"
+  },
+  {
+   "passo": "LC-OB-06",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.914Z"
+  },
+  {
+   "passo": "LC-OB-07",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:33.925Z"
+  },
+  {
+   "passo": "LC-OB-11",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:33.975Z"
+  },
+  {
+   "passo": "LC-OB-14",
+   "metodo": "POST",
+   "rota": "/billing/utility-accounts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=fd37b911-450f-43b5-be51-48d8279595ec",
+   "quando": "2026-11-11T03:42:34.005Z"
+  },
+  {
+   "passo": "LC-OB-15",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/e90a5fa4-40a1-4e88-a322-05973545e82d/complete",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "OWNERSHIP_TRANSFER_EVIDENCE_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "OWNERSHIP_TRANSFER_EVIDENCE_REQUIRED"
+   },
+   "resumo": "erro OWNERSHIP_TRANSFER_EVIDENCE_REQUIRED: É preciso anexar o comprovante da transferência de titularidade antes de concluir.",
+   "quando": "2026-11-11T03:42:34.013Z"
+  },
+  {
+   "passo": "LC-OB-24",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/cced2296-66dd-46a7-ac10-ab96452c9795/ownership-transfer",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:34.184Z"
+  },
+  {
+   "passo": "LC-OB-31",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:34.273Z"
+  },
+  {
+   "passo": "LC-CO-10",
+   "metodo": "POST",
+   "rota": "/billing/schedules/f36b5531-af58-48ce-bead-28dcd2e7e8fd/payments",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:34.678Z"
+  },
+  {
+   "passo": "LC-CO-13",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=OPEN, id=b6b7202f-a727-4453-9581-b06e6c766dcd",
+   "quando": "2026-11-11T03:42:34.752Z"
+  },
+  {
+   "passo": "LC-CO-18",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=AGREEMENT, id=b6b7202f-a727-4453-9581-b06e6c766dcd",
+   "quando": "2026-11-11T03:42:34.814Z"
+  },
+  {
+   "passo": "LC-RJ-06",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:35.191Z"
+  },
+  {
+   "passo": "LC-RJ-11",
+   "metodo": "GET",
+   "rota": "/billing/rent-adjustments?contractId=687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 4 item(ns)",
+   "quando": "2026-11-11T03:42:35.232Z"
+  },
+  {
+   "passo": "LC-GR-02",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=25868bee-9380-481a-aaae-8057979467ec",
+   "quando": "2026-11-11T03:42:36.009Z"
+  },
+  {
+   "passo": "LC-GR-14",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances/9cce2763-fd2e-4e50-b1d9-1546847a2377/propose",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PROPOSED, id=9cce2763-fd2e-4e50-b1d9-1546847a2377",
+   "quando": "2026-11-11T03:42:36.216Z"
+  },
+  {
+   "passo": "LC-GR-16",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances/9cce2763-fd2e-4e50-b1d9-1546847a2377/accept",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=ACCEPTED, id=9cce2763-fd2e-4e50-b1d9-1546847a2377",
+   "quando": "2026-11-11T03:42:36.230Z"
+  },
+  {
+   "passo": "LC-EN-07",
+   "metodo": "GET",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout-eligibility",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:36.528Z"
+  },
+  {
+   "passo": "LC-EN-11",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "perfil": "A:leitura",
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "resumo": "erro PERMISSION_DENIED: Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+   "quando": "2026-11-11T03:42:36.563Z"
+  },
+  {
+   "passo": "LC-EN-16",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/29bc50c1-a476-4c99-a2c6-47bf42783bfc/complete",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=COMPLETED, id=29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+   "quando": "2026-11-11T03:42:36.902Z"
+  },
+  {
+   "passo": "LC-EN-17",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/f6fb38d1-788e-4b42-a6cc-ccadc376d23f/complete",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=COMPLETED, id=f6fb38d1-788e-4b42-a6cc-ccadc376d23f",
+   "quando": "2026-11-11T03:42:36.925Z"
+  },
+  {
+   "passo": "LC-EN-32",
+   "metodo": "GET",
+   "rota": "/billing/schedules?contractId=811f3654-6c5b-407e-a3a4-69eef597149e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 2 item(ns)",
+   "quando": "2026-11-11T03:42:36.994Z"
+  },
+  {
+   "passo": "LC-EN-33",
+   "metodo": "GET",
+   "rota": "/billing/schedules/f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=PAID, id=f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+   "quando": "2026-11-11T03:42:37.003Z"
+  },
+  {
+   "passo": "LC-EN-34",
+   "metodo": "GET",
+   "rota": "/billing/rent-adjustments?contractId=687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 4 item(ns)",
+   "quando": "2026-11-11T03:42:37.016Z"
+  },
+  {
+   "passo": "LC-EN-35",
+   "metodo": "GET",
+   "rota": "/billing/collection-cases?contractId=811f3654-6c5b-407e-a3a4-69eef597149e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:37.025Z"
+  },
+  {
+   "passo": "LC-EN-36",
+   "metodo": "GET",
+   "rota": "/billing/guaranteed-rent?contractId=1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:37.033Z"
+  },
+  {
+   "passo": "LC-EN-37",
+   "metodo": "GET",
+   "rota": "/billing/rent-advances?contractId=1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 1 item(ns)",
+   "quando": "2026-11-11T03:42:37.040Z"
+  },
+  {
+   "passo": "LC-EN-38",
+   "metodo": "GET",
+   "rota": "/billing/utility-obligations?contractId=64495aec-6e91-43ba-896d-dd8f0a168c7e",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "lista com 8 item(ns)",
+   "quando": "2026-11-11T03:42:37.050Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0343-c56197.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Pentest: todas as rotas da cobrança validam tipo e tamanho na entrada (400 com código claro).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/billing.test.js test/billing.collectionCadenceRoutes.test.js test/m5fech.locacao.http.test.js test/m5fech.locacao.pentest.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-CO-04, LC-RJ-03, LC-CO-17, LC-GR-06, LC-GR-12, LC-GR-17, LC-OB-01, LC-OB-21, LC-EN-08, LC-EN-19, LC-GR-25, LC-OB-43, LC-OB-02, LC-OB-03, LC-OB-04, LC-OB-05, LC-OB-06, LC-OB-07, LC-OB-11, LC-OB-14, LC-OB-15, LC-OB-24, LC-OB-31, LC-CO-10, LC-CO-13, LC-CO-18, LC-RJ-06, LC-RJ-11, LC-GR-02, LC-GR-14, LC-GR-16, LC-EN-07, LC-EN-11, LC-EN-16, LC-EN-17, LC-EN-32, LC-EN-33, LC-EN-34, LC-EN-35, LC-EN-36, LC-EN-37, LC-EN-38)"
+ },
+ "passos": [
+  {
+   "id": "LC-CO-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Gera a competência 2030-01 com aluguel, condomínio e IPTU separados (total 3.220,45)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/schedules",
+   "corpoEnviado": {
+    "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+    "period": "2030-01",
+    "dueDate": "2030-01-10",
+    "items": [
+     {
+      "componentType": "RENT",
+      "amount": 2500,
+      "description": "Aluguel"
+     },
+     {
+      "componentType": "CONDO",
+      "amount": 600.1,
+      "description": "Condomínio"
+     },
+     {
+      "componentType": "IPTU",
+      "amount": 120.35,
+      "description": "IPTU (parcela)"
+     }
+    ]
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:34.607Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "period": "2030-01",
+     "dueDate": "2030-01-10",
+     "totalAmount": "3220.45",
+     "paidAmount": "0.00",
+     "balance": "3220.45",
+     "status": "OPEN",
+     "generatedAt": "2026-11-11T03:42:34.597Z",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:34.597Z",
+     "created_at": "2026-11-11T03:42:34.597Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0329-5e6273",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0345-019723"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Índice sem fonte (INPC): reajuste fica PENDING_SOURCE, sem percentual nem aluguel novo",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "INPC",
+    "period": "2030-01",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:35.150Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "d844a533-967c-4fcc-9d08-194554dbf138",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+     "indexCode": "INPC",
+     "period": "2030-01",
+     "rawIndexValue": null,
+     "appliedPercentage": null,
+     "oldRentAmount": "2500.00",
+     "newRentAmount": null,
+     "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+     "status": "PENDING_SOURCE",
+     "appliedAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:35.142Z",
+     "created_at": "2026-11-11T03:42:35.142Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0333-f14aaf",
+    "M5-A0332-29fd72",
+    "M5-A0343-c56197",
+    "M5-A0345-019723",
+    "M5-A0342-a3762d"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Acordo v1: 3 parcelas, 2.287,06",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "corpoEnviado": {
+    "installments": 3,
+    "agreedAmount": 2287.06,
+    "notes": "Primeira proposta"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:34.793Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b6b7202f-a727-4453-9581-b06e6c766dcd",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "status": "AGREEMENT",
+     "overdueSince": "2026-10-09",
+     "originalDebtAmount": "2220.45",
+     "currentBalance": 2287.06,
+     "penaltyAmount": "44.41",
+     "interestAmount": "22.20",
+     "graceDaysApplied": 3,
+     "penaltyRuleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+     "graceRuleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+     "agreementsJson": [
+      {
+       "versionNumber": 1,
+       "installments": 3,
+       "agreedAmount": 2287.06,
+       "notes": "Primeira proposta",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "createdAt": "2026-11-11T03:42:34.788Z"
+      }
+     ],
+     "lockVersion": 1,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:34.731Z",
+     "updated_at": "2026-11-11T03:42:34.788Z",
+     "deleted_at": null,
+     "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Paga o garantido da competência 2030-01: obrigação ao proprietário + crédito a recuperar do locatário",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent/25868bee-9380-481a-aaae-8057979467ec/pay",
+   "corpoEnviado": {
+    "period": "2030-01",
+    "amount": 2500
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 37,
+   "quando": "2026-11-11T03:42:36.068Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "guaranteedRentContract": {
+      "id": "25868bee-9380-481a-aaae-8057979467ec",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "status": "ACTIVE",
+      "coverageStartsAt": "2030-01-01",
+      "coverageEndsAt": null,
+      "paymentsJson": [
+       {
+        "period": "2030-01",
+        "amount": 2500,
+        "payableEntryId": "02a09eb7-a192-47c7-b975-8fe6df2c1b03",
+        "receivableEntryId": "e74fbaae-578e-4b7b-8691-148c03b812df",
+        "paidAt": "2026-11-11T03:42:36.061Z"
+       }
+      ],
+      "lockVersion": 1,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:36.005Z",
+      "updated_at": "2026-11-11T03:42:36.061Z",
+      "deleted_at": null,
+      "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca"
+     },
+     "payableEntry": {
+      "id": "02a09eb7-a192-47c7-b975-8fe6df2c1b03",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "bankAccountId": null,
+      "costCenterId": "2cbb7cbf-38ca-4237-bd57-48e9d7a3a348",
+      "resultCenterId": null,
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "DEBIT",
+      "nature": "PAYABLE",
+      "amount": "2500.00",
+      "description": "Aluguel garantido — pagamento ao proprietário, competência 01/2030.",
+      "dueAt": "2026-11-11T03:42:36.040Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "guaranteed_rent.payable:25868bee-9380-481a-aaae-8057979467ec:2030-01",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.042Z",
+      "created_at": "2026-11-11T03:42:36.042Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     },
+     "receivableEntry": {
+      "id": "e74fbaae-578e-4b7b-8691-148c03b812df",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "f603ce3e-21c6-4bb2-af5e-27dddda647be",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "2500.00",
+      "description": "Aluguel garantido — crédito a recuperar do locatário, competência 01/2030.",
+      "dueAt": "2026-11-11T03:42:36.054Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "guaranteed_rent.receivable:25868bee-9380-481a-aaae-8057979467ec:2030-01",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:36.056Z",
+      "created_at": "2026-11-11T03:42:36.056Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0335-97ffa9",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0345-019723"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-12",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pedido de antecipação (3 meses, principal 7.500,00, custo 450,00): ELIGIBILITY_PENDING",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+    "monthsAdvanced": 3,
+    "principalAmount": 7500,
+    "costAmount": 450
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 15,
+   "quando": "2026-11-11T03:42:36.197Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9cce2763-fd2e-4e50-b1d9-1546847a2377",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "ELIGIBILITY_PENDING",
+     "monthsAdvanced": 3,
+     "principalAmount": "7500.00",
+     "costAmount": "450.00",
+     "recoveredAmount": "0.00",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:36.188Z",
+     "created_at": "2026-11-11T03:42:36.188Z",
+     "proposedAt": null,
+     "acceptedAt": null,
+     "paidAt": null,
+     "principalEntryId": null,
+     "costEntryId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0336-97de94",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pagamento da antecipação: principal e custo em lançamentos separados",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances/9cce2763-fd2e-4e50-b1d9-1546847a2377/pay",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T03:42:36.273Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9cce2763-fd2e-4e50-b1d9-1546847a2377",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "PAID",
+     "monthsAdvanced": 3,
+     "principalAmount": "7500.00",
+     "costAmount": "450.00",
+     "recoveredAmount": "0.00",
+     "proposedAt": "2026-11-11T03:42:36.211Z",
+     "acceptedAt": "2026-11-11T03:42:36.227Z",
+     "paidAt": "2026-11-11T03:42:36.269Z",
+     "principalEntryId": "a84f416b-fa5a-46c7-90d9-5fb585876de9",
+     "costEntryId": "f4719dad-680b-4090-9eb2-fb59e8b80637",
+     "lockVersion": 3,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:36.188Z",
+     "updated_at": "2026-11-11T03:42:36.269Z",
+     "deleted_at": null,
+     "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "principal_entry_id": null,
+     "cost_entry_id": null
+    }
+   },
+   "req": [
+    "M5-A0336-97de94",
+    "M5-A0343-c56197",
+    "M5-A0345-019723"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-01",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação WATER vinculada ao contrato (responsável TENANT, troca de titularidade exigida)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "WATER",
+    "responsibleParty": "TENANT",
+    "provider": "Companhia de Água Fictícia",
+    "accountNumber": "AG-001",
+    "transferRequired": true,
+    "evidenceFileId": "2d620c5a-8ba8-4e4d-8e2f-5c6f82a8938c",
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 37,
+   "quando": "2026-11-11T03:42:33.847Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "WATER",
+      "responsibleParty": "TENANT",
+      "provider": "Companhia de Água Fictícia",
+      "accountNumber": "AG-001",
+      "transferRequired": true,
+      "evidenceFileId": "2d620c5a-8ba8-4e4d-8e2f-5c6f82a8938c",
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "TRANSFER_PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.833Z",
+      "created_at": "2026-11-11T03:42:33.833Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": {
+      "id": "e90a5fa4-40a1-4e88-a322-05973545e82d",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+      "fromPersonId": null,
+      "toPersonId": null,
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.838Z",
+      "created_at": "2026-11-11T03:42:33.838Z",
+      "evidenceFileId": null,
+      "completedAt": null,
+      "dueDate": null,
+      "deletedBy": null,
+      "deleted_at": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd",
+    "M5-A0095-1df93e"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-21",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Água: troca de titularidade concluída com comprovante e novo titular",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/e90a5fa4-40a1-4e88-a322-05973545e82d/complete",
+   "corpoEnviado": {
+    "evidenceFileId": "b5720dad-aa01-4d09-ad1c-407e9f31aa1e",
+    "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T03:42:34.134Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "e90a5fa4-40a1-4e88-a322-05973545e82d",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+     "fromPersonId": null,
+     "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "evidenceFileId": "b5720dad-aa01-4d09-ad1c-407e9f31aa1e",
+     "status": "COMPLETED",
+     "completedAt": "2026-11-11T03:42:34.116Z",
+     "dueDate": null,
+     "lockVersion": 1,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:33.838Z",
+     "updated_at": "2026-11-11T03:42:34.116Z",
+     "deleted_at": null,
+     "utility_obligation_id": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476"
+    }
+   },
+   "req": [
+    "M5-A0270-5f73bd",
+    "M5-A0095-1df93e",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Encerrar com pendência crítica é bloqueado (CLOSEOUT_BLOCKED com os motivos)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 409,
+    "codigo": "CLOSEOUT_BLOCKED"
+   },
+   "status": 409,
+   "codigo": "CLOSEOUT_BLOCKED",
+   "ok": true,
+   "ms": 25,
+   "quando": "2026-11-11T03:42:36.553Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "CLOSEOUT_BLOCKED",
+     "message": "Não é possível encerrar a locação: 2 pendência(s) — cobrança em aberto, transferência de consumo (água/luz/gás) pendente.",
+     "details": {
+      "reasons": [
+       {
+        "type": "OPEN_BILLING",
+        "detail": "1 competência(s) de cobrança ainda em aberto.",
+        "billingScheduleIds": [
+         "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4"
+        ]
+       },
+       {
+        "type": "PENDING_UTILITY_TRANSFER",
+        "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+        "ownershipTransferTaskIds": [
+         "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+         "f6fb38d1-788e-4b42-a6cc-ccadc376d23f"
+        ]
+       }
+      ]
+     },
+     "traceId": "40c3d014-ad4e-4dc1-ab3e-6fe88bf7b619"
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a",
+    "M5-A0096-30165c",
+    "M5-A0343-c56197",
+    "M5-A0345-019723",
+    "M5-A0342-a3762d"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-19",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Encerramento concluído: o contrato vai de ACTIVE a CLOSED pelos gates jurídicos",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:36.982Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "COMPLETED",
+     "contractLifecycle": "CLOSED"
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0340-79a98a",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0345-019723",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-25",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: objeto no lugar do id do contrato na antecipação é 400, não 500",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances",
+   "corpoEnviado": {
+    "contractId": {
+     "$gt": ""
+    },
+    "monthsAdvanced": 1,
+    "principalAmount": 100
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "RENT_ADVANCE_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "RENT_ADVANCE_VALIDATION",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:36.368Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "RENT_ADVANCE_VALIDATION",
+     "message": "O campo \"contractId\" deve ser um identificador válido.",
+     "traceId": "37b1303e-5a25-422f-a207-4e39aecef637"
+    }
+   },
+   "req": [
+    "M5-A0336-97de94",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-43",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Pentest: \"quem pagou\" com mais de 16 caracteres é 400, não 500",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "corpoEnviado": {
+    "amount": 10,
+    "paidByParty": "IMOBILIARIA_DO_JO"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "UTILITY_PAYMENT_VALIDATION"
+   },
+   "status": 400,
+   "codigo": "UTILITY_PAYMENT_VALIDATION",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:34.353Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "UTILITY_PAYMENT_VALIDATION",
+     "message": "\"paidByParty\" deve ser quem pagou (ex.: COMPANY, TENANT, LANDLORD), até 16 letras.",
+     "traceId": "30b69c1d-7e54-412e-96e3-2b398e23befc"
+    }
+   },
+   "req": [
+    "M5-A0097-9ce515",
+    "M5-A0339-b9d073",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação ELECTRICITY vinculada ao contrato (responsável TENANT, troca de titularidade exigida)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "ELECTRICITY",
+    "responsibleParty": "TENANT",
+    "provider": "Distribuidora de Energia Fictícia",
+    "accountNumber": "EL-002",
+    "transferRequired": true,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 23,
+   "quando": "2026-11-11T03:42:33.870Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "515517c4-e447-4d08-b4ac-633db5f485a3",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "ELECTRICITY",
+      "responsibleParty": "TENANT",
+      "provider": "Distribuidora de Energia Fictícia",
+      "accountNumber": "EL-002",
+      "transferRequired": true,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "TRANSFER_PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.854Z",
+      "created_at": "2026-11-11T03:42:33.854Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": {
+      "id": "e35a5c8a-6d1d-4a7e-8395-2b50e13506dc",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "515517c4-e447-4d08-b4ac-633db5f485a3",
+      "fromPersonId": null,
+      "toPersonId": null,
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.856Z",
+      "created_at": "2026-11-11T03:42:33.856Z",
+      "evidenceFileId": null,
+      "completedAt": null,
+      "dueDate": null,
+      "deletedBy": null,
+      "deleted_at": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd",
+    "M5-A0095-1df93e"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-03",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação GAS vinculada ao contrato (responsável TENANT)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "GAS",
+    "responsibleParty": "TENANT",
+    "provider": "Gás Fictício",
+    "accountNumber": "GS-003",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:33.883Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "cced2296-66dd-46a7-ac10-ab96452c9795",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "GAS",
+      "responsibleParty": "TENANT",
+      "provider": "Gás Fictício",
+      "accountNumber": "GS-003",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.879Z",
+      "created_at": "2026-11-11T03:42:33.879Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-04",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação CONDO vinculada ao contrato (responsável TENANT)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "CONDO",
+    "responsibleParty": "TENANT",
+    "provider": "Condomínio Edifício Fictício",
+    "accountNumber": "CD-004",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:33.894Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "8b7f8c3d-5e34-4483-a2bb-9c0b71dca383",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "CONDO",
+      "responsibleParty": "TENANT",
+      "provider": "Condomínio Edifício Fictício",
+      "accountNumber": "CD-004",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.890Z",
+      "created_at": "2026-11-11T03:42:33.890Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-05",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação IPTU vinculada ao contrato (responsável LANDLORD)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "IPTU",
+    "responsibleParty": "LANDLORD",
+    "provider": "Prefeitura Fictícia",
+    "accountNumber": "IP-005",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:33.904Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "a16635ff-ba1f-47c0-b21c-fba8394df2e2",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "IPTU",
+      "responsibleParty": "LANDLORD",
+      "provider": "Prefeitura Fictícia",
+      "accountNumber": "IP-005",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.901Z",
+      "created_at": "2026-11-11T03:42:33.901Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação SPU vinculada ao contrato (responsável LANDLORD)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "SPU",
+    "responsibleParty": "LANDLORD",
+    "provider": "SPU Fictícia",
+    "accountNumber": "SP-006",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:33.914Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "1af5af4f-477e-401e-af61-af3982a77525",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "SPU",
+      "responsibleParty": "LANDLORD",
+      "provider": "SPU Fictícia",
+      "accountNumber": "SP-006",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.911Z",
+      "created_at": "2026-11-11T03:42:33.911Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Obrigação OTHER vinculada ao contrato (responsável LANDLORD)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "OTHER",
+    "responsibleParty": "LANDLORD",
+    "provider": "Taxa de lixo fictícia",
+    "accountNumber": "OT-007",
+    "transferRequired": false,
+    "periodicity": "MONTHLY",
+    "dueDay": 10
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:33.925Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "19f8e0fe-b31f-4cdf-bc26-368f5d3a2845",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "OTHER",
+      "responsibleParty": "LANDLORD",
+      "provider": "Taxa de lixo fictícia",
+      "accountNumber": "OT-007",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "status": "ACTIVE",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:33.922Z",
+      "created_at": "2026-11-11T03:42:33.922Z",
+      "startsOn": null,
+      "nextDueOn": null,
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "transferTask": null
+    }
+   },
+   "req": [
+    "M5-A0093-f1f8ea",
+    "M5-A0094-c81c5a",
+    "M5-A0338-d0b0bc",
+    "M5-A0343-c56197",
+    "M5-A0171-80da7b",
+    "M5-A0270-5f73bd"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem billing:create) não cria obrigação",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations",
+   "corpoEnviado": {
+    "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+    "utilityType": "WATER",
+    "responsibleParty": "TENANT"
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:33.975Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "billing:create"
+     },
+     "traceId": "b146ee67-1b3b-47b2-90d2-1c399bd43ecd"
+    }
+   },
+   "req": [
+    "M5-A0343-c56197"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Conta de consumo da obrigação de água",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-accounts",
+   "corpoEnviado": {
+    "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+    "provider": "Companhia de Água Fictícia",
+    "accountNumber": "AG-001",
+    "holderPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:34.005Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "fd37b911-450f-43b5-be51-48d8279595ec",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+     "provider": "Companhia de Água Fictícia",
+     "accountNumber": "AG-001",
+     "holderPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+     "status": "ACTIVE",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:33.995Z",
+     "created_at": "2026-11-11T03:42:33.995Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0270-5f73bd",
+    "M5-A0327-22b135",
+    "M5-A0343-c56197",
+    "M5-A0338-d0b0bc"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-15",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Água: concluir a troca de titularidade sem comprovante é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/e90a5fa4-40a1-4e88-a322-05973545e82d/complete",
+   "corpoEnviado": {
+    "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "OWNERSHIP_TRANSFER_EVIDENCE_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "OWNERSHIP_TRANSFER_EVIDENCE_REQUIRED",
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:34.013Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "OWNERSHIP_TRANSFER_EVIDENCE_REQUIRED",
+     "message": "É preciso anexar o comprovante da transferência de titularidade antes de concluir.",
+     "traceId": "4283146d-9dc2-435f-a159-40a431ab7a01"
+    }
+   },
+   "req": [
+    "M5-A0095-1df93e",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-24",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Gás: troca de titularidade pedida depois (vira tarefa pendente)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/cced2296-66dd-46a7-ac10-ab96452c9795/ownership-transfer",
+   "corpoEnviado": {
+    "fromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+    "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 16,
+   "quando": "2026-11-11T03:42:34.184Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "obligation": {
+      "id": "cced2296-66dd-46a7-ac10-ab96452c9795",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "GAS",
+      "responsibleParty": "TENANT",
+      "provider": "Gás Fictício",
+      "accountNumber": "GS-003",
+      "transferRequired": true,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "TRANSFER_PENDING",
+      "lockVersion": 1,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.879Z",
+      "updated_at": "2026-11-11T03:42:34.178Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e"
+     },
+     "transferTask": {
+      "id": "f4809e56-31c9-45d9-b3d3-ad984dca4596",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "cced2296-66dd-46a7-ac10-ab96452c9795",
+      "fromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+      "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:34.176Z",
+      "created_at": "2026-11-11T03:42:34.176Z",
+      "evidenceFileId": null,
+      "completedAt": null,
+      "dueDate": null,
+      "deletedBy": null,
+      "deleted_at": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0095-1df93e",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-OB-31",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "IPTU do locador pago pela imobiliária: reembolso a receber + lançamento financeiro",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/utility-obligations/a16635ff-ba1f-47c0-b21c-fba8394df2e2/payments",
+   "corpoEnviado": {
+    "amount": 1234.56,
+    "paidByParty": "COMPANY"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 32,
+   "quando": "2026-11-11T03:42:34.273Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "reimbursement": {
+      "id": "a3c6d739-d178-4445-a112-6bfeeb49e1c7",
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "utilityObligationId": "a16635ff-ba1f-47c0-b21c-fba8394df2e2",
+      "paidByParty": "COMPANY",
+      "owedByParty": "LANDLORD",
+      "amount": "1234.56",
+      "financialEntryId": "3c391765-b410-4ca7-9f83-3b2b0f6078d3",
+      "status": "PENDING",
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:34.265Z",
+      "created_at": "2026-11-11T03:42:34.265Z",
+      "deletedBy": null,
+      "deleted_at": null
+     },
+     "financialEntry": {
+      "id": "3c391765-b410-4ca7-9f83-3b2b0f6078d3",
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "d2a9583e-c038-4f49-8aef-e5309ba78fe1",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "constructionProjectId": null,
+      "originRef": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "1234.56",
+      "description": "Reembolso de IPTU pago por uma das partes, a cobrar de o locador.",
+      "dueAt": "2026-11-11T03:42:34.253Z",
+      "competenceMonth": "2026-11",
+      "settledAt": null,
+      "status": "PENDING",
+      "idempotencyKey": "utility_reimbursement:a16635ff-ba1f-47c0-b21c-fba8394df2e2:1794368554253",
+      "reversalOfEntryId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updated_at": "2026-11-11T03:42:34.259Z",
+      "created_at": "2026-11-11T03:42:34.259Z",
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "req": [
+    "M5-A0325-ad4afe",
+    "M5-A0270-5f73bd",
+    "M5-A0327-22b135",
+    "M5-A0097-9ce515",
+    "M5-A0339-b9d073",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0345-019723"
+   ],
+   "modulo": "23-locacao-obrigacoes",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem billing:update) não registra pagamento",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/billing/schedules/f36b5531-af58-48ce-bead-28dcd2e7e8fd/payments",
+   "corpoEnviado": {
+    "amountPaid": 10
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 6,
+   "quando": "2026-11-11T03:42:34.678Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "billing:update"
+     },
+     "traceId": "1c15a24d-cbf5-4664-b902-a4c8ca5137ce"
+    }
+   },
+   "req": [
+    "M5-A0343-c56197"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Atraso de 33 dias: caso aberto com multa 2% e juros 1% a.m. sobre o saldo, pró-rata após 3 dias de carência",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases",
+   "corpoEnviado": {
+    "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+    "daysPastDue": 33
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:34.752Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b6b7202f-a727-4453-9581-b06e6c766dcd",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "status": "OPEN",
+     "overdueSince": "2026-10-09",
+     "originalDebtAmount": "2220.45",
+     "currentBalance": "2287.06",
+     "penaltyAmount": "44.41",
+     "interestAmount": "22.20",
+     "graceDaysApplied": 3,
+     "penaltyRuleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+     "graceRuleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+     "agreementsJson": [],
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:34.731Z",
+     "created_at": "2026-11-11T03:42:34.731Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0343-c56197",
+    "M5-A0342-a3762d",
+    "M5-A0346-86010e"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-CO-18",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Acordo v2 substitui o v1 sem apagá-lo: 4 parcelas, 2.300,00",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/collection-cases/b6b7202f-a727-4453-9581-b06e6c766dcd/agreements",
+   "corpoEnviado": {
+    "installments": 4,
+    "agreedAmount": 2300,
+    "notes": "Renegociado"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 20,
+   "quando": "2026-11-11T03:42:34.814Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b6b7202f-a727-4453-9581-b06e6c766dcd",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "status": "AGREEMENT",
+     "overdueSince": "2026-10-09",
+     "originalDebtAmount": "2220.45",
+     "currentBalance": 2300,
+     "penaltyAmount": "44.41",
+     "interestAmount": "22.20",
+     "graceDaysApplied": 3,
+     "penaltyRuleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+     "graceRuleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+     "agreementsJson": [
+      {
+       "notes": "Primeira proposta",
+       "createdAt": "2026-11-11T03:42:34.788Z",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "agreedAmount": 2287.06,
+       "installments": 3,
+       "versionNumber": 1
+      },
+      {
+       "versionNumber": 2,
+       "installments": 4,
+       "agreedAmount": 2300,
+       "notes": "Renegociado",
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "createdAt": "2026-11-11T03:42:34.801Z"
+      }
+     ],
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:34.731Z",
+     "updated_at": "2026-11-11T03:42:34.802Z",
+     "deleted_at": null,
+     "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e"
+    }
+   },
+   "req": [
+    "M5-A0330-f7218c",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "24-locacao-cobranca",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-06",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem billing:create) não pede reajuste",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/billing/rent-adjustments",
+   "corpoEnviado": {
+    "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+    "indexCode": "INPC",
+    "period": "2030-03",
+    "oldRentAmount": 2500
+   },
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:35.191Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "billing:create"
+     },
+     "traceId": "d04160a2-d961-4853-a79d-940fd779a267"
+    }
+   },
+   "req": [
+    "M5-A0343-c56197"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-RJ-11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Lista os reajustes do contrato",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/rent-adjustments?contractId=687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:35.232Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "fcd19f7b-2c9e-4db6-b38e-0d437e55e2f4",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-04",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "3.000000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2575.00",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": "2026-11-11T03:42:35.212Z",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.212Z",
+      "updated_at": "2026-11-11T03:42:35.212Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "3cefcb62-5521-42b0-827c-14390177b841",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-03",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "4.500000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2612.50",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": "2026-11-11T03:42:35.199Z",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.199Z",
+      "updated_at": "2026-11-11T03:42:35.199Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "07922011-c7a2-4b82-8961-89f5270c9082",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IGPM",
+      "period": "2030-02",
+      "rawIndexValue": null,
+      "appliedPercentage": null,
+      "oldRentAmount": "2500.00",
+      "newRentAmount": null,
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "PENDING_SOURCE",
+      "appliedAt": null,
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.165Z",
+      "updated_at": "2026-11-11T03:42:35.165Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "d844a533-967c-4fcc-9d08-194554dbf138",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "INPC",
+      "period": "2030-01",
+      "rawIndexValue": null,
+      "appliedPercentage": null,
+      "oldRentAmount": "2500.00",
+      "newRentAmount": null,
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "PENDING_SOURCE",
+      "appliedAt": null,
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.142Z",
+      "updated_at": "2026-11-11T03:42:35.142Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0343-c56197",
+    "M5-A0332-29fd72"
+   ],
+   "modulo": "25-locacao-reajuste",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-02",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Contrato matriculado no aluguel garantido",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/guaranteed-rent",
+   "corpoEnviado": {
+    "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+    "coverageStartsAt": "2030-01-01"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:36.009Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "25868bee-9380-481a-aaae-8057979467ec",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "ACTIVE",
+     "coverageStartsAt": "2030-01-01",
+     "coverageEndsAt": null,
+     "paymentsJson": [],
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:36.005Z",
+     "created_at": "2026-11-11T03:42:36.005Z",
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0335-97ffa9",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-14",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Proposta da antecipação (PROPOSED)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances/9cce2763-fd2e-4e50-b1d9-1546847a2377/propose",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T03:42:36.216Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9cce2763-fd2e-4e50-b1d9-1546847a2377",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "PROPOSED",
+     "monthsAdvanced": 3,
+     "principalAmount": "7500.00",
+     "costAmount": "450.00",
+     "recoveredAmount": "0.00",
+     "proposedAt": "2026-11-11T03:42:36.211Z",
+     "acceptedAt": null,
+     "paidAt": null,
+     "principalEntryId": null,
+     "costEntryId": null,
+     "lockVersion": 1,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:36.188Z",
+     "updated_at": "2026-11-11T03:42:36.211Z",
+     "deleted_at": null,
+     "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "principal_entry_id": null,
+     "cost_entry_id": null
+    }
+   },
+   "req": [
+    "M5-A0336-97de94",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GR-16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Aceite da antecipação (ACCEPTED)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/rent-advances/9cce2763-fd2e-4e50-b1d9-1546847a2377/accept",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:36.230Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "9cce2763-fd2e-4e50-b1d9-1546847a2377",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "status": "ACCEPTED",
+     "monthsAdvanced": 3,
+     "principalAmount": "7500.00",
+     "costAmount": "450.00",
+     "recoveredAmount": "0.00",
+     "proposedAt": "2026-11-11T03:42:36.211Z",
+     "acceptedAt": "2026-11-11T03:42:36.227Z",
+     "paidAt": null,
+     "principalEntryId": null,
+     "costEntryId": null,
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:36.188Z",
+     "updated_at": "2026-11-11T03:42:36.227Z",
+     "deleted_at": null,
+     "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "principal_entry_id": null,
+     "cost_entry_id": null
+    }
+   },
+   "req": [
+    "M5-A0336-97de94",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "26-locacao-garantido",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-07",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Elegibilidade: não elegível, com cobrança em aberto e troca de titularidade pendente",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout-eligibility",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:36.528Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+     "eligible": false,
+     "reasons": [
+      {
+       "type": "OPEN_BILLING",
+       "detail": "1 competência(s) de cobrança ainda em aberto.",
+       "billingScheduleIds": [
+        "8d4bb8f8-ed7f-4057-b3cd-86e560e704a4"
+       ]
+      },
+      {
+       "type": "PENDING_UTILITY_TRANSFER",
+       "detail": "2 transferência(s) de titularidade de utilidade não concluída(s).",
+       "ownershipTransferTaskIds": [
+        "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+        "f6fb38d1-788e-4b42-a6cc-ccadc376d23f"
+       ]
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0340-79a98a",
+    "M5-A0096-30165c",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-11",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Leitura (sem billing:update) não encerra",
+   "perfil": "A:leitura",
+   "metodo": "POST",
+   "rota": "/billing/contracts/1a08db82-ad04-4f0e-a68a-20c1ee3517ca/closeout",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 403,
+    "codigo": "PERMISSION_DENIED"
+   },
+   "status": 403,
+   "codigo": "PERMISSION_DENIED",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:36.563Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "PERMISSION_DENIED",
+     "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+     "details": {
+      "required": "billing:update"
+     },
+     "traceId": "cdf63245-809a-44f1-a534-8f9cb76ab622"
+    }
+   },
+   "req": [
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Água: troca de titularidade concluída com o comprovante",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/29bc50c1-a476-4c99-a2c6-47bf42783bfc/complete",
+   "corpoEnviado": {
+    "evidenceFileId": "03e2f7d6-4f47-48a5-b30f-80680dd20dff"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:36.902Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "29bc50c1-a476-4c99-a2c6-47bf42783bfc",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "utilityObligationId": "2ddaaa4e-c064-43ff-a901-fba5480c114b",
+     "fromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+     "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "evidenceFileId": "03e2f7d6-4f47-48a5-b30f-80680dd20dff",
+     "status": "COMPLETED",
+     "completedAt": "2026-11-11T03:42:36.894Z",
+     "dueDate": "2026-12-11",
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:36.494Z",
+     "updated_at": "2026-11-11T03:42:36.894Z",
+     "deleted_at": null,
+     "utility_obligation_id": "2ddaaa4e-c064-43ff-a901-fba5480c114b"
+    }
+   },
+   "req": [
+    "M5-A0095-1df93e",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Luz: troca de titularidade concluída com o comprovante",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/billing/ownership-transfer-tasks/f6fb38d1-788e-4b42-a6cc-ccadc376d23f/complete",
+   "corpoEnviado": {
+    "evidenceFileId": "b6c29da3-7b5e-4b99-81a4-a00234d1b1e2"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:36.925Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f6fb38d1-788e-4b42-a6cc-ccadc376d23f",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "utilityObligationId": "149f1bca-7361-4354-a6dc-f8c7710243f9",
+     "fromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+     "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+     "evidenceFileId": "b6c29da3-7b5e-4b99-81a4-a00234d1b1e2",
+     "status": "COMPLETED",
+     "completedAt": "2026-11-11T03:42:36.917Z",
+     "dueDate": "2026-12-11",
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:36.509Z",
+     "updated_at": "2026-11-11T03:42:36.917Z",
+     "deleted_at": null,
+     "utility_obligation_id": "149f1bca-7361-4354-a6dc-f8c7710243f9"
+    }
+   },
+   "req": [
+    "M5-A0095-1df93e",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-32",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "billing_schedules pela API: competências do contrato da cobrança",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/schedules?contractId=811f3654-6c5b-407e-a3a4-69eef597149e",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:36.994Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+      "period": "2030-01",
+      "dueDate": "2030-01-10",
+      "totalAmount": "3220.45",
+      "paidAmount": "3220.45",
+      "balance": "0.00",
+      "status": "PAID",
+      "generatedAt": "2026-11-11T03:42:34.597Z",
+      "lockVersion": 2,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:34.597Z",
+      "updated_at": "2026-11-11T03:42:34.994Z",
+      "deleted_at": null,
+      "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e"
+     },
+     {
+      "id": "ed7396d5-2750-4368-b7fb-799ae1eee405",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+      "period": "2030-02",
+      "dueDate": "2030-02-10",
+      "totalAmount": "2500.00",
+      "paidAmount": "0.00",
+      "balance": "2500.00",
+      "status": "OPEN",
+      "generatedAt": "2026-11-11T03:42:34.887Z",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:34.887Z",
+      "updated_at": "2026-11-11T03:42:34.887Z",
+      "deleted_at": null,
+      "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0327-22b135",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-33",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "billing_schedule_items pela API: a competência traz aluguel, condomínio e IPTU como itens",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/schedules/f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 8,
+   "quando": "2026-11-11T03:42:37.003Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "period": "2030-01",
+     "dueDate": "2030-01-10",
+     "totalAmount": "3220.45",
+     "paidAmount": "3220.45",
+     "balance": "0.00",
+     "status": "PAID",
+     "generatedAt": "2026-11-11T03:42:34.597Z",
+     "lockVersion": 2,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:34.597Z",
+     "updated_at": "2026-11-11T03:42:34.994Z",
+     "deleted_at": null,
+     "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e",
+     "items": [
+      {
+       "id": "ad4c4885-3542-4b6c-a984-2550b020b883",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+       "componentType": "RENT",
+       "description": "Aluguel",
+       "amount": "2500.00",
+       "lockVersion": 0,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "deletedBy": null,
+       "created_at": "2026-11-11T03:42:34.599Z",
+       "updated_at": "2026-11-11T03:42:34.599Z",
+       "deleted_at": null,
+       "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd"
+      },
+      {
+       "id": "c104f8af-b128-46a7-b8bd-fb977dccac0c",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+       "componentType": "CONDO",
+       "description": "Condomínio",
+       "amount": "600.10",
+       "lockVersion": 0,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "deletedBy": null,
+       "created_at": "2026-11-11T03:42:34.600Z",
+       "updated_at": "2026-11-11T03:42:34.600Z",
+       "deleted_at": null,
+       "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd"
+      },
+      {
+       "id": "166fb3dd-7c19-446c-8f8b-238ec9453b18",
+       "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+       "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+       "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+       "componentType": "IPTU",
+       "description": "IPTU (parcela)",
+       "amount": "120.35",
+       "lockVersion": 0,
+       "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "deletedBy": null,
+       "created_at": "2026-11-11T03:42:34.601Z",
+       "updated_at": "2026-11-11T03:42:34.601Z",
+       "deleted_at": null,
+       "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd"
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0327-22b135",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-34",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "rent_adjustments pela API: reajustes do contrato",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/rent-adjustments?contractId=687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 13,
+   "quando": "2026-11-11T03:42:37.016Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "fcd19f7b-2c9e-4db6-b38e-0d437e55e2f4",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-04",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "3.000000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2575.00",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": "2026-11-11T03:42:35.212Z",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.212Z",
+      "updated_at": "2026-11-11T03:42:35.212Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "3cefcb62-5521-42b0-827c-14390177b841",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IPCA",
+      "period": "2030-03",
+      "rawIndexValue": "4.500000",
+      "appliedPercentage": "4.500000",
+      "oldRentAmount": "2500.00",
+      "newRentAmount": "2612.50",
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "APPLIED",
+      "appliedAt": "2026-11-11T03:42:35.199Z",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.199Z",
+      "updated_at": "2026-11-11T03:42:35.199Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "07922011-c7a2-4b82-8961-89f5270c9082",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "IGPM",
+      "period": "2030-02",
+      "rawIndexValue": null,
+      "appliedPercentage": null,
+      "oldRentAmount": "2500.00",
+      "newRentAmount": null,
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "PENDING_SOURCE",
+      "appliedAt": null,
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.165Z",
+      "updated_at": "2026-11-11T03:42:35.165Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     },
+     {
+      "id": "d844a533-967c-4fcc-9d08-194554dbf138",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "687c9089-cb0f-47d2-9f6f-80f3be55a88e",
+      "indexCode": "INPC",
+      "period": "2030-01",
+      "rawIndexValue": null,
+      "appliedPercentage": null,
+      "oldRentAmount": "2500.00",
+      "newRentAmount": null,
+      "ruleVersionId": "7ad3f3fc-605a-43de-8203-9dc61e1964e3",
+      "status": "PENDING_SOURCE",
+      "appliedAt": null,
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:35.142Z",
+      "updated_at": "2026-11-11T03:42:35.142Z",
+      "deleted_at": null,
+      "contract_id": "687c9089-cb0f-47d2-9f6f-80f3be55a88e"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0327-22b135",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-35",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "collection_cases pela API: caso de cobrança do contrato",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/collection-cases?contractId=811f3654-6c5b-407e-a3a4-69eef597149e",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:37.025Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "b6b7202f-a727-4453-9581-b06e6c766dcd",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "billingScheduleId": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+      "contractId": "811f3654-6c5b-407e-a3a4-69eef597149e",
+      "status": "AGREEMENT",
+      "overdueSince": "2026-10-09",
+      "originalDebtAmount": "2220.45",
+      "currentBalance": "2300.00",
+      "penaltyAmount": "44.41",
+      "interestAmount": "22.20",
+      "graceDaysApplied": 3,
+      "penaltyRuleVersionId": "92dc5101-14bc-4a89-9fc7-9fce4ca465ce",
+      "graceRuleVersionId": "8c8056dc-8667-4070-a4fa-1d640a426ea3",
+      "agreementsJson": [
+       {
+        "notes": "Primeira proposta",
+        "createdAt": "2026-11-11T03:42:34.788Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "agreedAmount": 2287.06,
+        "installments": 3,
+        "versionNumber": 1
+       },
+       {
+        "notes": "Renegociado",
+        "createdAt": "2026-11-11T03:42:34.801Z",
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "agreedAmount": 2300,
+        "installments": 4,
+        "versionNumber": 2
+       }
+      ],
+      "lockVersion": 2,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:34.731Z",
+      "updated_at": "2026-11-11T03:42:34.802Z",
+      "deleted_at": null,
+      "billing_schedule_id": "f36b5531-af58-48ce-bead-28dcd2e7e8fd",
+      "contract_id": "811f3654-6c5b-407e-a3a4-69eef597149e"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0327-22b135",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-36",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "guaranteed_rent_contracts pela API: matrícula no aluguel garantido",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/guaranteed-rent?contractId=1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:37.033Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "25868bee-9380-481a-aaae-8057979467ec",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "status": "ACTIVE",
+      "coverageStartsAt": "2030-01-01",
+      "coverageEndsAt": null,
+      "paymentsJson": [
+       {
+        "amount": 2500,
+        "paidAt": "2026-11-11T03:42:36.061Z",
+        "period": "2030-01",
+        "payableEntryId": "02a09eb7-a192-47c7-b975-8fe6df2c1b03",
+        "receivableEntryId": "e74fbaae-578e-4b7b-8691-148c03b812df"
+       }
+      ],
+      "lockVersion": 1,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:36.005Z",
+      "updated_at": "2026-11-11T03:42:36.061Z",
+      "deleted_at": null,
+      "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0327-22b135",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-37",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "rent_advances pela API: antecipação do mesmo contrato, em tabela separada",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/rent-advances?contractId=1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:37.040Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "9cce2763-fd2e-4e50-b1d9-1546847a2377",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "status": "RECOVERED",
+      "monthsAdvanced": 3,
+      "principalAmount": "7500.00",
+      "costAmount": "450.00",
+      "recoveredAmount": "7950.00",
+      "proposedAt": "2026-11-11T03:42:36.211Z",
+      "acceptedAt": "2026-11-11T03:42:36.227Z",
+      "paidAt": "2026-11-11T03:42:36.269Z",
+      "principalEntryId": "a84f416b-fa5a-46c7-90d9-5fb585876de9",
+      "costEntryId": "f4719dad-680b-4090-9eb2-fb59e8b80637",
+      "lockVersion": 5,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:36.188Z",
+      "updated_at": "2026-11-11T03:42:36.342Z",
+      "deleted_at": null,
+      "contract_id": "1a08db82-ad04-4f0e-a68a-20c1ee3517ca",
+      "principal_entry_id": "a84f416b-fa5a-46c7-90d9-5fb585876de9",
+      "cost_entry_id": "f4719dad-680b-4090-9eb2-fb59e8b80637"
+     }
+    ]
+   },
+   "req": [
+    "M5-A0327-22b135",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-EN-38",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "utility_obligations e ownership_transfer_tasks pela API: obrigações do contrato com as tarefas de troca de titularidade",
+   "perfil": "A:gestor",
+   "metodo": "GET",
+   "rota": "/billing/utility-obligations?contractId=64495aec-6e91-43ba-896d-dd8f0a168c7e",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 10,
+   "quando": "2026-11-11T03:42:37.050Z",
+   "corpo": {
+    "success": true,
+    "data": [
+     {
+      "id": "4a0902fa-e4dd-417e-a85c-0162215472e7",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "IPTU",
+      "responsibleParty": "LANDLORD",
+      "provider": "Prefeitura Fictícia",
+      "accountNumber": "IP-PADRAO",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "ANNUAL",
+      "dueDay": null,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "ACTIVE",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.953Z",
+      "updated_at": "2026-11-11T03:42:33.953Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": []
+     },
+     {
+      "id": "19f8e0fe-b31f-4cdf-bc26-368f5d3a2845",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "OTHER",
+      "responsibleParty": "LANDLORD",
+      "provider": "Taxa de lixo fictícia",
+      "accountNumber": "OT-007",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "ACTIVE",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.922Z",
+      "updated_at": "2026-11-11T03:42:33.922Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": []
+     },
+     {
+      "id": "1af5af4f-477e-401e-af61-af3982a77525",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "SPU",
+      "responsibleParty": "LANDLORD",
+      "provider": "SPU Fictícia",
+      "accountNumber": "SP-006",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "ACTIVE",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.911Z",
+      "updated_at": "2026-11-11T03:42:33.911Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": []
+     },
+     {
+      "id": "a16635ff-ba1f-47c0-b21c-fba8394df2e2",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "IPTU",
+      "responsibleParty": "LANDLORD",
+      "provider": "Prefeitura Fictícia",
+      "accountNumber": "IP-005",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "ACTIVE",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.901Z",
+      "updated_at": "2026-11-11T03:42:33.901Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": []
+     },
+     {
+      "id": "8b7f8c3d-5e34-4483-a2bb-9c0b71dca383",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "CONDO",
+      "responsibleParty": "TENANT",
+      "provider": "Condomínio Edifício Fictício",
+      "accountNumber": "CD-004",
+      "transferRequired": false,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "ACTIVE",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.890Z",
+      "updated_at": "2026-11-11T03:42:33.890Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": []
+     },
+     {
+      "id": "cced2296-66dd-46a7-ac10-ab96452c9795",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "GAS",
+      "responsibleParty": "TENANT",
+      "provider": "Gás Fictício",
+      "accountNumber": "GS-003",
+      "transferRequired": true,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "TRANSFER_PENDING",
+      "lockVersion": 1,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.879Z",
+      "updated_at": "2026-11-11T03:42:34.178Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": [
+       {
+        "id": "f4809e56-31c9-45d9-b3d3-ad984dca4596",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "utilityObligationId": "cced2296-66dd-46a7-ac10-ab96452c9795",
+        "fromPersonId": "c0c909c3-5b66-4240-9ac3-671b7ca1f53e",
+        "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+        "evidenceFileId": null,
+        "status": "PENDING",
+        "completedAt": null,
+        "dueDate": null,
+        "lockVersion": 0,
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "deletedBy": null,
+        "created_at": "2026-11-11T03:42:34.176Z",
+        "updated_at": "2026-11-11T03:42:34.176Z",
+        "deleted_at": null,
+        "utility_obligation_id": "cced2296-66dd-46a7-ac10-ab96452c9795"
+       }
+      ]
+     },
+     {
+      "id": "515517c4-e447-4d08-b4ac-633db5f485a3",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "ELECTRICITY",
+      "responsibleParty": "TENANT",
+      "provider": "Distribuidora de Energia Fictícia",
+      "accountNumber": "EL-002",
+      "transferRequired": true,
+      "evidenceFileId": null,
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "TRANSFER_PENDING",
+      "lockVersion": 0,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.854Z",
+      "updated_at": "2026-11-11T03:42:33.854Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": [
+       {
+        "id": "e35a5c8a-6d1d-4a7e-8395-2b50e13506dc",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "utilityObligationId": "515517c4-e447-4d08-b4ac-633db5f485a3",
+        "fromPersonId": null,
+        "toPersonId": null,
+        "evidenceFileId": null,
+        "status": "PENDING",
+        "completedAt": null,
+        "dueDate": null,
+        "lockVersion": 0,
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "deletedBy": null,
+        "created_at": "2026-11-11T03:42:33.856Z",
+        "updated_at": "2026-11-11T03:42:33.856Z",
+        "deleted_at": null,
+        "utility_obligation_id": "515517c4-e447-4d08-b4ac-633db5f485a3"
+       }
+      ]
+     },
+     {
+      "id": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractId": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "utilityType": "WATER",
+      "responsibleParty": "TENANT",
+      "provider": "Companhia de Água Fictícia",
+      "accountNumber": "AG-001",
+      "transferRequired": true,
+      "evidenceFileId": "b5720dad-aa01-4d09-ad1c-407e9f31aa1e",
+      "periodicity": "MONTHLY",
+      "dueDay": 10,
+      "startsOn": null,
+      "nextDueOn": null,
+      "status": "TRANSFERRED",
+      "lockVersion": 1,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "deletedBy": null,
+      "created_at": "2026-11-11T03:42:33.833Z",
+      "updated_at": "2026-11-11T03:42:34.118Z",
+      "deleted_at": null,
+      "contract_id": "64495aec-6e91-43ba-896d-dd8f0a168c7e",
+      "transferTasks": [
+       {
+        "id": "e90a5fa4-40a1-4e88-a322-05973545e82d",
+        "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+        "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+        "utilityObligationId": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476",
+        "fromPersonId": null,
+        "toPersonId": "f2a575f8-aa0a-4316-a6a5-6939925c4fc6",
+        "evidenceFileId": "b5720dad-aa01-4d09-ad1c-407e9f31aa1e",
+        "status": "COMPLETED",
+        "completedAt": "2026-11-11T03:42:34.116Z",
+        "dueDate": null,
+        "lockVersion": 1,
+        "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+        "deletedBy": null,
+        "created_at": "2026-11-11T03:42:33.838Z",
+        "updated_at": "2026-11-11T03:42:34.116Z",
+        "deleted_at": null,
+        "utility_obligation_id": "ed33f6b9-2c2f-4d40-8cf5-078afe76f476"
+       }
+      ]
+     }
+    ]
+   },
+   "req": [
+    "M5-A0327-22b135",
+    "M5-A0343-c56197"
+   ],
+   "modulo": "27-locacao-encerramento",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

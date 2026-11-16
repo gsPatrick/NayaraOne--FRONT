@@ -1,0 +1,61 @@
+{
+ "id": "M4-G§21.4",
+ "secao": "Guia §21 Autochecagem",
+ "requisito": "\"Outro programador assume? SIM.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-28 jornada E2E: lançamento -> aprovação HIGH (2 aprovadores) -> liquidação -> conciliação, tudo auditado",
+   "status": "passou",
+   "duracaoMs": 2797,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "G01",
+   "tipo": "http",
+   "linhas": [
+    "M4-G§17.1",
+    "M4-G§17.13",
+    "M4-G§21.4"
+   ],
+   "titulo": "Versão da API em execução (no build Docker o campo commit traz o commit publicado; local sem arquivo de versão mostra unknown)",
+   "perfil": "anonimo",
+   "metodo": "GET",
+   "rota": "@/version",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": "sem corpo",
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 4,
+   "quando": "2026-11-11T01:35:18.700Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "commit": "unknown",
+     "deployedAt": "2026-11-11T01:34:23.634Z",
+     "uptimeSeconds": 56.582883584,
+     "apiVersion": "0.1.0",
+     "nodeVersion": "v24.18.0",
+     "timestamp": "2026-11-11T01:35:18.699Z"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

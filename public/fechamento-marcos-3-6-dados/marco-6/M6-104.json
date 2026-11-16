@@ -1,0 +1,50 @@
+{
+  "id": "M6-104",
+  "requisito": "Contrato de empreitada no módulo de Contratos vinculado à obra.",
+  "secaoDoLivro": "Contratos §3 Tipos de contrato: CONSTRUCTION \"Construção/empreitada\"",
+  "implementacao": "contract.service.js#createContract confere que a obra (constructionProjectId) é da empresa (422 CONSTRUCTION_REFERENCE_NOT_IN_COMPANY)",
+  "telaParaReteste": "Painel → Contratos → novo contrato de empreitada vinculado à obra",
+  "commitApi": "6952bb50",
+  "branchApi": "m6fix/verificacao",
+  "commitFront": "1d3d1f2",
+  "branchFront": "m6fix/verificacao",
+  "status": "Atendido",
+  "motivoDaVerificacao": "ver Maturacao/fechamento-m3-m6/verificacao/marco-6.md",
+  "testes": [
+    {
+      "arquivo": "test/construction.m6v.referencias.test.js",
+      "nome": "M6-104: contrato de empreitada não é vinculado a obra de OUTRA empresa; da mesma empresa, sim",
+      "resultadoHead": "passou",
+      "duracaoMs": 48.187,
+      "resultadoBase": "FALHA (Missing expected rejection.)"
+    }
+  ],
+  "provasDoVerificador": [
+    {
+      "prova": "V5-M6-104: contrato de empreitada nao pode ser vinculado a obra de OUTRA empresa",
+      "head": "passou",
+      "base41addaa2": "falhou (contrato CONSTRUCTION criado apontando para obra de outra empresa (contrato d6e6f5d5-9a03-48dc-b52a-2bcda9409576))"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Execução real dos testes no commit corrigido e na base (banco descartável, RLS real, antivírus real)",
+    "resultado": "1/1 passaram no HEAD 6952bb50; na base 41addaa2: falham",
+    "comando": "node scripts/withDisposableDb.js --port 5575 -- env CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 DISPOSABLE_DB=1 bash -c \"node scripts/seed-ci-two-tenants.js && NODE_ENV=test node --test --test-concurrency=1 <116 arquivos de Obras e vizinhos> verificacao/provas/v5-provas.test.js\" (fila global vez.sh, worktree destacado no commit 5630ac0d)",
+    "dataHora": "2026-11-12T07:21:42-03:00"
+  },
+  "telaPlaywright": "não se aplica (tela listada em telaParaReteste)",
+  "decisoes": [
+    "DI-M6V-8"
+  ],
+  "migrations": [
+    "migrations/20260101006600-m6v-tipo-de-obra-e-checklist-por-etapa.js",
+    "migrations/20260101006601-m6v-responsavel-da-etapa.js",
+    "migrations/20260101006602-m6v-baseline-imutavel-e-revisoes.js",
+    "migrations/20260101006603-m6v-evidencia-da-medicao.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006604-finance-source-event-id-e-obra-na-baixa-parcial.js",
+    "migrations/20260101006605-m6v-alcada-permissao-propria-e-quem-propoe.js",
+    "src/modules/finance/infrastructure/db/migrations/20260101006606-finance-indices-da-obra-no-ledger.js",
+    "migrations/20260101006607-m6v-indices-da-saude-da-obra.js"
+  ],
+  "geradoEm": "2026-11-12T10:41:46.761Z"
+}

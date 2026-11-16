@@ -1,0 +1,304 @@
+{
+ "id": "M5-A0058-6ae767",
+ "secao": "P1 > 5. Estado do contrato [tabela: Status | Definição]",
+ "linhaCaderno": 118,
+ "requisito": "SUSPENDED | Suspenso.",
+ "demandas": "M5-D002;M5-D005",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js:118 VALID_TRANSITIONS (SUSPENDED); src/modules/legal/contracts/application/contract.service.js:581 suspendContract / reactivateContract (motivo obrigatório); tabela legal.contracts.status; auditoria legal.contract.status_change",
+ "tela": "Contratos > Detalhe do contrato (/painel/contratos/lista/[id])",
+ "testes": [
+  {
+   "arquivo": "test/legal.contracts.test.js",
+   "nome": "máquina de estados: ACTIVE -> SUSPENDED (suspendContract) preserva histórico e exige motivo",
+   "status": "pass",
+   "ms": 47.847,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/legal.contracts.test.js",
+   "nome": "máquina de estados: SUSPENDED -> ACTIVE (reactivateContract)",
+   "status": "pass",
+   "ms": 66.263,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-216",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/suspend",
+   "perfil": "A:checker",
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_TRANSITION_REASON_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_TRANSITION_REASON_REQUIRED"
+   },
+   "resumo": "erro LEGAL_CONTRACT_TRANSITION_REASON_REQUIRED: O campo \"reason\" é obrigatório para justificar esta transição.",
+   "quando": "2026-11-11T03:42:25.712Z"
+  },
+  {
+   "passo": "CT-217",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/suspend",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=SUSPENDED, id=89be6fd4-d483-4ecc-adcc-3ae9db3f8700, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:25.756Z"
+  },
+  {
+   "passo": "CT-218",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/reactivate",
+   "perfil": "A:checker",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=ACTIVE, id=89be6fd4-d483-4ecc-adcc-3ae9db3f8700, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:25.798Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0058-6ae767.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/legal.contracts.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-216, CT-217, CT-218, CT-224)"
+ },
+ "passos": [
+  {
+   "id": "CT-216",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Suspender sem motivo é recusado",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/suspend",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_CONTRACT_TRANSITION_REASON_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_CONTRACT_TRANSITION_REASON_REQUIRED",
+   "ok": true,
+   "ms": 21,
+   "quando": "2026-11-11T03:42:25.712Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CONTRACT_TRANSITION_REASON_REQUIRED",
+     "message": "O campo \"reason\" é obrigatório para justificar esta transição.",
+     "traceId": "f97f92c1-dbdd-4aeb-8c57-f43bc6540b3d"
+    }
+   },
+   "req": [
+    "M5-A0058-6ae767"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-217",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "ACTIVE -> SUSPENDED com motivo",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/suspend",
+   "corpoEnviado": {
+    "reason": "Suspensão fictícia da captura"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 44,
+   "quando": "2026-11-11T03:42:25.756Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0004",
+     "status": "SUSPENDED",
+     "totalValue": "1500.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 9,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:24.319Z",
+     "updated_at": "2026-11-11T03:42:25.719Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null
+    }
+   },
+   "req": [
+    "M5-A0058-6ae767",
+    "M5-A0196-8a7471"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-218",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "SUSPENDED -> ACTIVE (reativação) com motivo",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/legal/contracts/89be6fd4-d483-4ecc-adcc-3ae9db3f8700/reactivate",
+   "corpoEnviado": {
+    "reason": "Causa sanada (fictícia)"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 42,
+   "quando": "2026-11-11T03:42:25.798Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "constructionProjectId": null,
+     "approvedVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+     "parentContractId": null,
+     "contractNumber": "LOC-2026-0004",
+     "status": "ACTIVE",
+     "totalValue": "1500.00",
+     "startsAt": null,
+     "endsAt": null,
+     "lockVersion": 10,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:24.319Z",
+     "updated_at": "2026-11-11T03:42:25.764Z",
+     "deleted_at": null,
+     "property_id": null,
+     "opportunity_id": null,
+     "construction_project_id": null
+    }
+   },
+   "req": [
+    "M5-A0058-6ae767",
+    "M5-A0196-8a7471"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-224",
+   "req": [
+    "M5-A0196-8a7471",
+    "M5-A0263-1349d7",
+    "M5-A0051-1355bb",
+    "M5-A0052-d0edf7",
+    "M5-A0053-93822f",
+    "M5-A0054-f96f34",
+    "M5-A0055-965151",
+    "M5-A0056-103e8b",
+    "M5-A0057-c754d9",
+    "M5-A0058-6ae767",
+    "M5-A0059-0f891e",
+    "M5-A0060-eea580"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "perfil": "A:leitura",
+   "descricao": "Trilha auditada do ciclo completo: cada mudança de estado com antes/depois, na ordem do Guia §3",
+   "sql": "SELECT before_json->>'status' AS de, after_json->>'status' AS para FROM audit.audit_log WHERE entity_id = :id AND action IN ('legal.contract.status_change','legal.contract.suspend','legal.contract.reactivate','legal.contract.terminate','legal.contract.close') ORDER BY occurred_at",
+   "resultado": [
+    {
+     "de": "DRAFT",
+     "para": "DOCUMENTS_PENDING"
+    },
+    {
+     "de": "DOCUMENTS_PENDING",
+     "para": "LEGAL_REVIEW"
+    },
+    {
+     "de": "LEGAL_REVIEW",
+     "para": "DRAFT"
+    },
+    {
+     "de": "DRAFT",
+     "para": "LEGAL_REVIEW"
+    },
+    {
+     "de": "LEGAL_REVIEW",
+     "para": "APPROVED"
+    },
+    {
+     "de": "APPROVED",
+     "para": "SIGNING"
+    },
+    {
+     "de": "SIGNING",
+     "para": "SIGNED"
+    },
+    {
+     "de": "SIGNED",
+     "para": "ACTIVE"
+    },
+    {
+     "de": "ACTIVE",
+     "para": "SUSPENDED"
+    },
+    {
+     "de": "SUSPENDED",
+     "para": "ACTIVE"
+    },
+    {
+     "de": "ACTIVE",
+     "para": "TERMINATED"
+    },
+    {
+     "de": "TERMINATED",
+     "para": "CLOSED"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:26.000Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

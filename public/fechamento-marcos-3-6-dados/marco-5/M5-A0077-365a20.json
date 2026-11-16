@@ -1,0 +1,272 @@
+{
+ "id": "M5-A0077-365a20",
+ "secao": "P1 > 9. Garantias locatícias [tabela: Código | Tipo | Dados]",
+ "linhaCaderno": 178,
+ "requisito": "CAPITALIZATION | Título de capitalização | Documento/provider/vigência.",
+ "demandas": "M5-D020",
+ "implementacao": "src/modules/legal/leasing/guaranteeTypeData.js REQUIRED.CAPITALIZATION (providerName, certificateNumber, certificateFileId, value, endsAt); código CAPITALIZATION gravado (CAPITALIZATION_TITLE só apelido); migration 20260101009990 (códigos do livro + gatilho de tradução do legado + CHECK; colunas por tipo)",
+ "tela": "Contratos > Garantias (/painel/contratos/garantias, /painel/contratos/garantias/novo)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.locacao.garantias.test.js",
+   "nome": "fechamento M5 §9 SECURITY_DEPOSIT e CAPITALIZATION: vínculo financeiro conferido; título com documento, provider e vigência",
+   "status": "pass",
+   "ms": 43.918,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.garantias.test.js",
+   "nome": "fechamento M5 §9: os cinco códigos do livro; DEPOSIT e CAPITALIZATION_TITLE entram como apelido e saem com o código do livro",
+   "status": "pass",
+   "ms": 21.89,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.locacao.rodada3.test.js",
+   "nome": "fechamento M5 3ª rodada: arquivos da garantia, via assinada do termo e mídia da vistoria têm dono — legal:read lê, outra permissão não, outra empresa nem vê",
+   "status": "pass",
+   "ms": 241.083,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "LC-GA-08",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=ACTIVE, id=effbdfa6-bced-4558-bc95-9dc238b4668b",
+   "quando": "2026-11-11T03:42:30.506Z"
+  },
+  {
+   "passo": "LC-GA-09",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=PENDING, id=c8065662-14b8-46bb-9c45-4ccf7eacc903",
+   "quando": "2026-11-11T03:42:30.540Z"
+  },
+  {
+   "passo": "LC-GA-10",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "perfil": "A:gestor",
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED"
+   },
+   "resumo": "erro LEGAL_GUARANTEE_VALIDITY_REQUIRED: O campo \"endsAt\" (vigência) é obrigatório para garantia do tipo \"CAPITALIZATION\" (Caderno, seção 9).",
+   "quando": "2026-11-11T03:42:30.549Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0077-365a20.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Implementado (2ª onda): o código do livro CAPITALIZATION é aceito e gravado (LC-GA-08), o apelido antigo vira CAPITALIZATION (LC-GA-09); documento (certificado), provider e vigência são exigidos para ACTIVE — sem eles fica PENDING. Testes novos \"SECURITY_DEPOSIT e CAPITALIZATION\" e \"cinco códigos do livro\". 3ª rodada: o certificado tem dono na consulta de arquivos.",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.locacao.garantias.test.js test/m5fech.locacao.rodada3.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos LC-GA-08, LC-GA-09, LC-GA-10)"
+ },
+ "passos": [
+  {
+   "id": "LC-GA-08",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Título com o código do livro CAPITALIZATION, certificado, provider e vigência: ACTIVE",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "CAPITALIZATION",
+    "value": 10000,
+    "startsAt": "2026-01-01",
+    "endsAt": "2027-01-01",
+    "providerName": "Capitalizadora Fictícia",
+    "certificateNumber": "TC-8549432",
+    "certificateFileId": "04f3bfc2-130b-45e2-92dc-e913620e9a35"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 50,
+   "quando": "2026-11-11T03:42:30.506Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "effbdfa6-bced-4558-bc95-9dc238b4668b",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "CAPITALIZATION",
+     "guarantorPersonId": null,
+     "value": "10000.00",
+     "status": "ACTIVE",
+     "startsAt": "2026-01-01",
+     "endsAt": "2027-01-01",
+     "certificateFileId": "04f3bfc2-130b-45e2-92dc-e913620e9a35",
+     "providerName": "Capitalizadora Fictícia",
+     "certificateNumber": "TC-8549432",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.476Z",
+     "created_at": "2026-11-11T03:42:30.476Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0077-365a20",
+    "M5-A0304-d26817"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-09",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Título pelo apelido CAPITALIZATION_TITLE sem documento nem provider: gravado como CAPITALIZATION e PENDING",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "CAPITALIZATION_TITLE",
+    "value": 10000,
+    "endsAt": "2027-01-01"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 34,
+   "quando": "2026-11-11T03:42:30.540Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "c8065662-14b8-46bb-9c45-4ccf7eacc903",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": "a8ee67a9-f684-499a-abf4-4ebd82714aab",
+     "guaranteeType": "CAPITALIZATION",
+     "guarantorPersonId": null,
+     "value": "10000.00",
+     "status": "PENDING",
+     "startsAt": null,
+     "endsAt": "2027-01-01",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:30.514Z",
+     "created_at": "2026-11-11T03:42:30.514Z",
+     "additionalGuarantorPersonIds": null,
+     "documentFileIds": null,
+     "acceptanceFileId": null,
+     "acceptedAt": null,
+     "providerName": null,
+     "policyNumber": null,
+     "policyFileId": null,
+     "premiumInstallments": null,
+     "annualPremium": null,
+     "renewalDueAt": null,
+     "autoRenew": null,
+     "financeEntryId": null,
+     "holderPersonId": null,
+     "certificateNumber": null,
+     "certificateFileId": null,
+     "redemptionAmount": null,
+     "homologatedFlowCode": null,
+     "flowData": null,
+     "notes": null,
+     "replacedByGuaranteeId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0077-365a20"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "LC-GA-10",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Título de capitalização sem fim de vigência é recusado",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/contracts/a8ee67a9-f684-499a-abf4-4ebd82714aab/guarantees",
+   "corpoEnviado": {
+    "guaranteeType": "CAPITALIZATION",
+    "value": 10000
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED"
+   },
+   "status": 400,
+   "codigo": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+   "ok": true,
+   "ms": 9,
+   "quando": "2026-11-11T03:42:30.549Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_GUARANTEE_VALIDITY_REQUIRED",
+     "message": "O campo \"endsAt\" (vigência) é obrigatório para garantia do tipo \"CAPITALIZATION\" (Caderno, seção 9).",
+     "traceId": "50e2cfda-402a-43ca-a68e-bea5d9e7bd97"
+    }
+   },
+   "req": [
+    "M5-A0077-365a20"
+   ],
+   "modulo": "20-locacao-garantias",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

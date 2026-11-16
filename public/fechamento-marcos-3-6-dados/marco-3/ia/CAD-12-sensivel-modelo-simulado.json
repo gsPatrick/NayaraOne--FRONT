@@ -1,0 +1,61 @@
+{
+  "capturadoEm": "2026-11-11T12:48:29.273Z",
+  "pedido": {
+    "taskType": "resumir_mensagem_recebida",
+    "modeloSimuladoDevolve": "O cliente reclamou do atraso da visita [1]. Pelo jeito de escrever ele parece ser católico praticante e ter diabetes [1]."
+  },
+  "resposta": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "runId": "1d61f0b7-cf4c-40bf-93c1-d6145c8fb05b",
+        "status": "COMPLETED",
+        "answer": "Apoio da NAY — sugestão, não decisão: não altera o cadastro do cliente nem abre ocorrência; quem decide é você no CRM.\nO cliente reclamou do atraso da visita [1].\nRemovi um trecho que tratava de dado pessoal sensível do cliente: a NAY não infere nem registra esse tipo de informação (LGPD, art.\n5º, II).",
+        "sources": [
+          {
+            "ref": 1,
+            "type": "READ_MODEL",
+            "title": "crm.messages",
+            "version": null,
+            "validity": {
+              "from": null,
+              "until": null
+            },
+            "classification": "INTERNAL",
+            "clause": null,
+            "excerpt": "Mensagem recebida por WhatsApp em 11/11/2026. Texto: Atrasaram de novo a visita, estou insatisfeito.",
+            "retrievedAt": "2026-11-11T12:48:28.834Z"
+          }
+        ],
+        "groundingStatus": "GROUNDED",
+        "confidence": 1,
+        "snapshotAt": "2026-11-11T12:48:28.834Z",
+        "proposals": [
+          {
+            "id": "f151d344-a013-4c91-8d4b-6caf76e79964",
+            "kind": "RESUMO_MENSAGEM",
+            "status": "PENDING"
+          }
+        ],
+        "cost": {
+          "amount": "0.000876",
+          "currency": "BRL"
+        },
+        "routingPath": "SMALL_MODEL",
+        "structured": {
+          "apoio": true,
+          "tipo": "RESUMO_MENSAGEM_RECEBIDA",
+          "redigidoPor": "MODELO",
+          "alteraCadastro": false,
+          "abreOcorrencia": false,
+          "atributoSensivelRemovido": [
+            "convicção religiosa",
+            "saúde"
+          ]
+        },
+        "replayed": false
+      }
+    }
+  }
+}

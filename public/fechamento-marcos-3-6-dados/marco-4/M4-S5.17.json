@@ -1,0 +1,172 @@
+{
+ "id": "M4-§5.17",
+ "secao": "§5 Tabelas",
+ "requisito": "finance.closing_periods — \"Fechamentos.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-07 §5 tabelas do caderno: ledger, entry_installments, security_deposits, accounts_chart e closing_periods existem, seguem a RLS e são somente leitura",
+   "status": "passou",
+   "duracaoMs": 38,
+   "commitDoArquivo": "6ea03ed1"
+  },
+  {
+   "arquivo": "test/nayaraConferencia1810.finance.test.js",
+   "nome": "F02-6: controle positivo — com tudo conferido o período vai a REVIEW, fecha em CLOSED e grava snapshot íntegro",
+   "status": "passou",
+   "duracaoMs": 105,
+   "commitDoArquivo": "dda254ae"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "F03-4",
+   "tipo": "http",
+   "linhas": [
+    "M4-§16.1",
+    "M4-§5.17",
+    "M4-FIN-012"
+   ],
+   "titulo": "Aprovação do fechamento de 2071-05 por outra pessoa com MFA recente: CLOSED",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "referenceMonth": "2071-05"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 66,
+   "quando": "2026-11-11T01:35:14.501Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b301ccb0-2eb7-40fc-aa6e-8653a9f487f7",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "referenceMonth": "2071-05",
+     "status": "CLOSED",
+     "thirdPartyCheckedAt": "2026-11-11T01:35:14.350Z",
+     "thirdPartyCheckedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "thirdPartyCheckNote": "Caixa de terceiros conferido contra o extrato (captura do Marco 4)",
+     "thirdPartyBalanceAtCheck": "1650.00",
+     "commissionsReviewedAt": "2026-11-11T01:35:14.380Z",
+     "commissionsReviewedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "commissionsReviewNote": "Comissões e repasses revisados (captura do Marco 4)",
+     "commissionsFingerprintAtReview": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+     "currentSnapshotId": "2f3ba80f-5911-456a-96c7-1338cd723e9d",
+     "reviewRequestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "reviewRequestedAt": "2026-11-11T01:35:14.413Z",
+     "thirdPartyFingerprintAtCheck": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returnedToOpenAt": null,
+     "returnedToOpenByUserId": null,
+     "returnToOpenReason": null,
+     "closedAt": "2026-11-11T01:35:14.454Z",
+     "closedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "reopenedAt": null,
+     "reopenedByUserId": null,
+     "reopenReason": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "created_at": "2026-11-11T01:35:14.345Z",
+     "updated_at": "2026-11-11T01:35:14.454Z",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "Q15",
+   "linhas": [
+    "M4-§16.1",
+    "M4-§5.17"
+   ],
+   "descricao": "Fechamentos (closing_periods) do mês 2071-05 e do mês do ajuste",
+   "sql": "select * from finance.closing_periods where reference_month in (:m) order by reference_month",
+   "contexto": "RLS do tenant (company 9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3)",
+   "resultado": [
+    {
+     "id": "b301ccb0-2eb7-40fc-aa6e-8653a9f487f7",
+     "group_id": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "reference_month": "2071-05",
+     "status": "OPEN",
+     "closed_at": "2026-11-11T01:35:14.454Z",
+     "closed_by_user_id": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "reopened_at": "2026-11-11T01:35:14.605Z",
+     "reopened_by_user_id": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "reopen_reason": "Correção de classificação identificada pela auditoria (teste da captura)",
+     "created_by": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_by": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "created_at": "2026-11-11T01:35:14.345Z",
+     "updated_at": "2026-11-11T01:35:14.605Z",
+     "third_party_checked_at": null,
+     "third_party_checked_by_user_id": null,
+     "third_party_check_note": null,
+     "third_party_balance_at_check": null,
+     "commissions_reviewed_at": null,
+     "commissions_reviewed_by_user_id": null,
+     "commissions_review_note": null,
+     "commissions_fingerprint_at_review": null,
+     "current_snapshot_id": null,
+     "review_requested_by_user_id": null,
+     "review_requested_at": null,
+     "third_party_fingerprint_at_check": null,
+     "returned_to_open_at": null,
+     "returned_to_open_by_user_id": null,
+     "return_to_open_reason": null
+    },
+    {
+     "id": "ca97a4c4-cf65-4b49-bca6-975aefeb59c1",
+     "group_id": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "company_id": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "reference_month": "2072-05",
+     "status": "CLOSED",
+     "closed_at": "2026-11-11T01:35:14.859Z",
+     "closed_by_user_id": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "reopened_at": null,
+     "reopened_by_user_id": null,
+     "reopen_reason": null,
+     "created_by": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_by": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "created_at": "2026-11-11T01:35:14.685Z",
+     "updated_at": "2026-11-11T01:35:14.859Z",
+     "third_party_checked_at": "2026-11-11T01:35:14.688Z",
+     "third_party_checked_by_user_id": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "third_party_check_note": "Caixa de terceiros conferido contra o extrato (captura do Marco 4)",
+     "third_party_balance_at_check": "1650.00",
+     "commissions_reviewed_at": "2026-11-11T01:35:14.730Z",
+     "commissions_reviewed_by_user_id": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "commissions_review_note": "Comissões e repasses revisados (captura do Marco 4)",
+     "commissions_fingerprint_at_review": "b73f1dab7f9c9c4aa20fc2c982556c323bf7ca9f1878d1feab49319fb759445a",
+     "current_snapshot_id": "7dd93e9a-7726-44df-aa79-9a9651aca86f",
+     "review_requested_by_user_id": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "review_requested_at": "2026-11-11T01:35:14.804Z",
+     "third_party_fingerprint_at_check": "e021c89367ee8953150d63d7c0dae1a06223d24e5975b7e901acc89de9c192ce",
+     "returned_to_open_at": null,
+     "returned_to_open_by_user_id": null,
+     "return_to_open_reason": null
+    }
+   ],
+   "invariante": "fechamentos registrados",
+   "invarianteOk": true,
+   "quando": "2026-11-11T01:35:19.736Z"
+  }
+ ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "M5-A0064-2c0af0",
+  "capturadoEm": "2026-11-11T10:27:20.382Z",
+  "passos": [
+    {
+      "id": "CT5-31",
+      "req": [
+        "M5-A0064-2c0af0",
+        "M5-A0062-45c618",
+        "M5-A0120-db30b1"
+      ],
+      "titulo": "Modelo publicado com duas cláusulas, contrato e versão 1 gerada pelo modelo; nova versão da cláusula do foro, cláusula nova, modelo publicado de novo e versão 2",
+      "perfil": "serviço (sem HTTP)",
+      "metodo": "CALL",
+      "rota": "template.service + contractVersions.service",
+      "status": "ok",
+      "codigo": "sem código de erro",
+      "esperado": {
+        "status": "ok"
+      },
+      "ok": true,
+      "resumo": "{\"contractId\":\"edbcd520-e0be-4e39-8535-2330d2ba8588\",\"v1\":\"28fe9c42-e4dd-491b-9227-e1592240b54c\",\"v2\":\"ce5082d7-86b5-45d2-a29d-16957d7a3ec8\",\"b\":\"156884b8-5892-4b47-8e55-884793e8cae4\",\"b2\":\"60e2e7fe-8",
+      "quando": "2026-11-11T10:26:57.970Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "CT5-32",
+      "req": [
+        "M5-A0064-2c0af0",
+        "M5-A0062-45c618"
+      ],
+      "perfil": "A:leitura",
+      "descricao": "A versão gerada guarda template_version_id (publicada), clause_version_ids e o hash do conteúdo = hash do arquivo armazenado",
+      "sql": "SELECT v.version_number, v.template_version_id IS NOT NULL AS tem_modelo, tv.status AS status_modelo, jsonb_array_length(v.clause_version_ids) AS clausulas, v.content_hash = f.checksum_sha256 AS hash_do_arquivo, v.content_hash = encode(sha256(convert_to(v.content, 'UTF8')), 'hex') AS hash_do_texto FROM legal.contract_versions v JOIN legal.template_versions tv ON tv.id = v.template_version_id JOIN people.files f ON f.id = v.content_file_id WHERE v.contract_id = :id ORDER BY v.version_number",
+      "resultado": [
+        {
+          "version_number": 1,
+          "tem_modelo": true,
+          "status_modelo": "SUPERSEDED",
+          "clausulas": 2,
+          "hash_do_arquivo": true,
+          "hash_do_texto": true
+        },
+        {
+          "version_number": 2,
+          "tem_modelo": true,
+          "status_modelo": "PUBLISHED",
+          "clausulas": 3,
+          "hash_do_arquivo": true,
+          "hash_do_texto": true
+        }
+      ],
+      "invarianteOk": true,
+      "quando": "2026-11-11T10:26:58.188Z"
+    }
+  ]
+}

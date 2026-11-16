@@ -1,0 +1,197 @@
+{
+ "id": "M5-A0126-035294",
+ "secao": "P1 > 18. Eventos mínimos",
+ "linhaCaderno": 304,
+ "requisito": "• contract.created",
+ "demandas": "M5-D150;M5-D042",
+ "implementacao": "src/modules/legal/contracts/application/contract.service.js:331 createContract -> publishCadernoEvent('contract.created') no outbox, mesma transação",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM5Gaps.test.js",
+   "nome": "M45-M5-07 §18: eventos mínimos com o nome do Caderno — contract.created, contract.requirement.missing, contract.version.approved, contract.sent_for_signature, contract.signed, evidence.package.created",
+   "status": "pass",
+   "ms": 322.789,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.rotasLivro.test.js",
+   "nome": "Guia §14: POST /contracts e POST /contracts/:id/versions criam contrato e versão pelo mesmo serviço (permissão e hash do servidor)",
+   "status": "pass",
+   "ms": 3396.122,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-103",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 201
+   },
+   "resumo": "status=DRAFT, id=89be6fd4-d483-4ecc-adcc-3ae9db3f8700, contractType=LEASE_RESIDENTIAL",
+   "quando": "2026-11-11T03:42:24.328Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0126-035294.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m45.cadernoM5Gaps.test.js test/m5fech.contratos.rotasLivro.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-103, CT-103b, CT-022)"
+ },
+ "passos": [
+  {
+   "id": "CT-103",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Contrato de locação nasce em DRAFT (montagem)",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/contracts",
+   "corpoEnviado": {
+    "contractType": "LEASE_RESIDENTIAL",
+    "totalValue": 1500
+   },
+   "esperado": {
+    "status": 201
+   },
+   "status": 201,
+   "codigo": null,
+   "ok": true,
+   "ms": 18,
+   "quando": "2026-11-11T03:42:24.328Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "89be6fd4-d483-4ecc-adcc-3ae9db3f8700",
+     "lockVersion": 0,
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "propertyId": null,
+     "opportunityId": null,
+     "constructionProjectId": null,
+     "parentContractId": null,
+     "contractType": "LEASE_RESIDENTIAL",
+     "contractNumber": "LOC-2026-0004",
+     "status": "DRAFT",
+     "totalValue": "1500.00",
+     "startsAt": null,
+     "endsAt": null,
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updated_at": "2026-11-11T03:42:24.319Z",
+     "created_at": "2026-11-11T03:42:24.319Z",
+     "approvedVersionId": null,
+     "deletedBy": null,
+     "deleted_at": null
+    }
+   },
+   "req": [
+    "M5-A0051-1355bb",
+    "M5-A0208-04872a",
+    "M5-A0126-035294",
+    "M5-A0220-741ba3",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-103b",
+   "req": [
+    "M5-A0126-035294",
+    "M5-A0220-741ba3",
+    "M5-A0311-23bfba"
+   ],
+   "modulo": "11-contratos-ciclo-aprovacao",
+   "perfil": "A:leitura",
+   "descricao": "Logo depois do POST /contracts (CT-103): evento contract.created do contrato no outbox, na mesma transação",
+   "sql": "SELECT event_type, payload_json->>'contractType' AS tipo FROM integration.outbox_events WHERE aggregate_id = :id AND event_type = 'contract.created'",
+   "resultado": [
+    {
+     "event_type": "contract.created",
+     "tipo": "LEASE_RESIDENTIAL"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:24.330Z",
+   "tipoRegistro": "sql"
+  },
+  {
+   "id": "CT-022",
+   "req": [
+    "M5-A0126-035294",
+    "M5-A0220-741ba3"
+   ],
+   "modulo": "10-contratos-tipos",
+   "perfil": "A:leitura",
+   "descricao": "Evento contract.created publicado no outbox para cada contrato criado (mesma transação)",
+   "sql": "SELECT aggregate_id, event_type, payload_json->>'contractType' AS tipo FROM integration.outbox_events WHERE event_type = 'contract.created' AND aggregate_id IN (:ids)",
+   "resultado": [
+    {
+     "aggregate_id": "8675831d-7c60-4c0f-9a20-f40d1756d6d2",
+     "event_type": "contract.created",
+     "tipo": "SALE_CASH"
+    },
+    {
+     "aggregate_id": "32ec3345-9de3-49bd-b298-cc8f0eb5713f",
+     "event_type": "contract.created",
+     "tipo": "SALE_FINANCED"
+    },
+    {
+     "aggregate_id": "0e2568c4-0f0e-4e55-afe8-526eec9a4fd8",
+     "event_type": "contract.created",
+     "tipo": "SALE_TRADE"
+    },
+    {
+     "aggregate_id": "82c12fd4-6e8b-4c00-bb43-6e202bc6f9c9",
+     "event_type": "contract.created",
+     "tipo": "SALE_INSTALLMENTS"
+    },
+    {
+     "aggregate_id": "e0f7c475-2dcf-4435-a1bf-d81c9975fc17",
+     "event_type": "contract.created",
+     "tipo": "LEASE_RESIDENTIAL"
+    },
+    {
+     "aggregate_id": "b6fdf69a-69a9-4339-b0e5-c858be498baa",
+     "event_type": "contract.created",
+     "tipo": "LEASE_COMMERCIAL"
+    },
+    {
+     "aggregate_id": "66a86a32-adde-4145-96a9-5386e935fcfc",
+     "event_type": "contract.created",
+     "tipo": "LEASE_SEASONAL"
+    },
+    {
+     "aggregate_id": "bbe07957-d886-4bff-a5bf-11afc4bd1086",
+     "event_type": "contract.created",
+     "tipo": "PROPERTY_ADMIN"
+    },
+    {
+     "aggregate_id": "8c850a5f-6bd9-4939-a2c1-ccf26c7b5333",
+     "event_type": "contract.created",
+     "tipo": "CONSTRUCTION"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:24.116Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

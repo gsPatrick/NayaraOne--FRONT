@@ -1,0 +1,392 @@
+{
+ "id": "M5-A0104-c10a98",
+ "secao": "P1 > 14. Processos jurídicos",
+ "linhaCaderno": 248,
+ "requisito": "• Movimentação relevante gera timeline.",
+ "demandas": "M5-D033",
+ "implementacao": "src/modules/legal/cases/legalCaseTimeline.service.js getLegalCaseTimeline (derivada das entidades e da trilha append-only audit.audit_log) + rota GET /legal/cases/:id/timeline; resumo em português (rótulos, nomes, data dd/mm/aaaa hh:mm de Brasília, origem do prazo pelo arquivo/evento) em src/modules/legal/shared/legalTimelineText.js e src/modules/legal/shared/legalTimelineAudit.js, dados crus em details",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: movimentação relevante (fase, legal hold, parte, documento, prazo, remarcação, conclusão, dossiê, notificação) aparece na linha do tempo (§14)",
+   "status": "pass",
+   "ms": 93.926,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.processos.test.js",
+   "nome": "JR processo: o resumo da linha do tempo é português para gente — rótulos, nomes, data dd/mm/aaaa hh:mm de Brasília e origem descrita pelo arquivo/evento; códigos, ids e ISO ficam em details",
+   "status": "pass",
+   "ms": 70.621,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.juridico.rotas.test.js",
+   "nome": "JR rotas: partes, documentos e linha do tempo do processo pela API; sem legal:create 403; processo inexistente/de outra empresa 404 (§14)",
+   "status": "pass",
+   "ms": 665.604,
+   "commitDoTeste": "90202613"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "JR-P13",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "status=OPEN, id=f5959797-2ec3-4630-a457-21529e647cfe",
+   "quando": "2026-11-11T03:42:37.346Z"
+  },
+  {
+   "passo": "JR-P16",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/timeline",
+   "perfil": "A:leitura",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 2 campo(s)",
+   "quando": "2026-11-11T03:42:37.507Z"
+  },
+  {
+   "passo": "JR-P17",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/timeline",
+   "perfil": "B:leitura",
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "resumo": "erro LEGAL_CASE_NOT_FOUND: Processo jurídico não encontrado.",
+   "quando": "2026-11-11T03:42:37.526Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0104-c10a98.json",
+ "situacao": "ATENDIDO_PROVA_NOVA",
+ "status": "Atendido",
+ "nota": "Prova nova: não havia linha do tempo do processo; criada (abertura, fase, hold, parte, documento, prazo e cada alteração auditada, dossiê, notificação).",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/m5fech.juridico.processos.test.js test/m5fech.juridico.rotas.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos JR-P13, JR-P16, JR-P16b, JR-P17, JR-P21)"
+ },
+ "passos": [
+  {
+   "id": "JR-P13",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Mudança de fase do processo (movimentação relevante)",
+   "perfil": "A:gestor",
+   "metodo": "PATCH",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe",
+   "corpoEnviado": {
+    "phase": "DISCOVERY"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 14,
+   "quando": "2026-11-11T03:42:37.346Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+     "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+     "contractId": null,
+     "propertyId": null,
+     "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "caseNumber": "0001234-55.2026.8.26.mwbk",
+     "caseType": "LITIGATION",
+     "status": "OPEN",
+     "summary": "Processo fictício JR mwbkpjpjaok7",
+     "phase": "DISCOVERY",
+     "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "lockVersion": 1,
+     "legalHold": false,
+     "legalHoldReason": null,
+     "legalHoldSetBy": null,
+     "legalHoldSetAt": null,
+     "court": "1ª Vara Cível (fictícia)",
+     "caseClass": "Despejo por falta de pagamento",
+     "estimatedAmount": "18500.75",
+     "confirmedAmount": null,
+     "riskLevel": "HIGH",
+     "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "updatedBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+     "deletedBy": null,
+     "created_at": "2026-11-11T03:42:37.153Z",
+     "updated_at": "2026-11-11T03:42:37.340Z",
+     "deleted_at": null,
+     "escalation_user_id": "282ab331-7c81-4ea6-8352-86af89914d44",
+     "contract_id": null,
+     "property_id": null,
+     "responsible_user_id": "0393a076-406c-4a53-a511-59c6e6836e2b"
+    }
+   },
+   "req": [
+    "M5-A0104-c10a98"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P16",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Linha do tempo do processo: abertura, fase, parte e documento",
+   "perfil": "A:leitura",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/timeline",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 22,
+   "quando": "2026-11-11T03:42:37.507Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "legalCaseId": "f5959797-2ec3-4630-a457-21529e647cfe",
+     "items": [
+      {
+       "type": "CASE_OPENED",
+       "occurredAt": "2026-11-11T03:42:37.153Z",
+       "referenceId": "f5959797-2ec3-4630-a457-21529e647cfe",
+       "summary": "Processo aberto (contencioso) nº 0001234-55.2026.8.26.mwbk.",
+       "details": {
+        "caseType": "LITIGATION",
+        "caseNumber": "0001234-55.2026.8.26.mwbk"
+       }
+      },
+      {
+       "type": "PARTY",
+       "occurredAt": "2026-11-11T03:42:37.206Z",
+       "referenceId": "ebe964c0-be08-497c-b39a-d9eac44d2e38",
+       "summary": "Parte incluída: Réu Fictício JR mwbkpjpjaok7 como réu.",
+       "details": {
+        "personId": "0e356c0b-235b-4bc5-9125-f9870e434ceb",
+        "partyRole": "DEFENDANT"
+       }
+      },
+      {
+       "type": "CASE_CHANGE",
+       "occurredAt": "2026-11-11T03:42:37.297Z",
+       "referenceId": "f5959797-2ec3-4630-a457-21529e647cfe",
+       "auditId": "51f818ee-785e-4896-b3cf-445f3b56842d",
+       "action": "legal.case.document_link",
+       "actorUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "summary": "Documento vinculado ao processo: “peticao-mwbkpjpjaok7.pdf” (petição).",
+       "details": {
+        "fileLinkId": "31c03d83-5460-4d0b-b4e6-76ecef5efeda",
+        "fileId": "a2e83252-6304-44ea-ade0-d476a23ecb7a",
+        "purpose": "PETITION",
+        "fileName": "peticao-mwbkpjpjaok7.pdf",
+        "checksumSha256": "952b2db5d8b3296a338c053c8a18e26780d725a7a475ccd90050c747214e75fc"
+       }
+      },
+      {
+       "type": "CASE_CHANGE",
+       "occurredAt": "2026-11-11T03:42:37.344Z",
+       "referenceId": "f5959797-2ec3-4630-a457-21529e647cfe",
+       "auditId": "c429af60-b39d-429d-987b-3517a19f685e",
+       "action": "legal.case.phase_change",
+       "actorUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "summary": "Fase do processo alterada de não informado para instrução.",
+       "details": {
+        "from": null,
+        "to": "DISCOVERY"
+       }
+      },
+      {
+       "type": "CASE_CHANGE",
+       "occurredAt": "2026-11-11T03:42:37.372Z",
+       "referenceId": "f5959797-2ec3-4630-a457-21529e647cfe",
+       "auditId": "60f1c608-4985-4d5d-b569-93674eb7bf5d",
+       "action": "legal.case.update",
+       "actorUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "summary": "Processo atualizado: valor confirmado de não informado para R$ 9.000,00.",
+       "details": {
+        "before": {
+         "status": "OPEN",
+         "phase": "DISCOVERY",
+         "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+         "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+         "estimatedAmount": "18500.75",
+         "confirmedAmount": null
+        },
+        "after": {
+         "status": "OPEN",
+         "phase": "DISCOVERY",
+         "responsibleUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+         "escalationUserId": "282ab331-7c81-4ea6-8352-86af89914d44",
+         "estimatedAmount": "18500.75",
+         "confirmedAmount": "9000.00"
+        }
+       }
+      },
+      {
+       "type": "CASE_CHANGE",
+       "occurredAt": "2026-11-11T03:42:37.439Z",
+       "referenceId": "f5959797-2ec3-4630-a457-21529e647cfe",
+       "auditId": "6dc0b69c-ac21-4c8f-884e-d6840e1908bf",
+       "action": "legal.case.receivable_link",
+       "actorUserId": "0393a076-406c-4a53-a511-59c6e6836e2b",
+       "summary": "Valor confirmado de R$ 9.000,00 vinculado ao Financeiro (acordo homologado: “Acordo homologado fictício nº 77/2026”).",
+       "details": {
+        "financialEntryId": "d3a1a9a2-d89e-4657-9554-4c10194de475",
+        "basis": "SETTLEMENT",
+        "basisReference": "Acordo homologado fictício nº 77/2026",
+        "amount": "9000.00"
+       }
+      }
+     ]
+    }
+   },
+   "req": [
+    "M5-A0104-c10a98",
+    "M5-A0309-69b0d3"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "JR-P16b",
+   "tipo": "servico",
+   "grupos": [],
+   "f": [],
+   "titulo": "O resumo da linha do tempo é português para gente (sem id, código ou data ISO crus); os dados crus ficam em details",
+   "perfil": "serviço (sem HTTP)",
+   "metodo": "CALL",
+   "rota": "conferência do corpo de JR-P16",
+   "corpoEnviado": null,
+   "esperado": {},
+   "status": "ok",
+   "codigo": null,
+   "ok": true,
+   "ms": 1,
+   "quando": "2026-11-11T03:42:37.508Z",
+   "corpo": {
+    "result": {
+     "resumos": [
+      "Processo aberto (contencioso) nº 0001234-55.2026.8.26.mwbk.",
+      "Parte incluída: Réu Fictício JR mwbkpjpjaok7 como réu.",
+      "Documento vinculado ao processo: “peticao-mwbkpjpjaok7.pdf” (petição).",
+      "Fase do processo alterada de não informado para instrução.",
+      "Processo atualizado: valor confirmado de não informado para R$ 9.000,00.",
+      "Valor confirmado de R$ 9.000,00 vinculado ao Financeiro (acordo homologado: “Acordo homologado fictício nº 77/2026”)."
+     ]
+    }
+   },
+   "req": [
+    "M5-A0104-c10a98"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "servico"
+  },
+  {
+   "id": "JR-P17",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Tenant B não lê a linha do tempo do processo de A",
+   "perfil": "B:leitura",
+   "metodo": "GET",
+   "rota": "/legal/cases/f5959797-2ec3-4630-a457-21529e647cfe/timeline",
+   "corpoEnviado": null,
+   "esperado": {
+    "status": 404,
+    "codigo": "LEGAL_CASE_NOT_FOUND"
+   },
+   "status": 404,
+   "codigo": "LEGAL_CASE_NOT_FOUND",
+   "ok": true,
+   "ms": 17,
+   "quando": "2026-11-11T03:42:37.526Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_CASE_NOT_FOUND",
+     "message": "Processo jurídico não encontrado.",
+     "traceId": "d856537f-9942-4031-a835-bf1576930e51"
+    }
+   },
+   "req": [
+    "M5-A0104-c10a98",
+    "M5-A0177-7266b1"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "JR-P21",
+   "req": [
+    "M5-A0104-c10a98"
+   ],
+   "modulo": "30-juridico-1-processos",
+   "perfil": "A:gestor",
+   "descricao": "Trilha de auditoria (append-only) que alimenta a linha do tempo: mudança de fase com antes/depois e documento ligado",
+   "sql": "SELECT action, before_json->>'phase' AS fase_antes, after_json->>'phase' AS fase_depois, reason FROM audit.audit_log WHERE entity_type = 'LegalCase' AND entity_id = :id ORDER BY occurred_at",
+   "resultado": [
+    {
+     "action": "legal.case.create",
+     "fase_antes": null,
+     "fase_depois": null,
+     "reason": "Processo jurídico \"LITIGATION\" aberto."
+    },
+    {
+     "action": "legal.case.document_link",
+     "fase_antes": null,
+     "fase_depois": null,
+     "reason": "Arquivo \"peticao-mwbkpjpjaok7.pdf\" (PETITION) vinculado ao processo f5959797-2ec3-4630-a457-21529e647cfe, SHA-256 952b2db5d8b3296a338c053c8a18e26780d725a7a475ccd90050c747214e75fc."
+    },
+    {
+     "action": "legal.case.phase_change",
+     "fase_antes": null,
+     "fase_depois": "DISCOVERY",
+     "reason": "Processo jurídico f5959797-2ec3-4630-a457-21529e647cfe mudou de fase: (sem fase) -> DISCOVERY."
+    },
+    {
+     "action": "legal.case.update",
+     "fase_antes": "DISCOVERY",
+     "fase_depois": "DISCOVERY",
+     "reason": "Processo jurídico f5959797-2ec3-4630-a457-21529e647cfe atualizado."
+    },
+    {
+     "action": "legal.case.receivable_link",
+     "fase_antes": null,
+     "fase_depois": null,
+     "reason": "Valor confirmado 9000.00 do processo vinculado ao Financeiro (acordo homologado: Acordo homologado fictício nº 77/2026)."
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:37.535Z",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

@@ -1,0 +1,1404 @@
+{
+ "id": "CAD-03",
+ "secao": "Livro §3 Entidades obrigatórias",
+ "requisito": "Entidades obrigatórias de pessoas, imóveis e CRM (persons, roles, contacts, addresses, documents, consents, properties, owners, offers, media, documents, price_history, opportunities, interactions, tasks, visits, proposals, loss_reasons, radars, radar_matches, service_occurrences, carts).",
+ "meta": {
+  "geradoEm": "2026-11-11T00:16:28.061Z",
+  "inicioCaptura": "2026-11-11T00:16:12.980Z",
+  "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+  "commitApi": "d6bc89b7",
+  "node": "v24.18.0",
+  "perfis": {
+   "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+   "corretor": "Empresa A — corretor (só a própria carteira)",
+   "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+   "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+   "mascarado": "Empresa A — leitura sem campo restrito",
+   "claro": "Empresa A — leitura com campo restrito em claro"
+  }
+ },
+ "respostasHttp": [
+  {
+   "seq": 178,
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Leitura pela API: GET /people",
+   "metodo": "GET",
+   "rota": "/api/v1/people",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personType": "PF",
+      "legalName": "Lead CRM mwbdcdcy6z5l",
+      "preferredName": "Lead mwbdcf1wy35g",
+      "taxIdNormalized": null,
+      "taxIdNormalizedHash": null,
+      "birthOrFoundationDate": null,
+      "status": "ACTIVE",
+      "mergedIntoId": null,
+      "riskFlagsJson": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:25.003Z",
+      "updated_at": "2026-11-11T00:16:27.201Z",
+      "deleted_at": null,
+      "merged_into_id": null,
+      "contacts": [],
+      "documents": [],
+      "roles": [],
+      "addresses": []
+     },
+     {
+      "id": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personType": "PF",
+      "legalName": "Documentos mwbdcaw7icfs",
+      "preferredName": null,
+      "taxIdNormalized": null,
+      "taxIdNormalizedHash": null,
+      "birthOrFoundationDate": null,
+      "status": "ACTIVE",
+      "mergedIntoId": null,
+      "riskFlagsJson": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:21.813Z",
+      "updated_at": "2026-11-11T00:16:21.813Z",
+      "deleted_at": null,
+      "merged_into_id": null,
+      "contacts": [],
+      "documents": [
+       {
+        "id": "1fab7700-bee3-4296-898f-fd60c27c1c90",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+        "documentType": "IR",
+        "fileId": "a00a8e35-4fbf-4885-bd3c-96627360d7ec",
+        "versionNo": 3,
+        "issuedAt": null,
+        "expiresAt": null,
+        "verificationStatus": "PENDING",
+        "verifiedBy": null,
+        "extractedDataJson": {
+         "fields": {},
+         "antivirus": {
+          "clean": true,
+          "engine": "clamav",
+          "scannedAt": "2026-11-11T00:16:22.805Z",
+          "checksumSha256": "5bf088ef95573f584cdcff2cd04cd1705b8049582dc7c010234a70aa4e120b9e"
+         },
+         "illegible": true,
+         "confidence": 0,
+         "sourceFileId": "a00a8e35-4fbf-4885-bd3c-96627360d7ec",
+         "extractionMeta": {
+          "engine": "local",
+          "reason": "ARQUIVO_NAO_LEGIVEL",
+          "documentType": "IR"
+         }
+        },
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:22.862Z",
+        "updated_at": "2026-11-11T00:16:22.862Z",
+        "deleted_at": null,
+        "person_id": "5fbc8195-bbae-4b49-91b4-c1f632543667"
+       },
+       {
+        "id": "168bc992-88a5-4d01-b665-592fd5b123bd",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+        "documentType": "IR",
+        "fileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+        "versionNo": 1,
+        "issuedAt": null,
+        "expiresAt": null,
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "extractedDataJson": {
+         "fields": {
+          "name": "MARIA FICTICIA DA SILVA",
+          "taxId": "52998224725",
+          "income": 4500
+         },
+         "illegible": false,
+         "confidence": 0.95,
+         "sourceFileId": "0f78895e-990a-4016-8d9c-26f3ba3c5932",
+         "extractionMeta": {
+          "engine": "pdftotext",
+          "source": "pdf-text",
+          "languages": "por",
+          "wordCount": 11,
+          "textLength": 75,
+          "documentType": "IR",
+          "fieldSources": {
+           "name": "Nome: MARIA FICTICIA DA SILVA",
+           "taxId": "CPF: [CPF omitido]",
+           "income": "Renda mensal: R$ 4.500,00"
+          },
+          "meanConfidence": 0.95
+         }
+        },
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:22.123Z",
+        "updated_at": "2026-11-11T00:16:22.259Z",
+        "deleted_at": null,
+        "person_id": "5fbc8195-bbae-4b49-91b4-c1f632543667"
+       },
+       {
+        "id": "c107ba7a-99a8-49a9-b879-5396c2989277",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "personId": "5fbc8195-bbae-4b49-91b4-c1f632543667",
+        "documentType": "IR",
+        "fileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+        "versionNo": 2,
+        "issuedAt": null,
+        "expiresAt": null,
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "extractedDataJson": {
+         "fields": {
+          "name": "MARIA FICTICIA DA SILVA",
+          "taxId": "52998224725",
+          "income": 9100
+         },
+         "antivirus": {
+          "clean": true,
+          "engine": "clamav",
+          "scannedAt": "2026-11-11T00:16:22.469Z",
+          "checksumSha256": "1fda9361247c0fd8b7bf720baa93020d98aeca41f61492cbfb2a5422b416f213"
+         },
+         "illegible": false,
+         "confidence": 0.95,
+         "sourceFileId": "0450f176-4f90-466a-8284-08a78d36cdc0",
+         "extractionMeta": {
+          "engine": "pdftotext",
+          "source": "pdf-text",
+          "languages": "por",
+          "wordCount": 11,
+          "textLength": 75,
+          "documentType": "IR",
+          "fieldSources": {
+           "name": "Nome: MARIA FICTICIA DA SILVA",
+           "taxId": "CPF: [CPF omitido]",
+           "income": "Renda mensal: R$ 9.100,00"
+          },
+          "meanConfidence": 0.95
+         }
+        },
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:22.508Z",
+        "updated_at": "2026-11-11T00:16:22.662Z",
+        "deleted_at": null,
+        "person_id": "5fbc8195-bbae-4b49-91b4-c1f632543667"
+       }
+      ],
+      "roles": [],
+      "addresses": []
+     },
+     {
+      "id": "66ecfabc-56a1-4e18-8130-8a44f5288031",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personType": "PF",
+      "legalName": "Conflito Dois mwbdc8mt0kr7",
+      "preferredName": null,
+      "taxIdNormalized": "52975210841",
+      "taxIdNormalizedHash": "35f235c7cbdfbe1fabcf1206a7c3299daf9add1201355b5c4a1597d22bcc1382",
+      "birthOrFoundationDate": null,
+      "status": "ACTIVE",
+      "mergedIntoId": null,
+      "riskFlagsJson": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:21.028Z",
+      "updated_at": "2026-11-11T00:16:21.028Z",
+      "deleted_at": null,
+      "merged_into_id": null,
+      "contacts": [],
+      "documents": [],
+      "roles": [],
+      "addresses": []
+     }
+    ],
+    "_resumo": "lista com 46 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:27.373Z"
+  },
+  {
+   "seq": 179,
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Leitura pela API: GET /properties",
+   "metodo": "GET",
+   "rota": "/api/v1/properties",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "1c7e1c1d-6909-4baf-8c2a-1ffc331a027a",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa nova mwbdceljnsff",
+      "internalCode": "RN-mwbdceljnsff",
+      "propertyType": "RESIDENTIAL",
+      "addressId": null,
+      "registryNumber": null,
+      "registryOffice": null,
+      "latitude": null,
+      "longitude": null,
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": null,
+      "description": null,
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "95ba7380-8fd6-48e3-b27c-0e48c7655141",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:26.956Z",
+      "updated_at": "2026-11-11T00:16:26.956Z",
+      "deleted_at": null,
+      "address_id": null,
+      "owners": [],
+      "offers": [
+       {
+        "id": "e2e09ae3-bfcb-48de-80e6-124a0c720f4d",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1c7e1c1d-6909-4baf-8c2a-1ffc331a027a",
+        "offerType": "SALE",
+        "askingPrice": "800000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": null,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 0,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:27.041Z",
+        "updated_at": "2026-11-11T00:16:27.041Z",
+        "deleted_at": null,
+        "property_id": "1c7e1c1d-6909-4baf-8c2a-1ffc331a027a"
+       }
+      ],
+      "address": null,
+      "media": [],
+      "documents": []
+     },
+     {
+      "id": "f5cef69d-21a7-4758-a1d4-cd99d340782c",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Terreno mwbdceljnsff",
+      "internalCode": "TR-mwbdceljnsff",
+      "propertyType": "LAND",
+      "addressId": null,
+      "registryNumber": null,
+      "registryOffice": null,
+      "latitude": null,
+      "longitude": null,
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": null,
+      "description": null,
+      "bedrooms": null,
+      "parkingSpots": null,
+      "attributesJson": null,
+      "publicationStatus": "DRAFT",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "68d1deae-5df5-4467-b179-fe9cfea53184",
+      "mergedIntoId": null,
+      "publishedAt": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:26.724Z",
+      "updated_at": "2026-11-11T00:16:26.724Z",
+      "deleted_at": null,
+      "address_id": null,
+      "owners": [],
+      "offers": [
+       {
+        "id": "6413ccbd-c29f-42e7-9e49-a38e4e77094c",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "f5cef69d-21a7-4758-a1d4-cd99d340782c",
+        "offerType": "SALE",
+        "askingPrice": "300000.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": null,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 0,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:26.825Z",
+        "updated_at": "2026-11-11T00:16:26.825Z",
+        "deleted_at": null,
+        "property_id": "f5cef69d-21a7-4758-a1d4-cd99d340782c"
+       }
+      ],
+      "address": null,
+      "media": [],
+      "documents": []
+     },
+     {
+      "id": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "title": "Casa Fictícia mwbdccmim8e1",
+      "internalCode": "M3-mwbdccmim8e1",
+      "propertyType": "RESIDENTIAL",
+      "addressId": "116ddaba-2b71-4fa8-818f-7bc51b6d0c83",
+      "registryNumber": "MAT-mwbdccmim8e1",
+      "registryOffice": "1º Cartório Fictício",
+      "latitude": "-22.9056000",
+      "longitude": "-47.0608000",
+      "addressLine": null,
+      "city": "Campinas",
+      "state": "SP",
+      "zipCode": null,
+      "areaTotalM2": "180.000000",
+      "description": null,
+      "bedrooms": 3,
+      "parkingSpots": 2,
+      "attributesJson": null,
+      "publicationStatus": "PUBLISHED",
+      "availabilityStatus": "AVAILABLE",
+      "publicAddressPolicy": "SO_BAIRRO",
+      "addressVisibility": "RESTRICTED",
+      "descriptionPublic": null,
+      "publicId": "ee099b49-fbc1-41b7-ad33-80e2d8f0de67",
+      "mergedIntoId": null,
+      "publishedAt": "2026-11-11T00:16:24.952Z",
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:24.055Z",
+      "updated_at": "2026-11-11T00:16:24.971Z",
+      "deleted_at": null,
+      "address_id": "116ddaba-2b71-4fa8-818f-7bc51b6d0c83",
+      "owners": [],
+      "offers": [
+       {
+        "id": "504e941b-1f51-4a40-b834-ddc9f8f36d5c",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "offerType": "RENT",
+        "askingPrice": "3900.00",
+        "confidentialMinPrice": null,
+        "acceptsFinancing": null,
+        "acceptsTrade": null,
+        "status": "ACTIVE",
+        "startsAt": null,
+        "endsAt": null,
+        "lockVersion": 0,
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "deletedBy": null,
+        "created_at": "2026-11-11T00:16:24.113Z",
+        "updated_at": "2026-11-11T00:16:24.113Z",
+        "deleted_at": null,
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       }
+      ],
+      "address": {
+       "id": "116ddaba-2b71-4fa8-818f-7bc51b6d0c83",
+       "zipCode": "13010-000",
+       "street": "Rua Sigilosa mwbdccmim8e1",
+       "number": "100",
+       "complement": null,
+       "neighborhood": "Cambuí",
+       "city": "Campinas",
+       "state": "SP",
+       "created_at": "2026-11-11T00:16:24.053Z",
+       "updated_at": "2026-11-11T00:16:24.053Z"
+      },
+      "media": [
+       {
+        "id": "a6caa639-043b-47e0-8e59-ae86462b3484",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "mediaType": "IMAGE",
+        "storageKey": "fotos/original-1-mwbdccmim8e1.jpg",
+        "originalName": "sala-2.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": null,
+        "position": 2,
+        "classification": null,
+        "qualityStatus": "APPROVED",
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "created_at": "2026-11-11T00:16:24.519Z",
+        "updated_at": "2026-11-11T00:16:24.770Z",
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       },
+       {
+        "id": "9de690ff-fd56-4f99-b41d-78680838a3b8",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "mediaType": "IMAGE",
+        "storageKey": "fotos/original-0-mwbdccmim8e1.jpg",
+        "originalName": "sala-1.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": null,
+        "position": 1,
+        "classification": null,
+        "qualityStatus": "APPROVED",
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "created_at": "2026-11-11T00:16:24.469Z",
+        "updated_at": "2026-11-11T00:16:24.725Z",
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       },
+       {
+        "id": "c2e0628e-8869-44fb-9a50-aef682bdb201",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "mediaType": "IMAGE",
+        "storageKey": "fotos/original-3-mwbdccmim8e1.jpg",
+        "originalName": "sala-4.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": null,
+        "position": 4,
+        "classification": null,
+        "qualityStatus": "REJECTED",
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "created_at": "2026-11-11T00:16:24.610Z",
+        "updated_at": "2026-11-11T00:16:24.695Z",
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       },
+       {
+        "id": "41223659-bdf0-4d18-b95b-8ecb3cfb31d5",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "mediaType": "IMAGE",
+        "storageKey": "fotos/original-2-mwbdccmim8e1.jpg",
+        "originalName": "sala-3.jpg",
+        "mimeType": "image/jpeg",
+        "sizeBytes": null,
+        "position": 3,
+        "classification": null,
+        "qualityStatus": "APPROVED",
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "created_at": "2026-11-11T00:16:24.572Z",
+        "updated_at": "2026-11-11T00:16:24.814Z",
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       },
+       {
+        "id": "3f9ff7fc-b14d-415f-b8fc-6a64f3164662",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "mediaType": "VIDEO",
+        "storageKey": "videos/tour-mwbdccmim8e1.mp4",
+        "originalName": null,
+        "mimeType": "video/mp4",
+        "sizeBytes": null,
+        "position": 0,
+        "classification": null,
+        "qualityStatus": "APPROVED",
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "created_at": "2026-11-11T00:16:24.262Z",
+        "updated_at": "2026-11-11T00:16:24.345Z",
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       }
+      ],
+      "documents": [
+       {
+        "id": "a3e5c509-b898-482d-80ce-5c2c619c36eb",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "documentType": "REGISTRY",
+        "label": "REGISTRY",
+        "valueNumber": null,
+        "valueAmount": null,
+        "status": "REGULARIZADO",
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "created_at": "2026-11-11T00:16:24.892Z",
+        "updated_at": "2026-11-11T00:16:24.892Z",
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       },
+       {
+        "id": "64733e85-4c03-420c-a468-9dda659094d3",
+        "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+        "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+        "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+        "documentType": "IPTU",
+        "label": "IPTU",
+        "valueNumber": null,
+        "valueAmount": null,
+        "status": "REGULARIZADO",
+        "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+        "created_at": "2026-11-11T00:16:24.910Z",
+        "updated_at": "2026-11-11T00:16:24.910Z",
+        "property_id": "1e329720-60b9-4576-a658-f97b3aaaaf2b"
+       }
+      ]
+     }
+    ],
+    "_resumo": "lista com 25 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:27.837Z"
+  },
+  {
+   "seq": 180,
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Leitura pela API: GET /opportunities",
+   "metodo": "GET",
+   "rota": "/api/v1/opportunities",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "769ff361-19d7-4165-8281-2ad79472f594",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "ownerUserId": "70f26664-9b7e-492f-8c5b-4cb2450197e6",
+      "stage": "NEW",
+      "temperature": null,
+      "expectedValue": null,
+      "closedAt": null,
+      "lostReason": null,
+      "wonReason": null,
+      "withdrawnReason": null,
+      "nextAction": "Ligar para qualificar",
+      "nextActionDueAt": "2026-11-13T00:16:26.315Z",
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:26.332Z",
+      "updated_at": "2026-11-11T00:16:26.382Z",
+      "deleted_at": null,
+      "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "owner_user_id": "70f26664-9b7e-492f-8c5b-4cb2450197e6"
+     },
+     {
+      "id": "c3955ba0-9185-4e01-8405-49c1555478d6",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "ownerUserId": "70f26664-9b7e-492f-8c5b-4cb2450197e6",
+      "stage": "CLOSED_LOST",
+      "temperature": null,
+      "expectedValue": null,
+      "closedAt": "2026-11-11T00:16:26.015Z",
+      "lostReason": "PRICE_TOO_HIGH",
+      "wonReason": null,
+      "withdrawnReason": null,
+      "nextAction": "Ligar para qualificar",
+      "nextActionDueAt": "2026-11-13T00:16:25.972Z",
+      "lockVersion": 2,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:25.987Z",
+      "updated_at": "2026-11-11T00:16:26.378Z",
+      "deleted_at": null,
+      "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "owner_user_id": "70f26664-9b7e-492f-8c5b-4cb2450197e6"
+     },
+     {
+      "id": "f5ebb76a-a180-4725-9ec7-3736e035e71d",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "ownerUserId": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "stage": "CLOSED_WON",
+      "temperature": null,
+      "expectedValue": null,
+      "closedAt": "2026-11-11T00:16:25.962Z",
+      "lostReason": null,
+      "wonReason": "PRICE_ACCEPTED",
+      "withdrawnReason": null,
+      "nextAction": "Ligar para qualificar",
+      "nextActionDueAt": "2026-11-13T00:16:25.199Z",
+      "lockVersion": 10,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:25.211Z",
+      "updated_at": "2026-11-11T00:16:25.962Z",
+      "deleted_at": null,
+      "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "owner_user_id": "50440c45-76e5-4fa5-bad5-fabbab6eb717"
+     }
+    ],
+    "_resumo": "lista com 19 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:27.954Z"
+  },
+  {
+   "seq": 181,
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Leitura pela API: GET /visits",
+   "metodo": "GET",
+   "rota": "/api/v1/visits",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "d8395c81-71b4-470e-b9c4-479bed435d49",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "propertyId": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "opportunityId": "f5ebb76a-a180-4725-9ec7-3736e035e71d",
+      "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "agentUserId": null,
+      "scheduledAt": "2026-11-14T00:16:25.830Z",
+      "status": "SCHEDULED",
+      "feedback": null,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:25.843Z",
+      "updated_at": "2026-11-11T00:16:25.843Z",
+      "deleted_at": null,
+      "property_id": "167ce16f-f474-42d8-94f0-56df5b36a635",
+      "opportunity_id": "f5ebb76a-a180-4725-9ec7-3736e035e71d",
+      "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "agent_user_id": null
+     },
+     {
+      "id": "a6fa4c0f-ce4e-4e4d-9ba3-e6d68b2158cd",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "propertyId": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+      "opportunityId": "a83b2d72-ef67-4464-862d-bf836ff224e2",
+      "personId": "10caca6e-bab7-4964-b553-2cdd985c72b4",
+      "agentUserId": null,
+      "scheduledAt": "2026-11-14T00:11:46.578Z",
+      "status": "SCHEDULED",
+      "feedback": null,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:11:46.602Z",
+      "updated_at": "2026-11-11T00:11:46.602Z",
+      "deleted_at": null,
+      "property_id": "bf1a187a-85e9-4b29-b375-0f841717a9fe",
+      "opportunity_id": "a83b2d72-ef67-4464-862d-bf836ff224e2",
+      "person_id": "10caca6e-bab7-4964-b553-2cdd985c72b4",
+      "agent_user_id": null
+     },
+     {
+      "id": "167342a8-4d92-4d98-8feb-0f1675385dbf",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "propertyId": "d16f183d-4c31-459a-a341-282a30ea71ff",
+      "opportunityId": "9950c0d3-63e0-46d5-b1de-fb7c1bdfca82",
+      "personId": "703c2326-c085-45dc-b12b-900c8818082d",
+      "agentUserId": null,
+      "scheduledAt": "2026-11-14T00:10:18.453Z",
+      "status": "SCHEDULED",
+      "feedback": null,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:10:18.846Z",
+      "updated_at": "2026-11-11T00:10:18.846Z",
+      "deleted_at": null,
+      "property_id": "d16f183d-4c31-459a-a341-282a30ea71ff",
+      "opportunity_id": "9950c0d3-63e0-46d5-b1de-fb7c1bdfca82",
+      "person_id": "703c2326-c085-45dc-b12b-900c8818082d",
+      "agent_user_id": null
+     }
+    ],
+    "_resumo": "lista com 10 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:27.964Z"
+  },
+  {
+   "seq": 182,
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Leitura pela API: GET /crm/proposals",
+   "metodo": "GET",
+   "rota": "/api/v1/crm/proposals",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "cdcc1221-f252-4732-a368-06b0850a6e6b",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "opportunityId": "2e1f73eb-8061-4fd0-8d4d-ec4ad5653a6a",
+      "propertyId": "fdbcf51d-b2fe-414d-bdf0-224cdf838f00",
+      "proposedByPersonId": "843d55c0-9fc0-4538-b17a-3720d8f6badc",
+      "value": "910000.00",
+      "currency": "BRL",
+      "status": "DRAFT",
+      "versionNumber": 2,
+      "notes": null,
+      "validUntil": null,
+      "sentAt": null,
+      "decidedAt": null,
+      "decidedByUserId": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:02:50.524Z",
+      "updated_at": "2026-11-11T00:02:50.524Z",
+      "deleted_at": null,
+      "opportunity_id": "2e1f73eb-8061-4fd0-8d4d-ec4ad5653a6a",
+      "property_id": "fdbcf51d-b2fe-414d-bdf0-224cdf838f00",
+      "proposed_by_person_id": "843d55c0-9fc0-4538-b17a-3720d8f6badc",
+      "decided_by_user_id": null
+     },
+     {
+      "id": "e1cecf9c-7bc7-417b-adea-25e11ec37d1e",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "opportunityId": "2e1f73eb-8061-4fd0-8d4d-ec4ad5653a6a",
+      "propertyId": "fdbcf51d-b2fe-414d-bdf0-224cdf838f00",
+      "proposedByPersonId": "843d55c0-9fc0-4538-b17a-3720d8f6badc",
+      "value": "900000.00",
+      "currency": "BRL",
+      "status": "SENT",
+      "versionNumber": 1,
+      "notes": null,
+      "validUntil": null,
+      "sentAt": "2026-11-11T00:02:50.585Z",
+      "decidedAt": null,
+      "decidedByUserId": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:02:50.501Z",
+      "updated_at": "2026-11-11T00:02:50.585Z",
+      "deleted_at": null,
+      "opportunity_id": "2e1f73eb-8061-4fd0-8d4d-ec4ad5653a6a",
+      "property_id": "fdbcf51d-b2fe-414d-bdf0-224cdf838f00",
+      "proposed_by_person_id": "843d55c0-9fc0-4538-b17a-3720d8f6badc",
+      "decided_by_user_id": null
+     },
+     {
+      "id": "16b946f0-8015-4eb7-bef9-35aa25912637",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "opportunityId": "4e4ad174-6499-46f9-a844-64508fe4165e",
+      "propertyId": "41f35653-b8f0-4770-beaf-76f1f9c693dc",
+      "proposedByPersonId": "bd7dd237-5f54-47d2-a177-608811728371",
+      "value": "910000.00",
+      "currency": "BRL",
+      "status": "DRAFT",
+      "versionNumber": 2,
+      "notes": null,
+      "validUntil": null,
+      "sentAt": null,
+      "decidedAt": null,
+      "decidedByUserId": null,
+      "lockVersion": 0,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:04:39.471Z",
+      "updated_at": "2026-11-11T00:04:39.471Z",
+      "deleted_at": null,
+      "opportunity_id": "4e4ad174-6499-46f9-a844-64508fe4165e",
+      "property_id": "41f35653-b8f0-4770-beaf-76f1f9c693dc",
+      "proposed_by_person_id": "bd7dd237-5f54-47d2-a177-608811728371",
+      "decided_by_user_id": null
+     }
+    ],
+    "_resumo": "lista com 10 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:27.974Z"
+  },
+  {
+   "seq": 183,
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Leitura pela API: GET /crm/feedback-cases",
+   "metodo": "GET",
+   "rota": "/api/v1/crm/feedback-cases",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "576acbd1-ae8a-403b-ac71-0f87251eb664",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "843d55c0-9fc0-4538-b17a-3720d8f6badc",
+      "opportunityId": null,
+      "messageId": null,
+      "type": "COMPLAINT",
+      "description": "Cobrança indevida.",
+      "severity": "HIGH",
+      "status": "ESCALATED",
+      "assignedToUserId": null,
+      "slaDueAt": "2026-11-12T00:02:53.282Z",
+      "escalatedAt": "2026-11-11T00:02:53.327Z",
+      "resolvedAt": null,
+      "resolutionNotes": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:02:53.283Z",
+      "updated_at": "2026-11-11T00:02:53.327Z",
+      "deleted_at": null,
+      "person_id": "843d55c0-9fc0-4538-b17a-3720d8f6badc",
+      "opportunity_id": null,
+      "assigned_to_user_id": null
+     },
+     {
+      "id": "6d93e879-4920-4d1b-bbda-c9cef27bf42c",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "bd7dd237-5f54-47d2-a177-608811728371",
+      "opportunityId": null,
+      "messageId": null,
+      "type": "COMPLAINT",
+      "description": "Cobrança indevida.",
+      "severity": "HIGH",
+      "status": "ESCALATED",
+      "assignedToUserId": null,
+      "slaDueAt": "2026-11-12T00:04:39.865Z",
+      "escalatedAt": "2026-11-11T00:04:39.996Z",
+      "resolvedAt": null,
+      "resolutionNotes": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:04:39.865Z",
+      "updated_at": "2026-11-11T00:04:39.996Z",
+      "deleted_at": null,
+      "person_id": "bd7dd237-5f54-47d2-a177-608811728371",
+      "opportunity_id": null,
+      "assigned_to_user_id": null
+     },
+     {
+      "id": "95925074-0f9d-49af-a58e-c40b0991f0ca",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "703c2326-c085-45dc-b12b-900c8818082d",
+      "opportunityId": null,
+      "messageId": null,
+      "type": "COMPLAINT",
+      "description": "Cobrança indevida.",
+      "severity": "HIGH",
+      "status": "ESCALATED",
+      "assignedToUserId": null,
+      "slaDueAt": "2026-11-12T00:10:24.933Z",
+      "escalatedAt": "2026-11-11T00:10:24.959Z",
+      "resolvedAt": null,
+      "resolutionNotes": null,
+      "lockVersion": 1,
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:10:24.933Z",
+      "updated_at": "2026-11-11T00:10:24.959Z",
+      "deleted_at": null,
+      "person_id": "703c2326-c085-45dc-b12b-900c8818082d",
+      "opportunity_id": null,
+      "assigned_to_user_id": null
+     }
+    ],
+    "_resumo": "lista com 20 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:27.983Z"
+  },
+  {
+   "seq": 184,
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Leitura pela API: GET /radar",
+   "metodo": "GET",
+   "rota": "/api/v1/radar",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "corpoEnviado": "sem corpo",
+   "status": 200,
+   "codigoErro": "não se aplica (sem erro)",
+   "corpoResposta": {
+    "success": true,
+    "data": [
+     {
+      "id": "0d6b4e7a-00c2-48b2-bf52-09fd172a11c1",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "opportunityId": null,
+      "criteriaJson": {
+       "city": "Campinas",
+       "offerType": "RENT"
+      },
+      "status": "ACTIVE",
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:26.634Z",
+      "updated_at": "2026-11-11T00:16:26.634Z",
+      "deleted_at": null,
+      "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "opportunity_id": null
+     },
+     {
+      "id": "e8f32f2c-a4d5-4945-909e-d94e429ebeea",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "opportunityId": null,
+      "criteriaJson": {
+       "flexible": [
+        {
+         "lat": -22.9056,
+         "lng": -47.0608,
+         "code": "MAX_DISTANCE_KM",
+         "value": 5,
+         "weight": 1
+        }
+       ],
+       "required": {
+        "city": "Campinas",
+        "maxPrice": 1000000,
+        "offerType": "SALE"
+       },
+       "exclusions": [
+        {
+         "code": "PROPERTY_TYPE",
+         "value": "LAND"
+        }
+       ],
+       "preferences": [
+        {
+         "code": "NEIGHBORHOOD",
+         "value": "Cambuí",
+         "weight": 2
+        },
+        {
+         "code": "MIN_BEDROOMS",
+         "value": 3,
+         "weight": 1
+        },
+        {
+         "code": "MIN_PARKING",
+         "value": 2,
+         "weight": 1
+        }
+       ]
+      },
+      "status": "ACTIVE",
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:16:26.613Z",
+      "updated_at": "2026-11-11T00:16:26.613Z",
+      "deleted_at": null,
+      "person_id": "92e15d2b-0859-4eb9-898e-6d8ef7517fd5",
+      "opportunity_id": null
+     },
+     {
+      "id": "5f0dacf0-9829-4091-9e93-05662413bfe7",
+      "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+      "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+      "personId": "10caca6e-bab7-4964-b553-2cdd985c72b4",
+      "opportunityId": null,
+      "criteriaJson": {
+       "city": "Campinas",
+       "offerType": "RENT"
+      },
+      "status": "ACTIVE",
+      "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+      "deletedBy": null,
+      "created_at": "2026-11-11T00:11:51.953Z",
+      "updated_at": "2026-11-11T00:11:51.953Z",
+      "deleted_at": null,
+      "person_id": "10caca6e-bab7-4964-b553-2cdd985c72b4",
+      "opportunity_id": null
+     }
+    ],
+    "_resumo": "lista com 10 itens; 3 primeiros mostrados"
+   },
+   "dataHora": "2026-11-11T00:16:27.993Z"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Entidades do livro §3 presentes no banco (tabela ou visão com security_invoker)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "sql": "SELECT n.nspname || '.' || c.relname AS entidade, CASE c.relkind WHEN 'r' THEN 'tabela' WHEN 'v' THEN 'visão' ELSE c.relkind::text END AS tipo, c.relrowsecurity AS rls, c.relforcerowsecurity AS force_rls, c.reloptions FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname || '.' || c.relname = ANY($1) ORDER BY 1",
+   "parametros": [
+    [
+     "people.persons",
+     "people.person_roles",
+     "people.person_contacts",
+     "people.person_addresses",
+     "people.person_documents",
+     "people.communication_consents",
+     "real_estate.properties",
+     "real_estate.property_owners",
+     "real_estate.property_offers",
+     "real_estate.property_media",
+     "real_estate.property_documents",
+     "real_estate.property_price_history",
+     "crm.opportunities",
+     "crm.interactions",
+     "crm.tasks",
+     "crm.visits",
+     "crm.proposals",
+     "crm.loss_reasons",
+     "crm.radars",
+     "crm.radar_matches",
+     "crm.service_occurrences",
+     "crm.carts",
+     "real_estate.property_internal_occurrences"
+    ]
+   ],
+   "resultado": [
+    {
+     "entidade": "crm.carts",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "crm.interactions",
+     "tipo": "visão",
+     "rls": false,
+     "force_rls": false,
+     "reloptions": [
+      "security_invoker=true"
+     ]
+    },
+    {
+     "entidade": "crm.loss_reasons",
+     "tipo": "visão",
+     "rls": false,
+     "force_rls": false,
+     "reloptions": null
+    },
+    {
+     "entidade": "crm.opportunities",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "crm.proposals",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "crm.radar_matches",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "crm.radars",
+     "tipo": "visão",
+     "rls": false,
+     "force_rls": false,
+     "reloptions": [
+      "security_invoker=true"
+     ]
+    },
+    {
+     "entidade": "crm.service_occurrences",
+     "tipo": "visão",
+     "rls": false,
+     "force_rls": false,
+     "reloptions": [
+      "security_invoker=true"
+     ]
+    },
+    {
+     "entidade": "crm.tasks",
+     "tipo": "visão",
+     "rls": false,
+     "force_rls": false,
+     "reloptions": [
+      "security_invoker=true"
+     ]
+    },
+    {
+     "entidade": "crm.visits",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "people.communication_consents",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "people.person_addresses",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "people.person_contacts",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "people.person_documents",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "people.person_roles",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "people.persons",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "real_estate.properties",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "real_estate.property_documents",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "real_estate.property_internal_occurrences",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "real_estate.property_media",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "real_estate.property_offers",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "real_estate.property_owners",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    },
+    {
+     "entidade": "real_estate.property_price_history",
+     "tipo": "tabela",
+     "rls": true,
+     "force_rls": true,
+     "reloptions": null
+    }
+   ],
+   "dataHora": "2026-11-11T00:16:27.372Z"
+  },
+  {
+   "casos": [
+    "entidades_catalogo"
+   ],
+   "descricao": "Catálogo de motivos de ganho, perda e desistência (crm.loss_reasons)",
+   "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+   "sql": "SELECT outcome_stage, code, label FROM crm.loss_reasons ORDER BY outcome_stage, code",
+   "parametros": "sem parâmetros",
+   "resultado": [
+    {
+     "outcome_stage": "CLOSED_LOST",
+     "code": "COMPETITOR",
+     "label": "Concorrente"
+    },
+    {
+     "outcome_stage": "CLOSED_LOST",
+     "code": "FINANCING_DENIED",
+     "label": "Financiamento negado"
+    },
+    {
+     "outcome_stage": "CLOSED_LOST",
+     "code": "LOCATION",
+     "label": "Localização"
+    },
+    {
+     "outcome_stage": "CLOSED_LOST",
+     "code": "OTHER",
+     "label": "Outro motivo"
+    },
+    {
+     "outcome_stage": "CLOSED_LOST",
+     "code": "PRICE_TOO_HIGH",
+     "label": "Preço alto"
+    },
+    {
+     "outcome_stage": "CLOSED_WON",
+     "code": "FAST_DECISION",
+     "label": "Decisão rápida"
+    },
+    {
+     "outcome_stage": "CLOSED_WON",
+     "code": "OTHER",
+     "label": "Outro motivo"
+    },
+    {
+     "outcome_stage": "CLOSED_WON",
+     "code": "PRICE_ACCEPTED",
+     "label": "Preço aceito"
+    },
+    {
+     "outcome_stage": "CLOSED_WON",
+     "code": "REFERRAL",
+     "label": "Indicação"
+    },
+    {
+     "outcome_stage": "WITHDRAWN",
+     "code": "CHANGED_MIND",
+     "label": "Mudou de ideia"
+    },
+    {
+     "outcome_stage": "WITHDRAWN",
+     "code": "CLIENT_GAVE_UP",
+     "label": "Cliente desistiu"
+    },
+    {
+     "outcome_stage": "WITHDRAWN",
+     "code": "NO_RESPONSE",
+     "label": "Sem resposta"
+    },
+    {
+     "outcome_stage": "WITHDRAWN",
+     "code": "OTHER",
+     "label": "Outro motivo"
+    }
+   ],
+   "dataHora": "2026-11-11T00:16:27.373Z"
+  }
+ ]
+}

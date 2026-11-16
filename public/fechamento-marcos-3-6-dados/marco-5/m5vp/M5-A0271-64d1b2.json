@@ -1,0 +1,23 @@
+{
+ "id": "M5-A0271-64d1b2",
+ "linhaCaderno": 816,
+ "requisito": "☐ Cases/deadlines.",
+ "correcao": "escalonamento por regra: legal.prazos.alerta_antecedencia_horas.<C> e legal.prazos.escalonamento_horas.<C> (legalRules.settings.js), usados por deadline.service e legalDeadlineAlertJob",
+ "commitApi": "m5fix/vistorias-prazos@73218e6f",
+ "commitFront": "m5fix/vistorias-prazos@fc0343c",
+ "base": "API 41addaa2 / Front c8ccff0",
+ "provas": [
+  {
+   "arquivo": "test/m5vp.prazos.test.js",
+   "nome": "M5-A0109/§15: antecedência do aviso e escalonamento seguem o parâmetro da criticidade, não 48 h/24 h fixos",
+   "status": "pass",
+   "ms": 292.028,
+   "commitDoTeste": "33b32586",
+   "naBase41addaa2": {
+    "status": "fail",
+    "erro": "Error [AppError]: Chave de configuração desconhecida: \"legal.prazos.alerta_antecedencia_horas.LOW\". statusCode: 400, code: 'SETTING_UNKNOWN_KEY', details: { key: 'legal.prazos.alerta_antecedencia_horas.LOW' }, isOperational: true }"
+   }
+  }
+ ],
+ "medidoEm": "2026-11-12T11:01:40.690Z"
+}

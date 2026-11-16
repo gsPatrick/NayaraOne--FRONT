@@ -1,0 +1,273 @@
+{
+ "id": "M5-A0201-67738d",
+ "secao": "P2 > 8. Webhook de assinatura",
+ "linhaCaderno": 561,
+ "requisito": "async handleSignatureWebhook(provider, rawBody, headers) {\n    adapter.verifyWebhook(headers, rawBody);\n    const event = parseProviderEvent(rawBody);\n    const inserted = await integrationInbox.tryInsert(provider, event.id, hash(rawBody));\n    if (!inserted) return;\n    await signatureService.applyProviderEvent(event);\n}",
+ "demandas": "M5-D015;X45-D014",
+ "implementacao": "src/features/integrations/webhooks (rota única POST /v1/webhooks/:provider/:channel: verifica assinatura no corpo bruto, grava em integration.webhook_inbox com UNIQUE por empresa+provedor+id externo, duplicado não reprocessa) + src/modules/legal/signatures/framework/signature.events.js applySignatureEvent",
+ "tela": "sem tela própria (prova pela API)",
+ "testes": [
+  {
+   "arquivo": "test/marco9/integracoes/m9d236.fluxo.test.js",
+   "nome": "assinatura_webhook_hmac_pelo_framework",
+   "status": "pass",
+   "ms": 919.354,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco9/integracoes/m9d236.fluxo.test.js",
+   "nome": "assinatura_evento_fora_de_ordem_nao_regride",
+   "status": "pass",
+   "ms": 1085.526,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/marco9/integracoes/m9d236.provider.test.js",
+   "nome": "assinatura_rota_clicksign_legada_funciona",
+   "status": "pass",
+   "ms": 497.461,
+   "commitDoTeste": "90202613"
+  },
+  {
+   "arquivo": "test/m5fech.contratos.adversariais.test.js",
+   "nome": "JUR-TS-007: webhook de assinatura duplicado (mesmo id externo) gera uma única atualização, e SIGNED só com todas as assinaturas da versão",
+   "status": "pass",
+   "ms": 558.993,
+   "commitDoTeste": "52740c89"
+  }
+ ],
+ "evidenciaAoVivo": [
+  {
+   "passo": "CT-204",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "perfil": "anonimo",
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "resumo": "erro LEGAL_WEBHOOK_HMAC_INVALID: Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+   "quando": "2026-11-11T03:42:25.449Z"
+  },
+  {
+   "passo": "CT-207",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "perfil": "A:gestor",
+   "status": 200,
+   "codigo": "sem código de erro",
+   "esperado": {
+    "status": 200
+   },
+   "resumo": "objeto com 3 campo(s)",
+   "quando": "2026-11-11T03:42:25.498Z"
+  },
+  {
+   "passo": "CT-538b",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/sandbox?channel=canal-inexistente",
+   "perfil": "anonimo",
+   "status": 404,
+   "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL",
+   "esperado": {
+    "status": 404,
+    "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL"
+   },
+   "resumo": "erro INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL: Canal de webhook desconhecido.",
+   "quando": "2026-11-11T03:42:29.424Z"
+  }
+ ],
+ "evidenciaDados": "evidencias/marco-5/M5-A0201-67738d.json",
+ "situacao": "ATENDIDO",
+ "status": "Atendido",
+ "nota": "sem observação",
+ "commit": {
+  "api": "m5fix/matriz@980a1eec",
+  "front": "d048d7a"
+ },
+ "comoReproduzir": {
+  "testes": "cd NayaraOne--API && npm run test:m5:arquivos -- test/marco9/integracoes/m9d236.fluxo.test.js test/marco9/integracoes/m9d236.provider.test.js test/m5fech.contratos.adversariais.test.js",
+  "aoVivo": "cd NayaraOne--API && npm run captura:m5 (passos CT-204, CT-537, CT-207, CT-538b)"
+ },
+ "passos": [
+  {
+   "id": "CT-204",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Webhook público do provedor sem assinatura válida: 401, igual para signatário existente ou não (sem oráculo)",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/legal/webhooks/clicksign",
+   "corpoEnviado": {
+    "event": {
+     "name": "sign",
+     "data": {
+      "signer": {
+       "key": "chave-desconhecida"
+      }
+     }
+    }
+   },
+   "esperado": {
+    "status": 401,
+    "codigo": "LEGAL_WEBHOOK_HMAC_INVALID"
+   },
+   "status": 401,
+   "codigo": "LEGAL_WEBHOOK_HMAC_INVALID",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:25.449Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "LEGAL_WEBHOOK_HMAC_INVALID",
+     "message": "Assinatura do webhook (Content-Hmac) ausente ou inválida.",
+     "traceId": "3848c42b-4f3f-434c-9936-5e61456a5239"
+    }
+   },
+   "req": [
+    "M5-A0070-aa260b",
+    "M5-A0201-67738d"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-207",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "JUR-TS-007: o MESMO webhook (mesmo id externo) repetido não reaplica efeito",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/legal/signatures/sbx-sig-ae7beb6c48f75b88/webhook",
+   "corpoEnviado": {
+    "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff"
+   },
+   "esperado": {
+    "status": 200
+   },
+   "status": 200,
+   "codigo": null,
+   "ok": true,
+   "ms": 11,
+   "quando": "2026-11-11T03:42:25.498Z",
+   "corpo": {
+    "success": true,
+    "data": {
+     "signature": {
+      "id": "a2d58d5e-4fb5-4a04-99eb-1d11886c558a",
+      "groupId": "a383b960-dcaa-4baf-bf77-9663ef357013",
+      "companyId": "5eb5d230-2c01-44e5-9a14-8be2f3668d5a",
+      "contractVersionId": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "personId": "831f6109-2e18-4197-84c9-564b89db0076",
+      "signedAt": "2026-11-11T03:42:25.469Z",
+      "status": "SIGNED",
+      "externalSignatureId": "sbx-sig-ae7beb6c48f75b88",
+      "providerEnvelopeId": "sbx-env-74cbcb86784b4f2e",
+      "signatureMethod": "ELECTRONIC",
+      "evidenceFileId": null,
+      "collectedByUserId": null,
+      "contentHash": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+      "envelopeId": "9fc817f8-ed63-426a-8bd0-1ddef37c6c60",
+      "signerEmail": null,
+      "evidenceJson": {
+       "simulated": true,
+       "authMethod": "SANDBOX_SIMULATED",
+       "receivedAt": "2026-11-11T03:42:25.471Z",
+       "providerCode": "signature-sandbox",
+       "documentSha256": "f2d7a516a52a412258e579bc5fe7f3817e6b381aa8257d2c0c76e97ae5bf53ff",
+       "signedAtProvider": "2026-11-11T03:42:25.471Z"
+      },
+      "evidenceComplete": true,
+      "evidenceType": null,
+      "createdBy": "0393a076-406c-4a53-a511-59c6e6836e2b",
+      "updatedBy": null,
+      "created_at": "2026-11-11T03:42:25.223Z",
+      "updated_at": "2026-11-11T03:42:25.471Z",
+      "contract_version_id": "16c9eb6f-309d-4c40-9c52-3d5221ab57d6",
+      "person_id": "831f6109-2e18-4197-84c9-564b89db0076"
+     },
+     "contractTransitioned": false,
+     "alreadyProcessed": true
+    }
+   },
+   "req": [
+    "M5-A0155-f65cd8",
+    "M5-A0236-cf6596",
+    "M5-A0167-e05f18",
+    "M5-A0266-f06596",
+    "M5-A0070-aa260b"
+   ],
+   "modulo": "12-contratos-ciclo-assinatura",
+   "tipoRegistro": "http"
+  },
+  {
+   "id": "CT-538b",
+   "tipo": "http",
+   "grupos": [],
+   "f": [],
+   "titulo": "Rota literal com canal vai à rota única do framework (canal inexistente recusado antes de ler o corpo)",
+   "perfil": "anonimo",
+   "metodo": "POST",
+   "rota": "/webhooks/signature/sandbox?channel=canal-inexistente",
+   "corpoEnviado": {
+    "id": "x"
+   },
+   "esperado": {
+    "status": 404,
+    "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL"
+   },
+   "status": 404,
+   "codigo": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL",
+   "ok": true,
+   "ms": 7,
+   "quando": "2026-11-11T03:42:29.424Z",
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "INTEGRATION_WEBHOOK_UNKNOWN_CHANNEL",
+     "message": "Canal de webhook desconhecido.",
+     "traceId": "ac975f12-3f88-4182-b02b-dbd4b26d4789"
+    }
+   },
+   "req": [
+    "M5-A0212-b95d57",
+    "M5-A0201-67738d"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "tipoRegistro": "http"
+  }
+ ],
+ "consultasBanco": [
+  {
+   "id": "CT-537",
+   "grupos": [],
+   "f": [],
+   "descricao": "Caixa de entrada do webhook: unicidade (empresa, provedor, id externo do evento) — o tryInsert do Guia §8 é garantido pelo banco",
+   "sql": "SELECT conname, pg_get_constraintdef(oid) AS definicao FROM pg_constraint WHERE conrelid = 'integration.webhook_inbox'::regclass AND contype = 'u'",
+   "resultado": [
+    {
+     "conname": "webhook_inbox_company_provider_event_unique",
+     "definicao": "UNIQUE (company_id, provider_code, external_event_id)"
+    }
+   ],
+   "invarianteOk": true,
+   "quando": "2026-11-11T03:42:29.412Z",
+   "req": [
+    "M5-A0201-67738d",
+    "M5-A0070-aa260b",
+    "M5-A0236-cf6596",
+    "M5-A0266-f06596"
+   ],
+   "modulo": "15-contratos-checklist-aditivos",
+   "perfil": "catálogo (role de runtime, sem tenant)",
+   "tipoRegistro": "sql"
+  }
+ ],
+ "medidoEm": "2026-11-11T03:55:00Z",
+ "capturadoEm": "2026-11-11T03:42:40.682Z"
+}

@@ -1,0 +1,106 @@
+{
+ "id": "M4-G§1.5",
+ "secao": "Guia §1 Ordem de implementação",
+ "requisito": "\"5. Implementar payment_intents + approval snapshot/hash.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-07 fluxo feliz: create -> approve (sem alteração) -> execute liquida o lançamento",
+   "status": "passou",
+   "duracaoMs": 82,
+   "commitDoArquivo": "fa15be9f"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P25",
+   "tipo": "http",
+   "linhas": [
+    "M4-§8.5",
+    "M4-G§1.5",
+    "M4-G§15.4"
+   ],
+   "titulo": "Outra pessoa (checker) aprova a intenção sobre o snapshot/hash",
+   "perfil": "A:checker",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/da58d0e3-b0ed-431d-9ebc-20e84c111029/approve",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {},
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 45,
+   "quando": "2026-11-11T01:35:07.568Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "statusMessage": null,
+     "id": "da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+     "snapshotJson": {
+      "dueAt": "2026-11-13T01:35:07.127Z",
+      "amount": "1200.00",
+      "nature": "PAYABLE",
+      "status": "PENDING",
+      "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+      "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+      "entryType": "DEBIT",
+      "contractId": null,
+      "description": "Pagamento ao fornecedor 0871300",
+      "costCenterId": "68d6d6ef-12a9-46c2-a56b-1ded131a9dea",
+      "bankAccountId": "5ce195ce-0e59-466d-9d46-4ec624038ff0",
+      "resultCenterId": null,
+      "chartOfAccountId": null,
+      "financialEntryId": "de217925-818a-4dd1-baab-fe97fa407a38",
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null
+     },
+     "snapshotHash": "d47169ea87874322c1555b7b75a2ca3590cca5cb92094ef36d58ee3c93412777",
+     "status": "APPROVED",
+     "bankAccountId": null,
+     "beneficiarySnapshot": null,
+     "paymentMethod": null,
+     "idempotencyKey": "payment-intent:da58d0e3-b0ed-431d-9ebc-20e84c111029",
+     "externalSubmissionId": null,
+     "externalStatus": null,
+     "submittedAt": null,
+     "failedAt": null,
+     "failureReason": null,
+     "approvalRequestId": null,
+     "approvedByUserId": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "approvedAt": "2026-11-11T01:35:07.537Z",
+     "executedAt": null,
+     "cancelledAt": null,
+     "cancelReason": null,
+     "uncertainSince": null,
+     "lastReconciledAt": null,
+     "reconciliationAttempts": 0,
+     "reconciledAt": null,
+     "reconciledEntryId": null,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "9e2e8e8a-918f-4cb6-b323-2988f5f07619",
+     "created_at": "2026-11-11T01:35:07.236Z",
+     "updated_at": "2026-11-11T01:35:07.537Z",
+     "financial_entry_id": "de217925-818a-4dd1-baab-fe97fa407a38",
+     "approval_request_id": null
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

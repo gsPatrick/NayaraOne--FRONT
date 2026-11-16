@@ -1,0 +1,332 @@
+{
+  "id": "M6-46",
+  "requisito": "Tela: Orçamento da obra + aprovação.",
+  "secaoDoLivro": "Checklist de escopo §6 (telas inferidas do escopo; o Caderno é de backend)",
+  "implementacao": "NayaraOne--FRONT app/painel/obras/lista/[id]/orcamento/page.js → API createBudget/approveBudget",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/orcamento: abrir a tela e executar o fluxo",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.budget.test.js",
+      "nome": "M6-17/M6-32: aprovar orçamento fora de DRAFT (já APPROVED) é bloqueado",
+      "resultado": "passou",
+      "duracaoMs": 250,
+      "executadoEm": "2026-11-11T00:12:01.354Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H012",
+      "H014",
+      "H015",
+      "H018",
+      "H034"
+    ],
+    "resumo": [
+      "H012 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budgets → 201",
+      "H014 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines → 201",
+      "H015 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines → 201",
+      "H018 POST /api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve → 200",
+      "H034 GET /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budgets → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:01.814Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js",
+      "requisitos": [
+        "M6-98",
+        "M6-43",
+        "M6-44",
+        "M6-45",
+        "M6-46",
+        "M6-48",
+        "M6-49",
+        "M6-50",
+        "M6-51",
+        "M6-52"
+      ],
+      "iniciadoEm": "2026-11-11T00:13:46Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "1. login — <usuário de teste>"
+        },
+        {
+          "ok": true,
+          "passo": "2. criar obra — http://localhost:3106/painel/obras/lista/03829419-92d3-4027-9579-6b39b911662c"
+        },
+        {
+          "ok": true,
+          "passo": "3. criar etapa — Fundação e estrutura"
+        },
+        {
+          "ok": true,
+          "passo": "4. orçamento (linha criada) — R$ 10.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "5. aprovar orçamento"
+        },
+        {
+          "ok": true,
+          "passo": "6. medição registrada — 20% / R$ 2.000,00"
+        },
+        {
+          "ok": true,
+          "passo": "7. medição aprovada (fluxo DRAFT->SUBMITTED->REVIEWED->APPROVED)"
+        },
+        {
+          "ok": true,
+          "passo": "8. diário (RDO) registrado — 8 trabalhadores"
+        },
+        {
+          "ok": true,
+          "passo": "9. não conformidade aberta — Trinca na fundação"
+        },
+        {
+          "ok": true,
+          "passo": "10a. tentativa de entrega da obra — botão de entrega não visível no status atual da obra"
+        },
+        {
+          "ok": true,
+          "passo": "10b. chamado de pós-obra criado"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H012",
+      "requisitos": [
+        "M6-31",
+        "M6-04",
+        "M6-46"
+      ],
+      "cenario": "Criar orçamento da obra principal (DRAFT)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budgets",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {},
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 36,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "b7894679-6a90-481b-a529-b239ae8647f3",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "status": "DRAFT",
+          "totalAmount": "0.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:01.803Z",
+          "created_at": "2026-11-11T00:12:01.803Z",
+          "baselineAmount": null,
+          "ruleVersionId": null,
+          "approvedAt": null,
+          "approvedBy": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:01.814Z"
+    },
+    {
+      "id": "H014",
+      "requisitos": [
+        "M6-05",
+        "M6-46"
+      ],
+      "cenario": "Item do orçamento: Fundação R$ 45.000,00",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+        "category": "Fundação",
+        "plannedAmount": 45000
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 31,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "7f7fa67c-b907-4e63-9415-f541ad1fa01f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+          "costCenterId": null,
+          "category": "Fundação",
+          "description": null,
+          "plannedAmount": "45000.00",
+          "actualAmount": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:01.877Z",
+          "created_at": "2026-11-11T00:12:01.877Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:01.884Z"
+    },
+    {
+      "id": "H015",
+      "requisitos": [
+        "M6-05",
+        "M6-46"
+      ],
+      "cenario": "Item do orçamento: Alvenaria R$ 35.000,00",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budget-lines",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+        "category": "Alvenaria",
+        "plannedAmount": 35000
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 286,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "e662137e-13ac-439b-a530-51d0835bce2f",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "budgetId": "b7894679-6a90-481b-a529-b239ae8647f3",
+          "costCenterId": null,
+          "category": "Alvenaria",
+          "description": null,
+          "plannedAmount": "35000.00",
+          "actualAmount": null,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:02.147Z",
+          "created_at": "2026-11-11T00:12:02.147Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:02.170Z"
+    },
+    {
+      "id": "H018",
+      "requisitos": [
+        "M6-32",
+        "M6-17",
+        "M6-70",
+        "M6-46",
+        "M6-61",
+        "M6-98"
+      ],
+      "cenario": "Aprovar orçamento: baseline congelada (R$ 80.000,00), regra de margem gravada, obra vai para BUDGETED",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/budgets/b7894679-6a90-481b-a529-b239ae8647f3/approve",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 549,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "b7894679-6a90-481b-a529-b239ae8647f3",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "status": "APPROVED",
+          "totalAmount": 80000,
+          "baselineAmount": 80000,
+          "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+          "approvedAt": "2026-11-11T00:12:03.407Z",
+          "approvedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:01.803Z",
+          "updated_at": "2026-11-11T00:12:03.407Z",
+          "deleted_at": null,
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "rule_version_id": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:03.599Z"
+    },
+    {
+      "id": "H034",
+      "requisitos": [
+        "M6-04",
+        "M6-17",
+        "M6-46",
+        "M6-103"
+      ],
+      "cenario": "Consultar orçamentos da obra (baseline após aditivo)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/budgets",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 147,
+      "corpoResposta": {
+        "success": true,
+        "data": [
+          {
+            "id": "b7894679-6a90-481b-a529-b239ae8647f3",
+            "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+            "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+            "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "status": "APPROVED",
+            "totalAmount": "86000.00",
+            "baselineAmount": "86000.00",
+            "ruleVersionId": "207a5205-6fd0-40c3-a2a5-59df350f9100",
+            "approvedAt": "2026-11-11T00:12:03.407Z",
+            "approvedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "lockVersion": 2,
+            "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+            "deletedBy": null,
+            "created_at": "2026-11-11T00:12:01.803Z",
+            "updated_at": "2026-11-11T00:12:08.691Z",
+            "deleted_at": null,
+            "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+            "rule_version_id": "207a5205-6fd0-40c3-a2a5-59df350f9100"
+          }
+        ]
+      },
+      "dataHora": "2026-11-11T00:12:09.292Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.407Z"
+}

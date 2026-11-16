@@ -1,0 +1,91 @@
+{
+ "id": "M4-§17.6",
+ "secao": "§17 Antifraude",
+ "requisito": "Risco \"Fornecedor novo de alto valor\" → controle \"Due diligence/aprovação\".",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-21 primeiro pagamento alto para conta sem histórico é flagado; revisão manual libera e audita quem revisou",
+   "status": "passou",
+   "duracaoMs": 80,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-005 flagAnomalousPayment continua detectando desvio histórico e primeiro-pagamento-alto com os limiares resolvidos pelo Motor de Regras",
+   "status": "passou",
+   "duracaoMs": 33,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.antifraudeValorForaDoPadrao.test.js",
+   "nome": "M4-§17.5 (§17.6 fornecedor novo de alto valor): primeiro pagamento de 15.000 para conta sem histórico fica retido; conta definida depois (PATCH) também é avaliada",
+   "status": "passou",
+   "duracaoMs": 334,
+   "commitDoArquivo": "f00ed9f7"
+  },
+  {
+   "arquivo": "test/m4.antifraudeValorForaDoPadrao.test.js",
+   "nome": "M4-§17.5 lançamento que nasceu sem avaliação (legado/outro módulo) é avaliado ao preparar a intenção, sem duplicar caso no pedido de aprovação, e o envio ao banco do pagamento retido é recusado",
+   "status": "passou",
+   "duracaoMs": 390,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "P75",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.6"
+   ],
+   "titulo": "Valor alto exige aprovação por risco: solicitação HIGH pede mais aprovadores",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "relatedEntityType": "FinancialEntry",
+    "relatedEntityId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+    "riskLevel": "HIGH"
+   },
+   "esperado": {
+    "status": 201
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 201,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 56,
+   "quando": "2026-11-11T01:35:10.544Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "id": "b4be03f0-3eee-4076-865e-88ca3e839d65",
+     "groupId": "aa232fa5-4c1e-4c22-a695-12c15e6ab529",
+     "companyId": "9b9ad651-b7a3-4a08-9401-d8b4cf7f51a3",
+     "relatedEntityType": "FinancialEntry",
+     "relatedEntityId": "6bccd3ba-1ec4-4d01-9b5b-5d066c471bfc",
+     "requestedByUserId": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "status": "PENDING",
+     "riskLevel": "HIGH",
+     "lockVersionAtRequest": 1,
+     "createdBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updatedBy": "b7f856e2-ee1a-4d8a-a14f-030981cdaf37",
+     "updated_at": "2026-11-11T01:35:10.514Z",
+     "created_at": "2026-11-11T01:35:10.514Z"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

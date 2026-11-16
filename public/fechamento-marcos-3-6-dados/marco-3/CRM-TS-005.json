@@ -1,0 +1,169 @@
+{
+  "id": "CRM-TS-005",
+  "secao": "Livro §19 Adversariais",
+  "requisito": "Publish no video: regra exige vídeo → bloqueado.",
+  "meta": {
+    "geradoEm": "2026-11-11T00:16:28.061Z",
+    "inicioCaptura": "2026-11-11T00:16:12.980Z",
+    "ambiente": "API local (porta da faixa 5511-5519) ligada a um PostgreSQL descartável criado do zero pelas migrations, com RLS FORCE e papel de runtime sem BYPASSRLS; antivírus ClamAV real e leitura de PDF por pdftotext. Nada foi gravado na homologação.",
+    "commitApi": "d6bc89b7",
+    "node": "v24.18.0",
+    "perfis": {
+      "A": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "B": "Empresa B — mesmo perfil, outra empresa e outro grupo",
+      "corretor": "Empresa A — corretor (só a própria carteira)",
+      "exportador": "Empresa A — permissão de exportar oportunidades, sem MFA recente",
+      "leitura": "Empresa A — perfil sem permissão de Pessoas/Imóveis/CRM",
+      "mascarado": "Empresa A — leitura sem campo restrito",
+      "claro": "Empresa A — leitura com campo restrito em claro"
+    }
+  },
+  "respostasHttp": [
+    {
+      "seq": 73,
+      "casos": [
+        "publicar_sem_video"
+      ],
+      "descricao": "Cria imóvel físico (endereço estruturado, matrícula, características)",
+      "metodo": "POST",
+      "rota": "/api/v1/properties",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "title": "Casa Fictícia mwbdccmim8e1",
+        "internalCode": "M3-mwbdccmim8e1",
+        "propertyType": "RESIDENTIAL",
+        "registryNumber": "MAT-mwbdccmim8e1",
+        "registryOffice": "1º Cartório Fictício",
+        "city": "Campinas",
+        "state": "SP",
+        "areaTotalM2": 180,
+        "bedrooms": 3,
+        "parkingSpots": 2,
+        "latitude": -22.9056,
+        "longitude": -47.0608,
+        "address": {
+          "zipCode": "13010-000",
+          "street": "Rua Sigilosa mwbdccmim8e1",
+          "number": "100",
+          "neighborhood": "Cambuí",
+          "city": "Campinas",
+          "state": "SP"
+        }
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+          "publicAddressPolicy": "SO_BAIRRO",
+          "addressVisibility": "RESTRICTED",
+          "publicId": "ee099b49-fbc1-41b7-ad33-80e2d8f0de67",
+          "lockVersion": 0,
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "title": "Casa Fictícia mwbdccmim8e1",
+          "internalCode": "M3-mwbdccmim8e1",
+          "propertyType": "RESIDENTIAL",
+          "addressId": "116ddaba-2b71-4fa8-818f-7bc51b6d0c83",
+          "registryNumber": "MAT-mwbdccmim8e1",
+          "registryOffice": "1º Cartório Fictício",
+          "latitude": "-22.9056000",
+          "longitude": "-47.0608000",
+          "addressLine": null,
+          "city": "Campinas",
+          "state": "SP",
+          "zipCode": null,
+          "areaTotalM2": "180.000000",
+          "description": null,
+          "bedrooms": 3,
+          "parkingSpots": 2,
+          "attributesJson": null,
+          "publicationStatus": "DRAFT",
+          "availabilityStatus": "AVAILABLE",
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updated_at": "2026-11-11T00:16:24.055Z",
+          "created_at": "2026-11-11T00:16:24.055Z",
+          "descriptionPublic": null,
+          "mergedIntoId": null,
+          "publishedAt": null,
+          "deletedBy": null,
+          "deleted_at": null
+        },
+        "meta": {
+          "similarPropertyWarnings": []
+        }
+      },
+      "dataHora": "2026-11-11T00:16:24.042Z"
+    },
+    {
+      "seq": 74,
+      "casos": [
+        "publicar_sem_video"
+      ],
+      "descricao": "Oferta do imóvel a publicar",
+      "metodo": "POST",
+      "rota": "/api/v1/properties/1e329720-60b9-4576-a658-f97b3aaaaf2b/offers",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {
+        "offerType": "RENT",
+        "askingPrice": 3900
+      },
+      "status": 201,
+      "codigoErro": "não se aplica (sem erro)",
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "504e941b-1f51-4a40-b834-ddc9f8f36d5c",
+          "lockVersion": 0,
+          "groupId": "9b820ac4-092f-4b1c-8643-03720fce6c59",
+          "companyId": "adfbb683-5716-4cf9-b95b-11a53b91ff13",
+          "propertyId": "1e329720-60b9-4576-a658-f97b3aaaaf2b",
+          "offerType": "RENT",
+          "askingPrice": "3900.00",
+          "confidentialMinPrice": null,
+          "acceptsFinancing": null,
+          "acceptsTrade": null,
+          "status": "ACTIVE",
+          "startsAt": null,
+          "endsAt": null,
+          "createdBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updatedBy": "50440c45-76e5-4fa5-bad5-fabbab6eb717",
+          "updated_at": "2026-11-11T00:16:24.113Z",
+          "created_at": "2026-11-11T00:16:24.113Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:16:24.105Z"
+    },
+    {
+      "seq": 75,
+      "casos": [
+        "publicar_sem_video"
+      ],
+      "descricao": "Publicar sem vídeo: bloqueado pela regra REG-IMO-001",
+      "metodo": "POST",
+      "rota": "/api/v1/offers/504e941b-1f51-4a40-b834-ddc9f8f36d5c/publish",
+      "perfil": "Empresa A — perfil de captura (Pessoas, Imóveis, CRM, Radar)",
+      "corpoEnviado": {},
+      "status": 422,
+      "codigoErro": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_001",
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "PROPERTY_PUBLISH_BLOCKED_REG_IMO_001",
+          "message": "Publicação bloqueada: vídeo obrigatório ausente.",
+          "details": {
+            "ruleDecision": "DENY",
+            "reason": "RULE_CONDITION_NOT_MET"
+          },
+          "traceId": "88d385a8-e1d6-4fc0-afae-c8e2e2019429"
+        }
+      },
+      "dataHora": "2026-11-11T00:16:24.203Z"
+    }
+  ],
+  "consultasBanco": []
+}

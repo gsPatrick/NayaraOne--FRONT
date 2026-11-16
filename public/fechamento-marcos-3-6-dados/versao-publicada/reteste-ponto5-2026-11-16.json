@@ -1,0 +1,705 @@
+{
+ "roteiro": "retestePonto5Marco9",
+ "base": "https://homologacao-nayaraone--api.hpztyd.easypanel.host/api/v1",
+ "inicio": "2026-11-16T20:32:56.821Z",
+ "fim": "2026-11-16T20:35:00.751Z",
+ "perfis": {
+  "admin": {
+   "email": "[e-mail omitido]",
+   "userId": "33477648-c752-4bed-83cb-a04114224f4d",
+   "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+   "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+  },
+  "leitura": {
+   "email": "[e-mail omitido]",
+   "userId": "3c09969d-1831-4b81-90d0-2e99db273583",
+   "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+   "companyId": "110723f9-4ad2-45fb-b6ec-1f2631821f32"
+  },
+  "outra": {
+   "email": "[e-mail omitido]",
+   "userId": "e6c2f4d6-152c-44eb-b5c8-8e2a65f37f93",
+   "groupId": "51cca01b-6a2e-4815-9aa1-70d40e3aba24",
+   "companyId": "b6c27725-5fa3-4451-b775-16118b4b16f5"
+  }
+ },
+ "contatos": {
+  "optIn": {
+   "id": "9aa72c51-7366-4080-8927-7ab2a94522e9",
+   "nome": "ACEITE-M9 P5 Contato Com Opt-in",
+   "email": "[e-mail omitido]",
+   "consentimento": "OPT_IN"
+  },
+  "optOut": {
+   "id": "c56a3734-858a-4257-a573-187e07ac0d74",
+   "nome": "ACEITE-M9 P5 Contato Com Opt-out",
+   "email": "[e-mail omitido]",
+   "consentimento": "OPT_OUT"
+  },
+  "semConsentimento": {
+   "id": "db88b600-027f-493b-9774-0b816e73b432",
+   "nome": "ACEITE-M9 P5 Contato Sem Consentimento",
+   "email": "[e-mail omitido]",
+   "consentimento": null
+  }
+ },
+ "ids": {
+  "fluxoId": "bacc88ee-ab63-4a8d-afaa-3f16b715f688",
+  "pessoaGatilho": "f600e1dd-d4df-40e7-b0fd-711572227721",
+  "tarefaId": "6c2bfd8c-c1b9-426e-b664-3c5fb2ca5acf",
+  "pessoaOk": "9aa72c51-7366-4080-8927-7ab2a94522e9",
+  "pessoaOptOut": "c56a3734-858a-4257-a573-187e07ac0d74",
+  "pessoaSemConsentimento": "db88b600-027f-493b-9774-0b816e73b432",
+  "modeloId": "6ab1a45f-61c2-4495-bf34-84fff0179956",
+  "campanhaId": "78003e6f-01df-4d2d-988c-b2035a37f870",
+  "pessoaDocumento": "b960223f-a7de-47cc-9601-dc040a954f21",
+  "documentoId": "5ba86667-efc1-4d5b-bf9d-62964324285b",
+  "arquivoId": "cae6b584-12d6-4583-9ed8-3a695f1c86d6",
+  "pessoaOutraEmpresa": "4edb98f5-e2b9-41dd-aee2-43a4b17a172c",
+  "execucaoAutomacao": "43a52c0d-792a-42e0-b148-a51e344defba"
+ },
+ "resumo": {
+  "ok": 78,
+  "falharam": 0,
+  "naoVerificadas": 0
+ },
+ "conferencias": [
+  {
+   "quando": "2026-11-16T20:33:17.137Z",
+   "cenario": "(3) automações",
+   "descricao": "a execução ocorreu: o contato gatilho gerou a tarefa da automação",
+   "ok": true,
+   "evidencia": "tarefa 6c2bfd8c-c1b9-426e-b664-3c5fb2ca5acf \"ACEITE-M9 P5 Acompanhar contato novo\" em 2026-11-13T12:56:39.701Z"
+  },
+  {
+   "quando": "2026-11-16T20:33:17.781Z",
+   "cenario": "(3) automações",
+   "descricao": "NOTIFY_USER sem \"title\": CRIAR é recusado com 422 MKT_AUTOMATION_INCOMPLETE",
+   "ok": true,
+   "evidencia": "POST /marketing/automations (ACEITE-M9-P5-INCOMPLETA-NOTIFY_USER) -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].title.\""
+  },
+  {
+   "quando": "2026-11-16T20:33:18.117Z",
+   "cenario": "(3) automações",
+   "descricao": "NOTIFY_USER sem \"title\": PUBLICAR é recusado (a versão nova é recusada com 422 e a publicação não acha versão)",
+   "ok": true,
+   "evidencia": "POST /marketing/automations {flowId} -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].title.\"; POST /marketing/automations/:id/publish {versionNo: 2} -> HTTP 404 MKT_AUTOMATION_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:33:18.280Z",
+   "cenario": "(3) automações",
+   "descricao": "CREATE_TASK sem \"title\": CRIAR é recusado com 422 MKT_AUTOMATION_INCOMPLETE",
+   "ok": true,
+   "evidencia": "POST /marketing/automations (ACEITE-M9-P5-INCOMPLETA-CREATE_TASK) -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].title.\""
+  },
+  {
+   "quando": "2026-11-16T20:33:18.555Z",
+   "cenario": "(3) automações",
+   "descricao": "CREATE_TASK sem \"title\": PUBLICAR é recusado (a versão nova é recusada com 422 e a publicação não acha versão)",
+   "ok": true,
+   "evidencia": "POST /marketing/automations {flowId} -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].title.\"; POST /marketing/automations/:id/publish {versionNo: 2} -> HTTP 404 MKT_AUTOMATION_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:33:18.706Z",
+   "cenario": "(3) automações",
+   "descricao": "CREATE_CONTENT_DRAFT sem \"type\": CRIAR é recusado com 422 MKT_AUTOMATION_INCOMPLETE",
+   "ok": true,
+   "evidencia": "POST /marketing/automations (ACEITE-M9-P5-INCOMPLETA-CREATE_CONTENT_DRAFT) -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].type.\""
+  },
+  {
+   "quando": "2026-11-16T20:33:19.012Z",
+   "cenario": "(3) automações",
+   "descricao": "CREATE_CONTENT_DRAFT sem \"type\": PUBLICAR é recusado (a versão nova é recusada com 422 e a publicação não acha versão)",
+   "ok": true,
+   "evidencia": "POST /marketing/automations {flowId} -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].type.\"; POST /marketing/automations/:id/publish {versionNo: 2} -> HTTP 404 MKT_AUTOMATION_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:33:19.185Z",
+   "cenario": "(3) automações",
+   "descricao": "OPEN_CASE sem \"description\": CRIAR é recusado com 422 MKT_AUTOMATION_INCOMPLETE",
+   "ok": true,
+   "evidencia": "POST /marketing/automations (ACEITE-M9-P5-INCOMPLETA-OPEN_CASE) -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].description.\""
+  },
+  {
+   "quando": "2026-11-16T20:33:19.518Z",
+   "cenario": "(3) automações",
+   "descricao": "OPEN_CASE sem \"description\": PUBLICAR é recusado (a versão nova é recusada com 422 e a publicação não acha versão)",
+   "ok": true,
+   "evidencia": "POST /marketing/automations {flowId} -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].description.\"; POST /marketing/automations/:id/publish {versionNo: 2} -> HTTP 404 MKT_AUTOMATION_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:33:19.696Z",
+   "cenario": "(3) automações",
+   "descricao": "UPDATE_CRM_STAGE_TAG sem \"stage\": CRIAR é recusado com 422 MKT_AUTOMATION_INCOMPLETE",
+   "ok": true,
+   "evidencia": "POST /marketing/automations (ACEITE-M9-P5-INCOMPLETA-UPDATE_CRM_STAGE_TAG) -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].stage.\""
+  },
+  {
+   "quando": "2026-11-16T20:33:20.022Z",
+   "cenario": "(3) automações",
+   "descricao": "UPDATE_CRM_STAGE_TAG sem \"stage\": PUBLICAR é recusado (a versão nova é recusada com 422 e a publicação não acha versão)",
+   "ok": true,
+   "evidencia": "POST /marketing/automations {flowId} -> HTTP 422 MKT_AUTOMATION_INCOMPLETE \"Faltam itens obrigatórios da automação: actions[0].stage.\"; POST /marketing/automations/:id/publish {versionNo: 2} -> HTTP 404 MKT_AUTOMATION_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:33:20.202Z",
+   "cenario": "(3) automações",
+   "descricao": "nenhuma versão incompleta foi criada (trilha de versões da automação igual antes e depois)",
+   "ok": true,
+   "evidencia": "versões antes [1], depois [1]"
+  },
+  {
+   "quando": "2026-11-16T20:34:08.287Z",
+   "cenario": "(1) opt-out na ficha",
+   "descricao": "ficha de \"ACEITE-M9 P5 Contato Com Opt-in\": e-mail com a etiqueta \"Consentido\"",
+   "ok": true,
+   "evidencia": "GET /people/:id 200; e-mail presente; GET /people/:id/consents 200: 1 registro(s), vigente EMAIL = OPT_IN -> a ficha mostra \"Consentido\""
+  },
+  {
+   "quando": "2026-11-16T20:34:09.715Z",
+   "cenario": "(1) opt-out na ficha",
+   "descricao": "ficha de \"ACEITE-M9 P5 Contato Com Opt-out\": e-mail com a etiqueta \"Optou por não receber\"",
+   "ok": true,
+   "evidencia": "GET /people/:id 200; e-mail presente; GET /people/:id/consents 200: 2 registro(s), vigente EMAIL = OPT_OUT -> a ficha mostra \"Optou por não receber\""
+  },
+  {
+   "quando": "2026-11-16T20:34:09.715Z",
+   "cenario": "(1) opt-out na ficha",
+   "descricao": "o opt-out guarda o histórico: primeiro aceitou (OPT_IN), depois saiu (OPT_OUT), sem apagar nada",
+   "ok": true,
+   "evidencia": "histórico EMAIL/MARKETING do mais novo para o mais antigo: OPT_OUT <- OPT_IN"
+  },
+  {
+   "quando": "2026-11-16T20:34:12.975Z",
+   "cenario": "(1) opt-out na ficha",
+   "descricao": "ficha de \"ACEITE-M9 P5 Contato Sem Consentimento\": e-mail com a etiqueta \"Pendente\"",
+   "ok": true,
+   "evidencia": "GET /people/:id 200; e-mail presente; GET /people/:id/consents 200: 0 registro(s), vigente EMAIL = nenhum -> a ficha mostra \"Pendente\""
+  },
+  {
+   "quando": "2026-11-16T20:34:14.333Z",
+   "cenario": "(2) bloqueio do envio",
+   "descricao": "a rotina de campanhas processou a etapa (SENT)",
+   "ok": true,
+   "evidencia": "etapa SENT; público 3"
+  },
+  {
+   "quando": "2026-11-16T20:34:14.333Z",
+   "cenario": "(2) bloqueio do envio",
+   "descricao": "alcance: 3 no público, o opt-out fora do alcance e só 1 entregue",
+   "ok": true,
+   "evidencia": "audienceSize=3; reach={\"reachable\":2,\"excludedSuppressed\":1,\"excludedOptOut\":0,\"excludedNoAddress\":0,\"delivered\":1}"
+  },
+  {
+   "quando": "2026-11-16T20:34:14.508Z",
+   "cenario": "(2) bloqueio do envio",
+   "descricao": "contato opt-out: a mensagem gerada pela campanha ficou BLOCKED (SUPPRESSED ou OPT_OUT), não enviada",
+   "ok": true,
+   "evidencia": "GET /audit-log?entityId=:pessoa&action=marketing.message.blocked -> 1 linha(s) desta campanha: status BLOCKED, motivo SUPPRESSED (MKT_SUPPRESSED), enviada=false, em 2026-11-13T12:58:10.453Z; \"Mensagem de EMAIL da campanha ACEITE-M9-P5-CAMPANHA (etapa 1) não enviada: Esta pessoa pediu para não receber mensagens.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:14.720Z",
+   "cenario": "(2) bloqueio do envio",
+   "descricao": "contato opt-out: nenhuma mensagem saiu para ele",
+   "ok": true,
+   "evidencia": "GET /messages?personId=:pessoa -> 0 mensagem(ns) de saída"
+  },
+  {
+   "quando": "2026-11-16T20:34:14.991Z",
+   "cenario": "(2) bloqueio do envio",
+   "descricao": "contato sem consentimento: a mensagem gerada pela campanha ficou BLOCKED (NO_CONSENT), não enviada",
+   "ok": true,
+   "evidencia": "GET /audit-log?entityId=:pessoa&action=marketing.message.blocked -> 1 linha(s) desta campanha: status BLOCKED, motivo NO_CONSENT (MKT_NO_CONSENT), enviada=false, em 2026-11-13T12:58:10.517Z; \"Mensagem de EMAIL da campanha ACEITE-M9-P5-CAMPANHA (etapa 1) não enviada: Não há consentimento para esta finalidade.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:15.189Z",
+   "cenario": "(2) bloqueio do envio",
+   "descricao": "contato sem consentimento: nenhuma mensagem saiu para ele",
+   "ok": true,
+   "evidencia": "GET /messages?personId=:pessoa -> 0 mensagem(ns) de saída"
+  },
+  {
+   "quando": "2026-11-16T20:34:15.547Z",
+   "cenario": "(2) bloqueio do envio",
+   "descricao": "controle: o contato com opt-in recebeu o e-mail da campanha e não tem linha de bloqueio",
+   "ok": true,
+   "evidencia": "mensagens de e-mail de saída: SENT; linhas de bloqueio desta campanha: 0"
+  },
+  {
+   "quando": "2026-11-16T20:34:15.856Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "perfil somente leitura NÃO consegue registrar consentimento",
+   "ok": true,
+   "evidencia": "POST /people/:id/consents -> HTTP 403 PERMISSION_DENIED \"Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:16.005Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "perfil somente leitura NÃO consegue criar pessoa",
+   "ok": true,
+   "evidencia": "POST /people -> HTTP 403 PERMISSION_DENIED \"Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:16.152Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "perfil somente leitura NÃO consegue criar campanha",
+   "ok": true,
+   "evidencia": "POST /marketing/campaigns -> HTTP 403 MKT_FORBIDDEN \"Você não tem permissão para esta ação de Marketing.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:16.292Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "perfil somente leitura NÃO consegue criar modelo de mensagem",
+   "ok": true,
+   "evidencia": "POST /marketing/templates -> HTTP 403 MKT_FORBIDDEN \"Você não tem permissão para esta ação de Marketing.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:16.478Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "perfil somente leitura NÃO consegue alterar parâmetro de marketing",
+   "ok": true,
+   "evidencia": "PUT /settings/marketing.email.url_descadastro -> HTTP 403 PERMISSION_DENIED \"Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:16.799Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "perfil somente leitura NÃO consegue pausar automação",
+   "ok": true,
+   "evidencia": "POST /marketing/automations/:id/pause -> HTTP 403 MKT_FORBIDDEN \"Você não tem permissão para esta ação de Marketing.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:17.348Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "nada foi gravado pelas tentativas do perfil de leitura",
+   "ok": true,
+   "evidencia": "consentimentos antes=1, depois=1"
+  },
+  {
+   "quando": "2026-11-16T20:34:18.062Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "perfil somente leitura não gerencia campanhas (consultar a campanha também é recusado)",
+   "ok": true,
+   "evidencia": "GET /marketing/campaigns/:id -> HTTP 403 MKT_FORBIDDEN"
+  },
+  {
+   "quando": "2026-11-16T20:34:18.790Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler a pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id -> HTTP 404 PERSON_NOT_FOUND \"Pessoa não encontrada.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:19.031Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler os consentimentos da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/consents -> HTTP 404 PERSON_NOT_FOUND \"Pessoa não encontrada.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:19.198Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler os contatos da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/contacts -> HTTP 404 PERSON_NOT_FOUND \"Pessoa não encontrada.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:19.441Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue editar a pessoa da empresa A",
+   "ok": true,
+   "evidencia": "PATCH /people/:id -> HTTP 404 PERSON_NOT_FOUND \"Pessoa não encontrada.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:19.672Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler a campanha da empresa A",
+   "ok": true,
+   "evidencia": "GET /marketing/campaigns/:id -> HTTP 404 MKT_NOT_FOUND \"Campanha não encontrada.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:19.864Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue registrar consentimento para pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/consents -> HTTP 404 PERSON_NOT_FOUND \"Pessoa não encontrada.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:20.246Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue pausar a automação da empresa A",
+   "ok": true,
+   "evidencia": "POST /marketing/automations/:id/pause -> HTTP 404 MKT_AUTOMATION_NOT_FOUND \"Automação não encontrada.\""
+  },
+  {
+   "quando": "2026-11-16T20:34:20.381Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler mensagens da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /messages?personId=:id -> HTTP 200 (0 itens)"
+  },
+  {
+   "quando": "2026-11-16T20:34:20.609Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler a auditoria dos registros da empresa A",
+   "ok": true,
+   "evidencia": "GET /audit-log?entityId=:id -> HTTP 200 (0 itens)"
+  },
+  {
+   "quando": "2026-11-16T20:34:20.853Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "a lista de contatos da outra empresa não traz nada da empresa A (conferido por id, por empresa e por nome)",
+   "ok": true,
+   "evidencia": "GET /people -> HTTP 200, 1 contatos, 0 da empresa A ou de outra empresa, 0 sem empresa informada"
+  },
+  {
+   "quando": "2026-11-16T20:34:21.104Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "a lista de modelos da outra empresa não traz o modelo da empresa A (por id, por empresa e por código)",
+   "ok": true,
+   "evidencia": "GET /marketing/templates -> HTTP 200, 0 modelos, 0 da empresa A"
+  },
+  {
+   "quando": "2026-11-16T20:34:21.330Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "nada foi gravado na empresa A pelas tentativas da outra empresa e do perfil de leitura",
+   "ok": true,
+   "evidencia": "consentimentos de isolamento encontrados na empresa A: 0"
+  },
+  {
+   "quando": "2026-11-16T20:34:34.331Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler os endereços da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/addresses -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:34.550Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler os documentos da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/documents -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:34.744Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler os papéis da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/roles -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:34.922Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue cadastrar endereço para a pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/addresses -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:35.256Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue cadastrar papel para a pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/roles -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:35.543Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue cadastrar documento para a pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/documents -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:35.854Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler o arquivo do documento da empresa A (ficha)",
+   "ok": true,
+   "evidencia": "GET /files/:id -> HTTP 404 FILE_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:36.041Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler o arquivo do documento da empresa A (/content)",
+   "ok": true,
+   "evidencia": "GET /files/:id/content -> HTTP 404 FILE_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:36.247Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler o arquivo do documento da empresa A (/download)",
+   "ok": true,
+   "evidencia": "GET /files/:id/download -> HTTP 404 FILE_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:36.516Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "a lista de contatos da outra empresa não traz pessoa da empresa A (conferido por id e por empresa, não pelo nome)",
+   "ok": true,
+   "evidencia": "GET /people -> HTTP 200, 1 contatos, 0 da empresa A, 0 de outra empresa sem vínculo"
+  },
+  {
+   "quando": "2026-11-16T20:34:36.699Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "o mesmo CPF na outra empresa do grupo é recusado como convite ao vínculo (409 PERSON_TAX_ID_IN_GROUP), sem id nem nome",
+   "ok": true,
+   "evidencia": "POST /people com o CPF da pessoa de A -> HTTP 409 PERSON_TAX_ID_IN_GROUP"
+  },
+  {
+   "quando": "2026-11-16T20:34:37.461Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "nada foi gravado nos endereços, documentos e papéis da pessoa da empresa A pela outra empresa",
+   "ok": true,
+   "evidencia": "antes {\"addresses\":1,\"documents\":1,\"roles\":1}, depois {\"addresses\":1,\"documents\":1,\"roles\":1}"
+  },
+  {
+   "quando": "2026-11-16T20:34:52.060Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler addresses da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/addresses -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:52.207Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler documents da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/documents -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:53.328Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler roles da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/roles -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:53.469Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler contacts da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/contacts -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:54.016Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler consents da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "GET /people/:id/consents -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:54.403Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue cadastrar endereço na pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/addresses -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:54.741Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue cadastrar papel na pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/roles -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:54.899Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue cadastrar documento na pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/documents -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:55.106Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue cadastrar contato na pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people/:id/contacts -> HTTP 404 PERSON_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:55.256Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue ler a ficha do arquivo do documento da empresa A",
+   "ok": true,
+   "evidencia": "GET /files/:id -> HTTP 404 FILE_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:55.396Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue baixar o conteúdo do arquivo da empresa A",
+   "ok": true,
+   "evidencia": "GET /files/:id/content -> HTTP 404 FILE_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:55.557Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "outra empresa NÃO consegue pedir o download do arquivo da empresa A",
+   "ok": true,
+   "evidencia": "GET /files/:id/download -> HTTP 404 FILE_NOT_FOUND"
+  },
+  {
+   "quando": "2026-11-16T20:34:55.731Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "o mesmo CPF na outra empresa do grupo é recusado (409 PERSON_TAX_ID_IN_GROUP, convite ao vínculo) sem devolver nada da pessoa da empresa A",
+   "ok": true,
+   "evidencia": "POST /people com o CPF da pessoa de A -> HTTP 409 PERSON_TAX_ID_IN_GROUP"
+  },
+  {
+   "quando": "2026-11-16T20:34:55.982Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "controle: a outra empresa lê a própria lista (200), vê o próprio contato fictício e todos os itens são dela",
+   "ok": true,
+   "evidencia": "GET /people -> HTTP 200, 1 contatos, empresas distintas: b6c27725-5fa3-4451-b775-16118b4b16f5"
+  },
+  {
+   "quando": "2026-11-16T20:34:58.051Z",
+   "cenario": "(4) isolamento entre empresas",
+   "descricao": "nada mudou na empresa A: mesmos endereços, documentos, papéis, contatos e consentimentos; pessoa e arquivo intactos",
+   "ok": true,
+   "evidencia": "antes {\"addresses\":1,\"documents\":1,\"roles\":1,\"contacts\":1,\"consents\":1}, depois {\"addresses\":1,\"documents\":1,\"roles\":1,\"contacts\":1,\"consents\":1}; pessoa 200; arquivo 200"
+  },
+  {
+   "quando": "2026-11-16T20:34:58.293Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "people.person.create: cadastro de \"ACEITE-M9 P5 Contato Com Opt-in\" com autor e data",
+   "ok": true,
+   "evidencia": "people.person.create | por [e-mail omitido] (administrador) | em 2026-11-13T12:56:50.720Z | id 9aa72c51-7366-4080-8927-7ab2a94522e9"
+  },
+  {
+   "quando": "2026-11-16T20:34:58.470Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "people.person.create: cadastro de \"ACEITE-M9 P5 Contato Com Opt-out\" com autor e data",
+   "ok": true,
+   "evidencia": "people.person.create | por [e-mail omitido] (administrador) | em 2026-11-13T12:56:59.202Z | id c56a3734-858a-4257-a573-187e07ac0d74"
+  },
+  {
+   "quando": "2026-11-16T20:34:58.672Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "people.person.create: cadastro de \"ACEITE-M9 P5 Contato Sem Consentimento\" com autor e data",
+   "ok": true,
+   "evidencia": "people.person.create | por [e-mail omitido] (administrador) | em 2026-11-13T12:57:11.614Z | id db88b600-027f-493b-9774-0b816e73b432"
+  },
+  {
+   "quando": "2026-11-16T20:34:58.863Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "people.person.create: cadastro de \"contato gatilho da automação\" com autor e data",
+   "ok": true,
+   "evidencia": "people.person.create | por [e-mail omitido] (administrador) | em 2026-11-13T12:56:13.122Z | id f600e1dd-d4df-40e7-b0fd-711572227721"
+  },
+  {
+   "quando": "2026-11-16T20:34:59.054Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "people.consent.record: OPT_IN do contato com opt-out, com autor, data e motivo",
+   "ok": true,
+   "evidencia": "people.consent.record | por [e-mail omitido] (administrador) | em 2026-11-13T12:57:00.272Z | id 0d1c705a-cbe3-46df-a0a8-6c1a78b76197 | \"Pessoa aceitou comunicação neste canal e finalidade (opt-in).\""
+  },
+  {
+   "quando": "2026-11-16T20:34:59.054Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "people.consent.record: OPT_OUT do contato com opt-out, com autor, data e motivo",
+   "ok": true,
+   "evidencia": "people.consent.record | por [e-mail omitido] (administrador) | em 2026-11-13T12:57:00.513Z | id f070b0ab-84dc-4534-ad84-6f767e95bf0f | \"Pessoa deixou de aceitar comunicação neste canal e finalidade (opt-out).\""
+  },
+  {
+   "quando": "2026-11-16T20:34:59.244Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "marketing.automation_run.completed: a execução da automação (contato gatilho) concluída, pela rotina, com CREATE_TASK OK",
+   "ok": true,
+   "evidencia": "marketing.automation_run.completed | por o próprio sistema (rotina automática) | em 2026-11-13T12:56:39.719Z | id 43a52c0d-792a-42e0-b148-a51e344defba | correlação 90b39433-6b30-41e3-bfcc-bb632a97397d = a do cadastro do gatilho | ações [{\"type\":\"CREATE_TASK\",\"status\":\"OK\"}]"
+  },
+  {
+   "quando": "2026-11-16T20:35:00.748Z",
+   "cenario": "(5) trilha de auditoria",
+   "descricao": "a outra empresa não lê nenhuma dessas linhas da trilha (por id)",
+   "ok": true,
+   "evidencia": "7 linhas pedidas por GET /audit-log/:id, 0 devolvidas"
+  }
+ ],
+ "quadro": [
+  {
+   "tipo": "Automação",
+   "nome": "ACEITE-M9-P5-AUTOMACAO",
+   "situacao": "já existia; já pausada (contato novo -> tarefa)",
+   "id": "bacc88ee-ab63-4a8d-afaa-3f16b715f688",
+   "ondeVer": "Atividades (/painel/atividades), filtro \"Automação\""
+  },
+  {
+   "tipo": "Pessoa fictícia",
+   "nome": "ACEITE-M9 P5 Contato Gatilho da Automacao",
+   "situacao": "gatilho da automação",
+   "id": "f600e1dd-d4df-40e7-b0fd-711572227721",
+   "ondeVer": "/painel/pessoas/f600e1dd-d4df-40e7-b0fd-711572227721"
+  },
+  {
+   "tipo": "Tarefa gerada pela automação",
+   "nome": "ACEITE-M9 P5 Acompanhar contato novo",
+   "situacao": "criada pela execução",
+   "id": "6c2bfd8c-c1b9-426e-b664-3c5fb2ca5acf",
+   "ondeVer": "Atividades (/painel/atividades)"
+  },
+  {
+   "tipo": "Pessoa fictícia",
+   "nome": "ACEITE-M9 P5 Contato Com Opt-in ([e-mail omitido])",
+   "situacao": "já existia; e-mail/marketing: OPT_IN",
+   "id": "9aa72c51-7366-4080-8927-7ab2a94522e9",
+   "ondeVer": "Contatos > ficha: /painel/pessoas/9aa72c51-7366-4080-8927-7ab2a94522e9"
+  },
+  {
+   "tipo": "Pessoa fictícia",
+   "nome": "ACEITE-M9 P5 Contato Com Opt-out ([e-mail omitido])",
+   "situacao": "já existia; e-mail/marketing: OPT_OUT",
+   "id": "c56a3734-858a-4257-a573-187e07ac0d74",
+   "ondeVer": "Contatos > ficha: /painel/pessoas/c56a3734-858a-4257-a573-187e07ac0d74"
+  },
+  {
+   "tipo": "Pessoa fictícia",
+   "nome": "ACEITE-M9 P5 Contato Sem Consentimento ([e-mail omitido])",
+   "situacao": "já existia; e-mail/marketing: sem registro de consentimento",
+   "id": "db88b600-027f-493b-9774-0b816e73b432",
+   "ondeVer": "Contatos > ficha: /painel/pessoas/db88b600-027f-493b-9774-0b816e73b432"
+  },
+  {
+   "tipo": "Modelo de e-mail",
+   "nome": "aceite-m9-modelo-email",
+   "situacao": "já existia, publicado",
+   "id": "6ab1a45f-61c2-4495-bf34-84fff0179956",
+   "ondeVer": "pela API: GET /marketing/templates"
+  },
+  {
+   "tipo": "Campanha",
+   "nome": "ACEITE-M9-P5-CAMPANHA",
+   "situacao": "já existia (só conferida de novo)",
+   "id": "78003e6f-01df-4d2d-988c-b2035a37f870",
+   "ondeVer": "pela API: GET /marketing/campaigns/:id; Atividades (/painel/atividades)"
+  },
+  {
+   "tipo": "Pessoa",
+   "nome": "ACEITE-M9 Pessoa com documento (isolamento)",
+   "situacao": "preparada na empresa A (CPF, endereço, papel e documento)",
+   "id": "f3d3131f-2156-470c-a617-f82bde4a1000",
+   "ondeVer": "Pessoas"
+  },
+  {
+   "tipo": "Pessoa fictícia",
+   "nome": "ACEITE-M9 P5 Pessoa com Documento (CPF fictício, contato, endereço, papel e documento)",
+   "situacao": "na empresa A",
+   "id": "b960223f-a7de-47cc-9601-dc040a954f21",
+   "ondeVer": "/painel/pessoas/b960223f-a7de-47cc-9601-dc040a954f21"
+  },
+  {
+   "tipo": "Documento fictício (com arquivo PDF)",
+   "nome": "RG de \"ACEITE-M9 P5 Pessoa com Documento\"",
+   "situacao": "na empresa A",
+   "id": "5ba86667-efc1-4d5b-bf9d-62964324285b",
+   "ondeVer": "arquivo cae6b584-12d6-4583-9ed8-3a695f1c86d6"
+  },
+  {
+   "tipo": "Pessoa fictícia",
+   "nome": "ACEITE-M9 P5 Contato da Outra Empresa",
+   "situacao": "na OUTRA empresa (controle da lista dela)",
+   "id": "4edb98f5-e2b9-41dd-aee2-43a4b17a172c",
+   "ondeVer": "entrando como o usuário da outra empresa"
+  }
+ ],
+ "avisos": [
+  "Outra empresa: b6c27725-5fa3-4451-b775-16118b4b16f5 (MESMO grupo da empresa A).",
+  "Horário de silêncio do Marketing: 21:00 a 08:00 America/Sao_Paulo (padrão do catálogo (sem valor gravado na empresa)); agora está fora dele.",
+  "Perfil de leitura consultando a pessoa fictícia: HTTP 200 (leitura é permitida ou não conforme o papel; só a ESCRITA é exigida como recusada)."
+ ]
+}

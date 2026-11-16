@@ -1,0 +1,545 @@
+{
+  "id": "M6-102",
+  "requisito": "Backup/restore de Obras testado (não só migration existir).",
+  "secaoDoLivro": "Testes/DR TIER 1 (Obras); Caderno Construção + Obras + Pós-obra §13 DoD \"restore verdes\"; §14 \"failure drills\"",
+  "implementacao": "scripts/restoreDrill/constructionFullDrill.js + seedConstructionFixtures.js + verifyConstructionRestore.js (npm run restore-drill:construction-full); scripts/backupDatabase.js/restoreDatabase.js",
+  "telaParaReteste": "Sem tela: drill de restore em dois clusters descartáveis (evidência ao vivo = relatório do drill)",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.failureDrills.test.js",
+      "nome": "DRILL 2 — falha simulada em OutboxEvent.create durante approveBudget: budget e project permanecem como antes (tudo ou nada)",
+      "resultado": "passou",
+      "duracaoMs": 224,
+      "executadoEm": "2026-11-11T00:13:19.611Z"
+    },
+    {
+      "arquivo": "test/construction.failureDrills.test.js",
+      "nome": "DRILL 1 — timeout simulado em financialEntriesService.createFinancialEntry durante decideStageMeasurement: medição permanece REVIEWED, sem payable",
+      "resultado": "passou",
+      "duracaoMs": 440,
+      "executadoEm": "2026-11-11T00:13:19.386Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Drill de restore (dois clusters descartáveis) + respostas HTTP",
+    "comando": "npm run restore-drill:construction-full -- --port 5543 --report-dir <pasta>",
+    "resultado": "APROVADO",
+    "provaNegativaDetectada": true,
+    "dataHora": "2026-11-11T00:05:00.719Z",
+    "respostas": []
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [],
+  "consultasBanco": [],
+  "auditoria": [],
+  "drillRestore": {
+    "commit": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+    "dirty": false,
+    "date": "2026-11-11T00:05:00.719Z",
+    "durationSeconds": 438.964,
+    "exitCode": 0,
+    "provaNegativaDetectada": true,
+    "geradoEm": "2026-11-11T00:12:16.168Z",
+    "aprovado": true,
+    "comparacao": [
+      {
+        "tabela": "construction.approval_thresholds",
+        "origem": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        },
+        "destino": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        }
+      },
+      {
+        "tabela": "construction.budget_lines",
+        "origem": {
+          "linhas": 2,
+          "sha256": "4c96d5dfdce7b22688195d1fd760d23d84519f6176dc24fd240911ae710336ee"
+        },
+        "destino": {
+          "linhas": 2,
+          "sha256": "4c96d5dfdce7b22688195d1fd760d23d84519f6176dc24fd240911ae710336ee"
+        }
+      },
+      {
+        "tabela": "construction.budgets",
+        "origem": {
+          "linhas": 1,
+          "sha256": "43969fb7bda1cd547589af65a27031fba5900724cb5805319e8ffa43c1ca4245"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "43969fb7bda1cd547589af65a27031fba5900724cb5805319e8ffa43c1ca4245"
+        }
+      },
+      {
+        "tabela": "construction.change_orders",
+        "origem": {
+          "linhas": 1,
+          "sha256": "da18f8cfc4dae9035911c6d311c720b2e49133438bde1845ee79ecf7c1a2ee64"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "da18f8cfc4dae9035911c6d311c720b2e49133438bde1845ee79ecf7c1a2ee64"
+        }
+      },
+      {
+        "tabela": "construction.daily_materials",
+        "origem": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        },
+        "destino": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        }
+      },
+      {
+        "tabela": "construction.daily_reports",
+        "origem": {
+          "linhas": 2,
+          "sha256": "0bf250b5810284a0964341a256ff76b47bf62ef83febb42bf5da9abac47ba91d"
+        },
+        "destino": {
+          "linhas": 2,
+          "sha256": "0bf250b5810284a0964341a256ff76b47bf62ef83febb42bf5da9abac47ba91d"
+        }
+      },
+      {
+        "tabela": "construction.daily_workers",
+        "origem": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        },
+        "destino": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        }
+      },
+      {
+        "tabela": "construction.loss_records",
+        "origem": {
+          "linhas": 2,
+          "sha256": "20786a69bee4a054ed5fa9f157e6da9ab5700e79233c34dbfb67202f29121846"
+        },
+        "destino": {
+          "linhas": 2,
+          "sha256": "20786a69bee4a054ed5fa9f157e6da9ab5700e79233c34dbfb67202f29121846"
+        }
+      },
+      {
+        "tabela": "construction.maintenance_cases",
+        "origem": {
+          "linhas": 1,
+          "sha256": "36d086e155ca037d551d613aa0128ba030e0f3093a948b4024f918353cf0b033"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "36d086e155ca037d551d613aa0128ba030e0f3093a948b4024f918353cf0b033"
+        }
+      },
+      {
+        "tabela": "construction.margin_rules",
+        "origem": {
+          "linhas": 1,
+          "sha256": "9e5170cde6edb2ceeba979ceaaaf57376fb199d008a52c5a5154e5d2f635227e"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "9e5170cde6edb2ceeba979ceaaaf57376fb199d008a52c5a5154e5d2f635227e"
+        }
+      },
+      {
+        "tabela": "construction.material_requests",
+        "origem": {
+          "linhas": 1,
+          "sha256": "809360952d48b3b031165cc4806200524a46681900319390c6b299d3c7b28463"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "809360952d48b3b031165cc4806200524a46681900319390c6b299d3c7b28463"
+        }
+      },
+      {
+        "tabela": "construction.measurement_items",
+        "origem": {
+          "linhas": 1,
+          "sha256": "20f8f6fdbd5d789dbac33a45d8e81e51fba79204f98eab0d1ffcecedba6cea09"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "20f8f6fdbd5d789dbac33a45d8e81e51fba79204f98eab0d1ffcecedba6cea09"
+        }
+      },
+      {
+        "tabela": "construction.nonconformities",
+        "origem": {
+          "linhas": 1,
+          "sha256": "c8c204a71180bded000810ad981b8fa642a9a99f4e053c2629d5f547cb76e23e"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "c8c204a71180bded000810ad981b8fa642a9a99f4e053c2629d5f547cb76e23e"
+        }
+      },
+      {
+        "tabela": "construction.project_code_sequences",
+        "origem": {
+          "linhas": 1,
+          "sha256": "17b479c9a5cddc14d163bcc0704304383cc3a02ea32cfa44d937fc5aef503db9"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "17b479c9a5cddc14d163bcc0704304383cc3a02ea32cfa44d937fc5aef503db9"
+        }
+      },
+      {
+        "tabela": "construction.project_stages",
+        "origem": {
+          "linhas": 1,
+          "sha256": "643f59837ca0a91c053ff8a7b1f0a22d15ca942609aef6952da1bdf39fd172ee"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "643f59837ca0a91c053ff8a7b1f0a22d15ca942609aef6952da1bdf39fd172ee"
+        }
+      },
+      {
+        "tabela": "construction.projects",
+        "origem": {
+          "linhas": 1,
+          "sha256": "870cb8aad59f6b92e752bdc92c7fe54e82704e15cea318a3d8954b6986057b0c"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "870cb8aad59f6b92e752bdc92c7fe54e82704e15cea318a3d8954b6986057b0c"
+        }
+      },
+      {
+        "tabela": "construction.quality_checklist_items",
+        "origem": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        },
+        "destino": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        }
+      },
+      {
+        "tabela": "construction.stage_dependencies",
+        "origem": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        },
+        "destino": {
+          "linhas": 0,
+          "sha256": "28d1a7953a9caaabfe2787a7c67dbf1b2d795d56d73876aae73f983482a936e4"
+        }
+      },
+      {
+        "tabela": "construction.stage_measurements",
+        "origem": {
+          "linhas": 1,
+          "sha256": "93e2821d3c52e537ad2c83d35c5304302ded76aee432471a18ac95a277ce3244"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "93e2821d3c52e537ad2c83d35c5304302ded76aee432471a18ac95a277ce3244"
+        }
+      },
+      {
+        "tabela": "construction.warranty_actions",
+        "origem": {
+          "linhas": 1,
+          "sha256": "195ed98a97ac33a428a3fb49ca62b56c0af5a8bb055db402dbd175b1df7b794c"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "195ed98a97ac33a428a3fb49ca62b56c0af5a8bb055db402dbd175b1df7b794c"
+        }
+      },
+      {
+        "tabela": "finance.financial_entries (da obra)",
+        "origem": {
+          "linhas": 1,
+          "sha256": "558aa04fdd6f103de1903dca91f670b523e72c9165c348f5b9cc7a1899ad9116"
+        },
+        "destino": {
+          "linhas": 1,
+          "sha256": "558aa04fdd6f103de1903dca91f670b523e72c9165c348f5b9cc7a1899ad9116"
+        }
+      },
+      {
+        "tabela": "inventory.inventory_movements (da obra)",
+        "origem": {
+          "linhas": 2,
+          "sha256": "915ecffdde283537e38989d58be095158ae28ce2c0f93a07d7053473dcc478c5"
+        },
+        "destino": {
+          "linhas": 2,
+          "sha256": "915ecffdde283537e38989d58be095158ae28ce2c0f93a07d7053473dcc478c5"
+        }
+      },
+      {
+        "tabela": "integration.outbox_events (Obras)",
+        "origem": {
+          "linhas": 19,
+          "sha256": "9b81f6b8c2f461d4a238fcaeabf5f9eaf9f126404fa1bba1c3f788bb49c14277"
+        },
+        "destino": {
+          "linhas": 19,
+          "sha256": "9b81f6b8c2f461d4a238fcaeabf5f9eaf9f126404fa1bba1c3f788bb49c14277"
+        }
+      },
+      {
+        "tabela": "audit.audit_log (Obras)",
+        "origem": {
+          "linhas": 32,
+          "sha256": "3013bad66644abddfa0392501a6b00c5cdce566c7024a6c242d32bbec325c745"
+        },
+        "destino": {
+          "linhas": 32,
+          "sha256": "3013bad66644abddfa0392501a6b00c5cdce566c7024a6c242d32bbec325c745"
+        }
+      },
+      {
+        "tabela": "people.files (evidências de Obras)",
+        "origem": {
+          "linhas": 6,
+          "sha256": "c73c3c249c2c6c38186d21e3b59f518548d9f35df0fbae56202a871ded623e19"
+        },
+        "destino": {
+          "linhas": 6,
+          "sha256": "c73c3c249c2c6c38186d21e3b59f518548d9f35df0fbae56202a871ded623e19"
+        }
+      }
+    ],
+    "verificacoes": [
+      {
+        "verificacao": "construction.approval_thresholds idênticas",
+        "ok": true,
+        "detalhe": "0 linhas na origem, 0 no destino"
+      },
+      {
+        "verificacao": "construction.budget_lines idênticas",
+        "ok": true,
+        "detalhe": "2 linhas na origem, 2 no destino"
+      },
+      {
+        "verificacao": "construction.budgets idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.change_orders idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.daily_materials idênticas",
+        "ok": true,
+        "detalhe": "0 linhas na origem, 0 no destino"
+      },
+      {
+        "verificacao": "construction.daily_reports idênticas",
+        "ok": true,
+        "detalhe": "2 linhas na origem, 2 no destino"
+      },
+      {
+        "verificacao": "construction.daily_workers idênticas",
+        "ok": true,
+        "detalhe": "0 linhas na origem, 0 no destino"
+      },
+      {
+        "verificacao": "construction.loss_records idênticas",
+        "ok": true,
+        "detalhe": "2 linhas na origem, 2 no destino"
+      },
+      {
+        "verificacao": "construction.maintenance_cases idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.margin_rules idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.material_requests idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.measurement_items idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.nonconformities idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.project_code_sequences idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.project_stages idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.projects idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.quality_checklist_items idênticas",
+        "ok": true,
+        "detalhe": "0 linhas na origem, 0 no destino"
+      },
+      {
+        "verificacao": "construction.stage_dependencies idênticas",
+        "ok": true,
+        "detalhe": "0 linhas na origem, 0 no destino"
+      },
+      {
+        "verificacao": "construction.stage_measurements idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "construction.warranty_actions idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "finance.financial_entries (da obra) idênticas",
+        "ok": true,
+        "detalhe": "1 linhas na origem, 1 no destino"
+      },
+      {
+        "verificacao": "inventory.inventory_movements (da obra) idênticas",
+        "ok": true,
+        "detalhe": "2 linhas na origem, 2 no destino"
+      },
+      {
+        "verificacao": "integration.outbox_events (Obras) idênticas",
+        "ok": true,
+        "detalhe": "19 linhas na origem, 19 no destino"
+      },
+      {
+        "verificacao": "audit.audit_log (Obras) idênticas",
+        "ok": true,
+        "detalhe": "32 linhas na origem, 32 no destino"
+      },
+      {
+        "verificacao": "people.files (evidências de Obras) idênticas",
+        "ok": true,
+        "detalhe": "6 linhas na origem, 6 no destino"
+      },
+      {
+        "verificacao": "obra restaurada no estado WARRANTY (entregue, em garantia)",
+        "ok": true,
+        "detalhe": {
+          "status": "WARRANTY"
+        }
+      },
+      {
+        "verificacao": "baseline = valor congelado na aprovação + aditivo aprovado",
+        "ok": true,
+        "detalhe": {
+          "baseline": 43500,
+          "aprovacao": 42000,
+          "aditivo": 1500
+        }
+      },
+      {
+        "verificacao": "medição PAYABLE com exatamente uma conta a pagar do mesmo valor",
+        "ok": true,
+        "detalhe": {
+          "medicao": {
+            "status": "PAYABLE",
+            "t": "27500.00",
+            "p": "d1b7e74e-76e3-4e78-bd3a-16b76728dd41"
+          },
+          "contas": {
+            "n": 1,
+            "v": "27500.00"
+          }
+        }
+      },
+      {
+        "verificacao": "diário original preservado e correção apontando para ele",
+        "ok": true,
+        "detalhe": {
+          "original": 1,
+          "correcao": 1
+        }
+      },
+      {
+        "verificacao": "NC e garantia fechadas com as fotos antes/depois existentes em people.files",
+        "ok": true,
+        "detalhe": {
+          "nc": "CLOSED",
+          "garantia": "CLOSED",
+          "fotos_nc": 2,
+          "fotos_garantia": 2
+        }
+      },
+      {
+        "verificacao": "requisição do canteiro: saída 40 e devolução 5 (movimento inverso) restauradas",
+        "ok": true,
+        "detalhe": {
+          "saida": "40.0000",
+          "devolucao": "5.0000"
+        }
+      },
+      {
+        "verificacao": "perda original preservada e estorno vinculado",
+        "ok": true,
+        "detalhe": {
+          "perda": "LOSS",
+          "estornos": 1
+        }
+      },
+      {
+        "verificacao": "eventos mínimos de Obras presentes na Outbox restaurada",
+        "ok": true,
+        "detalhe": "14 tipos"
+      },
+      {
+        "verificacao": "RLS ENABLE + FORCE em todas as tabelas de Obras",
+        "ok": true,
+        "detalhe": "20 tabelas"
+      },
+      {
+        "verificacao": "role de runtime sem contexto de empresa não vê nenhuma obra",
+        "ok": true,
+        "detalhe": "0 linhas"
+      },
+      {
+        "verificacao": "com o contexto da empresa a obra do drill aparece",
+        "ok": true,
+        "detalhe": "1 linha"
+      },
+      {
+        "verificacao": "reprocessar measurement.approved após o restore não cria segunda conta a pagar (UNIQUE)",
+        "ok": true,
+        "detalhe": "erro do banco: 23505"
+      }
+    ],
+    "comando": "npm run restore-drill:construction-full -- --port 5543 --report-dir <pasta>"
+  },
+  "geradoEm": "2026-11-11T00:16:28.462Z"
+}

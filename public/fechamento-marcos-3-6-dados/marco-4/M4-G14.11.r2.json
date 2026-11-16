@@ -1,0 +1,169 @@
+{
+ "id": "M4-G§14.11",
+ "secao": "Guia §14 Eventos mínimos",
+ "requisito": "Evento \"finance.anomaly.opened\".",
+ "substitui": "evidencias/marco-4/M4-G14.11.json",
+ "motivo": "Recaptura: a evidência anterior trazia o token assinado da confirmação de nível 3 (impactToken) sem redação; o capturador foi corrigido e a evidência refeita contra o código atual, em banco descartável. A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "a3342c49",
+  "arvoreDeTrabalho": "limpa (exatamente o commit acima)",
+  "quando": "2026-11-11T08:20:27.195Z",
+  "ambiente": "Postgres 16 descartável (cluster local apagado ao final), migrations do zero, seeds do CI e seed de dois tenants; API Express real em processo"
+ },
+ "sanitizacao": [
+  "Tokens de acesso/renovação, credenciais, segredos do autenticador, códigos de recuperação e o segredo do webhook não são gravados ([REDACTED]).",
+  "A assinatura HMAC do webhook e o token assinado da confirmação de nível 3 (impactToken) saem redigidos ([REDACTED]); o segredo nunca sai da memória.",
+  "Varredura final (scripts/fechamento-m4/redacao.js#acharSegredos), inclusive no conteúdo base64 decodificado: a saída só é gravada sem nenhum achado.",
+  "Corpos de resposta gravados como vieram (campos null preservados), só os valores secretos redigidos.",
+  "Usuários fictícios ci-<tenant>-<perfil>@ci.nayaraone.test; a credencial existe só no banco descartável.",
+  "MFA: habilitado e verificado pela camada de serviço com código real do aplicativo autenticador; nenhum endpoint de MFA chamado por HTTP, nenhum token forjado."
+ ],
+ "comoReproduzir": "cd NayaraOne--API && bash scripts/fechamento-m4/rodar.sh <saida.json> (sobe o Postgres descartável, roda a captura e confere a cobertura das 273 linhas); depois: node Maturacao/fechamento-m3-m6/ferramentas/marco-4/recapturar-linhas.js --api <API> --captura <saida.json> --linhas M4-G§14.11 --sufixo r2",
+ "respostasHttp": [
+  {
+   "id": "H42-d",
+   "tipo": "http",
+   "linhas": [
+    "M4-§17.8",
+    "M4-G§14.11"
+   ],
+   "titulo": "Estorno 2/2: terceiro estorno em 30 dias abre caso FREQUENT_REVERSAL",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries/068f08ab-b97c-4c2f-8806-adb667a50d6b/reverse",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "reason": "Estorno de teste para o alerta de estorno frequente.",
+    "confirmation": {
+     "typedCode": "LAN-068F08AB",
+     "justification": "Estorno de teste para o alerta de estorno frequente.",
+     "impactToken": "[REDACTED]",
+     "understood": true
+    }
+   },
+   "esperado": {
+    "status": 200
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 200,
+   "codigo": "não se aplica (sem código de erro)",
+   "ok": true,
+   "ms": 150,
+   "quando": "2026-11-11T08:20:20.502Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": true,
+    "data": {
+     "original": {
+      "id": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "constructionProjectId": null,
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "originRef": null,
+      "isThirdPartyFunds": false,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "entryType": "CREDIT",
+      "nature": "RECEIVABLE",
+      "amount": "13.00",
+      "description": "Estorno frequente 2 5128289",
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:19.664Z",
+      "status": "REVERSED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": null,
+      "parentEntryId": null,
+      "requiresManualReview": false,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null,
+      "lockVersion": 2,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "created_at": "2026-11-11T08:20:18.856Z",
+      "updated_at": "2026-11-11T08:20:20.421Z",
+      "bank_account_id": null,
+      "cost_center_id": null,
+      "result_center_id": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contract_id": null,
+      "chart_of_account_id": null,
+      "construction_project_id": null
+     },
+     "reversal": {
+      "id": "8dc51112-bb35-409a-857c-6b1d08011ae5",
+      "isThirdPartyFunds": false,
+      "requiresManualReview": false,
+      "lockVersion": 0,
+      "groupId": "fa4a36d7-a8df-4d2c-8af9-3328a4f48b6d",
+      "companyId": "ba1bf9fc-8dba-477c-aaa5-d6d7eb9c002a",
+      "bankAccountId": null,
+      "costCenterId": null,
+      "resultCenterId": "8e703a89-8d79-4b05-8998-904510c08838",
+      "contractId": null,
+      "entryType": "DEBIT",
+      "nature": "ADJUSTMENT",
+      "amount": "13.00",
+      "description": null,
+      "dueAt": null,
+      "competenceMonth": "2026-11",
+      "settledAt": "2026-11-11T08:20:20.418Z",
+      "status": "SETTLED",
+      "idempotencyKey": null,
+      "reversalOfEntryId": "068f08ab-b97c-4c2f-8806-adb667a50d6b",
+      "chartOfAccountId": null,
+      "chartOfAccountVersionId": null,
+      "constructionProjectId": null,
+      "createdBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updatedBy": "7daae525-8240-44a8-89e9-d737d8e64f19",
+      "updated_at": "2026-11-11T08:20:20.419Z",
+      "created_at": "2026-11-11T08:20:20.419Z",
+      "originRef": null,
+      "thirdPartyReference": null,
+      "thirdPartyOriginEntryId": null,
+      "thirdPartyHolderPersonId": null,
+      "settlementMethod": null,
+      "settlementEvidenceFileId": null,
+      "settlementReason": null,
+      "settlementEvidenceAttachedBy": null,
+      "settlementEvidenceAttachedAt": null,
+      "thirdPartyReleaseType": null,
+      "thirdPartyCompensatedEntryId": null,
+      "parentEntryId": null,
+      "manualReviewReason": null,
+      "manualReviewClearedAt": null,
+      "manualReviewClearedBy": null
+     }
+    }
+   },
+   "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "passosDivergentesDaLinha": "nenhum",
+ "consultasBanco": [],
+ "testesDaEvidenciaAnterior": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-01 eventos mínimos do Guia §14 com o nome literal: payment.prepared/approved/completed/reversed, receipt.completed, reconciliation.completed, anomaly.opened",
+   "status": "passou",
+   "duracaoMs": 511,
+   "commitDoArquivo": "6ea03ed1"
+  }
+ ]
+}

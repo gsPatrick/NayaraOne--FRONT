@@ -1,0 +1,106 @@
+{
+  "id": "M6-109",
+  "requisito": "\"Fotos possuem hash/origem\" + evidência antes/depois (NC), evidências (Change Order) e antes/depois (garantia): a evidência precisa ser um arquivo real enviado.",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §2 e §6",
+  "implementacao": "src/features/construction/evidenceFiles.js (NOVO, 10/11/2026) chamado por nonconformities/changeOrders/maintenanceCases/dailyReports — CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+  "telaParaReteste": "Painel → /painel/obras/lista/<id da obra>/qualidade: anexar foto pelo botão de envio (o ID vem do envio)",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-109: abrir NC com evidência \"antes\" inexistente é recusado; com arquivo real abre",
+      "resultado": "passou",
+      "duracaoMs": 569,
+      "executadoEm": "2026-11-11T00:13:09.614Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-62/M6-109: fechar NC com evidência \"depois\" inexistente é recusado e a NC continua aberta",
+      "resultado": "passou",
+      "duracaoMs": 216,
+      "executadoEm": "2026-11-11T00:13:09.831Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-06/M6-109: Change Order com evidência inexistente é recusado; com arquivo real é criado",
+      "resultado": "passou",
+      "duracaoMs": 44,
+      "executadoEm": "2026-11-11T00:13:09.876Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-26/M6-109: chamado de garantia não abre nem fecha com foto inexistente; arquivo de outra empresa também não vale",
+      "resultado": "passou",
+      "duracaoMs": 507,
+      "executadoEm": "2026-11-11T00:13:10.383Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-109: RDO com foto inexistente é recusado (criação e correção); com arquivo real grava",
+      "resultado": "passou",
+      "duracaoMs": 124,
+      "executadoEm": "2026-11-11T00:13:10.507Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H024"
+    ],
+    "resumo": [
+      "H024 POST /api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders → 400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND"
+    ],
+    "dataHora": "2026-11-11T00:12:08.040Z"
+  },
+  "telaPlaywright": "não se aplica (sem spec de tela dedicado; reteste manual pelo caminho da tela)",
+  "respostasHttp": [
+    {
+      "id": "H024",
+      "requisitos": [
+        "M6-06",
+        "M6-33",
+        "M6-109"
+      ],
+      "cenario": "NEGATIVO: Change Order com evidência que não é arquivo enviado (UUID inventado)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/projects/acb529ee-9a5a-4513-9d58-1764116cd61f/change-orders",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "reasonCode": "ESCOPO_ADICIONAL",
+        "description": "Reforço da viga V12",
+        "budgetImpact": 6000,
+        "scheduleImpactDays": 7,
+        "evidenceFileIds": [
+          "99999999-9999-4999-8999-999999999999"
+        ],
+        "idempotencyKey": "co-c4fcd6"
+      },
+      "statusHttp": 400,
+      "codigoErro": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "esperado": "400 CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+      "conferiu": true,
+      "duracaoMs": 172,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "CONSTRUCTION_EVIDENCE_FILE_NOT_FOUND",
+          "message": "Evidência inválida em \"evidenceFileIds\": o arquivo informado não existe nesta empresa. Envie a foto/documento pelo módulo de arquivos e use o ID devolvido no envio.",
+          "details": {
+            "field": "evidenceFileIds",
+            "missingFileIds": [
+              "99999999-9999-4999-8999-999999999999"
+            ]
+          },
+          "traceId": "458c9b07-e973-4092-ae2f-72c3692be040"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:08.040Z"
+    }
+  ],
+  "consultasBanco": [],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.465Z"
+}

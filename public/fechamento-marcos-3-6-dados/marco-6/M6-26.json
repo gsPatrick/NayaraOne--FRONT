@@ -1,0 +1,818 @@
+{
+  "id": "M6-26",
+  "requisito": "\"Pós-obra possui SLA, causa, materiais, mão de obra, custo e evidências.\" \"WarrantyCase contém categoria, severidade, SLA, responsável, antes/depois, custos e causa.\"",
+  "secaoDoLivro": "Caderno Construção + Obras + Pós-obra §2 e §9",
+  "implementacao": "maintenanceCases.service.js (categoria/severidade/causa validadas, SLA por REG-OBR-002, fechamento exige causa + fotos + atendimento)",
+  "telaParaReteste": "Painel → /painel/obras/pos-obra/<id>: campos estruturados e fechamento",
+  "commitApi": "e21eeb64f0a82a315047b66ecd2a4cdde7cdf0ba",
+  "branchApi": "m6fix/matriz",
+  "commitFront": "edece71451a1e3b762f9880581425ac4360b0e2b",
+  "status": "Atendido",
+  "testes": [
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: updateMaintenanceCase rejeita severity/category/rootCauseCode fora da lista configurada",
+      "resultado": "passou",
+      "duracaoMs": 65,
+      "executadoEm": "2026-11-11T00:14:40.624Z"
+    },
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: fechar o chamado (status=CLOSED) não lança erro (evento warranty.case.closed disparado)",
+      "resultado": "passou",
+      "duracaoMs": 85,
+      "executadoEm": "2026-11-11T00:14:43.143Z"
+    },
+    {
+      "arquivo": "test/construction.warranty.test.js",
+      "nome": "warranty: updateMaintenanceCase recusa pular etapa (OPEN->CLOSED direto) e recusa reabrir CLOSED",
+      "resultado": "passou",
+      "duracaoMs": 85,
+      "executadoEm": "2026-11-11T00:14:43.229Z"
+    },
+    {
+      "arquivo": "test/construction.evidenceFiles.test.js",
+      "nome": "M6-26/M6-109: chamado de garantia não abre nem fecha com foto inexistente; arquivo de outra empresa também não vale",
+      "resultado": "passou",
+      "duracaoMs": 507,
+      "executadoEm": "2026-11-11T00:13:10.383Z"
+    }
+  ],
+  "evidenciaAoVivo": {
+    "tipo": "Resposta HTTP real (API em banco descartável)",
+    "respostas": [
+      "H143",
+      "H144",
+      "H146",
+      "H147",
+      "H149",
+      "H150",
+      "H151",
+      "H152",
+      "H155",
+      "H162",
+      "H179",
+      "H180",
+      "H181"
+    ],
+    "resumo": [
+      "H143 GET /api/v1/construction/settings/sla-rule → 200",
+      "H144 POST /api/v1/files → 201",
+      "H146 POST /api/v1/construction/warranty-cases → 201",
+      "H147 POST /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c/actions → 201",
+      "H149 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 409 MAINTENANCE_CASE_STATUS_TRANSITION_INVALID",
+      "H150 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 200",
+      "H151 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 400 MAINTENANCE_CASE_CLOSE_REQUIRES_ROOT_CAUSE",
+      "H152 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 400 MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+      "H155 PATCH /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 200",
+      "H162 GET /api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c → 200",
+      "H179 PATCH /api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406 → 200",
+      "H180 POST /api/v1/files → 201",
+      "H181 PATCH /api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406 → 200"
+    ],
+    "dataHora": "2026-11-11T00:12:26.114Z"
+  },
+  "telaPlaywright": [
+    {
+      "spec": "NayaraOne--FRONT/e2e/marco6-chamado-fechado-fotos.spec.js",
+      "requisitos": [
+        "M6-111",
+        "M6-52",
+        "M6-26"
+      ],
+      "iniciadoEm": "2026-11-11T00:13:27Z",
+      "exit": 0,
+      "passos": [
+        {
+          "ok": true,
+          "passo": "0. chamado FECHADO preparado pela API (fotos antes/depois, causa raiz, atendimento) — 2279620b-6579-48b0-b9fa-9b80c944ef2c"
+        },
+        {
+          "ok": true,
+          "passo": "1. login pela tela"
+        },
+        {
+          "ok": true,
+          "passo": "2. Editar chamado fechado mostra o aviso de fotos/causa obrigatórias"
+        },
+        {
+          "ok": true,
+          "passo": "3. remover a foto \"antes\": aviso \"Falta preencher\" e Salvar desabilitado"
+        },
+        {
+          "ok": true,
+          "passo": "4. API confirma: chamado continua FECHADO com as duas fotos e a causa raiz"
+        },
+        {
+          "ok": true,
+          "passo": "5. mesma retirada direto na API é recusada (422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS) — 422 MAINTENANCE_CASE_CLOSED_REQUIREMENTS"
+        }
+      ],
+      "resultado": "passou",
+      "commitFront": "46bd70c9ae95be414e28f6f1cd67c4714d5e7f20",
+      "ambiente": "Front (next dev, worktree m6fix/matriz) em localhost:3106 → API em localhost:4107 com PostgreSQL descartável (RLS real); Playwright Chromium headless"
+    }
+  ],
+  "respostasHttp": [
+    {
+      "id": "H143",
+      "requisitos": [
+        "M6-26",
+        "M6-63",
+        "M6-88"
+      ],
+      "cenario": "SLA de garantia por severidade vigente (regra REG-OBR-002, configurável)",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/settings/sla-rule",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 11,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "ruleVersionId": "e50cd50d-d248-4812-b170-9a0a72890ff6",
+          "slaDays": {
+            "LOW": 30,
+            "HIGH": 5,
+            "MEDIUM": 15,
+            "CRITICAL": 2
+          }
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.114Z"
+    },
+    {
+      "id": "H144",
+      "requisitos": [
+        "M6-15",
+        "M6-26"
+      ],
+      "cenario": "Envio da foto/documento \"garantia-infiltracao-antes\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "garantia-infiltracao-antes.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 178,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "3a30696a-1d4a-4a49-831f-5fdf878617a0",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/277a85e5-9676-4fec-b93c-013d128620d2-garantia-infiltracao-antes.jpg",
+          "fileName": "garantia-infiltracao-antes.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "108e85c5ff9236dff94fce578eea4aac828098d82f3aabc0e38c015759d381b5",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:26.139Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.140Z",
+          "created_at": "2026-11-11T00:12:26.140Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.292Z"
+    },
+    {
+      "id": "H146",
+      "requisitos": [
+        "M6-40",
+        "M6-15",
+        "M6-26",
+        "M6-80",
+        "M6-52"
+      ],
+      "cenario": "Abrir chamado de garantia estruturado (categoria, severidade, SLA, responsável, foto \"antes\", custos)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/warranty-cases",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+        "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+        "description": "Infiltração na laje do banheiro social",
+        "severity": "HIGH",
+        "category": "WATERPROOFING",
+        "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+        "beforeMediaFileIds": [
+          "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+        ],
+        "laborCost": 0,
+        "materialCost": 0
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 59,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "afterMediaFileIds": [],
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "OPEN",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "rootCauseCode": null,
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "laborCost": "0.00",
+          "materialCost": "0.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.358Z",
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.369Z"
+    },
+    {
+      "id": "H147",
+      "requisitos": [
+        "M6-16",
+        "M6-26",
+        "M6-52"
+      ],
+      "cenario": "Registrar ação de atendimento (mão de obra, custo)",
+      "metodo": "POST",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c/actions",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "description": "Refeita a manta asfáltica da laje",
+        "cost": 650
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 263,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "98db3e07-3b3b-4ab4-9a1e-6f7e719e7b81",
+          "lockVersion": 0,
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "warrantyCaseId": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "description": "Refeita a manta asfáltica da laje",
+          "performedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "performedAt": "2026-11-11T00:12:26.615Z",
+          "cost": "650.00",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:26.615Z",
+          "created_at": "2026-11-11T00:12:26.615Z",
+          "assignedTeam": null,
+          "materialUsed": null,
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.632Z"
+    },
+    {
+      "id": "H149",
+      "requisitos": [
+        "M6-26"
+      ],
+      "cenario": "NEGATIVO: pular de OPEN direto para CLOSED",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED"
+      },
+      "statusHttp": 409,
+      "codigoErro": "MAINTENANCE_CASE_STATUS_TRANSITION_INVALID",
+      "esperado": "409 MAINTENANCE_CASE_STATUS_TRANSITION_INVALID",
+      "conferiu": true,
+      "duracaoMs": 15,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MAINTENANCE_CASE_STATUS_TRANSITION_INVALID",
+          "message": "Transição de status inválida: \"Aberto\" não pode ir direto para \"Fechado\".",
+          "traceId": "3f231d6a-f318-49cd-8abe-de7e13be9a07"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.707Z"
+    },
+    {
+      "id": "H150",
+      "requisitos": [
+        "M6-26"
+      ],
+      "cenario": "Chamado → RESOLVED",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "RESOLVED",
+        "laborCost": 650,
+        "materialCost": 210
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 18,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "RESOLVED",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "afterMediaFileIds": [],
+          "laborCost": 650,
+          "materialCost": 210,
+          "rootCauseCode": null,
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "lockVersion": 1,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "updated_at": "2026-11-11T00:12:26.720Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.725Z"
+    },
+    {
+      "id": "H151",
+      "requisitos": [
+        "M6-26",
+        "M6-80"
+      ],
+      "cenario": "NEGATIVO: fechar sem causa raiz",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED"
+      },
+      "statusHttp": 400,
+      "codigoErro": "MAINTENANCE_CASE_CLOSE_REQUIRES_ROOT_CAUSE",
+      "esperado": "400 MAINTENANCE_CASE_CLOSE_REQUIRES_ROOT_CAUSE",
+      "conferiu": true,
+      "duracaoMs": 14,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MAINTENANCE_CASE_CLOSE_REQUIRES_ROOT_CAUSE",
+          "message": "Não é possível fechar o chamado sem \"rootCauseCode\" (causa raiz).",
+          "traceId": "4bf838ce-9bac-4f31-a4b1-005f8bbcf353"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.739Z"
+    },
+    {
+      "id": "H152",
+      "requisitos": [
+        "M6-26",
+        "M6-111"
+      ],
+      "cenario": "NEGATIVO: fechar sem foto \"depois\"",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED",
+        "rootCauseCode": "WORKMANSHIP"
+      },
+      "statusHttp": 400,
+      "codigoErro": "MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+      "esperado": "400 MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+      "conferiu": true,
+      "duracaoMs": 11,
+      "corpoResposta": {
+        "success": false,
+        "error": {
+          "code": "MAINTENANCE_CASE_CLOSE_REQUIRES_EVIDENCE",
+          "message": "Não é possível fechar o chamado sem evidências \"antes\" e \"depois\" (\"beforeMediaFileIds\"/\"afterMediaFileIds\").",
+          "traceId": "1d65b749-f44d-4dff-a0c6-7e0a0e6266ee"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:26.750Z"
+    },
+    {
+      "id": "H155",
+      "requisitos": [
+        "M6-26",
+        "M6-80",
+        "M6-52",
+        "M6-98",
+        "M6-105"
+      ],
+      "cenario": "Fechar o chamado com causa raiz e fotos antes/depois (publica warranty.case.closed)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED",
+        "rootCauseCode": "WORKMANSHIP",
+        "afterMediaFileIds": [
+          "003b5fa6-1d7f-4ae0-b61c-0e596bbeb842"
+        ]
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 162,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "CLOSED",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "afterMediaFileIds": [
+            "003b5fa6-1d7f-4ae0-b61c-0e596bbeb842"
+          ],
+          "laborCost": "650.00",
+          "materialCost": "210.00",
+          "rootCauseCode": "WORKMANSHIP",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "lockVersion": 2,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "updated_at": "2026-11-11T00:12:27.156Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.161Z"
+    },
+    {
+      "id": "H162",
+      "requisitos": [
+        "M6-111",
+        "M6-26"
+      ],
+      "cenario": "Chamado fechado mantém causa raiz e fotos",
+      "metodo": "GET",
+      "rota": "/api/v1/construction/maintenance-cases/4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": "sem corpo (requisição sem payload)",
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 11,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "4c3a5804-8470-49c8-9b0c-9dc30b30169c",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Infiltração na laje do banheiro social",
+          "status": "CLOSED",
+          "warrantyDeadlineAt": null,
+          "category": "WATERPROOFING",
+          "severity": "HIGH",
+          "slaDueAt": "2026-11-16T00:12:26.351Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "3a30696a-1d4a-4a49-831f-5fdf878617a0"
+          ],
+          "afterMediaFileIds": [
+            "12207804-959e-4b64-93d7-76f8e2d78a6d"
+          ],
+          "laborCost": "650.00",
+          "materialCost": "210.00",
+          "rootCauseCode": "WORKMANSHIP",
+          "resolutionType": null,
+          "resolutionAmount": null,
+          "resolutionStatus": null,
+          "resolutionApprovedByUserId": null,
+          "resolutionFinancialEntryId": null,
+          "lockVersion": 3,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:26.358Z",
+          "updated_at": "2026-11-11T00:12:27.500Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:27.517Z"
+    },
+    {
+      "id": "H179",
+      "requisitos": [
+        "M6-26"
+      ],
+      "cenario": "Chamado crítico → RESOLVED",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "RESOLVED"
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 13,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Trinca estrutural na viga da garagem",
+          "status": "RESOLVED",
+          "warrantyDeadlineAt": null,
+          "category": "STRUCTURAL",
+          "severity": "CRITICAL",
+          "slaDueAt": "2026-11-10T21:12:28.126Z",
+          "escalationLevel": "OVERDUE",
+          "beforeMediaFileIds": [
+            "f827978c-a8b7-45b3-bee9-dd069444adb6"
+          ],
+          "afterMediaFileIds": [],
+          "laborCost": null,
+          "materialCost": null,
+          "rootCauseCode": null,
+          "resolutionType": "REIMBURSEMENT",
+          "resolutionAmount": "5000.00",
+          "resolutionStatus": "APPROVED",
+          "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "resolutionFinancialEntryId": "d9a98017-a66d-4cb7-ab31-64ce07e07308",
+          "lockVersion": 4,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:27.884Z",
+          "updated_at": "2026-11-11T00:12:28.964Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:28.969Z"
+    },
+    {
+      "id": "H180",
+      "requisitos": [
+        "M6-26"
+      ],
+      "cenario": "Envio da foto/documento \"trinca-depois\" pelo módulo de arquivos (hash calculado no envio)",
+      "metodo": "POST",
+      "rota": "/api/v1/files",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "fileName": "trinca-depois.jpg",
+        "mimeType": "image/jpeg",
+        "contentBase64": "<conteúdo da foto omitido>"
+      },
+      "statusHttp": 201,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "201",
+      "conferiu": true,
+      "duracaoMs": 123,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "classification": "CONFIDENTIAL",
+          "id": "bc6b661a-cb83-4555-b1e5-7f0d753b69e9",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "storageKey": "generic/f5606c02-0bea-4d23-aafc-277ff9769973/1a00151b-7435-4016-87e2-a7fb1e2f821e-trinca-depois.jpg",
+          "fileName": "trinca-depois.jpg",
+          "mimeType": "image/jpeg",
+          "sizeBytes": 52,
+          "checksumSha256": "26a7689c9e644740e7717cc8d3797b3b60f8c4ae6d94bc0a6128cdcfe9a63242",
+          "encryptedAtRest": true,
+          "storageProvider": "storage-local-disk",
+          "storageConnectionId": null,
+          "scanStatus": "CLEAN",
+          "scannedAt": "2026-11-11T00:12:28.996Z",
+          "uploadedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updated_at": "2026-11-11T00:12:28.996Z",
+          "created_at": "2026-11-11T00:12:28.996Z",
+          "deletedBy": null,
+          "deleted_at": null
+        }
+      },
+      "dataHora": "2026-11-11T00:12:29.092Z"
+    },
+    {
+      "id": "H181",
+      "requisitos": [
+        "M6-26",
+        "M6-80",
+        "M6-105"
+      ],
+      "cenario": "Fechar o chamado crítico (SLA zera o escalonamento)",
+      "metodo": "PATCH",
+      "rota": "/api/v1/construction/maintenance-cases/58a01bb4-efdc-4660-b7e0-b8402148b406",
+      "perfil": "Gestor de obras da Empresa A (construction:create/read/update/approve/delete)",
+      "corpoEnviado": {
+        "status": "CLOSED",
+        "rootCauseCode": "DESIGN_FLAW",
+        "afterMediaFileIds": [
+          "bc6b661a-cb83-4555-b1e5-7f0d753b69e9"
+        ]
+      },
+      "statusHttp": 200,
+      "codigoErro": "nenhum (resposta de sucesso)",
+      "esperado": "200",
+      "conferiu": true,
+      "duracaoMs": 39,
+      "corpoResposta": {
+        "success": true,
+        "data": {
+          "id": "58a01bb4-efdc-4660-b7e0-b8402148b406",
+          "groupId": "f5606c02-0bea-4d23-aafc-277ff9769973",
+          "companyId": "a8989a3b-f8bd-403d-94b9-744d6c2c4396",
+          "propertyId": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "projectId": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "openedByPersonId": null,
+          "responsibleUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "description": "Trinca estrutural na viga da garagem",
+          "status": "CLOSED",
+          "warrantyDeadlineAt": null,
+          "category": "STRUCTURAL",
+          "severity": "CRITICAL",
+          "slaDueAt": "2026-11-10T21:12:28.126Z",
+          "escalationLevel": "NONE",
+          "beforeMediaFileIds": [
+            "f827978c-a8b7-45b3-bee9-dd069444adb6"
+          ],
+          "afterMediaFileIds": [
+            "bc6b661a-cb83-4555-b1e5-7f0d753b69e9"
+          ],
+          "laborCost": null,
+          "materialCost": null,
+          "rootCauseCode": "DESIGN_FLAW",
+          "resolutionType": "REIMBURSEMENT",
+          "resolutionAmount": "5000.00",
+          "resolutionStatus": "APPROVED",
+          "resolutionApprovedByUserId": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "resolutionFinancialEntryId": "d9a98017-a66d-4cb7-ab31-64ce07e07308",
+          "lockVersion": 5,
+          "createdBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "updatedBy": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff",
+          "deletedBy": null,
+          "created_at": "2026-11-11T00:12:27.884Z",
+          "updated_at": "2026-11-11T00:12:29.120Z",
+          "deleted_at": null,
+          "property_id": "ca13c311-f344-4585-9318-7c1e6fe378c1",
+          "project_id": "acb529ee-9a5a-4513-9d58-1764116cd61f",
+          "opened_by_person_id": null,
+          "responsible_user_id": "d2c3003a-71b1-4bb5-9e2d-a537cda894ff"
+        }
+      },
+      "dataHora": "2026-11-11T00:12:29.131Z"
+    }
+  ],
+  "consultasBanco": [
+    {
+      "id": "C015",
+      "requisitos": [
+        "M6-15",
+        "M6-26",
+        "M6-63",
+        "M6-88",
+        "M6-111"
+      ],
+      "descricao": "Chamados de garantia: categoria, severidade, SLA, responsável, causa, custos, fotos que existem; escalonamento do vencido",
+      "sql": "SELECT severity, category, status, root_cause_code, sla_due_at IS NOT NULL AS sla, responsible_user_id IS NOT NULL AS responsavel, labor_cost, material_cost, escalation_level, (SELECT count(*) FROM people.files f WHERE f.id = ANY(m.before_media_file_ids || m.after_media_file_ids))::int AS fotos_existentes, cardinality(m.before_media_file_ids || m.after_media_file_ids) AS fotos, (SELECT count(*) FROM construction.warranty_actions a WHERE a.warranty_case_id = m.id)::int AS acoes FROM construction.maintenance_cases m WHERE project_id = $1 ORDER BY created_at",
+      "resultado": [
+        {
+          "severity": "HIGH",
+          "category": "WATERPROOFING",
+          "status": "CLOSED",
+          "root_cause_code": "WORKMANSHIP",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": "650.00",
+          "material_cost": "210.00",
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        },
+        {
+          "severity": "CRITICAL",
+          "category": "STRUCTURAL",
+          "status": "CLOSED",
+          "root_cause_code": "DESIGN_FLAW",
+          "sla": true,
+          "responsavel": true,
+          "labor_cost": null,
+          "material_cost": null,
+          "escalation_level": "NONE",
+          "fotos_existentes": 2,
+          "fotos": 2,
+          "acoes": 1
+        }
+      ],
+      "invariante": "dois chamados fechados com causa, fotos antes/depois existentes e ação de atendimento",
+      "invarianteOk": true,
+      "executadaEm": "2026-11-11T00:12:30.200Z"
+    }
+  ],
+  "auditoria": [],
+  "geradoEm": "2026-11-11T00:16:28.399Z"
+}

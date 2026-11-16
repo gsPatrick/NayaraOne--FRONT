@@ -1,0 +1,69 @@
+{
+ "id": "M4-§4.3",
+ "secao": "§4 Plano de contas",
+ "requisito": "\"Centro de resultado obrigatório para receita e análise de margem.\"",
+ "medidoEm": {
+  "commitApi": "9d28dad0",
+  "branch": "m4fix/matriz",
+  "quando": "2026-11-11T01:39:53.719Z"
+ },
+ "testes": [
+  {
+   "arquivo": "test/m45.cadernoM4Gaps.test.js",
+   "nome": "M45-M4-04 dimensões obrigatórias: despesa sem centro de custo e receita sem centro de resultado são recusadas na criação",
+   "status": "passou",
+   "duracaoMs": 2,
+   "commitDoArquivo": "6ea03ed1"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "M4-20c: freeCash soma o extrato bancário real e exclui dinheiro de terceiro retido; marginBySector agrupa por centro de resultado",
+   "status": "passou",
+   "duracaoMs": 145,
+   "commitDoArquivo": "f00ed9f7"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "N08",
+   "tipo": "http",
+   "linhas": [
+    "M4-§4.3"
+   ],
+   "titulo": "Receita sem centro de resultado é recusada",
+   "perfil": "A:gestor",
+   "metodo": "POST",
+   "rota": "/finance/entries",
+   "cabecalhosEnviados": "somente Content-Type e Authorization (token omitido)",
+   "corpoEnviado": {
+    "entryType": "CREDIT",
+    "nature": "RECEIVABLE",
+    "amount": 10,
+    "description": "Receita sem centro de resultado"
+   },
+   "esperado": {
+    "status": 400,
+    "codigo": "FINANCE_ENTRY_RESULT_CENTER_REQUIRED"
+   },
+   "conferenciaDoConteudo": "só status/código",
+   "status": 400,
+   "codigo": "FINANCE_ENTRY_RESULT_CENTER_REQUIRED",
+   "ok": true,
+   "ms": 12,
+   "quando": "2026-11-11T01:35:01.371Z",
+   "cabecalhosResposta": {
+    "content-type": "application/json; charset=utf-8"
+   },
+   "corpo": {
+    "success": false,
+    "error": {
+     "code": "FINANCE_ENTRY_RESULT_CENTER_REQUIRED",
+     "message": "Lançamento de receita exige o centro de resultado.",
+     "traceId": "c7948ef5-08a4-4eee-b825-ebcc1ea8951e"
+    }
+   },
+   "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+  }
+ ],
+ "consultasBanco": []
+}

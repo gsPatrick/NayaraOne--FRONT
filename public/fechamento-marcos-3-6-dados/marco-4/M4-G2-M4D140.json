@@ -1,0 +1,183 @@
+{
+ "linha": "M4-G§2",
+ "demanda": "M4-D140",
+ "api": {
+  "branch": "fix/m4d140-estrutura-financeiro",
+  "commits": {
+   "retratosAntes": "a9f82ea9",
+   "estrutura": "457d4924",
+   "deploy": "41addaa2"
+  },
+  "base": "integra/ensaio a8335d22"
+ },
+ "front": {
+  "branch": "fix/m4d140-estrutura-financeiro",
+  "commit": "c8ccff0",
+  "oQue": "só comentários que citavam o caminho da API"
+ },
+ "bateria": {
+  "antes": {
+   "commit": "a8335d22",
+   "inicio": "11/11/2026 02:00:48",
+   "fim": "11/11/2026 02:30",
+   "lotes": 14,
+   "testes": 8585,
+   "passaram": 8585,
+   "falharam": 0,
+   "ignorados": 0,
+   "todo": 0,
+   "cancelados": 0,
+   "lint": "0 erro, 280 avisos",
+   "syntaxCheck": "exit 0"
+  },
+  "depoisPrimeiraRodada": {
+   "commit": "0e280554 (substituído)",
+   "inicio": "11/11/2026 02:49:34",
+   "fim": "11/11/2026 03:20",
+   "testes": 8600,
+   "passaram": 8592,
+   "falharam": 8,
+   "motivo": "referências ao caminho antigo em testes e helpers (m9d617, m9d700, m9d432, m9d237, m9d210, m9d228, recomposição do marketing) corrigidas no mesmo commit de estrutura"
+  },
+  "depois": {
+   "commit": "457d4924",
+   "inicio": "11/11/2026 03:21:16",
+   "fim": "11/11/2026 03:49:20",
+   "lotes": 14,
+   "testes": 8600,
+   "passaram": 8600,
+   "falharam": 0,
+   "ignorados": 0,
+   "todo": 0,
+   "cancelados": 0,
+   "testesNovos": 15,
+   "lint": "0 erro, 280 avisos",
+   "syntaxCheck": "exit 0"
+  },
+  "arquivos": [
+   "m4d140/bateria-antes-lotes.md",
+   "m4d140/bateria-depois-lotes.md",
+   "m4d140/bateria-depois-primeira-rodada-lotes.md",
+   "m4d140/lint-e-sintaxe-antes.log",
+   "m4d140/lint-e-sintaxe-depois.log"
+  ]
+ },
+ "schema": {
+  "como": "cluster descartável: banco vazio migrado no commit base (npx sequelize-cli db:migrate) e no commit novo (node scripts/migrate.js up e npx sequelize-cli db:migrate via .sequelizerc); pg_dump --schema-only sem as linhas \\restrict e com os instantes que as migrations gravam na hora em que rodam trocados por marcador",
+  "resultado": "diff vazio nos dois casos; sha256 do dump normalizado 49f8d7d8678d389a31c3251639c478aa60988b1f4075aa8877944305be8b4546 nos três bancos; 47.354 linhas",
+  "resumo": "m4d140/schema-resumo.log"
+ },
+ "sequelizeMeta": {
+  "resultado": "619 linhas antes e depois, mesmos nomes; banco migrado no commit base: status no executor novo 619 up e 0 down, up de novo não aplicou nenhuma, SequelizeMeta igual",
+  "arquivos": [
+   "m4d140/sequelize-meta-antes.txt",
+   "m4d140/sequelize-meta-depois.txt",
+   "m4d140/migrate-status-banco-da-base-com-executor-novo.txt",
+   "m4d140/migrate-up-banco-da-base-com-executor-novo.txt"
+  ]
+ },
+ "comandoDeMigracaoNoDeploy": "npx sequelize-cli db:migrate --env migration (não mudou); equivalente: npm run migrate -- --env migration",
+ "http": {
+  "ambiente": "API do commit (base e novo) em banco descartável com os dois tenants de CI, perfil A:leitura",
+  "antes": [
+   {
+    "quando": "2026-11-11T06:50:24.215Z",
+    "metodo": "GET",
+    "rota": "/finance/entries",
+    "perfil": "A:leitura",
+    "status": 200,
+    "corpo": {
+     "success": true,
+     "data": []
+    }
+   },
+   {
+    "quando": "2026-11-11T06:50:24.239Z",
+    "metodo": "POST",
+    "rota": "/finance/entries",
+    "perfil": "A:leitura",
+    "status": 403,
+    "corpo": {
+     "success": false,
+     "error": {
+      "code": "PERMISSION_DENIED",
+      "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+      "details": {
+       "required": "finance:create"
+      },
+      "traceId": "<variável>"
+     }
+    }
+   },
+   {
+    "quando": "2026-11-11T06:50:24.255Z",
+    "metodo": "GET",
+    "rota": "/finance/entries/00000000-0000-4000-8000-000000000000",
+    "perfil": "A:leitura",
+    "status": 404,
+    "corpo": {
+     "success": false,
+     "error": {
+      "code": "FINANCE_ENTRY_NOT_FOUND",
+      "message": "Lançamento financeiro não encontrado.",
+      "traceId": "<variável>"
+     }
+    }
+   }
+  ],
+  "depois": [
+   {
+    "quando": "2026-11-11T06:50:24.216Z",
+    "metodo": "GET",
+    "rota": "/finance/entries",
+    "perfil": "A:leitura",
+    "status": 200,
+    "corpo": {
+     "success": true,
+     "data": []
+    }
+   },
+   {
+    "quando": "2026-11-11T06:50:24.240Z",
+    "metodo": "POST",
+    "rota": "/finance/entries",
+    "perfil": "A:leitura",
+    "status": 403,
+    "corpo": {
+     "success": false,
+     "error": {
+      "code": "PERMISSION_DENIED",
+      "message": "Você não tem permissão para realizar esta ação. Peça o acesso a quem administra o seu perfil.",
+      "details": {
+       "required": "finance:create"
+      },
+      "traceId": "<variável>"
+     }
+    }
+   },
+   {
+    "quando": "2026-11-11T06:50:24.256Z",
+    "metodo": "GET",
+    "rota": "/finance/entries/00000000-0000-4000-8000-000000000000",
+    "perfil": "A:leitura",
+    "status": 404,
+    "corpo": {
+     "success": false,
+     "error": {
+      "code": "FINANCE_ENTRY_NOT_FOUND",
+      "message": "Lançamento financeiro não encontrado.",
+      "traceId": "<variável>"
+     }
+    }
+   }
+  ],
+  "resultado": "mesmo status e mesmo corpo nas três chamadas"
+ },
+ "mutacoes": [
+  "m4d140/mutacao-caminho-antigo.txt",
+  "m4d140/mutacao-citacao.txt",
+  "m4d140/mutacao-rotas.txt"
+ ],
+ "testeNoCodigoAntigo": "m4d140/teste-no-codigo-antigo.txt (13 dos 15 reprovam; os de rotas e de inventário da bateria são regressão contra o retrato tirado no próprio commit base e reprovam quando a rota/permissão muda, ver mutacao-rotas.txt)",
+ "arvore": "m4d140/arvore-e-busca.txt"
+}
