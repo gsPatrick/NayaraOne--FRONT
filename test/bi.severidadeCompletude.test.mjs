@@ -8,7 +8,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { BI_QUALIDADE_GROUPS, CONFERENCIAS_SO_AVISAM } from "@/app/painel/configuracoes/biQualidadeGroups.js";
+import { BI_QUALIDADE_GROUPS } from "@/app/painel/configuracoes/biQualidadeGroups.js";
+import { CONFERENCIAS_SO_AVISAM } from "@/app/painel/configuracoes/biConferenciasSoAvisam.js";
 
 const require = createRequire(import.meta.url);
 const here = (p) => new URL(p, import.meta.url).pathname;
