@@ -29,6 +29,7 @@ import CasePartiesCard from "./CasePartiesCard";
 import CaseDocumentsCard from "./CaseDocumentsCard";
 import CaseTimelineCard from "./CaseTimelineCard";
 import CaseReceivableCard from "./CaseReceivableCard";
+import CaseRiskForm from "./CaseRiskForm";
 import EvidencePackagesCard from "./EvidencePackagesCard";
 import styles from "./page.module.css";
 
@@ -145,8 +146,15 @@ export default function ProcessoDetailPage({ params }) {
                 <div className={styles.detailRow}><dt>Imóvel vinculado</dt><dd>{property?.name || "Sem imóvel vinculado"}</dd></div>
                 <div className={styles.detailRow}><dt>Responsável</dt><dd>{legalCase.responsibleUserId ? userName(legalCase.responsibleUserId) : "Sem responsável definido"}</dd></div>
                 {legalCase.phase ? <div className={styles.detailRow}><dt>Fase</dt><dd>{CASE_PHASE_LABELS[legalCase.phase] || "Fase personalizada"}</dd></div> : null}
-                {legalCase.riskLevel ? <div className={styles.detailRow}><dt>Risco</dt><dd>{CASE_RISK_LABELS[legalCase.riskLevel] || "Não classificado"}</dd></div> : null}
+                {/* M5:244: o risco é obrigatório, aparece sempre e é editável (nunca apagado). */}
+                <div className={styles.detailRow}><dt>Risco</dt><dd>{CASE_RISK_LABELS[legalCase.riskLevel] || "Não classificado"}</dd></div>
               </dl>
+              <CaseRiskForm
+                key={legalCase.riskLevel || "sem-risco"}
+                legalCase={legalCase}
+                onSaved={(updated) => { setLegalCase(updated); setNotice({ tone: "success", text: "Risco do processo atualizado." }); refreshTimeline(); }}
+                onError={setActionError}
+              />
             </Card>
 
             <DeadlinesCard legalCase={legalCase} users={users} onChanged={refreshTimeline} />

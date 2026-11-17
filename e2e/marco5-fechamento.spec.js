@@ -270,8 +270,18 @@ async function deadlineFlow(page, ctx, contractId, files) {
   const resp = page.locator("#f-responsible option");
   if ((await resp.count()) > 1) await page.selectOption("#f-responsible", { index: 1 });
   await page.fill("#f-summary", "Cobrança fictícia de aluguel em atraso (E2E)");
-  await page.getByRole("button", { name: "Criar processo" }).click();
+  // M5:244: risco e valor estimado são obrigatórios na abertura (valor 0 vale, DI-BI2-1).
+  const createBtn = page.getByRole("button", { name: "Criar processo" });
+  A.record("19a. sem risco e sem valor estimado o processo não é criado (botão desativado)", await createBtn.isDisabled());
+  await page.selectOption("#f-risk", "HIGH");
+  await page.fill("#f-estimated", "0");
+  A.record("19b. com risco e valor estimado 0 o processo pode ser criado", await createBtn.isEnabled());
+  await createBtn.click();
   await page.waitForURL(/\/processos\/[0-9a-f-]{36}$/, { timeout: 60000 });
+  await page.getByRole("button", { name: "Editar risco" }).click();
+  await page.selectOption("#f-case-risk", "MEDIUM");
+  await page.getByRole("button", { name: "Gravar risco" }).click();
+  A.record("19c. risco do processo aparece no detalhe e é editado (Alto para Médio)", await A.visible(page.getByText("Risco do processo atualizado.")));
   await page.getByRole("button", { name: "Novo prazo" }).click();
   await page.fill("#f-deadline-desc", "Contestação do locatário");
   await page.fill("#f-deadline-date", plusDays(15));
