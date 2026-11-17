@@ -1,6 +1,7 @@
 'use strict';
 
 const { requireE2ePassword } = require('./_e2e-env');
+const { loginEquipe, criarCentroDeCusto, criarContaBancaria, escolherCentro, hojeSaoPaulo } = require('./_m4-apoio');
 
 /**
  * E2E real (Playwright) — gate de aprovação prévia antes de liquidar (Marco 4, FIN-004).
@@ -17,6 +18,9 @@ const { requireE2ePassword } = require('./_e2e-env');
  * o próprio pedido) é bloqueada de propósito (CRM-TS/FIN-TS antifraude), então aprovar e
  * liquidar com uma única conta de teste não é um cenário válido — o foco aqui é o ESTADO
  * VISUAL do gate antes da aprovação, que foi exatamente o que a auditora reportou quebrado.
+ *
+ * Atualizado em 17/11/2026: o lançamento é uma conta a pagar (a Transferência não passa pela aprovação por desenho), com centro de
+ * custo e conta bancária criados pelo próprio spec pela tela, e o login espera a hidratação do `next dev`.
  *
  * Uso: `node e2e/marco4-liquidar-gate.spec.js` (ou `npm run test:e2e:marco4`).
  */
@@ -41,15 +45,14 @@ async function main() {
 
   try {
     // --- 1. Login ---
-    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
-    const teamTab = page.getByText('Sou da equipe', { exact: false });
-    if (await teamTab.count()) await teamTab.first().click();
-    await page.waitForSelector('input[type=email]', { timeout: 70000 });
-    await page.fill('input[type=email]', EMAIL);
-    await page.fill('input[type=password]', PASSWORD);
-    await page.click('button[type=submit]');
-    await page.waitForURL((url) => !url.pathname.includes('/entrar'), { timeout: 70000 }).catch(() => {});
+    await loginEquipe(page, BASE_URL, EMAIL, PASSWORD);
     record('1. login', true, EMAIL);
+
+    // --- 1b. Centro de custo próprio do spec (a conta a pagar exige; o banco descartável não traz nenhum) ---
+    const ccCode = await criarCentroDeCusto(page, BASE_URL, suffix);
+    record('1b. centro de custo criado pela tela', true, ccCode);
+    // O novo lançamento exige uma conta bancária (o banco descartável não traz nenhuma): conta operacional criada pela tela.
+    record('1c. conta bancária operacional criada pela tela', true, await criarContaBancaria(page, BASE_URL, suffix));
 
     // --- 2. Criar lançamento (PAYABLE, exige centro de custo) ---
     await page.goto(`${BASE_URL}/painel/financeiro/lancamentos/novo`, { waitUntil: 'domcontentloaded' });
@@ -60,12 +63,13 @@ async function main() {
     // "Informe o vencimento." e não cria. Preenche hoje (data de São Paulo) e segue.
     const dueWarn = await page.getByText('Informe o vencimento.', { exact: false }).count();
     record('2a. a pagar sem vencimento: aviso de obrigatório na tela', dueWarn > 0, `avisos=${dueWarn}`);
-    const hojeSp = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
-    await page.fill('#f-due', hojeSp);
-    // Usa natureza "Transferência" (não exige centro de custo/resultado) — este ambiente de
-    // dev local não tem nenhum centro de custo/resultado cadastrado, e nature=PAYABLE (default)
-    // bloquearia o submit por isso, o que não é o gap sendo testado aqui.
-    await page.selectOption('#f-nature', { label: 'Transferência' });
+    await page.fill('#f-due', hojeSaoPaulo());
+    // Conta a pagar (natureza padrão): é ela que passa pela aprovação prévia. Antes o spec usava "Transferência", que exige conta
+    // bancária e fica FORA do gate de aprovação por desenho (approvalGateSatisfied = !isPayable || ...): o "Liquidar" habilitado ali
+    // não era a regressão M4-R01.
+    const nature = await page.inputValue('#f-nature');
+    record('2b. natureza do lançamento: conta a pagar (a que exige aprovação)', nature === 'PAYABLE', nature);
+    await escolherCentro(page, '#f-cc', ccCode);
     const submitBtn = page.getByRole('button', { name: 'Criar lançamento', exact: true });
     await submitBtn.waitFor({ state: 'visible' });
     await page.waitForFunction(

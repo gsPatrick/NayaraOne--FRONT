@@ -1,6 +1,7 @@
 'use strict';
 
 const { requireE2ePassword } = require('./_e2e-env');
+const { loginEquipe } = require('./_m4-apoio');
 
 /**
  * E2E (Playwright) — varredura de "código cru" visível ao usuário nos Marcos 4/5
@@ -95,14 +96,8 @@ async function main() {
     findings.push({ route: currentRoute, kind: 'ERRO_CONSOLE', match: t.slice(0, 160), line: '' });
   });
 
-  await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
-  const teamTab = page.getByText('Sou da equipe', { exact: false });
-  if (await teamTab.count()) await teamTab.first().click();
-  await page.waitForSelector('input[type=email]');
-  await page.fill('input[type=email]', EMAIL);
-  await page.fill('input[type=password]', PASSWORD);
-  await page.click('button[type=submit]');
-  await page.waitForURL((u) => !u.pathname.includes('/entrar'), { timeout: 60000 }).catch(() => {});
+  // Login à prova da hidratação do `next dev` (o primeiro clique em "Sou da equipe" pode cair antes dela).
+  await loginEquipe(page, BASE_URL, EMAIL, PASSWORD).catch(() => {});
   if (page.url().includes('/entrar')) throw new Error('login falhou');
 
   async function scanText(route, name) {
