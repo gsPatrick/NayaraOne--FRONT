@@ -46,9 +46,13 @@ async function main() {
   page.setDefaultTimeout(70000);
 
   try {
-    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'domcontentloaded' });
-    const teamTab = page.getByText('Sou da equipe', { exact: false });
-    if (await teamTab.count()) await teamTab.first().click();
+    // Sob o `next dev` o primeiro clique pode cair antes da hidratação e não trocar a aba: tenta de novo até o campo aparecer.
+    await page.goto(`${BASE_URL}/entrar`, { waitUntil: 'networkidle' });
+    for (let i = 0; i < 10 && !(await page.locator('input[type=email]').count()); i += 1) {
+      const teamTab = page.getByText('Sou da equipe', { exact: false });
+      if (await teamTab.count()) await teamTab.first().click();
+      await page.waitForTimeout(1000);
+    }
     await page.waitForSelector('input[type=email]', { timeout: 70000 });
     await page.fill('input[type=email]', EMAIL);
     await page.fill('input[type=password]', PASSWORD);
@@ -57,8 +61,11 @@ async function main() {
     record('login', true);
 
     await page.goto(`${BASE_URL}/painel/pessoas/${idA}`, { waitUntil: 'domcontentloaded' });
+    // A ficha carrega pessoa, pares de duplicata e demais pessoas depois da hidratação: espera o botão (antes, contava logo depois
+    // do domcontentloaded e o passo falhava por tempo, com a duplicata presente na API).
     const autoMergeBtn = page.getByRole('button', { name: /duplicata detectada/i });
-    record('pessoa A tem duplicata automática detectada', (await autoMergeBtn.count()) > 0);
+    const temDuplicata = await autoMergeBtn.first().waitFor({ state: 'visible', timeout: 70000 }).then(() => true).catch(() => false);
+    record('pessoa A tem duplicata automática detectada', temDuplicata);
 
     await page.getByRole('button', { name: /mesclar com outro cadastro/i }).click();
     await page.waitForSelector('input[placeholder*=CPF], input[placeholder*=Nome]', { timeout: 10000 });
