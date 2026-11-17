@@ -17,7 +17,8 @@ const { chromium } = require('playwright');
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000';
 const API_URL = process.env.E2E_API_URL || 'http://localhost:4001/api/v1';
 const EMAIL = process.env.E2E_EMAIL || 'admin@nayaraone.dev';
-const PASSWORD = process.env.E2E_PASSWORD || 'DevAdmin#2026';
+const PASSWORD = process.env.E2E_PASSWORD; // senha nunca no código (16/11/2026): informe E2E_PASSWORD no ambiente
+if (!PASSWORD) throw new Error("Informe E2E_PASSWORD no ambiente (a senha nunca fica no código).");
 const OUT = process.env.E2E_EVIDENCIAS || path.join(__dirname, 'achados', 'radar-explicacao');
 
 const results = [];

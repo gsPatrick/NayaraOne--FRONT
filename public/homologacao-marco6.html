@@ -395,7 +395,7 @@
     <div class="cred-card">
       <div class="cred-row"><span class="cred-k">Ambiente de homologação</span><span class="cred-v">http://localhost:3000</span></div>
       <div class="cred-row"><span class="cred-k">Usuário de teste</span><span class="cred-v">admin@nayaraone.dev</span></div>
-      <div class="cred-row"><span class="cred-k">Senha</span><span class="cred-v">DevAdmin#2026</span></div>
+      <div class="cred-row"><span class="cred-k">Senha</span><span class="cred-v">(enviada por canal separado)</span></div>
       <div class="cred-row"><span class="cred-k">Módulo</span><span class="cred-v">Painel → Obras</span></div>
     </div>
   </section>
@@ -473,7 +473,7 @@
     <h2 class="h"><span class="n">02</span> Roteiro E2E ao vivo (Playwright, navegador real)</h2>
     <p class="lede">Login real em http://localhost:3000, repetindo os passos do auditor. Script Node próprio usando o Playwright já instalado no projeto (sem MCP). Todos os 10 passos abaixo passaram na mesma corrida. <strong>Artefato versionado e reproduzível:</strong> ver seção 05/GAP 2 — este roteiro agora existe como arquivo real e commitado em <code>NayaraOne--FRONT/e2e/marco6-jornada-completa.spec.js</code>, rodável com <code>npm run test:e2e:marco6</code>, não é mais uma alegação solta.</p>
     <ol class="steps">
-      <li><p class="step-action">Login admin@nayaraone.dev / DevAdmin#2026</p><p class="step-expected">Resultado: <b>PASS</b> — redireciona para /painel.</p></li>
+      <li><p class="step-action">Login admin@nayaraone.dev / (enviada por canal separado)</p><p class="step-expected">Resultado: <b>PASS</b> — redireciona para /painel.</p></li>
       <li><p class="step-action">Cadastro de obra ("E2E Obra …") e reload da página</p><p class="step-expected">Resultado: <b>PASS</b> — obra visível antes e depois do reload.</p></li>
       <li><p class="step-action">Cadastro de etapa ("Etapa E2E …") dentro da obra e reload da página</p><p class="step-expected">Resultado: <b>PASS</b> — etapa preservada ao voltar.</p></li>
       <li><p class="step-action">Navegação para o detalhe da etapa</p><p class="step-expected">Resultado: <b>PASS</b>.</p></li>

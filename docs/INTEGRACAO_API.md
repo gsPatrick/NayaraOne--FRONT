@@ -1,7 +1,7 @@
 # Plano de integração com a API real (branch `integracao-api`)
 
 API de homologação: `https://homologacao-nayaraone--api.hpztyd.easypanel.host/api/v1`
-Banco de homologação: migrado e com seed (`admin@nayaraone.dev` / `DevAdmin#2026`).
+Banco de homologação: migrado e com seed (`admin@nayaraone.dev` / `<senha enviada por canal separado>`).
 
 Regra geral: **nunca mudar layout/CSS**, só trocar a fonte dos dados (mock → API real).
 Cada módulo só é considerado integrado depois de testado contra a API de homologação de
