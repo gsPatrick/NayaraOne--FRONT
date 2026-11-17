@@ -19,6 +19,13 @@ export const BI_DESEMPENHO_GROUPS = [
         helper: "De 100 a 600.000. Acima disso a consulta é cancelada e a pessoa vê 'A consulta demorou mais que o permitido'. Padrão: 10.000.",
       },
       {
+        key: "analytics.consulta.max_simultaneas",
+        label: "Quantas leituras de painel o servidor faz ao mesmo tempo",
+        type: "number",
+        defaultValue: 3,
+        helper: "De 1 a 200. As demais esperam a vez sem ocupar o banco, para o BI nunca atrasar quem está lançando um pagamento ou fechando uma venda; quem espera mais que o tempo máximo de consulta vê 'Muitas consultas de painel ao mesmo tempo. Tente novamente em instantes.'. Padrão: 3.",
+      },
+      {
         key: "analytics.refresh.lock_timeout_ms",
         label: "Tempo máximo esperando um bloqueio na atualização dos painéis (milissegundos)",
         type: "number",
