@@ -36,7 +36,7 @@ import { uploadFile } from "@/lib/api/legal";
 import { listCompanies } from "@/lib/api/companies";
 import { useCompany } from "@/lib/context/CompanyContext";
 import { formatBRL, formatDateTime, toNumber } from "@/lib/format";
-import { maskAccountNumber } from "@/lib/mask";
+import { destinationAccountLabel } from "@/lib/finance/labels";
 import styles from "./page.module.css";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -118,9 +118,7 @@ export default function IntercompanyPage() {
       .catch((err) => setDestError(friendly(err, "Não foi possível carregar as contas da empresa de destino.")));
   }, [toCompanyId]);
 
-  function accountLabel(a) {
-    return `${a.bankCode} · ag. ${a.agency || "sem agência"} · ${maskAccountNumber(a.accountNumber)}`;
-  }
+  const accountLabel = destinationAccountLabel;
 
   function handleCreateClick(e) {
     e.preventDefault();
