@@ -1,6 +1,6 @@
 // Parâmetros dos indicadores do Jurídico e do Correspondente Bancário no BI (Marco 9, M9-D660 e M9-D661). A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada.
-const OWNER_LEGAL = "Jurídico (papel jurídico-gestor)";
+const OWNER_LEGAL = "Jurídico (papel juridico-gestor)";
 const OWNER_COR = "Correspondente Bancário (papel correspondente-gestor)";
 const HELPER = "Papel responsável por conferir o número. Vale para o indicador publicado a partir de agora.";
 

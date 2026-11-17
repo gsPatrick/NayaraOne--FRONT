@@ -32,6 +32,7 @@ import { formatDate, dateOnlyInputToIso } from "@/lib/format";
 import { QUALITY_CATEGORIES } from "../_components/obraShared";
 import styles from "./page.module.css";
 import { getProjectOrNull } from "../_components/getProjectOrNull";
+import { NC_CAUSE_MAX, NC_CAUSE_HELPER, NC_CAUSE_CLOSE_HELPER, causePayload, causeLabel } from "./ncCause";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
@@ -71,6 +72,7 @@ export default function QualidadeObraPage({ params }) {
     requiresAcceptance: false,
     beforeFileId: "",
     beforeFileName: "",
+    causeCode: "",
   });
   const [ncBeforeUploading, setNcBeforeUploading] = useState(false);
   const [ncBeforeUploadError, setNcBeforeUploadError] = useState("");
@@ -85,6 +87,7 @@ export default function QualidadeObraPage({ params }) {
   const [ncAfterUploading, setNcAfterUploading] = useState(false);
   const [ncAfterUploadError, setNcAfterUploadError] = useState("");
   const [ncAcceptedByUserId, setNcAcceptedByUserId] = useState("");
+  const [ncCloseCause, setNcCloseCause] = useState("");
   const [savingNcClose, setSavingNcClose] = useState(false);
   const [applyingChecklist, setApplyingChecklist] = useState(false);
   const [members, setMembers] = useState([]);
@@ -253,6 +256,7 @@ export default function QualidadeObraPage({ params }) {
       requiresAcceptance: false,
       beforeFileId: "",
       beforeFileName: "",
+      causeCode: "",
     });
     setNcBeforeUploadError("");
     setNcOpen(true);
@@ -299,6 +303,7 @@ export default function QualidadeObraPage({ params }) {
         slaDueAt: dateOnlyInputToIso(ncForm.slaDueAt) || undefined,
         requiresAcceptance: ncForm.requiresAcceptance,
         beforeEvidenceFileIds: ncForm.beforeFileId ? [ncForm.beforeFileId] : [],
+        ...causePayload(ncForm.causeCode),
       });
       setNonconformities((prev) => [created, ...prev]);
       setNcOpen(false);
@@ -315,6 +320,7 @@ export default function QualidadeObraPage({ params }) {
     setNcAfterFileName("");
     setNcAfterUploadError("");
     setNcAcceptedByUserId("");
+    setNcCloseCause(nc?.causeCode || "");
   }
 
   async function handleUploadAfterEvidence(file) {
@@ -345,6 +351,7 @@ export default function QualidadeObraPage({ params }) {
       const updated = await closeNonconformity(closingNc.id, {
         afterEvidenceFileIds: [ncAfterFileId],
         acceptedByUserId: ncAcceptedByUserId || undefined,
+        ...causePayload(ncCloseCause),
       });
       setNonconformities((prev) => prev.map((n) => (n.id === updated.id ? updated : n)));
       setClosingNc(null);
@@ -477,6 +484,7 @@ export default function QualidadeObraPage({ params }) {
                         {respUser ? `Responsável: ${respUser.name}` : "Sem responsável definido"}
                         {nc.slaDueAt ? ` · Prazo: ${formatDate(nc.slaDueAt)}` : ""}
                         {nc.requiresAcceptance ? " · Exige aceite para fechar" : ""}
+                        {` · ${causeLabel(nc)}`}
                       </span>
                       {nc.beforeEvidenceFileIds?.length || nc.afterEvidenceFileIds?.length ? (
                         <span className={styles.rowSubtitle}>
@@ -680,6 +688,17 @@ export default function QualidadeObraPage({ params }) {
             </Select>
           </FormField>
           <div className={styles.span2}>
+            <FormField label="Causa" htmlFor="m-nc-cause" helper={NC_CAUSE_HELPER}>
+              <Input
+                id="m-nc-cause"
+                maxLength={NC_CAUSE_MAX}
+                value={ncForm.causeCode}
+                onChange={(e) => setNcForm((p) => ({ ...p, causeCode: e.target.value }))}
+                placeholder="Ex.: INFILTRACAO"
+              />
+            </FormField>
+          </div>
+          <div className={styles.span2}>
             <FormField label="Evidência 'antes'" htmlFor="m-nc-before-file" required>
               <FileDropInput
                 id="m-nc-before-file"
@@ -731,6 +750,17 @@ export default function QualidadeObraPage({ params }) {
                 onFiles={(files) => handleUploadAfterEvidence(files[0])}
                 onRemove={() => { setNcAfterFileId(""); setNcAfterFileName(""); }}
                 helper="Foto comprovando a correção do problema — obrigatório."
+              />
+            </FormField>
+          </div>
+          <div className={styles.span2}>
+            <FormField label="Causa" htmlFor="m-nc-close-cause" helper={NC_CAUSE_CLOSE_HELPER}>
+              <Input
+                id="m-nc-close-cause"
+                maxLength={NC_CAUSE_MAX}
+                value={ncCloseCause}
+                onChange={(e) => setNcCloseCause(e.target.value)}
+                placeholder="Ex.: INFILTRACAO"
               />
             </FormField>
           </div>
