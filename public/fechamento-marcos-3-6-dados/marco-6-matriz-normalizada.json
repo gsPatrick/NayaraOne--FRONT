@@ -566,8 +566,8 @@
  "base": "14217771",
  "integrado": {
   "branch": "marco-9",
-  "api": "4c43f5c1",
-  "front": "1ed4720"
+  "api": "0cc15431",
+  "front": "8348808"
  },
  "contido": {
   "api": true,

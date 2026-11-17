@@ -1,4 +1,0 @@
-ERRO: page.waitForSelector: Timeout 70000ms exceeded.
-Call log:
-[2m  - waiting for locator('input[type=email]') to be visible[22m
-

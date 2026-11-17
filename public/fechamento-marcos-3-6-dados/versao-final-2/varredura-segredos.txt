@@ -1,0 +1,4 @@
+# Varredura de segredos nas evidências de versao-final-2 (2026-11-17T06:07:15Z), depois da tentativa 2 do E2E
+# padrões: JWT, Bearer, string de conexão postgres com senha, senha E2E gerada (E2e-<hex>), credencial fictícia do CI, otpauth/segredo TOTP, chaves privadas, AWS/GitHub/OpenAI/Anthropic, campo "password" em JSON, senha do app de CI
+# arquivos de texto com ocorrência: 0 de 2033 arquivos
+# prints/vídeos com padrão: 0
