@@ -1,6 +1,6 @@
 // Parâmetros dos indicadores de prazos da Locação no BI (Marco 9, M9-D641): Garantias vencendo, Obrigações pendentes e Vistorias e chaves. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada.
-const OWNER = "Gerência de Locação (papel locação-gestor)";
+const OWNER = "Gerência de Locação (papel locacao-gestor)";
 const HELPER = "Papel responsável por conferir o número. Vale para o indicador publicado a partir de agora.";
 
 const owner = (key, label) => ({ key, label: `Responsável pelo indicador ${label}`, type: "text", defaultValue: OWNER, helper: HELPER });

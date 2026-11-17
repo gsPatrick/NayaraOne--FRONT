@@ -1,6 +1,6 @@
 // Parâmetros dos indicadores da carteira de Locação no BI (Marco 9, M9-D640): Contratos de locação ativos, Vacância e Inadimplência da locação. A API valida (SETTINGS_SCHEMA); o padrão
 // mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada. A janela e as faixas de atraso da inadimplência são as do grupo do Financeiro.
-const OWNER = "Gerência de Locação (papel locação-gestor)";
+const OWNER = "Gerência de Locação (papel locacao-gestor)";
 const HELPER = "Papel responsável por conferir o número. Vale para o indicador publicado a partir de agora.";
 
 const owner = (key, label) => ({ key, label: `Responsável pelo indicador ${label}`, type: "text", defaultValue: OWNER, helper: HELPER });

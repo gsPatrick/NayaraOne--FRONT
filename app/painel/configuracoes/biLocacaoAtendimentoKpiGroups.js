@@ -1,6 +1,6 @@
 // Parâmetros dos indicadores de chamados, satisfação e repasses da Locação no BI (Marco 9, M9-D642): Chamados da locação, Satisfação da locação e Repasses de locação. A API valida
 // (SETTINGS_SCHEMA); o padrão mostrado é o de Maturacao/demandas/parametros.csv e só vale enquanto a empresa não configurou nada.
-const OWNER = "Gerência de Locação (papel locação-gestor)";
+const OWNER = "Gerência de Locação (papel locacao-gestor)";
 const HELPER = "Papel responsável por conferir o número. Vale para o indicador publicado a partir de agora.";
 
 const owner = (key, label) => ({ key, label: `Responsável pelo indicador ${label}`, type: "text", defaultValue: OWNER, helper: HELPER });

@@ -17,9 +17,9 @@ export const BI_DECISAO_FILA_GROUPS = [
         helper: "De 1 a 8.760. O item que espera decisão há mais horas do que isto aparece marcado como envelhecido e entra na contagem de envelhecidos de cada indicador. Padrão: 48.",
       },
       owner("analytics.owner.fin.approvals_pending", "Aprovações financeiras pendentes", "Diretoria Financeira (papel financeiro-gestor)"),
-      owner("analytics.owner.inv.adjustments_pending", "Propostas de ajuste de estoque pendentes", "Gestor de Estoque (papel estoque-gestor)"),
-      owner("analytics.owner.tec.rule_approvals_pending", "Aprovações de regra pendentes", "Tecnologia (papel tecnologia-gestor)"),
-      owner("analytics.owner.ai.proposals_pending", "Propostas da NAY aguardando aprovação", "Tecnologia/IA (papel ia-gestor)"),
+      owner("analytics.owner.inv.adjustments_pending", "Propostas de ajuste de estoque pendentes", "Almoxarifado (papel estoque-gestor)"),
+      owner("analytics.owner.tec.rule_approvals_pending", "Aprovações de regra pendentes", "Tecnologia (papel ti-gestor)"),
+      owner("analytics.owner.ai.proposals_pending", "Propostas da NAY aguardando aprovação", "Tecnologia (papel ti-gestor)"),
     ],
   },
   {
