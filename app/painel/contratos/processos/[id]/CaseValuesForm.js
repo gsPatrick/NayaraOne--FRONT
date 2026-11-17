@@ -2,14 +2,15 @@
 
 // Valores do processo (Caderno M5 §14 "Não confundir estimativa processual com recebível confirmado"): a estimativa
 // e o valor confirmado (acordo/condenação) são campos separados do processo (PATCH /legal/cases/:id). Depois que o
-// confirmado vira recebível no Financeiro, a API recusa alterá-lo (LEGAL_CASE_RECEIVABLE_LOCKED).
+// confirmado vira recebível no Financeiro, a API recusa alterá-lo (LEGAL_CASE_RECEIVABLE_LOCKED). M5:244: a estimativa é
+// obrigatória e nunca é apagada (campo vazio fica inválido e a tela nunca manda null); 0 vale (DI-BI2-1).
 import { useState } from "react";
 import Button from "@/components/atoms/Button/Button";
 import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import FormField from "@/components/molecules/FormField/FormField";
 import { updateLegalCase } from "@/lib/api/legal";
 import { legalErrorMessage } from "@/lib/legal/legalErrors";
-import { toNumber } from "@/lib/format";
+import { caseValuesPayload, caseValuesValid, isValidEstimatedAmount } from "@/lib/legal/caseRequired";
 import styles from "./page.module.css";
 
 const asInput = (v) => (v === null || v === undefined || v === "" ? "" : String(v).replace(".", ","));
@@ -19,17 +20,15 @@ export default function CaseValuesForm({ legalCase, locked, onSaved, onError }) 
   const [form, setForm] = useState({ estimatedAmount: asInput(legalCase.estimatedAmount), confirmedAmount: asInput(legalCase.confirmedAmount) });
   const [busy, setBusy] = useState(false);
 
-  const parsed = (v) => (v === "" ? null : toNumber(v));
-  const invalid = [form.estimatedAmount, form.confirmedAmount].some((v) => v !== "" && (Number.isNaN(toNumber(v)) || toNumber(v) < 0));
+  const invalid = !caseValuesValid(form);
+  const estimatedError = isValidEstimatedAmount(form.estimatedAmount) ? undefined : "Informe o valor estimado (use 0 quando não houver valor em disputa).";
 
   async function handleSave() {
     if (invalid) return;
     setBusy(true);
     onError("");
     try {
-      const payload = { estimatedAmount: parsed(form.estimatedAmount) };
-      if (!locked) payload.confirmedAmount = parsed(form.confirmedAmount);
-      const updated = await updateLegalCase(legalCase.id, payload);
+      const updated = await updateLegalCase(legalCase.id, caseValuesPayload(form, locked));
       setOpen(false);
       onSaved(updated);
     } catch (err) {
@@ -45,7 +44,7 @@ export default function CaseValuesForm({ legalCase, locked, onSaved, onError }) 
   return (
     <div className={styles.newDeadline} data-testid="case-values-form">
       <div className={styles.formRow}>
-        <FormField label="Valor estimado (R$)" htmlFor="f-case-estimated" helper="Estimativa processual: nunca vira lançamento.">
+        <FormField label="Valor estimado (R$)" htmlFor="f-case-estimated" required error={estimatedError} helper="Estimativa processual: nunca vira lançamento.">
           <DecimalInput id="f-case-estimated" value={form.estimatedAmount} onChange={(e) => setForm((p) => ({ ...p, estimatedAmount: e.target.value }))} placeholder="0,00" />
         </FormField>
         <FormField

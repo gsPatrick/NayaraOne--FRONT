@@ -7,6 +7,7 @@ import Card from "@/components/molecules/Card/Card";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import Select from "@/components/atoms/Select/Select";
+import DecimalInput from "@/components/atoms/DecimalInput/DecimalInput";
 import Button from "@/components/atoms/Button/Button";
 import Alert from "@/components/molecules/Alert/Alert";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
@@ -18,6 +19,9 @@ import { listContracts, createLegalCase } from "@/lib/api/legal";
 import { listProperties } from "@/lib/api/properties";
 import { apiFetch } from "@/lib/api/client";
 import { CASE_TYPE_LABELS } from "@/lib/mock/legal";
+import { CASE_RISK_LABELS } from "@/lib/labels/juridico";
+import { legalErrorMessage } from "@/lib/legal/legalErrors";
+import { CASE_RISK_OPTIONS, newCaseProblems, newCaseRiskValuePayload } from "@/lib/legal/caseRequired";
 import { formatContractLabel } from "@/lib/format";
 import styles from "./page.module.css";
 
@@ -35,6 +39,9 @@ export default function NovoProcessoPage() {
     propertyId: "",
     responsibleUserId: "",
     summary: "",
+    // M5:244: risco e valor estimado são obrigatórios (sem escolha prévia: a pessoa decide o risco e digita o valor).
+    riskLevel: "",
+    estimatedAmount: "",
   });
 
   // M9-D940: carregando, erro com "tentar de novo", 403 e offline vêm do padrão único de estados.
@@ -51,7 +58,7 @@ export default function NovoProcessoPage() {
       .then(() => true);
   }, { deps: [], isEmpty: () => false });
 
-  const isValid = form.caseNumber.trim() && form.caseType && form.summary.trim();
+  const isValid = Boolean(form.caseNumber.trim() && form.caseType && form.summary.trim()) && newCaseProblems(form).length === 0;
 
   function update(field) {
     return (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -69,10 +76,11 @@ export default function NovoProcessoPage() {
         propertyId: form.propertyId || undefined,
         responsibleUserId: form.responsibleUserId || undefined,
         summary: form.summary,
+        ...newCaseRiskValuePayload(form),
       });
       router.push(`/painel/contratos/processos/${legalCase.id}`);
     } catch (err) {
-      setActionError(err.message || "Erro ao criar processo.");
+      setActionError(legalErrorMessage(err, "Erro ao criar processo."));
     } finally {
       setSubmitting(false);
     }
@@ -107,6 +115,19 @@ export default function NovoProcessoPage() {
                   <option key={k} value={k}>{v}</option>
                 ))}
               </Select>
+            </FormField>
+
+            <FormField label="Risco" htmlFor="f-risk" required>
+              <Select id="f-risk" value={form.riskLevel} onChange={update("riskLevel")}>
+                <option value="" disabled>Selecionar…</option>
+                {CASE_RISK_OPTIONS.map((k) => (
+                  <option key={k} value={k}>{CASE_RISK_LABELS[k]}</option>
+                ))}
+              </Select>
+            </FormField>
+
+            <FormField label="Valor estimado (R$)" htmlFor="f-estimated" required helper="Estimativa processual (use 0 quando não houver valor em disputa).">
+              <DecimalInput id="f-estimated" value={form.estimatedAmount} onChange={update("estimatedAmount")} placeholder="0,00" />
             </FormField>
 
             <FormField label="Contrato" htmlFor="f-contract" helper="Opcional">
