@@ -3,6 +3,10 @@
 //   (Configurações > CRM). A desistência é perda (LOST) com motivo de desistência: aparece na lista do "perdido".
 // - Toda oportunidade tem responsável (livro do Marco 3, CRMX-006): sem ele o formulário não envia; na edição o
 //   responsável troca, mas não fica vazio, e só vai no pedido quando mudou.
+// - Toda oportunidade nasce com a origem do lead (M9:610 e M9:784; DI-BI2-4): sem ela o formulário não envia
+//   (a API recusa com 422 OPPORTUNITY_LEAD_SOURCE_REQUIRED). A edição não mexe na origem.
+
+import { LEAD_SOURCE_CODES } from "@/lib/labels/leadSource";
 
 export const OUTCOME_REASON_FIELD = { ganho: "wonReason", perdido: "lostReason" };
 export const OWNER_REQUIRED_MESSAGE = "Selecione o responsável: toda oportunidade precisa de um responsável.";
@@ -17,6 +21,13 @@ export function toReasonOptions(catalog) {
 
 export function ownerError(ownerUserId) {
   return ownerUserId ? "" : OWNER_REQUIRED_MESSAGE;
+}
+
+export const LEAD_SOURCE_REQUIRED_MESSAGE = "Selecione a origem do lead: toda oportunidade nasce com a origem.";
+
+/** Origem do lead da nova oportunidade: obrigatória e da lista que a API aceita. */
+export function leadSourceError(leadSource) {
+  return LEAD_SOURCE_CODES.includes(leadSource) ? "" : LEAD_SOURCE_REQUIRED_MESSAGE;
 }
 
 /** Campo de responsável do PATCH: só quando mudou (e nunca vazio — vazio é barrado antes por ownerError). */
