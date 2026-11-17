@@ -896,7 +896,7 @@ function NewCommissionModal({ open, error, users, onClose, onConfirm, busy }) {
           ))}
         </Select>
       </FormField>
-      <FormField label="Componente" htmlFor="nc-component" required helper="O percentual e o arredondamento do centavo vêm da regra de comissão vigente (REG-FIN-001) para o componente">
+      <FormField label="Componente" htmlFor="nc-component" required helper="O percentual e o arredondamento do centavo vêm da regra de comissão vigente (Financeiro > Regra de comissão) para o componente">
         <Select id="nc-component" value={form.component} onChange={update("component")}>
           <option value="BROKER">Corretor</option>
           <option value="MANAGER">Gerente</option>

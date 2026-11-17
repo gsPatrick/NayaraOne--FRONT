@@ -24,6 +24,7 @@ import Table from "@/components/organisms/Table/Table";
 import Badge from "@/components/atoms/Badge/Badge";
 import { formatDateTime, formatPercent, toNumber } from "@/lib/format";
 import { ROUNDING_OPTIONS, roundingLabel, roundingExample } from "./rounding";
+import { currentRuleSummary, loadCurrentCommissionRule } from "./currentRule";
 import styles from "./page.module.css";
 
 // O que mudou em relação à versão anterior (a lista vem da mais nova para a mais antiga).
@@ -49,15 +50,9 @@ const COMPONENTS = [
 ];
 
 export default function CommissionRulePage() {
-  // M9-D940: a regra vigente e o histórico vêm do padrão único de estados. "Nenhuma regra publicada" é só o 404 da API;
-  // sem acesso, sem conexão e erro de servidor aparecem com o estado certo (nunca como "sem regra").
-  const ruleQuery = useAsyncState(
-    () => getCommissionRule().then((current) => ({ current })).catch((err) => {
-      if (err?.status === 404) return { current: null };
-      throw err;
-    }),
-    { key: "regra-comissao", isEmpty: () => false }
-  );
+  // M9-D940: a regra vigente e o histórico vêm do padrão único de estados. "Nenhuma regra publicada" é só o código
+  // FINANCE_COMMISSION_RULE_NOT_CONFIGURED da API (currentRule.js); sem acesso, sem conexão e erro de servidor aparecem com o estado certo.
+  const ruleQuery = useAsyncState(() => loadCurrentCommissionRule(getCommissionRule), { key: "regra-comissao", isEmpty: () => false });
   const rule = ruleQuery.data?.current || null;
   const ruleMessage = ruleQuery.data ? "Nenhuma regra de comissão publicada ainda." : "";
   const versionsQuery = useAsyncState(() => listCommissionRuleVersions().then((list) => (Array.isArray(list) ? list : [])), { key: "regra-comissao:versoes", isEmpty: () => false });
@@ -137,11 +132,7 @@ export default function CommissionRulePage() {
         <Card className={styles.formCard}>
           <h2 className={styles.sectionTitle}>Versão vigente</h2>
           {rule ? (
-            <p className={styles.helper}>
-              Versão {rule.versionNumber ?? "vigente"}{rule.effectiveFrom ? ` (publicada em ${formatDateTime(rule.effectiveFrom)})` : ""} · regra {rule.ruleCode || "REG-FIN-001"} · base: valor do recebimento ·{" "}
-              {COMPONENTS.map(({ key, label }) => `${label.replace(" (%)", "")}: ${rule.components?.[key] != null ? formatPercent(rule.components[key]) : "não se aplica"}`).join(" · ")}
-              {" · arredondamento: "}{roundingLabel(rule.rounding)}
-            </p>
+            <p className={styles.helper}>{currentRuleSummary(rule, COMPONENTS)}</p>
           ) : ruleQuery.data ? (
             <p className={styles.helper}>{ruleMessage}</p>
           ) : (
