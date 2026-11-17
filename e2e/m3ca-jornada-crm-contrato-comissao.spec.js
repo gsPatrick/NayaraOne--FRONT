@@ -51,7 +51,9 @@ async function crmSteps(page, s, token) {
   await page.selectOption("#o-property", s.property.id);
   await page.getByRole("button", { name: "Criar oportunidade" }).click();
   await expect(page.locator('[role="dialog"]').getByText("toda oportunidade precisa de um responsável", { exact: false }), "2. sem responsável a oportunidade não é criada (CRMX-006)").toBeVisible();
+  await expect(page.locator('[role="dialog"]').getByText("Selecione a origem do lead", { exact: false }), "2a. sem a origem do lead a oportunidade não é criada (M9:610, DI-BI2-4)").toBeVisible();
   await page.selectOption("#o-rep", s.userId);
+  await page.selectOption("#o-lead-source", "PORTAL");
   await page.fill("#o-next-action", "Apresentar imóveis do radar");
   await page.fill("#o-next-due", plusDateTime(1));
   await page.getByRole("button", { name: "Criar oportunidade" }).click();

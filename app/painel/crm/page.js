@@ -47,8 +47,10 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import { createLatestGuard } from "@/lib/asyncState/latest";
 import { formatDateTime, isOverdue, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, dateTimeLocalInputToIso, isoToDateTimeLocalInput } from "@/lib/format";
 import styles from "./page.module.css";
-import { OUTCOME_REASON_FIELD, toReasonOptions, ownerError } from "./opportunityRules";
+import { OUTCOME_REASON_FIELD, toReasonOptions, ownerError, leadSourceError } from "./opportunityRules";
+import { LEAD_SOURCE_OPTIONS } from "@/lib/labels/leadSource";
 import OpportunityJourneyLinks from "./OpportunityJourneyLinks";
+import OpportunityLeadSource from "./OpportunityLeadSource";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
 const CLOSED_STAGES = ["ganho", "perdido"];
@@ -427,6 +429,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
           <p className={styles.detailMeta}>
             Responsável: {opportunity.repName} · Criada em {formatDateTime(opportunity.createdAt)}
           </p>
+          <OpportunityLeadSource opportunity={opportunity} />
           <OpportunityJourneyLinks opportunity={opportunity} />
 
           {editing ? (
@@ -743,6 +746,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
   const [propertyId, setPropertyId] = useState(properties[0]?.id || "");
   // FIX (padrão do seletor de responsável): nenhum usuário vem pré-selecionado por padrão.
   const [ownerUserId, setOwnerUserId] = useState("");
+  const [leadSource, setLeadSource] = useState("");
   const [nextAction, setNextAction] = useState("");
   const [nextActionDueAt, setNextActionDueAt] = useState("");
   const [nextActionDueAtInvalid, setNextActionDueAtInvalid] = useState(false);
@@ -771,6 +775,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     setStageKey(initialStageKey || stages[0]?.key || "");
     setPropertyId(properties[0]?.id || "");
     setOwnerUserId("");
+    setLeadSource("");
     setNextAction("");
     setNextActionDueAt("");
     setNextActionDueAtInvalid(false);
@@ -791,6 +796,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
     const nextErrors = {};
     if (!personId) nextErrors.personName = "Selecione o contato (cliente/lead).";
     if (ownerError(ownerUserId)) nextErrors.ownerUserId = ownerError(ownerUserId);
+    if (leadSourceError(leadSource)) nextErrors.leadSource = leadSourceError(leadSource);
     if (!CLOSED_STAGES.includes(stageKey)) {
       if (!nextAction.trim()) nextErrors.nextAction = "Toda oportunidade ativa precisa de uma próxima ação.";
       if (!nextActionDueAt) nextErrors.nextActionDueAt = "Informe o prazo da próxima ação.";
@@ -810,6 +816,7 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
       personId,
       propertyId: propertyId || undefined,
       ownerUserId,
+      leadSource,
       nextAction: nextAction.trim(),
       nextActionDueAt: dateTimeLocalInputToIso(nextActionDueAt),
       ...(reasonField && outcomeReason ? { [reasonField]: outcomeReason } : {}),
@@ -861,16 +868,22 @@ function CreateOpportunityModal({ open, onClose, onCreate, stages, initialStageK
             ))}
           </Select>
         </FormField>
-        <div className={styles.span2}>
-          <FormField label="Vendedor responsável" htmlFor="o-rep" required error={errors.ownerUserId}>
-            <Select id="o-rep" value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)}>
-              <option value="">Selecionar…</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </Select>
-          </FormField>
-        </div>
+        <FormField label="Vendedor responsável" htmlFor="o-rep" required error={errors.ownerUserId}>
+          <Select id="o-rep" value={ownerUserId} onChange={(e) => setOwnerUserId(e.target.value)}>
+            <option value="">Selecionar…</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>{u.name}</option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label="Origem do lead" htmlFor="o-lead-source" required error={errors.leadSource} helper="Por onde o cliente chegou. Não muda depois.">
+          <Select id="o-lead-source" value={leadSource} onChange={(e) => setLeadSource(e.target.value)}>
+            <option value="">Selecionar…</option>
+            {LEAD_SOURCE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </Select>
+        </FormField>
         <FormField
           label="Próxima ação"
           htmlFor="o-next-action"

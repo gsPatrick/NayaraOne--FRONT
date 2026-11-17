@@ -17,7 +17,7 @@ export const MARKETING_FUNIL_GROUPS = [
         label: "Origens do lead que recebem a confirmação",
         type: "text",
         defaultValue: "FORM, SITE, PORTAL, WHATSAPP",
-        helper: "Origens separadas por vírgula (FORM, SITE, PORTAL, WHATSAPP, PHONE, EMAIL, SOCIAL, REFERRAL, OTHER). Lead de outra origem não recebe a confirmação automática.",
+        helper: "Origens separadas por vírgula (FORM, SITE, PORTAL, WHATSAPP, PHONE, EMAIL, SOCIAL, REFERRAL, PARTNER, OTHER). PARTNER é o lead que chega pela API de parceiro. Quem escreve pelo WhatsApp entra como WHATSAPP. Lead de outra origem não recebe a confirmação automática.",
       },
     ],
   },
