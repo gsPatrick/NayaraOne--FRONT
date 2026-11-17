@@ -56,6 +56,12 @@ async function main() {
     await page.waitForSelector('#f-desc', { timeout: 70000 });
     await page.fill('#f-desc', `E2E Marco4 Gate ${suffix}`);
     await page.fill('#f-amount', '1500');
+    // DI-BI2-6 (16/11/2026): conta a pagar própria (natureza padrão) exige o vencimento — sem a data a tela mostra
+    // "Informe o vencimento." e não cria. Preenche hoje (data de São Paulo) e segue.
+    const dueWarn = await page.getByText('Informe o vencimento.', { exact: false }).count();
+    record('2a. a pagar sem vencimento: aviso de obrigatório na tela', dueWarn > 0, `avisos=${dueWarn}`);
+    const hojeSp = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    await page.fill('#f-due', hojeSp);
     // Usa natureza "Transferência" (não exige centro de custo/resultado) — este ambiente de
     // dev local não tem nenhum centro de custo/resultado cadastrado, e nature=PAYABLE (default)
     // bloquearia o submit por isso, o que não é o gap sendo testado aqui.

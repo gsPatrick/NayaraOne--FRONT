@@ -37,6 +37,8 @@ const ROUTES = [
   '/painel/financeiro/lancamentos', '/painel/financeiro/lancamentos/novo', '/painel/financeiro/orcamento',
   '/painel/financeiro/plano-de-contas', '/painel/financeiro/regra-comissao', '/painel/financeiro/regua-cobranca',
   '/painel/financeiro/relatorio',
+  // DI-BI2-6: a cobrança de perda gera conta a receber no Financeiro (vencimento obrigatório na decisão).
+  '/painel/estoque/perdas',
   '/painel/contratos', '/painel/contratos/clausulas', '/painel/contratos/entrega-chaves', '/painel/contratos/entrega-chaves/novo',
   '/painel/contratos/garantias', '/painel/contratos/garantias/novo', '/painel/contratos/lista', '/painel/contratos/lista/novo',
   '/painel/contratos/locacao', '/painel/contratos/notificacoes', '/painel/contratos/processos', '/painel/contratos/processos/novo',

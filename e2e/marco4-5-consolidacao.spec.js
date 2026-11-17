@@ -126,6 +126,23 @@ async function main() {
     record('lançamento: anexar comprovante', /erro|falha|não/i.test(alerts) ? 'VER' : 'OK', `${target.id} :: ${alerts.slice(0, 160)}`);
   });
 
+  // 3b. Lançamento — o vencimento gravado não troca na edição (DI-BI2-6: só se preenche quando falta)
+  await step('lançamento: vencimento gravado travado na edição', async () => {
+    const entries = (await apiGet('/finance/entries?nature=PAYABLE&status=PENDING&pageSize=50')) || [];
+    const list = Array.isArray(entries) ? entries : entries.items || entries.rows || [];
+    const target = list.find((e) => e.dueAt);
+    if (!target) return record('lançamento: vencimento gravado travado na edição', 'SEM-DADO', 'nenhum PAYABLE pendente com vencimento');
+    await page.goto(`${BASE_URL}/painel/financeiro/lancamentos/${target.id}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('networkidle').catch(() => {});
+    const edit = page.getByRole('button', { name: /Editar/ });
+    if (!(await edit.count())) return record('lançamento: vencimento gravado travado na edição', 'SEM-DADO', `lançamento ${target.id} sem botão Editar`);
+    await edit.first().click();
+    await page.waitForSelector('#e-due', { timeout: 15000 });
+    const locked = await page.locator('#e-due').isDisabled();
+    await shot('02b-lancamento-vencimento-travado');
+    record('lançamento: vencimento gravado travado na edição', locked ? 'OK' : 'VER', `${target.id} :: campo desligado=${locked}`);
+  });
+
   // 4. Régua de cobrança — total de páginas + filtro por contrato
   await step('régua de cobrança', async () => {
     await page.goto(`${BASE_URL}/painel/financeiro/regua-cobranca`, { waitUntil: 'domcontentloaded' });

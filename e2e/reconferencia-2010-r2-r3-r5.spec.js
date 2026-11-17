@@ -38,6 +38,10 @@ const rec = (s, ok, d) => { results.push(ok); console.log(`[${ok ? 'OK ' : 'FALH
     const val = await page.inputValue('#f-amount');
     const warn = await page.getByText('O valor deve ser maior que zero', { exact: false }).count();
     rec('R3: "-10" não vira 10 em silêncio (campo esvaziado + aviso)', warn > 0 && val === '', `valor no campo="${val}", avisos=${warn}`);
+    // DI-BI2-6 (16/11/2026): no mesmo formulário (a pagar, padrão), o vencimento é obrigatório e o botão de criar fica desligado sem ele.
+    const dueWarn = await page.getByText('Informe o vencimento.', { exact: false }).count();
+    const createDisabled = await page.getByRole('button', { name: 'Criar lançamento', exact: true }).isDisabled().catch(() => false);
+    rec('DI-BI2-6: a pagar sem vencimento não cria (aviso + botão desligado)', dueWarn > 0 && createDisabled, `avisos=${dueWarn}, desligado=${createDisabled}`);
 
     // R2
     await page.goto(`${BASE_URL}/painel/financeiro/lancamentos/6b3d0585-d4ed-4eba-b823-bc45f4fe0cc8`, { waitUntil: 'domcontentloaded' });

@@ -143,7 +143,7 @@ export default function LancamentoDetailPage({ params }) {
           ) : null}
           {evidence.manualOpen && needsManualEvidence ? <ManualEvidenceCard evidence={evidence} busy={busy} /> : null}
           {settlement.partialOpen ? <PartialSettlementCard settlement={settlement} needsManualEvidence={needsManualEvidence} busy={busy} /> : null}
-          {edit.editOpen ? <EditEntryCard edit={edit} allBankAccounts={d.allBankAccounts} allCostCenters={d.allCostCenters} allResultCenters={d.allResultCenters} /> : null}
+          {edit.editOpen ? <EditEntryCard edit={edit} entry={entry} allBankAccounts={d.allBankAccounts} allCostCenters={d.allCostCenters} allResultCenters={d.allResultCenters} /> : null}
 
           <div className={styles.grid}>
             <div className={styles.mainCol}>
