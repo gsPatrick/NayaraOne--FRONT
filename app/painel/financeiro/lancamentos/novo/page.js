@@ -19,6 +19,7 @@ import { listBankAccounts, listCostCenters, listResultCenters, listChartAccounts
 import { listContracts, listContractParties } from "@/lib/api/legal";
 import { listPeople } from "@/lib/api/people";
 import { friendlyFinanceError } from "@/lib/finance/extras";
+import { DUE_REQUIRED_TEXT, newEntryDueMissing, requiresDueDate } from "@/lib/finance/openEntryRequired";
 import { generateIdempotencyKey } from "@/lib/offline/offlineQueue";
 import { dateOnlyInputToIso, formatContractLabel, parseCompetenceInput, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
@@ -124,11 +125,15 @@ export default function NovoLancamentoPage() {
   const amountInvalid = amountTouched && !(toNumber(form.amount) > 0);
   const costCenterMissing = form.nature === "PAYABLE" && !form.costCenterId;
   const resultCenterMissing = form.nature === "RECEIVABLE" && !form.resultCenterId;
+  // Segunda leva (16/11/2026, DI-BI2-6): vencimento obrigatório na conta a pagar/receber própria (M4 §19, 7/30/60 e inadimplência).
+  const dueRequired = requiresDueDate(form);
+  const dueMissing = !dueAtInvalid && newEntryDueMissing(form);
   const isValid =
     form.description.trim() &&
     toNumber(form.amount) > 0 &&
     form.bankAccountId &&
     !dueAtInvalid &&
+    !dueMissing &&
     !costCenterMissing &&
     !resultCenterMissing &&
     !competenceInvalid &&
@@ -274,7 +279,9 @@ export default function NovoLancamentoPage() {
               <FormField
                 label="Vencimento"
                 htmlFor="f-due"
-                error={dueAtInvalid ? "Data inválida — verifique o ano digitado (use um ano entre 1900 e 2100)." : undefined}
+                required={dueRequired}
+                helper={dueRequired ? DUE_REQUIRED_TEXT : "Opcional"}
+                error={dueAtInvalid ? "Data inválida — verifique o ano digitado (use um ano entre 1900 e 2100)." : dueMissing ? "Informe o vencimento." : undefined}
               >
                 <Input
                   id="f-due"

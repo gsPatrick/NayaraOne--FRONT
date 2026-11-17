@@ -25,6 +25,8 @@ import { listLossCases, openLossCase, decideLossCase, listInventoryItems, listIn
 import { listPeople } from "@/lib/api/people";
 import { uploadFile } from "@/lib/api/legal";
 import { formatBRL, formatDateTime, formatQuantity, toNumber } from "@/lib/format";
+import { friendlyFinanceError } from "@/lib/finance/extras";
+import { lossChargeDueMissing, lossChargePayload } from "@/lib/finance/openEntryRequired";
 import { getCurrentUser } from "@/lib/auth/session";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
@@ -32,7 +34,7 @@ import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
 const STATUS_LABELS = { OPEN: "Em análise", PENDING_APPROVAL: "Acima da alçada — aguarda decisão", APPROVED: "Aprovada (baixa gerada)", REJECTED: "Rejeitada" };
 const STATUS_TONE = { OPEN: "warning", PENDING_APPROVAL: "warning", APPROVED: "danger", REJECTED: "neutral" };
-const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "", responsibleName: "", chargeAmount: "" };
+const EMPTY_DECISION_FORM = { chargeResponsible: false, responsiblePersonId: "", responsibleName: "", chargeAmount: "", chargeDueAt: "" };
 
 export default function PerdasPage() {
   const currentUser = getCurrentUser();
@@ -174,12 +176,15 @@ export default function PerdasPage() {
       responsiblePersonId: row.responsiblePersonId || "",
       responsibleName: personName(row.responsiblePersonId) || "",
       chargeAmount: row.estimatedCost != null ? String(row.estimatedCost).replace(".", ",") : "",
+      chargeDueAt: "",
     });
   }
 
   const decisionAmount = toNumber(decisionForm.chargeAmount);
+  // DI-BI2-6 (16/11/2026): a cobrança vira conta a receber própria e exige o vencimento (M4 §19, recebíveis 7/30/60 e inadimplência).
+  const chargeDueMissing = lossChargeDueMissing(decisionForm);
   const decisionValid = !decisionForm.chargeResponsible
-    || (Boolean(decisionForm.responsiblePersonId) && !Number.isNaN(decisionAmount) && decisionAmount > 0);
+    || (Boolean(decisionForm.responsiblePersonId) && !Number.isNaN(decisionAmount) && decisionAmount > 0 && !chargeDueMissing);
 
   async function handleApprove() {
     if (!decisionTarget || !decisionValid) return;
@@ -187,7 +192,7 @@ export default function PerdasPage() {
     setActionError("");
     try {
       await decideLossCase(decisionTarget.id, "APPROVED", decisionForm.chargeResponsible
-        ? { chargeResponsible: true, responsiblePersonId: decisionForm.responsiblePersonId, chargeAmount: decisionAmount }
+        ? lossChargePayload({ responsiblePersonId: decisionForm.responsiblePersonId, chargeAmount: decisionAmount, chargeDueAt: decisionForm.chargeDueAt })
         : {
           chargeResponsible: false,
           // Só envia quando o aprovador trocou/atribuiu o responsável nesta decisão.
@@ -199,7 +204,7 @@ export default function PerdasPage() {
       setDecisionForm(EMPTY_DECISION_FORM);
       load();
     } catch (err) {
-      setActionError(err?.message || "Não foi possível aprovar o caso de perda.");
+      setActionError(friendlyFinanceError(err, "Não foi possível aprovar o caso de perda."));
     } finally {
       setBusyId(null);
     }
@@ -441,6 +446,11 @@ export default function PerdasPage() {
             {decisionForm.chargeResponsible ? (
               <FormField label="Valor a cobrar (R$)" required helper="Padrão: a estimativa de custo do caso — ajuste se a investigação apurou outro valor.">
                 <DecimalInput value={decisionForm.chargeAmount} onChange={(e) => setDecisionForm((p) => ({ ...p, chargeAmount: e.target.value }))} />
+              </FormField>
+            ) : null}
+            {decisionForm.chargeResponsible ? (
+              <FormField label="Vencimento da cobrança" htmlFor="loss-decision-due" required helper="Obrigatório: a conta a receber do responsável entra em recebíveis e inadimplência pelo vencimento." error={chargeDueMissing ? "Informe o vencimento da cobrança." : undefined}>
+                <Input id="loss-decision-due" type="date" min="1900-01-01" max="2100-12-31" value={decisionForm.chargeDueAt} onChange={(e) => setDecisionForm((p) => ({ ...p, chargeDueAt: e.target.value }))} />
               </FormField>
             ) : (
               <p style={{ color: "var(--color-ink-muted)", fontSize: "var(--text-body-sm)" }}>Sem cobrança: a perda é baixada sem desconto financeiro a ninguém.</p>

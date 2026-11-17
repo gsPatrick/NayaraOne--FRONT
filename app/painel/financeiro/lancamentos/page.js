@@ -32,14 +32,14 @@ import {
   listFinancialEntries,
   listBankAccounts,
   listCostCenters,
+  listResultCenters,
   listClassificationPendings,
-  resolveClassificationPending,
 } from "@/lib/api/finance";
+import ClassifyPendingModal from "./ClassifyPendingModal";
 import FormField from "@/components/molecules/FormField/FormField";
 import Input from "@/components/atoms/Input/Input";
 import ExportRequestModal from "@/components/organisms/ExportRequestModal/ExportRequestModal";
 import { exportDoneNotice } from "@/lib/api/dlpExports";
-import { friendlyFinanceError } from "@/lib/finance/extras";
 import { listPeople } from "@/lib/api/people";
 import { bankAccountLabel } from "@/lib/finance/labels";
 import { formatBRL, formatBRLCompact, formatDate, humanizeText } from "@/lib/format";
@@ -52,15 +52,17 @@ export default function LancamentosPage() {
   const router = useRouter();
   // M9-D940: carregando, erro, sem acesso e sem conexão vêm do padrão único de estados.
   const entriesQuery = useAsyncState(async () => {
-    const [e, ba, cc, pp] = await Promise.all([ // só os lançamentos são carga principal (F13); conta, centro e pessoa são apoio e avisam o motivo se negados
+    const [e, ba, cc, rc, pp] = await Promise.all([ // só os lançamentos são carga principal (F13); conta, centro e pessoa são apoio e avisam o motivo se negados
       listFinancialEntries(), listBankAccounts().catch(lookupFallback("as contas bancárias")),
-      listCostCenters().catch(lookupFallback("os centros de custo")), listPeople().catch(lookupFallback("as pessoas")),
+      listCostCenters().catch(lookupFallback("os centros de custo")), listResultCenters().catch(lookupFallback("os centros de resultado")),
+      listPeople().catch(lookupFallback("as pessoas")),
     ]);
-    return { entries: e || [], bankAccounts: ba || [], costCenters: cc || [], people: pp || [] };
+    return { entries: e || [], bankAccounts: ba || [], costCenters: cc || [], resultCenters: rc || [], people: pp || [] };
   }, { key: "lancamentos", isEmpty: () => false });
   const entries = useMemo(() => entriesQuery.data?.entries || [], [entriesQuery.data]);
   const bankAccounts = useMemo(() => entriesQuery.data?.bankAccounts || [], [entriesQuery.data]);
   const costCenters = useMemo(() => entriesQuery.data?.costCenters || [], [entriesQuery.data]);
+  const resultCenters = useMemo(() => entriesQuery.data?.resultCenters || [], [entriesQuery.data]);
   const people = useMemo(() => entriesQuery.data?.people || [], [entriesQuery.data]);
   const [actionError, setActionError] = useState("");
   const [query, setQuery] = useState("");
@@ -83,37 +85,9 @@ export default function LancamentosPage() {
   // A fila de pendências é apoio: se falhar, a falha é registrada (lookupFallback) e avisada, nunca vira "sem pendências" em silêncio.
   const pendingsQuery = useAsyncState(() => listClassificationPendings({ status: "PENDING" }).catch(lookupFallback("as pendências de classificação")), { key: "lancamentos:pendencias", isEmpty: () => false });
   const pendings = useMemo(() => pendingsQuery.data || [], [pendingsQuery.data]);
+  // Classificação (modal em ClassifyPendingModal.js): despesa com centro de custo e vencimento, receita com centro de resultado (DI-BI2-6).
   const [resolveTarget, setResolveTarget] = useState(null);
-  const [resolveNature, setResolveNature] = useState("");
-  // A3 (revisão 18/10/2026): classificar como despesa cria uma obrigação a pagar e exige centro de custo.
-  const [resolveCostCenterId, setResolveCostCenterId] = useState("");
-  const [resolveBusy, setResolveBusy] = useState(false);
-  const [resolveError, setResolveError] = useState("");
-
   const reloadPendings = pendingsQuery.reload;
-
-  async function handleResolvePending() {
-    if (!resolveTarget || !resolveNature) return;
-    if (resolveNature === "PAYABLE" && !resolveCostCenterId) {
-      setResolveError("Classificar como despesa exige o centro de custo.");
-      return;
-    }
-    setResolveBusy(true);
-    setResolveError("");
-    try {
-      await resolveClassificationPending(resolveTarget.id, resolveNature, {
-        costCenterId: resolveNature === "PAYABLE" ? resolveCostCenterId : undefined,
-      });
-      setResolveTarget(null);
-      setResolveNature("");
-      setResolveCostCenterId("");
-      reloadPendings();
-    } catch (err) {
-      setResolveError(friendlyFinanceError(err, "Não foi possível resolver a pendência."));
-    } finally {
-      setResolveBusy(false);
-    }
-  }
 
   function bankAccountOf(id) {
     return bankAccounts.find((a) => a.id === id) || null;
@@ -252,7 +226,7 @@ export default function LancamentosPage() {
                     aberta em {formatDate(p.createdAt || p.created_at)}
                   </span>
                 </div>
-                <Button requires="finance:update" size="sm" onClick={() => { setResolveTarget(p); setResolveNature(""); setResolveCostCenterId(""); setResolveError(""); }}>
+                <Button requires="finance:update" size="sm" onClick={() => setResolveTarget(p)}>
                   Classificar
                 </Button>
               </li>
@@ -375,49 +349,13 @@ export default function LancamentosPage() {
         <p>Tem certeza que deseja excluir <strong>{humanizeText(deleteTarget?.description)}</strong>? Esta ação não pode ser desfeita.</p>
       </Modal>
 
-      <Modal
-        open={Boolean(resolveTarget)}
+      <ClassifyPendingModal
+        target={resolveTarget}
+        costCenters={costCenters}
+        resultCenters={resultCenters}
         onClose={() => setResolveTarget(null)}
-        title="Classificar pendência"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setResolveTarget(null)}>Cancelar</Button>
-            <Button onClick={handleResolvePending} loading={resolveBusy} disabled={!resolveNature}>Confirmar</Button>
-          </>
-        }
-      >
-        {resolveTarget ? (
-          <>
-            <p>
-              {humanizeText(resolveTarget.description)} — <strong>{formatBRL(resolveTarget.amount)}</strong>
-            </p>
-            {resolveError ? <Alert tone="danger">{resolveError}</Alert> : null}
-            <FormField label="Classificação final">
-              <Select value={resolveNature} onChange={(e) => setResolveNature(e.target.value)}>
-                <option value="">Selecione...</option>
-                <option value="RECEIVABLE">Receita (a receber)</option>
-                <option value="PAYABLE">Despesa (a pagar)</option>
-                <option value="ADJUSTMENT">Ajuste</option>
-              </Select>
-            </FormField>
-            {resolveNature === "PAYABLE" ? (
-              <>
-                <FormField label="Centro de custo" required>
-                  <Select value={resolveCostCenterId} onChange={(e) => setResolveCostCenterId(e.target.value)}>
-                    <option value="">Selecione...</option>
-                    {costCenters.map((c) => (
-                      <option key={c.id} value={c.id}>{c.code} — {c.name}</option>
-                    ))}
-                  </Select>
-                </FormField>
-                <Alert tone="info">
-                  Vira uma obrigação a pagar (pendente), que segue o fluxo normal de pagamento: aprovação e confirmação do banco ou comprovante.
-                </Alert>
-              </>
-            ) : null}
-          </>
-        ) : null}
-      </Modal>
+        onResolved={() => { setResolveTarget(null); reloadPendings(); }}
+      />
     </AppShell>
   );
 }

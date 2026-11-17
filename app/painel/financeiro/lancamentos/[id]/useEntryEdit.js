@@ -1,11 +1,11 @@
 "use client";
 
-// Edição do lançamento ainda pendente (descrição, conta/favorecido, centros e vencimento) — FIN-004(c)/FIN-TS-003/004: trocar a conta depois de
+// Edição do lançamento ainda pendente (descrição, conta/favorecido, centros e o vencimento que faltava) — FIN-004(c)/FIN-TS-003/004: trocar a conta depois de
 // uma aprovação cancela a aprovação. `context()` devolve, na hora da ação, a ficha atual e os setters da página.
 import { useState } from "react";
 import { updateFinancialEntry } from "@/lib/api/finance";
 import { friendlyFinanceError } from "@/lib/finance/extras";
-import { dateOnlyInputToIso } from "@/lib/format";
+import { editDueAtPayload, editProblems } from "@/lib/finance/openEntryRequired";
 
 export default function useEntryEdit(context) {
   const [editOpen, setEditOpen] = useState(false);
@@ -28,6 +28,12 @@ export default function useEntryEdit(context) {
 
   async function handleSaveEdit() {
     const { entry, allBankAccounts, allCostCenters, allResultCenters, setEntry, setAccount, setCostCenter, setResultCenter, setNotice, load } = context();
+    // DI-BI2-6: conta própria sem vencimento recebe a data; despesa e receita não ficam sem o centro (M4 §4 e §19).
+    const problems = editProblems(entry, editForm);
+    if (problems.length) {
+      setEditError(problems.join(" "));
+      return;
+    }
     setEditSaving(true);
     setEditError("");
     try {
@@ -36,7 +42,7 @@ export default function useEntryEdit(context) {
         bankAccountId: editForm.bankAccountId || undefined,
         costCenterId: editForm.costCenterId || undefined,
         resultCenterId: editForm.resultCenterId || undefined,
-        dueAt: editForm.dueAt ? dateOnlyInputToIso(editForm.dueAt) : undefined,
+        dueAt: editDueAtPayload(entry, editForm.dueAt), // a data gravada não troca: só vai quando está sendo preenchida
       });
       setEntry(updated);
       setAccount(allBankAccounts.find((a) => a.id === updated.bankAccountId) || null);
