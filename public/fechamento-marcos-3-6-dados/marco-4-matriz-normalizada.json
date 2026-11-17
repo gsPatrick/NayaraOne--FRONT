@@ -607,6 +607,25 @@
    ]
   },
   {
+   "titulo": "Pentest do Financeiro e linha M4-§1 na versão publicada (16/11/2026)",
+   "paragrafos": [
+    "As três linhas que estavam pendentes (M4-§1, M4-§21.15, M4-G§20.13) foram fechadas na API 4c43f5c1: 120 de 120 testes de 18 arquivos aprovados, de 2026-11-17T00:47:52.000Z a 2026-11-17T00:49:21.000Z (API 4c43f5c1 (versão publicada, branch marco-9) em banco descartável (RLS real, role sem bypass)).",
+    "publicada-4c43f5c1: commit 4c43f5c1, de 2026-11-17T00:47:22.245Z a 2026-11-17T00:47:43.114Z, 107 rotas, 1172 ataques de rota e 20 casos de negócio; 0 CRÍTICA, 0 ALTA, 0 MÉDIA, 3 BAIXA, 0 INFORMATIVA.",
+    "correcao-46eced01: commit 46eced01, de 2026-11-17T00:52:06.709Z a 2026-11-17T00:53:09.101Z, 107 rotas, 1172 ataques de rota e 20 casos de negócio; 0 CRÍTICA, 0 ALTA, 0 MÉDIA, 0 BAIXA, 0 INFORMATIVA.",
+    "A execução no 4c43f5c1 teve 3 achados BAIXA do próprio executor: o ataque de MFA das três rotas de reabertura usava o gestor, que não tem a permissão própria da reabertura, e media a recusa de permissão em vez da de MFA. O executor foi corrigido no 46eced01 (branch leva2/fechamento, só scripts/pentest-m4 e test/m4.pentest.test.js; nenhum código da aplicação), onde o pentest deu zero achado de qualquer gravidade."
+   ],
+   "arquivos": [
+    {
+     "rotulo": "Relatório do pentest (publicada-4c43f5c1)",
+     "origem": "/Users/patrick.developer/Desktop/Developer/Projects/Nayara/NayaraOne/Maturacao/fechamento-m3-m6/pentest/execucoes/publicada-4c43f5c1/RELATORIO_PENTEST_M4.md"
+    },
+    {
+     "rotulo": "Relatório do pentest (correcao-46eced01)",
+     "origem": "/Users/patrick.developer/Desktop/Developer/Projects/Nayara/NayaraOne/Maturacao/fechamento-m3-m6/pentest/execucoes/correcao-46eced01/RELATORIO_PENTEST_M4.md"
+    }
+   ]
+  },
+  {
    "titulo": "Captura ao vivo",
    "paragrafos": [
     "318 respostas HTTP da API do commit 9d28dad0 num banco descartável (terminada em 2026-11-11T01:35:19.938Z) e 40 leituras na homologação publicada (2026-11-11T01:33:10.099Z, somente leitura). Cuidados da captura, como registrados na matriz:"
@@ -621,21 +640,12 @@
   }
  ],
  "informativos": [],
- "pendencias": [
-  {
-   "id": "M4-§21.15",
-   "motivo": "Pentest do Marco 4 (fechamento-m3-m6/pentest/marco-4-pentest.md): no HEAD da m4fix/conciliacao-comissao restam 2 ALTA e 2 MÉDIA, todas da branch m4fix/pagamentos-verificacao (V2-P1, V2-P3, V2-P2, reabertura); rodar o pentest de novo depois de juntar as branches."
-  },
-  {
-   "id": "M4-G§20.13",
-   "motivo": "Mesmo motivo da M4-§21.15 (Guia §20 \"pentest sem crítica/alta\")."
-  }
- ],
+ "pendencias": [],
  "base": "14217771",
  "integrado": {
   "branch": "marco-9",
-  "api": "447ed21d",
-  "front": "68d9a33"
+  "api": "4c43f5c1",
+  "front": "1ed4720"
  },
  "contido": {
   "api": true,
@@ -648,18 +658,10 @@
    "requisito": "\"O Centro Financeiro é a fonte oficial dos fatos financeiros do Nayara One. Ele deve separar rigorosamente as empresas, impedir pagamentos duplicados, preservar dinheiro de terceiros, conciliar bancos, calcular comissões, controlar recebíveis/pagáveis, produzir fechamento auditável e alimentar a NAY com dados explicáveis.\"",
    "implementacao": "src/modules/finance/* — itens deste objetivo corrigidos em M4LR: FIN-004, FIN-008, §5.8, §6, §7, §12.3, §13.5, §18.1, §19 (ver as linhas); FIN-005/§9 (aprovação por risco e favorecido congelado) estão com a correção de pagamentos (m4fix/pagamentos-verificacao)",
    "commit": {
-    "texto": "medido na API m4fix/ledger-relatorios@3e8fd809; commits das provas: 4a5d6f56, 659bde86, 83b10392, da458c62, 06a43a25, 1887805e, ce0bdfa0, 7c3516ff, 3e8fd809",
+    "texto": "medido na API marco-9 (versão publicada)@4c43f5c1; commits das provas: 4c43f5c1",
     "hashes": [
-     "3e8fd809",
-     "4a5d6f56",
-     "659bde86",
-     "83b10392",
-     "da458c62",
-     "06a43a25",
-     "1887805e",
-     "ce0bdfa0",
-     "7c3516ff",
-     "3e8fd809"
+     "4c43f5c1",
+     "4c43f5c1"
     ]
    },
    "testes": [
@@ -667,121 +669,227 @@
      "arquivo": "test/m4lr.relatorioRecebivelParcial.test.js",
      "nome": "§19 + §18.1 (sondas P6 e P10): o R$ 0,30 antes, com baixa parcial de 0,10, quitado e estornado — relatório, NAY e read model contam igual",
      "status": "passou",
-     "commit": "3e8fd809"
+     "ms": 221,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/m4lr.relatorioRecebivelParcial.test.js",
      "nome": "§19.1 + §13.5 (sonda P12): caução de 1.000 em 400 + 600 aparece como 1.000 de terceiros; o caixa disponível soma só o conciliado, uma vez",
      "status": "passou",
-     "commit": "3e8fd809"
+     "ms": 104,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/m4lr.repasseBaixasParciais.test.js",
      "nome": "M4-§12.3 (sonda P8): aluguel de 1.500 recebido em 750 + 750 tem 1.500 elegíveis; repasse de 3.000 é recusado e o de 1.500 passa",
      "status": "passou",
-     "commit": "3e8fd809"
+     "ms": 125,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/m4lr.ledgerEstorno.test.js",
      "nome": "M4-§6.3 (sonda P3): estornar o pai parcial (R$ 0,30 com 0,10 baixado) estorna a baixa — o ledger da família fecha em 0, nunca −0,20",
      "status": "passou",
-     "commit": "3e8fd809"
+     "ms": 44,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/adversarial.finance.test.js",
      "nome": "ADV-F02 forjar companyId no payload (escrever lançamento na empresa vizinha) é barrado pelo banco, não pela UI",
      "status": "passou",
-     "ms": 35,
-     "commit": "f00ed9f7"
+     "ms": 7,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/marco4.crossCompanyIsolation.test.js",
      "nome": "FIN-TS-020: financial_entries é isolado por EMPRESA — outra empresa do mesmo grupo nunca vê o lançamento",
      "status": "passou",
-     "ms": 74,
-     "commit": "35aaf028"
+     "ms": 73,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/finance.entries.test.js",
      "nome": "FIN-004 idempotência: 2ª tentativa com a mesma chave é bloqueada (não duplica pagamento)",
      "status": "passou",
-     "ms": 289,
-     "commit": "f656f46c"
+     "ms": 148,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/marco4.acceptance.batch2.test.js",
      "nome": "M4-23 createFinancialEntry com a mesma idempotencyKey não duplica o lançamento",
      "status": "passou",
-     "ms": 17,
-     "commit": "dda254ae"
+     "ms": 10,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/marco4.contract.gaps.test.js",
      "nome": "FIN-TS-007: importação de extrato em lote (CSV) é idempotente — reimportar o MESMO arquivo não duplica",
      "status": "passou",
-     "ms": 30,
-     "commit": "f00ed9f7"
+     "ms": 16,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/marco4.finance.batch3.test.js",
      "nome": "M4-16 dinheiro de terceiro exige referência e nunca entra na soma de receita própria",
      "status": "passou",
-     "ms": 24,
-     "commit": "fa15be9f"
+     "ms": 71,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/marco4.contract.gaps.test.js",
      "nome": "M4-20c: freeCash soma o extrato bancário real e exclui dinheiro de terceiro retido; marginBySector agrupa por centro de resultado",
      "status": "passou",
-     "ms": 145,
-     "commit": "f00ed9f7"
+     "ms": 116,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/financeE2E.flow.test.js",
      "nome": "Financeiro E2E: lançamento -> intenção -> callback sandbox HMAC -> ledger -> extrato -> conciliação -> relatório",
      "status": "passou",
-     "ms": 1156,
-     "commit": "4f73948a"
+     "ms": 1021,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/marco4.batch3.test.js",
      "nome": "M4-28 jornada E2E: lançamento -> aprovação HIGH (2 aprovadores) -> liquidação -> conciliação, tudo auditado",
      "status": "passou",
-     "ms": 2797,
-     "commit": "f00ed9f7"
+     "ms": 1945,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+     "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+     "status": "passou",
+     "ms": 1872,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+     "nome": "M4-§8.5/§8.6: intenção de R$ 120.000,00 (HIGH) exige 2 aprovadores distintos com MFA recente; quem preparou não aprova",
+     "status": "passou",
+     "ms": 1889,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+     "nome": "M4-G§1.6: as faixas são parâmetros da empresa e a versão publicada da REG-FIN-002 decide risco e aprovadores quando define",
+     "status": "passou",
+     "ms": 930,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/finance.entries.test.js",
+     "nome": "maker-checker: segundo usuário aprova (risco HIGH exige 2 aprovações independentes)",
+     "status": "passou",
+     "ms": 1111,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/marco4.contract.gaps.test.js",
+     "nome": "DEC-007 resolveAntifraudThresholds: sem nada gravado vale o padrão da DEC-007, sem consultar o Motor de Regras",
+     "status": "passou",
+     "ms": 4,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/marco4.contract.gaps.test.js",
+     "nome": "DEC-007 o valor gravado pela tela vale sempre, mais restritivo ou mais frouxo que o padrão (sem regra do Motor)",
+     "status": "passou",
+     "ms": 6,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/marco4.finance.batch3.test.js",
+     "nome": "M4-07 approvePaymentIntent recusa quando o lançamento mudou depois do snapshot (hash divergente)",
+     "status": "passou",
+     "ms": 103,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+     "nome": "M4-§9/FIN-TS-003 (V2-P1): trocar a chave PIX e a conta DEPOIS da aprovação invalida a intenção e o envio ao banco é recusado",
+     "status": "passou",
+     "ms": 119,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+     "nome": "M4-§9: a troca do favorecido também invalida a aprovação de baixa (sem intenção) dos lançamentos que pagam essa conta",
+     "status": "passou",
+     "ms": 41,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+     "nome": "M4-G§18.4: favorecido mudado por fora do serviço (direto no banco) também é recusado na aprovação e no envio, com os campos que mudaram",
+     "status": "passou",
+     "ms": 40,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/adversarial.finance.test.js",
+     "nome": "ADV-F16 trocar o BENEFICIÁRIO depois da aprovação invalida a decisão baseada no que foi revisado",
+     "status": "passou",
+     "ms": 51,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/marco4.contract.gaps.test.js",
+     "nome": "FIN-004(c): trocar o favorecido (bankAccountId) DEPOIS de uma ApprovalRequest aprovada invalida a liquidação direta",
+     "status": "passou",
+     "ms": 41,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/finance.bankAccountRedirect.test.js",
+     "nome": "FIN-REDIR-01: trocar bankAccountId de um lançamento PENDING já com conta definida exige revisão manual",
+     "status": "passou",
+     "ms": 205,
+     "commit": "4c43f5c1"
     }
    ],
-   "resultado": "Partes do objetivo de responsabilidade M4LR atendidas e provadas (relatório, terceiros, repasse, ledger); FIN-005 e §9 dependem da branch m4fix/pagamentos-verificacao.",
+   "resultado": "Atendido na versão publicada 4c43f5c1: 26/26 testes aprovados (partes M4LR, FIN-005 aprovação por risco e §9 favorecido congelado), execução de 16/11/2026, 21:47:52 a 16/11/2026, 21:49:21 em banco descartável. Pentest do Financeiro na versão publicada 4c43f5c1 (16/11/2026, 21:47:22): 107 rotas, 1172 ataques de rota e 20 casos de negócio; 0 CRÍTICA, 0 ALTA, 0 MÉDIA, 3 BAIXA; FIN-005 e §9 conferidos ao vivo pelos casos N-04 e N-01 do pentest.",
    "aoVivo": [
     {
-     "rotulo": "REC-01",
+     "rotulo": "PT-4c43f5c1-N-04",
      "metodo": "POST",
-     "rota": "/finance/entries",
+     "rota": "/finance/approval-requests",
      "perfil": "A:gestor",
      "status": 201,
      "codigo": "",
-     "quando": "2026-11-11T01:35:02.599Z",
-     "resumo": "Cria o recebível fictício de R$ 0,30 (CREDIT/RECEIVABLE, com centro de resultado)",
-     "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "V2-P2/FIN-005: pedido com riskLevel LOW para R$ 900.000,00 grava o risco CRITICAL (o risco vem da regra, não de quem pede)",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
     },
     {
-     "rotulo": "H20",
-     "metodo": "GET",
-     "rota": "/finance/nay/insights",
-     "perfil": "A:leitura",
-     "status": 200,
-     "codigo": "",
-     "quando": "2026-11-11T01:35:16.356Z",
-     "resumo": "NAY Financeira explica caixa, inadimplência e anomalias citando as fontes internas",
-     "ambiente": "API local do HEAD em banco descartável (RLS real, role sem bypass)"
+     "rotulo": "PT-4c43f5c1-N-02",
+     "metodo": "POST",
+     "rota": "/finance/payments/prepare",
+     "perfil": "A:gestor",
+     "status": 409,
+     "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE",
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "V2-P3: intenção de PAGAMENTO sobre lançamento A RECEBER de R$ 700,00 é recusada (só obrigação a pagar vira pagamento)",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
+    },
+    {
+     "rotulo": "PT-4c43f5c1-PT4-0902",
+     "metodo": "POST",
+     "rota": "/finance/payment-intents/:id/approve",
+     "perfil": "B:gestor",
+     "status": 404,
+     "codigo": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "Empresa B tenta aprovar a intenção de pagamento real da empresa A: 404, como id inexistente",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
     }
    ],
    "aoVivoTipo": "http",
-   "aoVivoResumo": "2 resposta(s) HTTP real(is) nesta linha",
-   "dados": "fechamento-marcos-3-6-dados/marco-4/M4LR-correcoes-11-11.json",
-   "reproduzir": "Teste: cd NayaraOne--API && bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env LOG_LEVEL=error CI_TENANT_USERS_PASSWORD=<valor fictício do CI> CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && NODE_ENV=test node --test --test-concurrency=1 test/m4lr.ledgerEstorno.test.js test/m4lr.relatorioRecebivelParcial.test.js test/m4lr.repasseBaixasParciais.test.js\"",
+   "aoVivoResumo": "3 resposta(s) HTTP real(is) nesta linha",
+   "dados": "fechamento-marcos-3-6-dados/marco-4/M4-S1.publicada-4c43f5c1.json",
+   "reproduzir": "Testes: cd NayaraOne--API (commit 4c43f5c1) && bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env NODE_ENV=test LOG_LEVEL=error CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 CI_TENANT_USERS_PASSWORD=<valor fictício do CI> bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && node --test --test-concurrency=1 --test-timeout=900000 --test-reporter=../Maturacao/fechamento-m3-m6/ferramentas/marco-4/reporter-jsonl.mjs <arquivos>\"",
    "tela": "não é tela própria: item de processo/qualidade provado pelos testes e capturas da linha; reteste funcional pelas telas de /painel/financeiro citadas nas linhas da mesma área",
-   "status": "Pendente",
+   "status": "Atendido",
    "nota": "",
    "itensDoPedido": [
     "não citado nominalmente nos 28 itens; requisito do caderno"
@@ -789,16 +897,16 @@
    "provaNova": true,
    "motivo": "teste criado ou alterado nesta rodada (14217771..9d28dad0): test/adversarial.finance.test.js, test/marco4.contract.gaps.test.js, test/marco4.batch3.test.js",
    "dadosPublicado": {
-    "arquivo": "fechamento-marcos-3-6-dados/marco-4/M4LR-correcoes-11-11.json",
-    "bytes": 18895,
-    "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
-    "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
-    "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
+    "arquivo": "fechamento-marcos-3-6-dados/marco-4/M4-S1.publicada-4c43f5c1.json",
+    "bytes": 14376,
+    "sha256": "23acd03871701eacda7095cfa0619febd24208a9f7677777d6d0bdd160c0a352",
+    "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4-S1.publicada-4c43f5c1.json",
+    "sha256Original": "23acd03871701eacda7095cfa0619febd24208a9f7677777d6d0bdd160c0a352",
     "descricao": "Evidência da linha M4-§1 do Marco 4",
     "tipo": "json",
-    "mascarado": true
+    "mascarado": false
    },
-   "dadosOriginal": "evidencias/marco-4/M4LR-correcoes-11-11.json"
+   "dadosOriginal": "evidencias/marco-4/M4-S1.publicada-4c43f5c1.json"
   },
   {
    "id": "M4-FIN-001",
@@ -1216,7 +1324,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -1720,7 +1828,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -3641,7 +3749,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -4498,7 +4606,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -4590,7 +4698,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -4699,7 +4807,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -4826,7 +4934,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -7892,7 +8000,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -8542,7 +8650,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -11173,7 +11281,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -11574,7 +11682,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -11661,7 +11769,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -11776,7 +11884,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -11869,7 +11977,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -11956,7 +12064,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -12043,7 +12151,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -12130,7 +12238,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -12217,7 +12325,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -12304,7 +12412,7 @@
     "sha256": "6d7ab227c7949950566eab48390199bb03a075bfce237a1cab6d29ab8830047e",
     "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4LR-correcoes-11-11.json",
     "sha256Original": "10b20235e7c22d6e665a0af7a8d5aadaea11e817af6589adaa2b66c70212c24c",
-    "descricao": "Evidência da linha M4-§1 do Marco 4",
+    "descricao": "Evidência da linha M4-FIN-004 do Marco 4",
     "tipo": "json",
     "mascarado": true
    },
@@ -15695,111 +15803,162 @@
    "requisito": "\"Pentest sem crítica/alta no fluxo financeiro.\"",
    "implementacao": "scripts/pentest-m4/index.js (executor: 98+ rotas do Financeiro lidas dos routers, 1.071 ataques de rota e 20 casos de negócio do livro) e scripts/pentest-m4/classificar.js (severidade determinística, DI-M4CC-8); relatório classificado em Maturacao/fechamento-m3-m6/pentest/marco-4-pentest.md (base 41addaa2 e HEAD 2a8c0cf4); correções desta branch: extrato e lançamento só com cadastro da própria empresa (bank-transactions.service.js:30, entry-reference-guards.js), conciliação automática só de fonte confiável, UNIQUE do fingerprint, sublistas de comissão alheia 404",
    "commit": {
-    "texto": "medido na API m4fix/conciliacao-comissao@306a16df; commits das provas: a23bae6a, 96c42f06, 63ed3484, 13574a77",
+    "texto": "medido na API marco-9 (versão publicada)@4c43f5c1; commits das provas: 4c43f5c1, 46eced01",
     "hashes": [
-     "306a16df",
-     "a23bae6a",
-     "96c42f06",
-     "63ed3484",
-     "13574a77"
+     "4c43f5c1",
+     "4c43f5c1",
+     "46eced01"
     ]
    },
    "testes": [
     {
-     "arquivo": "test/m4.pentestCorrecoes.test.js",
-     "nome": "PT4-0839 (CRÍTICA): lançamento só referencia centro de custo/resultado da própria empresa (404 com o de outra, nada gravado)",
+     "arquivo": "test/m4.pentest.test.js",
+     "nome": "pentest M4 (núcleo): rotas do Financeiro lidas dos routers, todas com login e permissão, id real para cada parâmetro, MFA nas sensíveis",
      "status": "passou",
-     "ms": 1210,
-     "commit": "13574a77"
-    },
-    {
-     "arquivo": "test/m4.pentestCorrecoes.test.js",
-     "nome": "PT4-0819/0821 (BAIXA): parcelas e ajustes de comissão de outra empresa respondem 404, como id inexistente",
-     "status": "passou",
-     "ms": 624,
-     "commit": "13574a77"
-    },
-    {
-     "arquivo": "test/m4.extratoFingerprintUnico.test.js",
-     "nome": "FIN-002 (pentest M4, achado crítico): empresa B não grava linha de extrato na conta bancária da empresa A (404, nada gravado, sem oráculo de duplicidade)",
-     "status": "passou",
-     "ms": 1418,
-     "commit": "63ed3484"
+     "ms": 1492,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/m4.pentest.test.js",
      "nome": "pentest M4 (núcleo): classificação determinística de severidade (rota e negócio)",
      "status": "passou",
-     "ms": 89,
-     "commit": "a23bae6a"
+     "ms": 1,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/m4.pentest.test.js",
      "nome": "pentest M4 (executor): nenhum achado crítico ou alto no banco descartável",
-     "status": "falhou",
-     "ms": 120692,
-     "commit": "a23bae6a"
+     "status": "passou",
+     "ms": 23082,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.pentestCorrecoes.test.js",
+     "nome": "PT4-0839 (CRÍTICA): lançamento só referencia centro de custo/resultado da própria empresa (404 com o de outra, nada gravado)",
+     "status": "passou",
+     "ms": 687,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.pentestCorrecoes.test.js",
+     "nome": "PT4-0819/0821 (BAIXA): parcelas e ajustes de comissão de outra empresa respondem 404, como id inexistente",
+     "status": "passou",
+     "ms": 231,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.extratoFingerprintUnico.test.js",
+     "nome": "FIN-002 (pentest M4, achado crítico): empresa B não grava linha de extrato na conta bancária da empresa A (404, nada gravado, sem oráculo de duplicidade)",
+     "status": "passou",
+     "ms": 728,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+     "nome": "M4-§9/FIN-TS-003 (V2-P1): trocar a chave PIX e a conta DEPOIS da aprovação invalida a intenção e o envio ao banco é recusado",
+     "status": "passou",
+     "ms": 119,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+     "nome": "M4-G§4 assertPayable (V2-P3): intenção de PAGAMENTO sobre lançamento A RECEBER é recusada",
+     "status": "passou",
+     "ms": 74,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+     "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+     "status": "passou",
+     "ms": 1872,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.estornoReabertura.http.test.js",
+     "nome": "M4-§21.10/G§18.10/FIN-TS-011: reabrir exige finance:periodReopen + MFA, motivo, e a aprovação de OUTRA pessoa (fluxo CRITICAL)",
+     "status": "passou",
+     "ms": 115,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.pentest.test.js",
+     "nome": "pentest M4 (núcleo): o ataque de MFA usa um perfil que TEM as permissões da rota (reabertura: finance:periodReopen), para medir o portão de MFA e não a recusa de permissão",
+     "status": "passou",
+     "ms": 2,
+     "commit": "46eced01"
     }
    ],
-   "resultado": "Pentest no HEAD 2a8c0cf4: 0 CRÍTICA, 2 ALTA, 2 MÉDIA, 0 BAIXA (base 41addaa2: 2 CRÍTICA, 3 ALTA, 3 MÉDIA, 2 BAIXA). As 2 ALTA (V2-P1 troca de favorecido após aprovação; V2-P3 pagamento sobre recebível) e as 2 MÉDIA (risco informado por quem pede; reabertura com permissão comum) são da branch m4fix/pagamentos-verificacao: PENDENTE até juntar as branches e rodar o pentest de novo. O teste \"executor: nenhum achado crítico ou alto\" falha por isso.",
+   "resultado": "Atendido na versão publicada 4c43f5c1: 10 testes aprovados no 4c43f5c1 (inclusive \"executor: nenhum achado crítico ou alto\", que falhava no 2a8c0cf4) e o teste novo do executor no 46eced01. Pentest do Financeiro na versão publicada 4c43f5c1 (16/11/2026, 21:47:22): 107 rotas, 1172 ataques de rota e 20 casos de negócio; 0 CRÍTICA, 0 ALTA, 0 MÉDIA, 3 BAIXA. Os quatro achados da branch m4fix/pagamentos-verificacao estão corrigidos: V2-P1 (N-01) troca do favorecido cancela a intenção e o envio é recusado (FINANCE_PAYMENT_INTENT_NOT_APPROVED); V2-P3 (N-02) 409 FINANCE_PAYMENT_INTENT_NOT_PAYABLE; V2-P2 (N-04) risco gravado CRITICAL; reabertura (N-05) com a permissão própria finance:periodReopen e MFA. As 3 BAIXA eram do próprio executor (o ataque de MFA das 3 rotas de reabertura usava o gestor, sem finance:periodReopen, e media a recusa de permissão): corrigido no 46eced01 (só scripts/pentest-m4 e o teste; nenhum código da aplicação), onde o pentest deu 0 achado de qualquer gravidade (16/11/2026, 21:52:06).",
    "aoVivo": [
     {
-     "rotulo": "A03",
+     "rotulo": "PT-4c43f5c1-N-02",
      "metodo": "POST",
-     "rota": "/finance/payment-intents/7870da9a-74b4-4224-9e16-656d8b66bac6/approve",
-     "perfil": "B:checker",
+     "rota": "/finance/payments/prepare",
+     "perfil": "A:gestor",
+     "status": 409,
+     "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE",
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "V2-P3: intenção de PAGAMENTO sobre lançamento A RECEBER de R$ 700,00 é recusada (só obrigação a pagar vira pagamento)",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
+    },
+    {
+     "rotulo": "PT-4c43f5c1-N-04",
+     "metodo": "POST",
+     "rota": "/finance/approval-requests",
+     "perfil": "A:gestor",
+     "status": 201,
+     "codigo": "",
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "V2-P2/FIN-005: pedido com riskLevel LOW para R$ 900.000,00 grava o risco CRITICAL (o risco vem da regra, não de quem pede)",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
+    },
+    {
+     "rotulo": "PT-4c43f5c1-PT4-0902",
+     "metodo": "POST",
+     "rota": "/finance/payment-intents/:id/approve",
+     "perfil": "B:gestor",
      "status": 404,
      "codigo": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
-     "quando": "2026-11-11T10:38:14.928Z",
-     "resumo": "IDOR: tenant B tenta aprovar a intenção de pagamento do tenant A",
-     "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "Empresa B tenta aprovar a intenção de pagamento real da empresa A: 404, como id inexistente",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
     },
     {
-     "rotulo": "A04",
+     "rotulo": "PT-46eced01-PT4-0865",
      "metodo": "POST",
-     "rota": "/finance/entries/5f108416-ae89-4c2a-b8bf-2e2ad0c73f4d/settle-partial",
-     "perfil": "B:gestor",
+     "rota": "/finance/period-closures/reopen",
+     "perfil": "A:reabertura",
      "status": 403,
-     "codigo": "MFA_REQUIRED_NOT_ENABLED",
-     "quando": "2026-11-11T10:38:15.101Z",
-     "resumo": "IDOR: tenant B tenta baixar o recebível do tenant A",
-     "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
-    },
-    {
-     "rotulo": "K07",
-     "metodo": "POST",
-     "rota": "/finance/bank-transactions",
-     "perfil": "B:gestor",
-     "status": 404,
-     "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
-     "quando": "2026-11-11T10:38:21.201Z",
-     "resumo": "Empresa B tenta gravar linha de extrato na conta bancária da empresa A: 404, nada gravado (achado crítico do pentest corrigido)",
-     "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+     "codigo": "MFA_STEP_UP_REQUIRED",
+     "quando": "2026-11-17T00:53:09.101Z",
+     "resumo": "Reabertura de período: perfil com finance:periodReopen, MFA habilitado e sem verificação recente é recusado pelo MFA (fluxo CRITICAL)",
+     "ambiente": "pentest automatizado do Financeiro na API 46eced01 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:52:06 a 16/11/2026, 21:53:09"
     }
    ],
    "aoVivoTipo": "http",
-   "aoVivoResumo": "3 resposta(s) HTTP real(is) nesta linha",
-   "dados": "fechamento-marcos-3-6-dados/marco-4/M4-S21.15.m4cc.json",
-   "reproduzir": "Pentest: cd NayaraOne--API && M4_PENTEST_PORT=<porta> node scripts/withDisposableDb.js --port <porta> -- env LOG_LEVEL=error CI_TENANT_USERS_PASSWORD=<valor fictício do CI> bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && NODE_ENV=test node scripts/pentest-m4/index.js --out-dir <pasta>\"; relatório em fechamento-m3-m6/pentest/marco-4-pentest.md",
+   "aoVivoResumo": "4 resposta(s) HTTP real(is) nesta linha",
+   "dados": "fechamento-marcos-3-6-dados/marco-4/M4-S21.15.publicada-4c43f5c1.json",
+   "reproduzir": "Testes: cd NayaraOne--API (commit 4c43f5c1) && bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env NODE_ENV=test LOG_LEVEL=error CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 CI_TENANT_USERS_PASSWORD=<valor fictício do CI> bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && node --test --test-concurrency=1 --test-timeout=900000 --test-reporter=../Maturacao/fechamento-m3-m6/ferramentas/marco-4/reporter-jsonl.mjs <arquivos>\"; pentest: cd NayaraOne--API && M4_PENTEST_PORT=<porta> bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env LOG_LEVEL=error CI_TENANT_USERS_PASSWORD=<valor fictício do CI> CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && NODE_ENV=test node scripts/pentest-m4/index.js --out-dir <pasta>\"; relatórios em fechamento-m3-m6/pentest/execucoes/publicada-4c43f5c1 e correcao-46eced01",
    "tela": "não é tela própria: item de processo/qualidade provado pelos testes e capturas da linha; reteste funcional pelas telas de /painel/financeiro citadas nas linhas da mesma área",
-   "status": "Pendente",
-   "nota": "Pentest do Marco 4 (fechamento-m3-m6/pentest/marco-4-pentest.md): no HEAD da m4fix/conciliacao-comissao restam 2 ALTA e 2 MÉDIA, todas da branch m4fix/pagamentos-verificacao (V2-P1, V2-P3, V2-P2, reabertura); rodar o pentest de novo depois de juntar as branches.",
+   "status": "Atendido",
+   "nota": "",
    "itensDoPedido": [
     "M4-27"
    ],
    "provaNova": false,
    "motivo": "os testes citados já existiam na base 14217771 e foram executados de novo nesta rodada",
    "dadosPublicado": {
-    "arquivo": "fechamento-marcos-3-6-dados/marco-4/M4-S21.15.m4cc.json",
-    "bytes": 6739,
-    "sha256": "a762e0333fb3551252b833668761931db9599f5bc26de5cdf42e157161e2beec",
-    "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4-S21.15.m4cc.json",
-    "sha256Original": "a762e0333fb3551252b833668761931db9599f5bc26de5cdf42e157161e2beec",
+    "arquivo": "fechamento-marcos-3-6-dados/marco-4/M4-S21.15.publicada-4c43f5c1.json",
+    "bytes": 10137,
+    "sha256": "426c69997d6a8655c15fb9f98b4e3c1d2ea397db252e4ddc9a9e48fb6de27345",
+    "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4-S21.15.publicada-4c43f5c1.json",
+    "sha256Original": "426c69997d6a8655c15fb9f98b4e3c1d2ea397db252e4ddc9a9e48fb6de27345",
     "descricao": "Evidência da linha M4-§21.15 do Marco 4",
     "tipo": "json",
     "mascarado": false
    },
-   "dadosOriginal": "evidencias/marco-4/M4-S21.15.m4cc.json"
+   "dadosOriginal": "evidencias/marco-4/M4-S21.15.publicada-4c43f5c1.json"
   },
   {
    "id": "M4-§22",
@@ -25219,122 +25378,162 @@
    "requisito": "\"Sem vulnerabilidade alta/crítica.\"",
    "implementacao": "scripts/pentest-m4/index.js (executor: 98+ rotas do Financeiro lidas dos routers, 1.071 ataques de rota e 20 casos de negócio do livro) e scripts/pentest-m4/classificar.js (severidade determinística, DI-M4CC-8); relatório classificado em Maturacao/fechamento-m3-m6/pentest/marco-4-pentest.md (base 41addaa2 e HEAD 2a8c0cf4); correções desta branch: extrato e lançamento só com cadastro da própria empresa (bank-transactions.service.js:30, entry-reference-guards.js), conciliação automática só de fonte confiável, UNIQUE do fingerprint, sublistas de comissão alheia 404",
    "commit": {
-    "texto": "medido na API m4fix/conciliacao-comissao@306a16df; commits das provas: a23bae6a, 96c42f06, 63ed3484, 13574a77",
+    "texto": "medido na API marco-9 (versão publicada)@4c43f5c1; commits das provas: 4c43f5c1, 46eced01",
     "hashes": [
-     "306a16df",
-     "a23bae6a",
-     "96c42f06",
-     "63ed3484",
-     "13574a77"
+     "4c43f5c1",
+     "4c43f5c1",
+     "46eced01"
     ]
    },
    "testes": [
     {
-     "arquivo": "test/m4.pentestCorrecoes.test.js",
-     "nome": "PT4-0839 (CRÍTICA): lançamento só referencia centro de custo/resultado da própria empresa (404 com o de outra, nada gravado)",
+     "arquivo": "test/m4.pentest.test.js",
+     "nome": "pentest M4 (núcleo): rotas do Financeiro lidas dos routers, todas com login e permissão, id real para cada parâmetro, MFA nas sensíveis",
      "status": "passou",
-     "ms": 1210,
-     "commit": "13574a77"
-    },
-    {
-     "arquivo": "test/m4.pentestCorrecoes.test.js",
-     "nome": "PT4-0819/0821 (BAIXA): parcelas e ajustes de comissão de outra empresa respondem 404, como id inexistente",
-     "status": "passou",
-     "ms": 624,
-     "commit": "13574a77"
-    },
-    {
-     "arquivo": "test/m4.extratoFingerprintUnico.test.js",
-     "nome": "FIN-002 (pentest M4, achado crítico): empresa B não grava linha de extrato na conta bancária da empresa A (404, nada gravado, sem oráculo de duplicidade)",
-     "status": "passou",
-     "ms": 1418,
-     "commit": "63ed3484"
+     "ms": 1492,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/m4.pentest.test.js",
      "nome": "pentest M4 (núcleo): classificação determinística de severidade (rota e negócio)",
      "status": "passou",
-     "ms": 89,
-     "commit": "a23bae6a"
+     "ms": 1,
+     "commit": "4c43f5c1"
     },
     {
      "arquivo": "test/m4.pentest.test.js",
      "nome": "pentest M4 (executor): nenhum achado crítico ou alto no banco descartável",
-     "status": "falhou",
-     "ms": 120692,
-     "commit": "a23bae6a"
+     "status": "passou",
+     "ms": 23082,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.pentestCorrecoes.test.js",
+     "nome": "PT4-0839 (CRÍTICA): lançamento só referencia centro de custo/resultado da própria empresa (404 com o de outra, nada gravado)",
+     "status": "passou",
+     "ms": 687,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.pentestCorrecoes.test.js",
+     "nome": "PT4-0819/0821 (BAIXA): parcelas e ajustes de comissão de outra empresa respondem 404, como id inexistente",
+     "status": "passou",
+     "ms": 231,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.extratoFingerprintUnico.test.js",
+     "nome": "FIN-002 (pentest M4, achado crítico): empresa B não grava linha de extrato na conta bancária da empresa A (404, nada gravado, sem oráculo de duplicidade)",
+     "status": "passou",
+     "ms": 728,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+     "nome": "M4-§9/FIN-TS-003 (V2-P1): trocar a chave PIX e a conta DEPOIS da aprovação invalida a intenção e o envio ao banco é recusado",
+     "status": "passou",
+     "ms": 119,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+     "nome": "M4-G§4 assertPayable (V2-P3): intenção de PAGAMENTO sobre lançamento A RECEBER é recusada",
+     "status": "passou",
+     "ms": 74,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+     "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+     "status": "passou",
+     "ms": 1872,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4pg.estornoReabertura.http.test.js",
+     "nome": "M4-§21.10/G§18.10/FIN-TS-011: reabrir exige finance:periodReopen + MFA, motivo, e a aprovação de OUTRA pessoa (fluxo CRITICAL)",
+     "status": "passou",
+     "ms": 115,
+     "commit": "4c43f5c1"
+    },
+    {
+     "arquivo": "test/m4.pentest.test.js",
+     "nome": "pentest M4 (núcleo): o ataque de MFA usa um perfil que TEM as permissões da rota (reabertura: finance:periodReopen), para medir o portão de MFA e não a recusa de permissão",
+     "status": "passou",
+     "ms": 2,
+     "commit": "46eced01"
     }
    ],
-   "resultado": "Pentest no HEAD 2a8c0cf4: 0 CRÍTICA, 2 ALTA, 2 MÉDIA, 0 BAIXA (base 41addaa2: 2 CRÍTICA, 3 ALTA, 3 MÉDIA, 2 BAIXA). As 2 ALTA (V2-P1 troca de favorecido após aprovação; V2-P3 pagamento sobre recebível) e as 2 MÉDIA (risco informado por quem pede; reabertura com permissão comum) são da branch m4fix/pagamentos-verificacao: PENDENTE até juntar as branches e rodar o pentest de novo. O teste \"executor: nenhum achado crítico ou alto\" falha por isso.",
+   "resultado": "Atendido na versão publicada 4c43f5c1: 10 testes aprovados no 4c43f5c1 (inclusive \"executor: nenhum achado crítico ou alto\", que falhava no 2a8c0cf4) e o teste novo do executor no 46eced01. Pentest do Financeiro na versão publicada 4c43f5c1 (16/11/2026, 21:47:22): 107 rotas, 1172 ataques de rota e 20 casos de negócio; 0 CRÍTICA, 0 ALTA, 0 MÉDIA, 3 BAIXA. Os quatro achados da branch m4fix/pagamentos-verificacao estão corrigidos: V2-P1 (N-01) troca do favorecido cancela a intenção e o envio é recusado (FINANCE_PAYMENT_INTENT_NOT_APPROVED); V2-P3 (N-02) 409 FINANCE_PAYMENT_INTENT_NOT_PAYABLE; V2-P2 (N-04) risco gravado CRITICAL; reabertura (N-05) com a permissão própria finance:periodReopen e MFA. As 3 BAIXA eram do próprio executor (o ataque de MFA das 3 rotas de reabertura usava o gestor, sem finance:periodReopen, e media a recusa de permissão): corrigido no 46eced01 (só scripts/pentest-m4 e o teste; nenhum código da aplicação), onde o pentest deu 0 achado de qualquer gravidade (16/11/2026, 21:52:06).",
    "aoVivo": [
     {
-     "rotulo": "E09",
-     "metodo": "GET",
-     "rota": "/finance/entries/00000000-0000-4000-8000-000000000000",
+     "rotulo": "PT-4c43f5c1-N-02",
+     "metodo": "POST",
+     "rota": "/finance/payments/prepare",
      "perfil": "A:gestor",
-     "status": 404,
-     "codigo": "FINANCE_ENTRY_NOT_FOUND",
-     "quando": "2026-11-11T10:36:13.944Z",
-     "resumo": "Identificador inexistente não vaza dado nem erro interno: 404",
-     "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+     "status": 409,
+     "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE",
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "V2-P3: intenção de PAGAMENTO sobre lançamento A RECEBER de R$ 700,00 é recusada (só obrigação a pagar vira pagamento)",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
     },
     {
-     "rotulo": "H53",
+     "rotulo": "PT-4c43f5c1-N-04",
      "metodo": "POST",
-     "rota": "/exports",
+     "rota": "/finance/approval-requests",
      "perfil": "A:gestor",
-     "status": 202,
+     "status": 201,
      "codigo": "",
-     "quando": "2026-11-11T10:38:04.913Z",
-     "resumo": "Exportação de lançamentos com finalidade, justificativa e MFA recente: pedido aprovado e auditado",
-     "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "V2-P2/FIN-005: pedido com riskLevel LOW para R$ 900.000,00 grava o risco CRITICAL (o risco vem da regra, não de quem pede)",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
     },
     {
-     "rotulo": "A03",
+     "rotulo": "PT-4c43f5c1-PT4-0902",
      "metodo": "POST",
-     "rota": "/finance/payment-intents/7870da9a-74b4-4224-9e16-656d8b66bac6/approve",
-     "perfil": "B:checker",
-     "status": 404,
-     "codigo": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
-     "quando": "2026-11-11T10:38:14.928Z",
-     "resumo": "IDOR: tenant B tenta aprovar a intenção de pagamento do tenant A",
-     "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
-    },
-    {
-     "rotulo": "K07",
-     "metodo": "POST",
-     "rota": "/finance/bank-transactions",
+     "rota": "/finance/payment-intents/:id/approve",
      "perfil": "B:gestor",
      "status": 404,
-     "codigo": "FINANCE_BANK_ACCOUNT_NOT_FOUND",
-     "quando": "2026-11-11T10:38:21.201Z",
-     "resumo": "Empresa B tenta gravar linha de extrato na conta bancária da empresa A: 404, nada gravado (achado crítico do pentest corrigido)",
-     "ambiente": "API local do commit da captura em banco descartável (RLS real, role sem bypass)"
+     "codigo": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
+     "quando": "2026-11-17T00:47:43.114Z",
+     "resumo": "Empresa B tenta aprovar a intenção de pagamento real da empresa A: 404, como id inexistente",
+     "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43"
+    },
+    {
+     "rotulo": "PT-46eced01-PT4-0865",
+     "metodo": "POST",
+     "rota": "/finance/period-closures/reopen",
+     "perfil": "A:reabertura",
+     "status": 403,
+     "codigo": "MFA_STEP_UP_REQUIRED",
+     "quando": "2026-11-17T00:53:09.101Z",
+     "resumo": "Reabertura de período: perfil com finance:periodReopen, MFA habilitado e sem verificação recente é recusado pelo MFA (fluxo CRITICAL)",
+     "ambiente": "pentest automatizado do Financeiro na API 46eced01 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:52:06 a 16/11/2026, 21:53:09"
     }
    ],
    "aoVivoTipo": "http",
    "aoVivoResumo": "4 resposta(s) HTTP real(is) nesta linha",
-   "dados": "fechamento-marcos-3-6-dados/marco-4/M4-G20.13.m4cc.json",
-   "reproduzir": "Pentest: cd NayaraOne--API && M4_PENTEST_PORT=<porta> node scripts/withDisposableDb.js --port <porta> -- env LOG_LEVEL=error CI_TENANT_USERS_PASSWORD=<valor fictício do CI> bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && NODE_ENV=test node scripts/pentest-m4/index.js --out-dir <pasta>\"; relatório em fechamento-m3-m6/pentest/marco-4-pentest.md",
+   "dados": "fechamento-marcos-3-6-dados/marco-4/M4-G20.13.publicada-4c43f5c1.json",
+   "reproduzir": "Testes: cd NayaraOne--API (commit 4c43f5c1) && bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env NODE_ENV=test LOG_LEVEL=error CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 CI_TENANT_USERS_PASSWORD=<valor fictício do CI> bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && node --test --test-concurrency=1 --test-timeout=900000 --test-reporter=../Maturacao/fechamento-m3-m6/ferramentas/marco-4/reporter-jsonl.mjs <arquivos>\"; pentest: cd NayaraOne--API && M4_PENTEST_PORT=<porta> bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env LOG_LEVEL=error CI_TENANT_USERS_PASSWORD=<valor fictício do CI> CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && NODE_ENV=test node scripts/pentest-m4/index.js --out-dir <pasta>\"; relatórios em fechamento-m3-m6/pentest/execucoes/publicada-4c43f5c1 e correcao-46eced01",
    "tela": "não é tela própria: item de processo/qualidade provado pelos testes e capturas da linha; reteste funcional pelas telas de /painel/financeiro citadas nas linhas da mesma área",
-   "status": "Pendente",
-   "nota": "Mesmo motivo da M4-§21.15 (Guia §20 \"pentest sem crítica/alta\").",
+   "status": "Atendido",
+   "nota": "",
    "itensDoPedido": [
     "M4-27"
    ],
    "provaNova": false,
    "motivo": "os testes citados já existiam na base 14217771 e foram executados de novo nesta rodada",
    "dadosPublicado": {
-    "arquivo": "fechamento-marcos-3-6-dados/marco-4/M4-G20.13.m4cc.json",
-    "bytes": 7319,
-    "sha256": "9d19934c29193342527e9ff32f5ecb5269389f76ff3e56837bbf710c039a776a",
-    "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4-G20.13.m4cc.json",
-    "sha256Original": "9d19934c29193342527e9ff32f5ecb5269389f76ff3e56837bbf710c039a776a",
+    "arquivo": "fechamento-marcos-3-6-dados/marco-4/M4-G20.13.publicada-4c43f5c1.json",
+    "bytes": 10127,
+    "sha256": "29e33657817d391a5fae9f1b3f8d564343676a1ba903f0ce80faee13cea57fef",
+    "origem": "Maturacao/fechamento-m3-m6/evidencias/marco-4/M4-G20.13.publicada-4c43f5c1.json",
+    "sha256Original": "29e33657817d391a5fae9f1b3f8d564343676a1ba903f0ce80faee13cea57fef",
     "descricao": "Evidência da linha M4-G§20.13 do Marco 4",
     "tipo": "json",
     "mascarado": false
    },
-   "dadosOriginal": "evidencias/marco-4/M4-G20.13.m4cc.json"
+   "dadosOriginal": "evidencias/marco-4/M4-G20.13.publicada-4c43f5c1.json"
   },
   {
    "id": "M4-G§21.1",

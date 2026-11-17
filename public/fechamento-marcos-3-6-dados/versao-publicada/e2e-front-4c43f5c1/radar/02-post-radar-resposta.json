@@ -1,0 +1,211 @@
+{
+  "status": 201,
+  "criteriaJson": {
+    "city": "Radar E2E mwjzgau6",
+    "state": "SP",
+    "flexible": [
+      {
+        "key": "acabamento",
+        "code": "ATTRIBUTE",
+        "value": "alto padrão",
+        "weight": 1
+      },
+      {
+        "lat": -22.9099,
+        "lng": -47.0626,
+        "code": "MAX_DISTANCE_KM",
+        "value": 5,
+        "weight": 1
+      }
+    ],
+    "maxPrice": 600000,
+    "minPrice": 300000,
+    "maxAreaM2": null,
+    "minAreaM2": null,
+    "offerType": "SALE",
+    "exclusions": [
+      {
+        "code": "PROPERTY_TYPE",
+        "value": "LAND"
+      },
+      {
+        "key": "elevator",
+        "code": "ATTRIBUTE",
+        "value": "false"
+      }
+    ],
+    "preferences": [
+      {
+        "code": "MIN_BEDROOMS",
+        "value": 3,
+        "weight": 2
+      },
+      {
+        "code": "NEIGHBORHOOD",
+        "value": "Cambuí",
+        "weight": 1
+      }
+    ],
+    "propertyType": "RESIDENTIAL"
+  },
+  "matches": [
+    {
+      "id": "040100c3-120b-406f-bff3-b2a1830ee720",
+      "title": "Radar E2E FORTE mwjzgau6",
+      "radarMatch": {
+        "propertyId": "040100c3-120b-406f-bff3-b2a1830ee720",
+        "matched": true,
+        "matchedCount": 12,
+        "totalCriteria": 12,
+        "score": 1,
+        "requiredScore": 1,
+        "reasons": [
+          "MIN_BEDROOMS",
+          "NEIGHBORHOOD",
+          "ATTRIBUTE",
+          "MAX_DISTANCE_KM"
+        ],
+        "criteria": {
+          "propertyType": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "city": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "state": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "activeOffer": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "offerType": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "priceRange": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "preference:MIN_BEDROOMS": {
+            "category": "PREFERENCE",
+            "code": "MIN_BEDROOMS",
+            "weight": 2,
+            "matched": true
+          },
+          "preference:NEIGHBORHOOD": {
+            "category": "PREFERENCE",
+            "code": "NEIGHBORHOOD",
+            "weight": 1,
+            "matched": true
+          },
+          "flexible:ATTRIBUTE:acabamento": {
+            "category": "FLEXIBLE",
+            "code": "ATTRIBUTE",
+            "weight": 1,
+            "matched": true
+          },
+          "flexible:MAX_DISTANCE_KM": {
+            "category": "FLEXIBLE",
+            "code": "MAX_DISTANCE_KM",
+            "weight": 1,
+            "matched": true,
+            "distanceKm": 0.51
+          },
+          "exclusion:PROPERTY_TYPE:LAND": {
+            "category": "EXCLUSION",
+            "code": "PROPERTY_TYPE",
+            "matched": true
+          },
+          "exclusion:ATTRIBUTE:elevator": {
+            "category": "EXCLUSION",
+            "code": "ATTRIBUTE",
+            "matched": true
+          }
+        }
+      }
+    },
+    {
+      "id": "315d0501-b56b-4951-8a88-1d3e1932e111",
+      "title": "Radar E2E MEDIO mwjzgau6",
+      "radarMatch": {
+        "propertyId": "315d0501-b56b-4951-8a88-1d3e1932e111",
+        "matched": true,
+        "matchedCount": 9,
+        "totalCriteria": 12,
+        "score": 0.4,
+        "requiredScore": 1,
+        "reasons": [
+          "MIN_BEDROOMS"
+        ],
+        "criteria": {
+          "propertyType": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "city": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "state": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "activeOffer": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "offerType": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "priceRange": {
+            "category": "REQUIRED",
+            "matched": true
+          },
+          "preference:MIN_BEDROOMS": {
+            "category": "PREFERENCE",
+            "code": "MIN_BEDROOMS",
+            "weight": 2,
+            "matched": true
+          },
+          "preference:NEIGHBORHOOD": {
+            "category": "PREFERENCE",
+            "code": "NEIGHBORHOOD",
+            "weight": 1,
+            "matched": false,
+            "reason": "Bairro é \"Centro\", o radar prefere \"Cambuí\"."
+          },
+          "flexible:ATTRIBUTE:acabamento": {
+            "category": "FLEXIBLE",
+            "code": "ATTRIBUTE",
+            "weight": 1,
+            "matched": false,
+            "reason": "\"acabamento\" é \"simples\", o radar prefere \"alto padrão\"."
+          },
+          "flexible:MAX_DISTANCE_KM": {
+            "category": "FLEXIBLE",
+            "code": "MAX_DISTANCE_KM",
+            "weight": 1,
+            "matched": false,
+            "distanceKm": 83.65,
+            "reason": "Fica a 83.65 km do ponto, o radar aceita até 5 km."
+          },
+          "exclusion:PROPERTY_TYPE:LAND": {
+            "category": "EXCLUSION",
+            "code": "PROPERTY_TYPE",
+            "matched": true
+          },
+          "exclusion:ATTRIBUTE:elevator": {
+            "category": "EXCLUSION",
+            "code": "ATTRIBUTE",
+            "matched": true
+          }
+        }
+      }
+    }
+  ]
+}

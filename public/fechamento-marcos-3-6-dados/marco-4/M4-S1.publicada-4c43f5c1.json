@@ -1,0 +1,367 @@
+{
+ "id": "M4-§1",
+ "secao": "§1 Objetivo",
+ "requisito": "\"O Centro Financeiro é a fonte oficial dos fatos financeiros do Nayara One. Ele deve separar rigorosamente as empresas, impedir pagamentos duplicados, preservar dinheiro de terceiros, conciliar bancos, calcular comissões, controlar recebíveis/pagáveis, produzir fechamento auditável e alimentar a NAY com dados explicáveis.\"",
+ "substitui": "evidencias/marco-4/M4LR-correcoes-11-11.json",
+ "motivo": "Reconfirmação na versão publicada depois da integração das branches m4fix/* (a pendência declarada dependia de m4fix/pagamentos-verificacao). A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "4c43f5c1",
+  "branch": "marco-9 (local: leva2/fechamento no 4c43f5c1, sem alteração local)",
+  "testes": {
+   "inicio": "2026-11-17T00:47:52.000Z",
+   "fim": "2026-11-17T00:49:21.000Z",
+   "tap": "fechamento-m3-m6/evidencias/marco-4/_bruto/publicada-4c43f5c1/testes.tap",
+   "jsonl": "fechamento-m3-m6/evidencias/marco-4/_bruto/publicada-4c43f5c1/testes.jsonl"
+  }
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4lr.relatorioRecebivelParcial.test.js",
+   "nome": "§19 + §18.1 (sondas P6 e P10): o R$ 0,30 antes, com baixa parcial de 0,10, quitado e estornado — relatório, NAY e read model contam igual",
+   "status": "passou",
+   "duracaoMs": 221,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4lr.relatorioRecebivelParcial.test.js",
+   "nome": "§19.1 + §13.5 (sonda P12): caução de 1.000 em 400 + 600 aparece como 1.000 de terceiros; o caixa disponível soma só o conciliado, uma vez",
+   "status": "passou",
+   "duracaoMs": 104,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4lr.repasseBaixasParciais.test.js",
+   "nome": "M4-§12.3 (sonda P8): aluguel de 1.500 recebido em 750 + 750 tem 1.500 elegíveis; repasse de 3.000 é recusado e o de 1.500 passa",
+   "status": "passou",
+   "duracaoMs": 125,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4lr.ledgerEstorno.test.js",
+   "nome": "M4-§6.3 (sonda P3): estornar o pai parcial (R$ 0,30 com 0,10 baixado) estorna a baixa — o ledger da família fecha em 0, nunca −0,20",
+   "status": "passou",
+   "duracaoMs": 44,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/adversarial.finance.test.js",
+   "nome": "ADV-F02 forjar companyId no payload (escrever lançamento na empresa vizinha) é barrado pelo banco, não pela UI",
+   "status": "passou",
+   "duracaoMs": 7,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.crossCompanyIsolation.test.js",
+   "nome": "FIN-TS-020: financial_entries é isolado por EMPRESA — outra empresa do mesmo grupo nunca vê o lançamento",
+   "status": "passou",
+   "duracaoMs": 73,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/finance.entries.test.js",
+   "nome": "FIN-004 idempotência: 2ª tentativa com a mesma chave é bloqueada (não duplica pagamento)",
+   "status": "passou",
+   "duracaoMs": 148,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.acceptance.batch2.test.js",
+   "nome": "M4-23 createFinancialEntry com a mesma idempotencyKey não duplica o lançamento",
+   "status": "passou",
+   "duracaoMs": 10,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-TS-007: importação de extrato em lote (CSV) é idempotente — reimportar o MESMO arquivo não duplica",
+   "status": "passou",
+   "duracaoMs": 16,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-16 dinheiro de terceiro exige referência e nunca entra na soma de receita própria",
+   "status": "passou",
+   "duracaoMs": 71,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "M4-20c: freeCash soma o extrato bancário real e exclui dinheiro de terceiro retido; marginBySector agrupa por centro de resultado",
+   "status": "passou",
+   "duracaoMs": 116,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/financeE2E.flow.test.js",
+   "nome": "Financeiro E2E: lançamento -> intenção -> callback sandbox HMAC -> ledger -> extrato -> conciliação -> relatório",
+   "status": "passou",
+   "duracaoMs": 1021,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.batch3.test.js",
+   "nome": "M4-28 jornada E2E: lançamento -> aprovação HIGH (2 aprovadores) -> liquidação -> conciliação, tudo auditado",
+   "status": "passou",
+   "duracaoMs": 1945,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+   "status": "passou",
+   "duracaoMs": 1872,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-§8.5/§8.6: intenção de R$ 120.000,00 (HIGH) exige 2 aprovadores distintos com MFA recente; quem preparou não aprova",
+   "status": "passou",
+   "duracaoMs": 1889,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6: as faixas são parâmetros da empresa e a versão publicada da REG-FIN-002 decide risco e aprovadores quando define",
+   "status": "passou",
+   "duracaoMs": 930,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/finance.entries.test.js",
+   "nome": "maker-checker: segundo usuário aprova (risco HIGH exige 2 aprovações independentes)",
+   "status": "passou",
+   "duracaoMs": 1111,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "DEC-007 resolveAntifraudThresholds: sem nada gravado vale o padrão da DEC-007, sem consultar o Motor de Regras",
+   "status": "passou",
+   "duracaoMs": 4,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "DEC-007 o valor gravado pela tela vale sempre, mais restritivo ou mais frouxo que o padrão (sem regra do Motor)",
+   "status": "passou",
+   "duracaoMs": 6,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.finance.batch3.test.js",
+   "nome": "M4-07 approvePaymentIntent recusa quando o lançamento mudou depois do snapshot (hash divergente)",
+   "status": "passou",
+   "duracaoMs": 103,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-§9/FIN-TS-003 (V2-P1): trocar a chave PIX e a conta DEPOIS da aprovação invalida a intenção e o envio ao banco é recusado",
+   "status": "passou",
+   "duracaoMs": 119,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-§9: a troca do favorecido também invalida a aprovação de baixa (sem intenção) dos lançamentos que pagam essa conta",
+   "status": "passou",
+   "duracaoMs": 41,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-G§18.4: favorecido mudado por fora do serviço (direto no banco) também é recusado na aprovação e no envio, com os campos que mudaram",
+   "status": "passou",
+   "duracaoMs": 40,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/adversarial.finance.test.js",
+   "nome": "ADV-F16 trocar o BENEFICIÁRIO depois da aprovação invalida a decisão baseada no que foi revisado",
+   "status": "passou",
+   "duracaoMs": 51,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/marco4.contract.gaps.test.js",
+   "nome": "FIN-004(c): trocar o favorecido (bankAccountId) DEPOIS de uma ApprovalRequest aprovada invalida a liquidação direta",
+   "status": "passou",
+   "duracaoMs": 41,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/finance.bankAccountRedirect.test.js",
+   "nome": "FIN-REDIR-01: trocar bankAccountId de um lançamento PENDING já com conta definida exige revisão manual",
+   "status": "passou",
+   "duracaoMs": 205,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "PT-4c43f5c1-N-04",
+   "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43",
+   "quando": "2026-11-17T00:47:43.114Z",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "não se aplica (sucesso)",
+   "titulo": "V2-P2/FIN-005: pedido com riskLevel LOW para R$ 900.000,00 grava o risco CRITICAL (o risco vem da regra, não de quem pede)",
+   "resumo": "o risco não vem do pedido"
+  },
+  {
+   "id": "PT-4c43f5c1-N-02",
+   "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43",
+   "quando": "2026-11-17T00:47:43.114Z",
+   "metodo": "POST",
+   "rota": "/finance/payments/prepare",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE",
+   "titulo": "V2-P3: intenção de PAGAMENTO sobre lançamento A RECEBER de R$ 700,00 é recusada (só obrigação a pagar vira pagamento)",
+   "resumo": "recusado: só obrigação a pagar vira intenção de pagamento"
+  },
+  {
+   "id": "PT-4c43f5c1-PT4-0902",
+   "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43",
+   "quando": "2026-11-17T00:47:43.114Z",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/:id/approve",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
+   "titulo": "Empresa B tenta aprovar a intenção de pagamento real da empresa A: 404, como id inexistente",
+   "resumo": "404 FINANCE_PAYMENT_INTENT_NOT_FOUND sem vazamento"
+  }
+ ],
+ "pentest": [
+  {
+   "commit": "4c43f5c197fd254d004c4be016149930762b3f89",
+   "inicio": "2026-11-17T00:47:22.245Z",
+   "fim": "2026-11-17T00:47:43.114Z",
+   "resumo": {
+    "rotas": 107,
+    "ataquesRota": 1172,
+    "casosNegocio": 20,
+    "porGravidade": {
+     "CRÍTICA": 0,
+     "ALTA": 0,
+     "MÉDIA": 0,
+     "BAIXA": 3,
+     "INFORMATIVA": 0
+    },
+    "ok": 1189,
+    "inconclusivos": 0,
+    "graves": []
+   },
+   "relatorio": "fechamento-m3-m6/pentest/execucoes/publicada-4c43f5c1/RELATORIO_PENTEST_M4.md"
+  },
+  {
+   "commit": "46eced01f99a1d40f7d2c600c615024e46205b0b",
+   "inicio": "2026-11-17T00:52:06.709Z",
+   "fim": "2026-11-17T00:53:09.101Z",
+   "resumo": {
+    "rotas": 107,
+    "ataquesRota": 1172,
+    "casosNegocio": 20,
+    "porGravidade": {
+     "CRÍTICA": 0,
+     "ALTA": 0,
+     "MÉDIA": 0,
+     "BAIXA": 0,
+     "INFORMATIVA": 0
+    },
+    "ok": 1192,
+    "inconclusivos": 0,
+    "graves": []
+   },
+   "relatorio": "fechamento-m3-m6/pentest/execucoes/correcao-46eced01/RELATORIO_PENTEST_M4.md"
+  }
+ ],
+ "casosDoAchadoAnterior": [
+  {
+   "id": "N-01",
+   "titulo": "Troca do favorecido (chave PIX e conta) depois da aprovação da intenção (V2-P1)",
+   "veredito": "ok",
+   "evidencia": {
+    "trocaAceita": true,
+    "statusIntencaoDepoisDaTroca": "CANCELED",
+    "envioAceito": false,
+    "envioRecusado": "FINANCE_PAYMENT_INTENT_NOT_APPROVED"
+   },
+   "motivo": "a troca foi recusada ou invalidou a aprovação e o envio"
+  },
+  {
+   "id": "N-02",
+   "titulo": "Intenção de PAGAMENTO sobre lançamento A RECEBER (V2-P3)",
+   "veredito": "ok",
+   "evidencia": {
+    "prepare": {
+     "status": 409,
+     "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE"
+    }
+   },
+   "motivo": "recusado: só obrigação a pagar vira intenção de pagamento"
+  },
+  {
+   "id": "N-04",
+   "titulo": "Nível de risco da aprovação informado por quem pede (V2-P2)",
+   "veredito": "ok",
+   "evidencia": {
+    "status": 201,
+    "codigo": null,
+    "riskLevelGravado": "CRITICAL",
+    "lancamentoRetidoAntifraude": true
+   },
+   "motivo": "o risco não vem do pedido"
+  },
+  {
+   "id": "N-05",
+   "titulo": "Reabertura de período com a permissão comum de aprovação (FIN-TS-011)",
+   "veredito": "ok",
+   "evidencia": {
+    "reabrir": {
+     "permissoes": [
+      "finance:periodReopen"
+     ],
+     "mfa": true
+    },
+    "aprovarPagamento": {
+     "permissoes": [
+      "finance:approve"
+     ]
+    }
+   },
+   "motivo": "reabertura com permissão crítica dedicada"
+  }
+ ],
+ "comoReproduzir": "cd NayaraOne--API (commit 4c43f5c1) && bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env NODE_ENV=test LOG_LEVEL=error CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 CI_TENANT_USERS_PASSWORD=<valor fictício do CI> bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && node --test --test-concurrency=1 --test-timeout=900000 --test-reporter=../Maturacao/fechamento-m3-m6/ferramentas/marco-4/reporter-jsonl.mjs <arquivos>\"; cd NayaraOne--API && M4_PENTEST_PORT=<porta> bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env LOG_LEVEL=error CI_TENANT_USERS_PASSWORD=<valor fictício do CI> CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && NODE_ENV=test node scripts/pentest-m4/index.js --out-dir <pasta>\""
+}

@@ -1,0 +1,23 @@
+[OK ] UAT-C00 login na tela (usuário fictício gestor da empresa A, sem MFA)
+[OK ] UAT-C01 contrato assinado ativado pela tela (entra em vigor)
+[OK ] UAT-C02 cobrança da competência 12/2026 gerada: total e saldo R$ 2.500,00, Em aberto
+[OK ] UAT-C03 a mesma competência do mesmo contrato é recusada (competência UNIQUE contrato+período) e não duplica — Já existe cronograma de cobrança gerado para o na competência "12/2026".; 1 linha(s)
+[OK ] UAT-C04 pagamento parcial de R$ 1.000,00 recompõe o saldo: R$ 1.500,00 e status Parcial — LOC-2026-0001 12/2026 22/12/2026 R$ 2.500,00 R$ 1.500,00 Parcial Registrar pagamento
+[OK ] UAT-C05 o restante quita a competência: saldo R$ 0,00 e Quitado — LOC-2026-0001 12/2026 22/12/2026 R$ 2.500,00 R$ 0,00 Quitado Paga — nada a fazer
+[OK ] UAT-C06 reajuste IGPM sem fonte de índice fica Aguardando índice (PENDING_SOURCE), sem percentual inventado — LOC-2026-0001 01/2027 IGPM R$ 2.500,00 Aguardando índice Aguardando índice
+[OK ] UAT-C07 obrigação de água com responsável (Locatário) e fornecedor cadastrada
+[OK ] UAT-C08 a tela permite registrar a conta paga pela IMOBILIÁRIA (livro: conta paga pela imobiliária gera reembolso) — opções de "Quem pagou": Locatário, Locador, Imobiliária
+[OK ] UAT-C09 pagamento pela imobiliária gera o recebível de reembolso no Financeiro (R$ 180,00 a cobrar do locatário, texto com concordância) — PX
+Reembolso de água pago pela imobiliária, a cobrar do locatário.
+Sem conta bancária vinculada
+	
+A receber	R$ 180,00	16/11/2026	
+Pendente
+	
+[OK ] UAT-C10 contrato matriculado no aluguel garantido (obrigação da empresa ao proprietário)
+[OK ] UAT-C11 repasse do aluguel garantido ao proprietário registrado (crédito a recuperar do locatário)
+[OK ] UAT-C12 antecipação é produto separado: elegível -> proposta -> aceita -> paga (principal R$ 7.000,00 e custo R$ 350,00 separados)
+[OK ] UAT-C13 encerramento com pendência crítica é bloqueado e a tela lista as pendências — Bloqueado por 4 pendência(s): Garantia ainda ativa: 1 garantia(s) ainda ativa(s) (não devolvida(s)/liberada(s)). Processo jurídico aberto: 1 processo(s) jurídico(s) vinculado(s) ainda não encerrado(s). Prazo jurídico em 
+[OK ] UAT-C14 o contrato NÃO foi encerrado com a pendência aberta
+
+=== 15/15 passos OK

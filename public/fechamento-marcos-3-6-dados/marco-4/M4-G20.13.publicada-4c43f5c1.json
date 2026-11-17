@@ -1,0 +1,259 @@
+{
+ "id": "M4-G§20.13",
+ "secao": "Guia §20 DoD do Marcelo",
+ "requisito": "\"Sem vulnerabilidade alta/crítica.\"",
+ "substitui": "evidencias/marco-4/M4-G20.13.m4cc.json",
+ "motivo": "Reconfirmação na versão publicada depois da integração das branches m4fix/* (a pendência declarada dependia de m4fix/pagamentos-verificacao). A evidência anterior fica intacta.",
+ "medidoEm": {
+  "commitApi": "4c43f5c1",
+  "branch": "marco-9 (local: leva2/fechamento no 4c43f5c1, sem alteração local)",
+  "testes": {
+   "inicio": "2026-11-17T00:47:52.000Z",
+   "fim": "2026-11-17T00:49:21.000Z",
+   "tap": "fechamento-m3-m6/evidencias/marco-4/_bruto/publicada-4c43f5c1/testes.tap",
+   "jsonl": "fechamento-m3-m6/evidencias/marco-4/_bruto/publicada-4c43f5c1/testes.jsonl"
+  }
+ },
+ "testes": [
+  {
+   "arquivo": "test/m4.pentest.test.js",
+   "nome": "pentest M4 (núcleo): rotas do Financeiro lidas dos routers, todas com login e permissão, id real para cada parâmetro, MFA nas sensíveis",
+   "status": "passou",
+   "duracaoMs": 1492,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4.pentest.test.js",
+   "nome": "pentest M4 (núcleo): classificação determinística de severidade (rota e negócio)",
+   "status": "passou",
+   "duracaoMs": 1,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4.pentest.test.js",
+   "nome": "pentest M4 (executor): nenhum achado crítico ou alto no banco descartável",
+   "status": "passou",
+   "duracaoMs": 23082,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4.pentestCorrecoes.test.js",
+   "nome": "PT4-0839 (CRÍTICA): lançamento só referencia centro de custo/resultado da própria empresa (404 com o de outra, nada gravado)",
+   "status": "passou",
+   "duracaoMs": 687,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4.pentestCorrecoes.test.js",
+   "nome": "PT4-0819/0821 (BAIXA): parcelas e ajustes de comissão de outra empresa respondem 404, como id inexistente",
+   "status": "passou",
+   "duracaoMs": 231,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4.extratoFingerprintUnico.test.js",
+   "nome": "FIN-002 (pentest M4, achado crítico): empresa B não grava linha de extrato na conta bancária da empresa A (404, nada gravado, sem oráculo de duplicidade)",
+   "status": "passou",
+   "duracaoMs": 728,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.favorecidoCongelado.test.js",
+   "nome": "M4-§9/FIN-TS-003 (V2-P1): trocar a chave PIX e a conta DEPOIS da aprovação invalida a intenção e o envio ao banco é recusado",
+   "status": "passou",
+   "duracaoMs": 119,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§4 assertPayable (V2-P3): intenção de PAGAMENTO sobre lançamento A RECEBER é recusada",
+   "status": "passou",
+   "duracaoMs": 74,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.prepararAprovarPagamento.test.js",
+   "nome": "M4-G§1.6/FIN-005 (V2-P2, P9): o risco vem do valor, nunca do pedido — LOW pedido para R$ 1.000.000,00 vira CRITICAL, 2 aprovadores com MFA",
+   "status": "passou",
+   "duracaoMs": 1872,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4pg.estornoReabertura.http.test.js",
+   "nome": "M4-§21.10/G§18.10/FIN-TS-011: reabrir exige finance:periodReopen + MFA, motivo, e a aprovação de OUTRA pessoa (fluxo CRITICAL)",
+   "status": "passou",
+   "duracaoMs": 115,
+   "commitDoArquivo": "4c43f5c1",
+   "executadoEm": "4c43f5c1 (16/11/2026)"
+  },
+  {
+   "arquivo": "test/m4.pentest.test.js",
+   "nome": "pentest M4 (núcleo): o ataque de MFA usa um perfil que TEM as permissões da rota (reabertura: finance:periodReopen), para medir o portão de MFA e não a recusa de permissão",
+   "status": "passou",
+   "duracaoMs": 2,
+   "commitDoArquivo": "46eced01",
+   "executadoEm": "46eced01 (leva2/fechamento = 4c43f5c1 + correção do executor do pentest), 16/11/2026"
+  }
+ ],
+ "respostasHttp": [
+  {
+   "id": "PT-4c43f5c1-N-02",
+   "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43",
+   "quando": "2026-11-17T00:47:43.114Z",
+   "metodo": "POST",
+   "rota": "/finance/payments/prepare",
+   "perfil": "A:gestor",
+   "status": 409,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE",
+   "titulo": "V2-P3: intenção de PAGAMENTO sobre lançamento A RECEBER de R$ 700,00 é recusada (só obrigação a pagar vira pagamento)",
+   "resumo": "recusado: só obrigação a pagar vira intenção de pagamento"
+  },
+  {
+   "id": "PT-4c43f5c1-N-04",
+   "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43",
+   "quando": "2026-11-17T00:47:43.114Z",
+   "metodo": "POST",
+   "rota": "/finance/approval-requests",
+   "perfil": "A:gestor",
+   "status": 201,
+   "codigo": "não se aplica (sucesso)",
+   "titulo": "V2-P2/FIN-005: pedido com riskLevel LOW para R$ 900.000,00 grava o risco CRITICAL (o risco vem da regra, não de quem pede)",
+   "resumo": "o risco não vem do pedido"
+  },
+  {
+   "id": "PT-4c43f5c1-PT4-0902",
+   "ambiente": "pentest automatizado do Financeiro na API 4c43f5c1 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:47:22 a 16/11/2026, 21:47:43",
+   "quando": "2026-11-17T00:47:43.114Z",
+   "metodo": "POST",
+   "rota": "/finance/payment-intents/:id/approve",
+   "perfil": "B:gestor",
+   "status": 404,
+   "codigo": "FINANCE_PAYMENT_INTENT_NOT_FOUND",
+   "titulo": "Empresa B tenta aprovar a intenção de pagamento real da empresa A: 404, como id inexistente",
+   "resumo": "404 FINANCE_PAYMENT_INTENT_NOT_FOUND sem vazamento"
+  },
+  {
+   "id": "PT-46eced01-PT4-0865",
+   "ambiente": "pentest automatizado do Financeiro na API 46eced01 em banco descartável (RLS real, role sem bypass); execução de 16/11/2026, 21:52:06 a 16/11/2026, 21:53:09",
+   "quando": "2026-11-17T00:53:09.101Z",
+   "metodo": "POST",
+   "rota": "/finance/period-closures/reopen",
+   "perfil": "A:reabertura",
+   "status": 403,
+   "codigo": "MFA_STEP_UP_REQUIRED",
+   "titulo": "Reabertura de período: perfil com finance:periodReopen, MFA habilitado e sem verificação recente é recusado pelo MFA (fluxo CRITICAL)",
+   "resumo": "403 MFA_STEP_UP_REQUIRED"
+  }
+ ],
+ "pentest": [
+  {
+   "commit": "4c43f5c197fd254d004c4be016149930762b3f89",
+   "inicio": "2026-11-17T00:47:22.245Z",
+   "fim": "2026-11-17T00:47:43.114Z",
+   "resumo": {
+    "rotas": 107,
+    "ataquesRota": 1172,
+    "casosNegocio": 20,
+    "porGravidade": {
+     "CRÍTICA": 0,
+     "ALTA": 0,
+     "MÉDIA": 0,
+     "BAIXA": 3,
+     "INFORMATIVA": 0
+    },
+    "ok": 1189,
+    "inconclusivos": 0,
+    "graves": []
+   },
+   "relatorio": "fechamento-m3-m6/pentest/execucoes/publicada-4c43f5c1/RELATORIO_PENTEST_M4.md"
+  },
+  {
+   "commit": "46eced01f99a1d40f7d2c600c615024e46205b0b",
+   "inicio": "2026-11-17T00:52:06.709Z",
+   "fim": "2026-11-17T00:53:09.101Z",
+   "resumo": {
+    "rotas": 107,
+    "ataquesRota": 1172,
+    "casosNegocio": 20,
+    "porGravidade": {
+     "CRÍTICA": 0,
+     "ALTA": 0,
+     "MÉDIA": 0,
+     "BAIXA": 0,
+     "INFORMATIVA": 0
+    },
+    "ok": 1192,
+    "inconclusivos": 0,
+    "graves": []
+   },
+   "relatorio": "fechamento-m3-m6/pentest/execucoes/correcao-46eced01/RELATORIO_PENTEST_M4.md"
+  }
+ ],
+ "casosDoAchadoAnterior": [
+  {
+   "id": "N-01",
+   "titulo": "Troca do favorecido (chave PIX e conta) depois da aprovação da intenção (V2-P1)",
+   "veredito": "ok",
+   "evidencia": {
+    "trocaAceita": true,
+    "statusIntencaoDepoisDaTroca": "CANCELED",
+    "envioAceito": false,
+    "envioRecusado": "FINANCE_PAYMENT_INTENT_NOT_APPROVED"
+   },
+   "motivo": "a troca foi recusada ou invalidou a aprovação e o envio"
+  },
+  {
+   "id": "N-02",
+   "titulo": "Intenção de PAGAMENTO sobre lançamento A RECEBER (V2-P3)",
+   "veredito": "ok",
+   "evidencia": {
+    "prepare": {
+     "status": 409,
+     "codigo": "FINANCE_PAYMENT_INTENT_NOT_PAYABLE"
+    }
+   },
+   "motivo": "recusado: só obrigação a pagar vira intenção de pagamento"
+  },
+  {
+   "id": "N-04",
+   "titulo": "Nível de risco da aprovação informado por quem pede (V2-P2)",
+   "veredito": "ok",
+   "evidencia": {
+    "status": 201,
+    "codigo": null,
+    "riskLevelGravado": "CRITICAL",
+    "lancamentoRetidoAntifraude": true
+   },
+   "motivo": "o risco não vem do pedido"
+  },
+  {
+   "id": "N-05",
+   "titulo": "Reabertura de período com a permissão comum de aprovação (FIN-TS-011)",
+   "veredito": "ok",
+   "evidencia": {
+    "reabrir": {
+     "permissoes": [
+      "finance:periodReopen"
+     ],
+     "mfa": true
+    },
+    "aprovarPagamento": {
+     "permissoes": [
+      "finance:approve"
+     ]
+    }
+   },
+   "motivo": "reabertura com permissão crítica dedicada"
+  }
+ ],
+ "comoReproduzir": "cd NayaraOne--API (commit 4c43f5c1) && bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env NODE_ENV=test LOG_LEVEL=error CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 CI_TENANT_USERS_PASSWORD=<valor fictício do CI> bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && node --test --test-concurrency=1 --test-timeout=900000 --test-reporter=../Maturacao/fechamento-m3-m6/ferramentas/marco-4/reporter-jsonl.mjs <arquivos>\"; cd NayaraOne--API && M4_PENTEST_PORT=<porta> bash ../_verif-final/vez.sh node scripts/withDisposableDb.js --port <porta> -- env LOG_LEVEL=error CI_TENANT_USERS_PASSWORD=<valor fictício do CI> CLAMAV_HOST=127.0.0.1 CLAMAV_PORT=3310 bash -c \"node scripts/seed-ci-two-tenants.js >/dev/null && NODE_ENV=test node scripts/pentest-m4/index.js --out-dir <pasta>\""
+}

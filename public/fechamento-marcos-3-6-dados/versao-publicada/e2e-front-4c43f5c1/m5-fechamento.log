@@ -1,0 +1,50 @@
+[OK ] 0. login na tela (usuário fictício, sem MFA)
+[OK ] T1. cláusula criada na biblioteca com responsável jurídico
+[OK ] T2. modelo criado sem versão publicada (ainda não gera contrato)
+[OK ] T3. cláusula incluída na versão 1 em rascunho do modelo
+[OK ] T4. versão 1 do modelo publicada (alçada jurídica), com quem publicou
+[OK ] T5. incluir cláusula no modelo publicado cria a versão 2 em rascunho
+[OK ] 1c. prévia mostra a versão 1 publicada (a que gera contrato), sem a cláusula do rascunho — Prévia da versão 1 do modelo (publicada) — é a que gera o documento do contrato.
+[OK ] 1d. Ver rascunho mostra a versão 2 em rascunho, marcada como só consulta — Prévia da versão 2 do modelo (rascunho) — só consulta: o documento é gerado pela versão publicada.
+[OK ] 1. contrato criado em rascunho pela tela
+[OK ] 1b. versão 1 gerada da versão PUBLICADA do modelo
+[OK ] 1a. sem botão Cancelar (CANCELLED não é estado do livro)
+[OK ] 2. contrato em Documentos pendentes e checklist gerado pela regra
+[OK ] 2a. revisão jurídica recusada com pendências do checklist em português — Faltam documentos do checklist (antes da revisão jurídica): Documentos PF/PJ das partes (locador/locatário); Garantia locatícia (fiador, seg
+[OK ] 3. todos os documentos do checklist anexados pela tela — 6 anexo(s)
+[OK ] 4. versão 2 do documento criada (Rascunho)
+[OK ] 5. contrato em Revisão jurídica
+[OK ] 6. versão aprovada pela rota da versão: versão Aprovada e contrato Aprovado
+[OK ] 6a. depois da aprovação, valor/vigência só por aditivo
+[OK ] 7. versão aprovada enviada para assinatura (Em assinatura)
+[OK ] 8. assinaturas manuais com a via assinada registradas
+[OK ] 9. contrato Assinado
+[OK ] 9a. linha do tempo sem código de status cru
+[OK ] A1. aditivo criado em rascunho com versão base e vigência
+[OK ] A2. aditivo assinado por cada signatário (fica Assinado)
+[OK ] N1. correção da notificação cria a versão 2 e preserva a versão 1 (com o motivo) — Versão 1 Versão inicial. · 16/11/2026 às 22:02 (horário de Brasília) · por CI gestor — tenant A Versão 2 · atual Valor d
+[OK ] 10. tela avisa antes de criar que a garantia nasce pendente
+[OK ] 11. seguro-fiança sem parcelas/renovação nasce Pendente com o que falta — Parcelas do prêmio Data de renovação
+[OK ] 12. dados do tipo completados: garantia Ativa
+[OK ] 13. vistoria de Entrada criada com itens por ambiente
+[OK ] 14. foto anexada ao item da vistoria
+[OK ] 15. vistoria de entrada concluída
+[OK ] 16. assinatura sem MFA recente recusada com mensagem clara — Assinatura não registrada: Esta ação exige verificação em duas etapas (MFA) habilitada na sua conta. Configure em Meu perfil e tente de novo
+[OK ] 17. comparação entrada x saída por ambiente/item: Sala/Piso mudou (Bom -> Danificado)
+[OK ] 17a. comparação avisa que a responsabilidade depende de validação humana
+[OK ] 17b. preparo: assinaturas de locador e locatário pela camada de serviço (MFA não é contornado na rota)
+[OK ] 18. entrega de chaves recusada SEM a via assinada do termo — Para liberar as chaves, falta Anexe a via do termo assinada pelo recebedor.
+[OK ] 19. com a via assinada do termo, chaves entregues (selo Entregue e via assinada guardada)
+[OK ] 20. prazo criado com documento de origem (vence 23:59 de Brasília)
+[OK ] 20a. prazo reatribuído a outro usuário da empresa
+[OK ] 20b. remarcar SEM motivo é recusado com mensagem clara — Alteração recusada: Para remarcar o vencimento, informe o motivo da mudança: ele fica no histórico do prazo.
+[OK ] 20c. remarcado COM motivo: novo vencimento na tela
+[OK ] 21. prazo concluído com nota
+[OK ] 21a. prazo concluído reaberto (aprovação jurídica): volta a Pendente
+[OK ] 21b. histórico do prazo: vencimento anterior, novo, motivo, autor e data — 16/11/2026 às 22:02 (horário de Brasília) · por CI gestor — tenant A Prazo “Contestação do locatário”: reaberto. 16/11/2026 às 22:02 (horário de Brasília) · por
+[OK ] R1. com só a estimativa, nada vira recebível
+[OK ] R2. valor confirmado vinculado como recebível no Financeiro
+[OK ] 22. API recusa CANCELLED como alvo (409) — HTTP 409
+[OK ] 23. contrato antigo CANCELLED legível, sem ações
+
+=== 48/48 passos OK (2026-11-17T01:03:03.016Z)

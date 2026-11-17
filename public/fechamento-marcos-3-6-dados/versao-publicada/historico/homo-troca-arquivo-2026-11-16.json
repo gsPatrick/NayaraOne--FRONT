@@ -125,9 +125,10 @@
     "documentoNovaVersao": "c17d841e-26ee-4d79-9f95-b83071ebfa5c",
     "auditoriaTroca": "cc35097c-c22b-4797-9dc9-f758c5dfde73"
   },
-  "caminhoNaTela": "Pessoas (/painel/pessoas/47cfa359-0f59-4ea6-ac93-31adf1a258d6) → aba Documentos: RG versão 1 (arquivo v1, verificado) e RG versão 2 (arquivo v2, nasceu pendente, depois verificado pela revisão própria); Auditoria (filtro people.document.replace_file).",
+  "caminhoNaTela": "Pessoas (/painel/pessoas/47cfa359-0f59-4ea6-ac93-31adf1a258d6) → aba Documentos: RG versão 1 (arquivo v1, verificado) e RG versão 2 (arquivo v2, nasceu pendente; leitura ilegível: a verificação foi recusada (422 PERSON_DOCUMENT_ILLEGIBLE) e a revisão ficou aberta); Auditoria (filtro people.document.replace_file).",
   "resultado": {
     "ok": 13,
     "falharam": 0
-  }
+  },
+  "notaCorrecao": "16/11/2026: o texto de caminhoNaTela dizia que a versão 2 foi verificada; as conferências deste mesmo arquivo mostram a recusa (422) por leitura ilegível. Texto corrigido; dados da execução inalterados."
 }

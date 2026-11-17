@@ -1,0 +1,160 @@
+{
+  "when": "2026-11-17T01:01:15.781Z",
+  "steps": [
+    {
+      "label": "0. login na tela",
+      "ok": true,
+      "detail": "/\\/painel/"
+    },
+    {
+      "label": "1. quadro do funil do livro aberto",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "2. sem responsável a oportunidade não é criada (CRMX-006)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "3. lead vira oportunidade no quadro",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "3a. oportunidade gravada com o responsável escolhido",
+      "ok": true,
+      "detail": "\"0845191f-1b31-4cb8-ac17-eadb82856a1f\""
+    },
+    {
+      "label": "4. Radar do cliente mostra o imóvel na tela",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "5. visita da oportunidade aparece no detalhe",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "5a. visita ligada à oportunidade",
+      "ok": true,
+      "detail": "\"df1c47c3-42a4-4711-ac5a-ed1901292bbb\""
+    },
+    {
+      "label": "6. imóvel da proposta vem da oportunidade",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "6a. imóvel selecionado é o de interesse",
+      "ok": true,
+      "detail": "\"c3ee8482-def6-4352-99f7-a22c4998023e\""
+    },
+    {
+      "label": "6b. POST /crm/proposals pela tela com o imóvel",
+      "ok": true,
+      "detail": "201"
+    },
+    {
+      "label": "7. proposta criada na lista",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "8. proposta aceita",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "9. mover para Ganho pede o motivo (lista da empresa)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "10. oportunidade gravada como WON (código do livro)",
+      "ok": true,
+      "detail": "\"WON\""
+    },
+    {
+      "label": "11. novo contrato aberto pela oportunidade, com o vínculo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "11a. imóvel do contrato é o da oportunidade",
+      "ok": true,
+      "detail": "\"c3ee8482-def6-4352-99f7-a22c4998023e\""
+    },
+    {
+      "label": "12. contrato de venda criado em rascunho",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "13. checklist de documentos gerado",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "14. documentos do checklist anexados",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "15. versão do contrato com o documento",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "16. versão aprovada",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "17. vendedor e comprador assinaram",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "18. contrato ativo (Em vigor)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "19. novo recebível aberto pelo contrato, com o vínculo",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "19a. recebível criado na lista de lançamentos",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "20. recebimento baixado com o MFA digitado na tela",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "21. comissão do corretor criada sobre o recebimento",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "label": "22. contrato gravado ligado à oportunidade",
+      "ok": true,
+      "detail": "\"df1c47c3-42a4-4711-ac5a-ed1901292bbb\""
+    },
+    {
+      "label": "23. recebível gravado ligado ao contrato",
+      "ok": true,
+      "detail": "\"a00c511c-7ff2-431a-9915-da7c9c7aeefd\""
+    },
+    {
+      "label": "24. comissão de 5% (R$ 31.000,00) ligada ao recebimento e ao contrato",
+      "ok": true,
+      "detail": "true"
+    }
+  ]
+}

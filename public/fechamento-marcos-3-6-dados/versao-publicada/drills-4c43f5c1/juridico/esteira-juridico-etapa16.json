@@ -1,0 +1,22 @@
+{
+ "esteira": "juridico (Guia M5 §17)",
+ "commit": "4c43f5c197fd254d004c4be016149930762b3f89",
+ "dirty": false,
+ "release": false,
+ "de": 16,
+ "ate": 16,
+ "evidencias": "/Users/patrick.developer/Desktop/Developer/Projects/Nayara/NayaraOne/Maturacao/fechamento-m3-m6/evidencias/versao-publicada/drills-4c43f5c1/juridico/esteira-juridico-etapa16-evidencias",
+ "inicio": "2026-11-17T00:57:18.165Z",
+ "etapas": [
+  {
+   "numero": 16,
+   "nome": "failure_drills",
+   "status": "VERDE",
+   "motivo": "2 comando(s)",
+   "duracaoMs": 76883,
+   "commit": "4c43f5c197fd254d004c4be016149930762b3f89"
+  }
+ ],
+ "fim": "2026-11-17T00:58:35.050Z",
+ "resultado": "VERDE"
+}

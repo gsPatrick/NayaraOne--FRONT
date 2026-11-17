@@ -1,0 +1,149 @@
+{
+  "excluido": {
+    "propertyId": "cb24a2e5-94e6-4a74-99c7-50c49cb9b94c",
+    "matched": false,
+    "matchedCount": 11,
+    "totalCriteria": 12,
+    "score": 0,
+    "requiredScore": 1,
+    "reasons": [
+      "EXCLUDED"
+    ],
+    "criteria": {
+      "propertyType": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "city": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "state": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "activeOffer": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "offerType": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "priceRange": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "preference:MIN_BEDROOMS": {
+        "category": "PREFERENCE",
+        "code": "MIN_BEDROOMS",
+        "weight": 2,
+        "matched": true
+      },
+      "preference:NEIGHBORHOOD": {
+        "category": "PREFERENCE",
+        "code": "NEIGHBORHOOD",
+        "weight": 1,
+        "matched": true
+      },
+      "flexible:ATTRIBUTE:acabamento": {
+        "category": "FLEXIBLE",
+        "code": "ATTRIBUTE",
+        "weight": 1,
+        "matched": true
+      },
+      "flexible:MAX_DISTANCE_KM": {
+        "category": "FLEXIBLE",
+        "code": "MAX_DISTANCE_KM",
+        "weight": 1,
+        "matched": true,
+        "distanceKm": 0.51
+      },
+      "exclusion:PROPERTY_TYPE:LAND": {
+        "category": "EXCLUSION",
+        "code": "PROPERTY_TYPE",
+        "matched": true
+      },
+      "exclusion:ATTRIBUTE:elevator": {
+        "category": "EXCLUSION",
+        "code": "ATTRIBUTE",
+        "matched": false,
+        "reason": "Excluído: o cliente não aceita \"elevator\" = \"false\"."
+      }
+    }
+  },
+  "caro": {
+    "propertyId": "19259a18-3348-4887-929c-8fcf98f5b0bf",
+    "matched": false,
+    "matchedCount": 10,
+    "totalCriteria": 12,
+    "score": 0,
+    "requiredScore": 0.8333,
+    "reasons": [
+      "REQUIRED_FAILED"
+    ],
+    "criteria": {
+      "propertyType": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "city": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "state": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "activeOffer": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "offerType": {
+        "category": "REQUIRED",
+        "matched": true
+      },
+      "priceRange": {
+        "category": "REQUIRED",
+        "matched": false,
+        "reason": "Acima do máximo: preço 900000 > 600000."
+      },
+      "preference:MIN_BEDROOMS": {
+        "category": "PREFERENCE",
+        "code": "MIN_BEDROOMS",
+        "weight": 2,
+        "matched": true
+      },
+      "preference:NEIGHBORHOOD": {
+        "category": "PREFERENCE",
+        "code": "NEIGHBORHOOD",
+        "weight": 1,
+        "matched": true
+      },
+      "flexible:ATTRIBUTE:acabamento": {
+        "category": "FLEXIBLE",
+        "code": "ATTRIBUTE",
+        "weight": 1,
+        "matched": false,
+        "reason": "Imóvel sem \"acabamento\" cadastrado."
+      },
+      "flexible:MAX_DISTANCE_KM": {
+        "category": "FLEXIBLE",
+        "code": "MAX_DISTANCE_KM",
+        "weight": 1,
+        "matched": true,
+        "distanceKm": 0.51
+      },
+      "exclusion:PROPERTY_TYPE:LAND": {
+        "category": "EXCLUSION",
+        "code": "PROPERTY_TYPE",
+        "matched": true
+      },
+      "exclusion:ATTRIBUTE:elevator": {
+        "category": "EXCLUSION",
+        "code": "ATTRIBUTE",
+        "matched": true
+      }
+    }
+  }
+}

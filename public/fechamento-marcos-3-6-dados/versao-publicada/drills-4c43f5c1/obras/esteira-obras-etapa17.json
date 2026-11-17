@@ -1,0 +1,18 @@
+{
+ "esteira": "obras (Guia M6 §13)",
+ "commit": "4c43f5c197fd254d004c4be016149930762b3f89",
+ "release": false,
+ "inicio": "2026-11-17T00:59:20.933Z",
+ "etapas": [
+  {
+   "numero": 17,
+   "nome": "load/failure tests",
+   "status": "VERDE",
+   "motivo": "2 comando(s)",
+   "duracaoMs": 94494,
+   "commit": "4c43f5c197fd254d004c4be016149930762b3f89"
+  }
+ ],
+ "fim": "2026-11-17T01:00:55.429Z",
+ "resultado": "VERDE"
+}
