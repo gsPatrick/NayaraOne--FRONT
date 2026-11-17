@@ -30,6 +30,7 @@ import { updateProject, transitionProject, removeProject, deliverProject, closeP
 import { formatBRL, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import { loadObraDetail } from "./_components/loadObraDetail";
+import { canSaveStage, stageEndError, stageEndsAtPayload, STAGE_END_HELPER, isPlannedEndLocked, executionFieldError, executionFieldHelper, executionFieldPatch, hasExecutionFieldError } from "./scheduleRules";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
@@ -73,6 +74,8 @@ export default function ObraDetalhePage({ params }) {
   // formulário de etapa simplesmente não expunha esses campos. Mesmo padrão de validação de
   // <input type="date"> usado no formulário da obra (editDateErrors).
   const [stageDateErrors, setStageDateErrors] = useState({});
+  // Segunda leva de 16/11/2026 (DI-BI2-3): o término previsto é obrigatório; o aviso aparece depois que o campo é tocado.
+  const [stageEndTouched, setStageEndTouched] = useState(false);
   // FIX (homologação 23/09/2026): etapa só podia ser CRIADA. Guardar o id em edição faz o
   // mesmo modal servir pra criar e pra editar.
   const [editingStageId, setEditingStageId] = useState(null);
@@ -199,15 +202,22 @@ export default function ObraDetalhePage({ params }) {
     setEditOpen(true);
   }
 
+  // Campos do gate READY -> ACTIVE (DI-BI2-9): com a obra em execução nenhum deles pode ficar vazio.
+  function executionFields() {
+    const { responsibleUserId, startsAt, endsAtPlanned, budgetAmount } = editForm;
+    return { responsibleUserId, startsAt, endsAtPlanned, ...(!budgetApproved ? { budgetAmount } : {}) };
+  }
+
   async function handleSaveEdit() {
-    if (!editForm.name.trim()) return;
+    if (!editForm.name.trim() || hasExecutionFieldError(project.status, executionFields())) return;
     setSavingEdit(true);
     setActionError("");
     try {
       const updated = await updateProject(project.id, {
         name: editForm.name.trim(),
         propertyId: editForm.propertyId || null,
-        responsibleUserId: editForm.responsibleUserId || null,
+        // Obra em execução: responsável, orçamento e datas trocam, mas nunca vão como null (scheduleRules.js).
+        ...executionFieldPatch(project.status, "responsibleUserId", editForm.responsibleUserId),
         projectTypeId: editForm.projectTypeId || null,
         costCenterId: editForm.costCenterId || null,
         // FIX (auditoria E2E de browser, ciclo 5, 02/10/2026): com orçamento já aprovado
@@ -216,10 +226,10 @@ export default function ObraDetalhePage({ params }) {
         // updateBudgetLine/plannedAmount), senão salvar OUTRO campo do modal (ex.: nome)
         // quebraria também, mesmo sem o usuário ter mexido no orçamento.
         ...(!budgetApproved
-          ? { budgetAmount: editForm.budgetAmount !== "" ? toNumber(editForm.budgetAmount) : null }
+          ? executionFieldPatch(project.status, "budgetAmount", editForm.budgetAmount)
           : {}),
-        startsAt: dateOnlyInputToIso(editForm.startsAt) || null,
-        endsAtPlanned: dateOnlyInputToIso(editForm.endsAtPlanned) || null,
+        ...executionFieldPatch(project.status, "startsAt", editForm.startsAt),
+        ...executionFieldPatch(project.status, "endsAtPlanned", editForm.endsAtPlanned),
       });
       setProject(updated);
       setEditOpen(false);
@@ -234,6 +244,7 @@ export default function ObraDetalhePage({ params }) {
     setEditingStageId(null);
     setStageForm({ name: "", sequence: String(stages.length + 1), stageCode: "", responsibleUserId: "", plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
     setStageDateErrors({});
+    setStageEndTouched(false);
     setStageOpen(true);
   }
 
@@ -255,6 +266,8 @@ export default function ObraDetalhePage({ params }) {
       publicVisible: Boolean(stage.publicVisible),
     });
     setStageDateErrors({});
+    // Etapa antiga sem prazo: o aviso já aparece ao abrir, porque salvar exige o prazo.
+    setStageEndTouched(!stage.endsAt);
     setStageOpen(true);
   }
 
@@ -264,7 +277,10 @@ export default function ObraDetalhePage({ params }) {
     // `disabled` do botão, criando 2 etapas duplicadas — nenhum backend bloqueava, pois é um
     // INSERT simples sem checagem de duplicidade. Guarda de reentrância explícita.
     if (savingStage) return;
-    if (!stageForm.name.trim() || stageForm.sequence === "") return;
+    if (!canSaveStage(stageForm, stageDateErrors)) {
+      setStageEndTouched(true);
+      return;
+    }
     setSavingStage(true);
     setActionError("");
     try {
@@ -276,7 +292,8 @@ export default function ObraDetalhePage({ params }) {
         plannedPct: stageForm.plannedPct !== "" ? toNumber(stageForm.plannedPct) : undefined,
         plannedCost: stageForm.plannedCost !== "" ? toNumber(stageForm.plannedCost) : undefined,
         startsAt: dateOnlyInputToIso(stageForm.startsAt) || null,
-        endsAt: dateOnlyInputToIso(stageForm.endsAt) || null,
+        // M6:16 "Etapas possuem ... prazo": sempre a data, nunca null (scheduleRules.js).
+        endsAt: stageEndsAtPayload(stageForm.endsAt),
       };
       if (editingStageId) {
         payload.publicVisible = Boolean(stageForm.publicVisible);
@@ -696,7 +713,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.name.trim() || editDateErrors.startsAt || editDateErrors.endsAtPlanned}>Salvar alterações</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.name.trim() || editDateErrors.startsAt || editDateErrors.endsAtPlanned || hasExecutionFieldError(project.status, executionFields())}>Salvar alterações</Button>
           </>
         }
       >
@@ -714,7 +731,13 @@ export default function ObraDetalhePage({ params }) {
               ))}
             </Select>
           </FormField>
-          <FormField label="Responsável" htmlFor="e-responsible" helper="Opcional agora — obrigatório para iniciar a execução da obra">
+          <FormField
+            label="Responsável"
+            htmlFor="e-responsible"
+            required={isPlannedEndLocked(project.status)}
+            helper={executionFieldHelper(project.status)}
+            error={executionFieldError(project.status, "responsibleUserId", editForm.responsibleUserId) || undefined}
+          >
             <Select id="e-responsible" value={editForm.responsibleUserId} onChange={(e) => setEditForm((p) => ({ ...p, responsibleUserId: e.target.value }))}>
               <option value="">Sem responsável</option>
               {members.map((u) => (
@@ -741,7 +764,9 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Orçamento (R$)"
             htmlFor="e-budget"
-            helper={budgetApproved ? "Baseline já aprovada — valor só muda via Change Order." : "Opcional agora — obrigatório para iniciar a execução da obra"}
+            required={!budgetApproved && isPlannedEndLocked(project.status)}
+            helper={budgetApproved ? "Baseline já aprovada — valor só muda via Change Order." : executionFieldHelper(project.status)}
+            error={!budgetApproved ? executionFieldError(project.status, "budgetAmount", editForm.budgetAmount) || undefined : undefined}
           >
             <DecimalInput
               id="e-budget"
@@ -753,15 +778,16 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Início"
             htmlFor="e-starts"
-            helper={editDateErrors.startsAt ? undefined : "Opcional agora — obrigatório para iniciar a execução da obra"}
-            error={editDateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            required={isPlannedEndLocked(project.status)}
+            helper={editDateErrors.startsAt ? undefined : executionFieldHelper(project.status)}
+            error={editDateErrors.startsAt ? DATE_INPUT_ERROR_MESSAGE : executionFieldError(project.status, "startsAt", editForm.startsAt) || undefined}
           >
             <Input
               id="e-starts"
               type="date"
               min="1900-01-01"
               max="2100-12-31"
-              error={editDateErrors.startsAt}
+              error={editDateErrors.startsAt || Boolean(executionFieldError(project.status, "startsAt", editForm.startsAt))}
               value={editForm.startsAt}
               onChange={(e) => {
                 setEditDateErrors((p) => ({ ...p, startsAt: isDateInputInvalid(e.target.validity) }));
@@ -773,15 +799,16 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Previsão de término"
             htmlFor="e-ends"
-            helper={editDateErrors.endsAtPlanned ? undefined : "Opcional agora — obrigatório para iniciar a execução da obra"}
-            error={editDateErrors.endsAtPlanned ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            required={isPlannedEndLocked(project.status)}
+            helper={editDateErrors.endsAtPlanned ? undefined : executionFieldHelper(project.status)}
+            error={editDateErrors.endsAtPlanned ? DATE_INPUT_ERROR_MESSAGE : executionFieldError(project.status, "endsAtPlanned", editForm.endsAtPlanned) || undefined}
           >
             <Input
               id="e-ends"
               type="date"
               min="1900-01-01"
               max="2100-12-31"
-              error={editDateErrors.endsAtPlanned}
+              error={editDateErrors.endsAtPlanned || Boolean(executionFieldError(project.status, "endsAtPlanned", editForm.endsAtPlanned))}
               value={editForm.endsAtPlanned}
               onChange={(e) => {
                 setEditDateErrors((p) => ({ ...p, endsAtPlanned: isDateInputInvalid(e.target.validity) }));
@@ -824,7 +851,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setStageOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveStage} loading={savingStage} disabled={!stageForm.name.trim() || stageForm.sequence === "" || stageDateErrors.startsAt || stageDateErrors.endsAt}>{editingStageId ? "Salvar alterações" : "Criar etapa"}</Button>
+            <Button onClick={handleSaveStage} loading={savingStage} disabled={!canSaveStage(stageForm, stageDateErrors)}>{editingStageId ? "Salvar alterações" : "Criar etapa"}</Button>
           </>
         }
       >
@@ -877,21 +904,25 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Término previsto"
             htmlFor="m-stage-end"
-            helper={stageDateErrors.endsAt ? undefined : "Opcional"}
-            error={stageDateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            required
+            helper={stageDateErrors.endsAt ? undefined : STAGE_END_HELPER}
+            error={stageDateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : stageEndError(stageForm.endsAt, stageEndTouched) || undefined}
           >
             <Input
               id="m-stage-end"
               type="date"
               min="1900-01-01"
               max="2100-12-31"
-              error={stageDateErrors.endsAt}
+              error={stageDateErrors.endsAt || Boolean(stageEndError(stageForm.endsAt, stageEndTouched))}
               value={stageForm.endsAt}
               onChange={(e) => {
                 setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }));
                 setStageForm((p) => ({ ...p, endsAt: e.target.value }));
               }}
-              onBlur={(e) => setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }))}
+              onBlur={(e) => {
+                setStageEndTouched(true);
+                setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }));
+              }}
             />
           </FormField>
           {editingStageId ? (

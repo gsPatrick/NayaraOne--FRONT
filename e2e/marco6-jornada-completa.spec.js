@@ -9,10 +9,10 @@
  *   1. login
  *   2. configuração: tipo de obra com checklist por etapa (Caderno §9) e evidência mínima da medição (Guia §6)
  *   3. obra do tipo, com responsável e prazo
- *   4. etapa com código e responsável (Caderno §2)
+ *   4. etapa com código, responsável e prazo obrigatório (Caderno §2; M6:16)
  *   5. orçamento: linha, margem mínima e aprovação (baseline congelada)
  *   6. material: requisição da etapa e recebimento do estoque
- *   7. obra em execução (Pronta → Em execução) e diário (RDO)
+ *   7. obra em execução (Pronta → Em execução), previsão de término, início e responsável que não podem ser apagados e diário (RDO)
  *   8. medição com evidência: enviar, revisar, aprovar (a aprovação confere a evidência)
  *   9. conta a pagar criada pelo consumidor do Financeiro (measurement.approved), no valor da medição e com a obra;
  *      a baixa pede a aprovação de outra pessoa e MFA recente — o spec captura essas exigências (regra do projeto: o
@@ -96,7 +96,10 @@ async function main() {
       await page.selectOption('#m-stage-responsible', resp);
       await page.fill('#m-stage-cost', '10000');
       await page.fill('#m-stage-start', '2026-11-01');
+      // Segunda leva de 16/11/2026 (DI-BI2-3, M6:16 "Etapas possuem ... prazo"): sem o término previsto não cria.
+      expect(await page.locator('button:has-text("Criar etapa")').isDisabled()).toBe(true);
       await page.fill('#m-stage-end', '2027-01-31');
+      expect(await page.locator('button:has-text("Criar etapa")').isEnabled()).toBe(true);
       await page.click('button:has-text("Criar etapa")');
       await expect.visible(page.getByText(/1\. Fundação/));
       await expect.notVisible(page.getByText('Responsável: não definido'));
@@ -140,6 +143,19 @@ async function main() {
       await expect.visible(page.locator('button:has-text("Em execução")'));
       await page.click('button:has-text("Em execução")');
       await expect.visible(page.locator('button:has-text("Inspeção final")'));
+      // Item 4 da segunda leva e DI-BI2-9: com a obra em execução, previsão de término, início e responsável trocam mas não são apagados.
+      await page.getByRole('button', { name: 'Editar', exact: true }).click();
+      const editar = page.getByRole('dialog', { name: 'Editar obra' });
+      await editar.locator('#e-ends').fill('');
+      await expect.visible(editar.getByText('a previsão de término pode ser alterada, mas não apagada'));
+      // DI-BI2-9: o mesmo para os outros campos do gate (início e responsável).
+      await editar.locator('#e-starts').fill('');
+      await expect.visible(editar.getByText('a data de início pode ser alterada, mas não apagada'));
+      await editar.locator('#e-responsible').selectOption('');
+      await expect.visible(editar.getByText('o responsável pode ser trocado, mas não retirado'));
+      expect(await editar.getByRole('button', { name: 'Salvar alterações' }).isDisabled()).toBe(true);
+      await editar.getByRole('button', { name: 'Cancelar', exact: true }).click();
+      await expect.notVisible(editar);
       await page.goto(`${projectUrl}/diario`, { waitUntil: 'domcontentloaded' });
       await page.click('button:has-text("Novo RDO")');
       await page.fill('#m-rdo-date', '2026-11-10');
