@@ -5,7 +5,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { LEAD_SOURCE_LABELS, LEAD_SOURCE_CODES, LEAD_SOURCE_OPTIONS, leadSourceLabel } from "@/lib/labels/leadSource.js";
 import { leadSourceError, LEAD_SOURCE_REQUIRED_MESSAGE } from "@/app/painel/crm/opportunityRules.js";
-import { createOpportunity } from "@/lib/api/crm.js";
+import { createOpportunity, mapOpportunity } from "@/lib/api/crm.js";
+import OpportunityLeadSource from "@/app/painel/crm/OpportunityLeadSource.js";
+import { html } from "./_loader/render.mjs";
 import { MARKETING_FUNIL_GROUPS } from "@/app/painel/configuracoes/marketingFunilGroups.js";
 
 // Espelho de LEAD_SOURCES da API (src/features/marketing/tracking/tracking.catalog.js).
@@ -59,4 +61,16 @@ test("origem do lead: a ajuda das origens do lead novo lista PARTNER e diz que o
   for (const code of API_LEAD_SOURCES) assert.ok(field.helper.includes(code), code);
   assert.match(field.helper, /PARTNER é o lead que chega pela API de parceiro/);
   assert.match(field.helper, /WhatsApp entra como WHATSAPP/);
+});
+
+test("origem do lead: o detalhe da oportunidade mostra o rótulo em português da origem que a API devolve", () => {
+  const opp = mapOpportunity({ id: "o-1", stage: "NEW", personId: "p-1", leadSource: "PARTNER" });
+  assert.equal(opp.leadSource, "PARTNER", "a lib guarda a origem da resposta");
+  const tela = html(OpportunityLeadSource, { opportunity: opp });
+  assert.match(tela, /Origem do lead: Parceiro \(API\)/);
+  assert.doesNotMatch(tela, /PARTNER/, "nunca o código cru");
+  assert.match(html(OpportunityLeadSource, { opportunity: mapOpportunity({ id: "o-2", stage: "NEW", leadSource: "WHATSAPP" }) }), /Origem do lead: WhatsApp/);
+  assert.match(html(OpportunityLeadSource, { opportunity: mapOpportunity({ id: "o-3", stage: "NEW" }) }), /Origem do lead: Origem não informada/);
+  const src = fs.readFileSync(new URL("../app/painel/crm/page.js", import.meta.url), "utf8");
+  assert.match(src, /<OpportunityLeadSource opportunity=\{opportunity\} \/>/, "o componente está no detalhe da oportunidade");
 });

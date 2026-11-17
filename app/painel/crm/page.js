@@ -50,6 +50,7 @@ import styles from "./page.module.css";
 import { OUTCOME_REASON_FIELD, toReasonOptions, ownerError, leadSourceError } from "./opportunityRules";
 import { LEAD_SOURCE_OPTIONS } from "@/lib/labels/leadSource";
 import OpportunityJourneyLinks from "./OpportunityJourneyLinks";
+import OpportunityLeadSource from "./OpportunityLeadSource";
 
 import { lookupFallback } from "@/lib/asyncState/lookup";
 const CLOSED_STAGES = ["ganho", "perdido"];
@@ -428,6 +429,7 @@ function OpportunityDetailModal({ opportunity, stages, users = [], onSave, onClo
           <p className={styles.detailMeta}>
             Responsável: {opportunity.repName} · Criada em {formatDateTime(opportunity.createdAt)}
           </p>
+          <OpportunityLeadSource opportunity={opportunity} />
           <OpportunityJourneyLinks opportunity={opportunity} />
 
           {editing ? (
