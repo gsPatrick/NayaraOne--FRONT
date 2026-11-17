@@ -61,6 +61,12 @@ async function main() {
     await page.fill('#m-stage-name', `Etapa E2E ${suffix}`);
     await page.fill('#m-stage-cost', '15000');
     const saveBtn = page.getByRole('button', { name: /criar etapa|salvar altera/i });
+    // Segunda leva de 16/11/2026 (DI-BI2-3, M6:16 "Etapas possuem ... prazo"): sem o término previsto não dá para criar.
+    const blockedWithoutEnd = await saveBtn.first().isDisabled();
+    record('Sem o término previsto o botão "Criar etapa" fica desabilitado', blockedWithoutEnd);
+    await page.fill('#m-stage-end', '2027-12-31');
+    const enabledWithEnd = await saveBtn.first().isEnabled();
+    record('Com o término previsto o botão habilita (custo, código e responsável seguem opcionais na criação)', enabledWithEnd);
     await saveBtn.first().click();
     await page.waitForTimeout(1500);
 

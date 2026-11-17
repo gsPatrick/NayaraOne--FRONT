@@ -30,6 +30,7 @@ import { updateProject, transitionProject, removeProject, deliverProject, closeP
 import { formatBRL, formatPercent, formatDate, formatDateTime, dateOnlyInputToIso, isDateInputInvalid, DATE_INPUT_ERROR_MESSAGE, toNumber } from "@/lib/format";
 import styles from "./page.module.css";
 import { loadObraDetail } from "./_components/loadObraDetail";
+import { canSaveStage, stageEndError, stageEndsAtPayload, STAGE_END_HELPER, plannedEndError, plannedEndHelper, plannedEndPatch, isPlannedEndLocked } from "./scheduleRules";
 
 import { reportLookupProblem } from "@/lib/asyncState/lookup";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
@@ -73,6 +74,8 @@ export default function ObraDetalhePage({ params }) {
   // formulário de etapa simplesmente não expunha esses campos. Mesmo padrão de validação de
   // <input type="date"> usado no formulário da obra (editDateErrors).
   const [stageDateErrors, setStageDateErrors] = useState({});
+  // Segunda leva de 16/11/2026 (DI-BI2-3): o término previsto é obrigatório; o aviso aparece depois que o campo é tocado.
+  const [stageEndTouched, setStageEndTouched] = useState(false);
   // FIX (homologação 23/09/2026): etapa só podia ser CRIADA. Guardar o id em edição faz o
   // mesmo modal servir pra criar e pra editar.
   const [editingStageId, setEditingStageId] = useState(null);
@@ -200,7 +203,7 @@ export default function ObraDetalhePage({ params }) {
   }
 
   async function handleSaveEdit() {
-    if (!editForm.name.trim()) return;
+    if (!editForm.name.trim() || plannedEndError(project.status, editForm.endsAtPlanned)) return;
     setSavingEdit(true);
     setActionError("");
     try {
@@ -219,7 +222,8 @@ export default function ObraDetalhePage({ params }) {
           ? { budgetAmount: editForm.budgetAmount !== "" ? toNumber(editForm.budgetAmount) : null }
           : {}),
         startsAt: dateOnlyInputToIso(editForm.startsAt) || null,
-        endsAtPlanned: dateOnlyInputToIso(editForm.endsAtPlanned) || null,
+        // Obra em execução: a previsão de término troca, mas nunca vai como null (scheduleRules.js).
+        ...plannedEndPatch(project.status, editForm.endsAtPlanned),
       });
       setProject(updated);
       setEditOpen(false);
@@ -234,6 +238,7 @@ export default function ObraDetalhePage({ params }) {
     setEditingStageId(null);
     setStageForm({ name: "", sequence: String(stages.length + 1), stageCode: "", responsibleUserId: "", plannedPct: "", plannedCost: "", startsAt: "", endsAt: "" });
     setStageDateErrors({});
+    setStageEndTouched(false);
     setStageOpen(true);
   }
 
@@ -255,6 +260,8 @@ export default function ObraDetalhePage({ params }) {
       publicVisible: Boolean(stage.publicVisible),
     });
     setStageDateErrors({});
+    // Etapa antiga sem prazo: o aviso já aparece ao abrir, porque salvar exige o prazo.
+    setStageEndTouched(!stage.endsAt);
     setStageOpen(true);
   }
 
@@ -264,7 +271,10 @@ export default function ObraDetalhePage({ params }) {
     // `disabled` do botão, criando 2 etapas duplicadas — nenhum backend bloqueava, pois é um
     // INSERT simples sem checagem de duplicidade. Guarda de reentrância explícita.
     if (savingStage) return;
-    if (!stageForm.name.trim() || stageForm.sequence === "") return;
+    if (!canSaveStage(stageForm, stageDateErrors)) {
+      setStageEndTouched(true);
+      return;
+    }
     setSavingStage(true);
     setActionError("");
     try {
@@ -276,7 +286,8 @@ export default function ObraDetalhePage({ params }) {
         plannedPct: stageForm.plannedPct !== "" ? toNumber(stageForm.plannedPct) : undefined,
         plannedCost: stageForm.plannedCost !== "" ? toNumber(stageForm.plannedCost) : undefined,
         startsAt: dateOnlyInputToIso(stageForm.startsAt) || null,
-        endsAt: dateOnlyInputToIso(stageForm.endsAt) || null,
+        // M6:16 "Etapas possuem ... prazo": sempre a data, nunca null (scheduleRules.js).
+        endsAt: stageEndsAtPayload(stageForm.endsAt),
       };
       if (editingStageId) {
         payload.publicVisible = Boolean(stageForm.publicVisible);
@@ -696,7 +707,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setEditOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.name.trim() || editDateErrors.startsAt || editDateErrors.endsAtPlanned}>Salvar alterações</Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} disabled={!editForm.name.trim() || editDateErrors.startsAt || editDateErrors.endsAtPlanned || Boolean(plannedEndError(project.status, editForm.endsAtPlanned))}>Salvar alterações</Button>
           </>
         }
       >
@@ -773,15 +784,16 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Previsão de término"
             htmlFor="e-ends"
-            helper={editDateErrors.endsAtPlanned ? undefined : "Opcional agora — obrigatório para iniciar a execução da obra"}
-            error={editDateErrors.endsAtPlanned ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            required={isPlannedEndLocked(project.status)}
+            helper={editDateErrors.endsAtPlanned ? undefined : plannedEndHelper(project.status)}
+            error={editDateErrors.endsAtPlanned ? DATE_INPUT_ERROR_MESSAGE : plannedEndError(project.status, editForm.endsAtPlanned) || undefined}
           >
             <Input
               id="e-ends"
               type="date"
               min="1900-01-01"
               max="2100-12-31"
-              error={editDateErrors.endsAtPlanned}
+              error={editDateErrors.endsAtPlanned || Boolean(plannedEndError(project.status, editForm.endsAtPlanned))}
               value={editForm.endsAtPlanned}
               onChange={(e) => {
                 setEditDateErrors((p) => ({ ...p, endsAtPlanned: isDateInputInvalid(e.target.validity) }));
@@ -824,7 +836,7 @@ export default function ObraDetalhePage({ params }) {
         footer={
           <>
             <Button variant="secondary" onClick={() => setStageOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSaveStage} loading={savingStage} disabled={!stageForm.name.trim() || stageForm.sequence === "" || stageDateErrors.startsAt || stageDateErrors.endsAt}>{editingStageId ? "Salvar alterações" : "Criar etapa"}</Button>
+            <Button onClick={handleSaveStage} loading={savingStage} disabled={!canSaveStage(stageForm, stageDateErrors)}>{editingStageId ? "Salvar alterações" : "Criar etapa"}</Button>
           </>
         }
       >
@@ -877,21 +889,25 @@ export default function ObraDetalhePage({ params }) {
           <FormField
             label="Término previsto"
             htmlFor="m-stage-end"
-            helper={stageDateErrors.endsAt ? undefined : "Opcional"}
-            error={stageDateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : undefined}
+            required
+            helper={stageDateErrors.endsAt ? undefined : STAGE_END_HELPER}
+            error={stageDateErrors.endsAt ? DATE_INPUT_ERROR_MESSAGE : stageEndError(stageForm.endsAt, stageEndTouched) || undefined}
           >
             <Input
               id="m-stage-end"
               type="date"
               min="1900-01-01"
               max="2100-12-31"
-              error={stageDateErrors.endsAt}
+              error={stageDateErrors.endsAt || Boolean(stageEndError(stageForm.endsAt, stageEndTouched))}
               value={stageForm.endsAt}
               onChange={(e) => {
                 setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }));
                 setStageForm((p) => ({ ...p, endsAt: e.target.value }));
               }}
-              onBlur={(e) => setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }))}
+              onBlur={(e) => {
+                setStageEndTouched(true);
+                setStageDateErrors((p) => ({ ...p, endsAt: isDateInputInvalid(e.target.validity) }));
+              }}
             />
           </FormField>
           {editingStageId ? (
