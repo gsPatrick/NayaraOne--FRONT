@@ -21,10 +21,11 @@ import FileDropInput from "@/components/molecules/FileDropInput/FileDropInput";
 import PersonPicker from "@/components/molecules/PersonPicker/PersonPicker";
 import { listReceipts, createReceipt, reviewReceipt, confirmReceipt, suggestReceiptFromInvoice, getReceipt } from "@/lib/api/inventory";
 import { listInventoryItems, listInventoryLocations } from "@/lib/api/inventory";
-import { formatDateTime, formatBRL, formatQuantity, toNumber } from "@/lib/format";
+import { formatDateTime, formatBRL, formatQuantity } from "@/lib/format";
 import styles from "../../obras/lista/page.module.css";
 import { useAsyncState } from "@/lib/asyncState/useAsyncState";
 import AsyncState from "@/components/molecules/AsyncState/AsyncState";
+import { isReceiptFormValid, toReceiptItems, UNIT_COST_PLACEHOLDER } from "./receiptRules";
 
 const STATUS_LABELS = { DRAFT: "Rascunho", REVIEWED: "Revisado", COMPLETED: "Confirmado" };
 const STATUS_TONE = { DRAFT: "neutral", REVIEWED: "info", COMPLETED: "success" };
@@ -132,11 +133,8 @@ export default function RecebimentosPage() {
     setOcr((p) => ({ ...p, applied: true }));
   }
 
-  const isValid = form.destinationLocationId && form.lines.every((l) =>
-    l.inventoryItemId &&
-    !Number.isNaN(toNumber(l.quantity)) && toNumber(l.quantity) > 0 &&
-    (!l.unitCost || (!Number.isNaN(toNumber(l.unitCost)) && toNumber(l.unitCost) >= 0))
-  );
+  // M7:82: toda linha exige custo unitário >= 0 (receiptRules.js).
+  const isValid = isReceiptFormValid(form);
 
   function openNewReceipt() {
     ocrRequestRef.current += 1;
@@ -165,7 +163,7 @@ export default function RecebimentosPage() {
         notes: ocr.applied && ocr.result?.aiRunId
           ? `Itens pré-preenchidos por OCR/IA (${ocr.result.provider}, execução ${ocr.result.aiRunId}) e conferidos pelo usuário.`
           : undefined,
-        items: form.lines.map((l) => ({ inventoryItemId: l.inventoryItemId, quantity: toNumber(l.quantity), unitCost: l.unitCost ? toNumber(l.unitCost) : undefined })),
+        items: toReceiptItems(form.lines),
       });
       setModalOpen(false);
       setForm(EMPTY_FORM);
@@ -371,6 +369,9 @@ export default function RecebimentosPage() {
         <FormField label="Identificador único da nota fiscal" helper="Usado para detectar nota fiscal duplicada.">
           <Input value={form.invoiceFingerprint} onChange={(e) => setForm((p) => ({ ...p, invoiceFingerprint: e.target.value }))} />
         </FormField>
+        <p style={{ fontSize: 13, color: "var(--color-ink-muted)", margin: "0 0 8px" }}>
+          Itens recebidos: item, quantidade e custo unitário são obrigatórios em cada linha (custo zero é aceito). A entrada confirmada atualiza o saldo e o custo médio do item.
+        </p>
         {form.lines.map((line, idx) => (
           <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             {/* FIX (auditoria de acessibilidade mobile, Marco 7): campos de linha repetida
@@ -382,7 +383,7 @@ export default function RecebimentosPage() {
               ))}
             </Select>
             <DecimalInput aria-label={`Quantidade da linha ${idx + 1}`} placeholder="Qtd" value={line.quantity} onChange={(e) => updateLine(idx, "quantity", e.target.value)} style={{ flex: 1 }} />
-            <DecimalInput aria-label={`Custo unitário da linha ${idx + 1}`} placeholder="Custo unit." value={line.unitCost} onChange={(e) => updateLine(idx, "unitCost", e.target.value)} style={{ flex: 1 }} />
+            <DecimalInput aria-label={`Custo unitário da linha ${idx + 1}`} placeholder={UNIT_COST_PLACEHOLDER} required value={line.unitCost} onChange={(e) => updateLine(idx, "unitCost", e.target.value)} style={{ flex: 1 }} />
             {form.lines.length > 1 ? (
               <Button size="sm" variant="secondary" onClick={() => removeLine(idx)} aria-label={`Remover linha ${idx + 1}`}>
                 <Icon name="close" size={14} />
