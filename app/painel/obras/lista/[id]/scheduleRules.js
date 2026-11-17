@@ -5,7 +5,9 @@
 //   responsável continuam exigidos só para iniciar a etapa.
 // - Obra: a previsão de término é exigida para iniciar a execução (READY -> ACTIVE). Depois disso não pode ser
 //   apagada (422 PROJECT_PLANNED_END_REQUIRED). Antes, a obra é preenchida aos poucos e o campo pode ficar vazio.
-import { dateOnlyInputToIso } from "@/lib/format";
+// - DI-BI2-9: o mesmo vale para os outros campos do gate READY -> ACTIVE: orçamento, início e responsável da obra
+//   (422 PROJECT_BUDGET_AMOUNT_REQUIRED, PROJECT_START_DATE_REQUIRED, PROJECT_RESPONSIBLE_REQUIRED).
+import { dateOnlyInputToIso, toNumber } from "@/lib/format";
 
 export const PLANNED_END_LOCKED_STATUSES = Object.freeze(["ACTIVE", "PAUSED", "FINAL_INSPECTION", "DELIVERED", "WARRANTY", "CLOSED"]);
 
@@ -57,4 +59,42 @@ export function plannedEndPatch(status, endsAtPlanned) {
   const iso = isBlank(endsAtPlanned) ? undefined : dateOnlyInputToIso(endsAtPlanned);
   if (iso) return { endsAtPlanned: iso };
   return isPlannedEndLocked(status) ? {} : { endsAtPlanned: null };
+}
+
+// DI-BI2-9: os outros campos do gate READY -> ACTIVE. Mensagem quando o usuário esvazia o campo com a obra em execução.
+export const EXECUTION_FIELD_MESSAGES = Object.freeze({
+  budgetAmount: "A obra já está em execução: o orçamento pode ser alterado, mas não apagado.",
+  startsAt: "A obra já está em execução: a data de início pode ser alterada, mas não apagada.",
+  endsAtPlanned: PLANNED_END_REQUIRED_MESSAGE,
+  responsibleUserId: "A obra já está em execução: o responsável pode ser trocado, mas não retirado.",
+});
+
+/** Mensagem de erro de um campo do gate ("" quando ok). */
+export function executionFieldError(status, field, value) {
+  return isPlannedEndLocked(status) && isBlank(value) ? EXECUTION_FIELD_MESSAGES[field] || "" : "";
+}
+
+/** Algum campo do gate vazio com a obra em execução (o salvar fica desabilitado). `fields` = { campo: valor }. */
+export function hasExecutionFieldError(status, fields) {
+  return Object.entries(fields).some(([field, value]) => Boolean(executionFieldError(status, field, value)));
+}
+
+/** O mesmo texto do helper de prazo serve para os outros campos do gate. */
+export const executionFieldHelper = plannedEndHelper;
+
+const toApi = {
+  budgetAmount: (v) => toNumber(v),
+  startsAt: (v) => dateOnlyInputToIso(v),
+  endsAtPlanned: (v) => dateOnlyInputToIso(v),
+  responsibleUserId: (v) => v,
+};
+
+/**
+ * Campo do gate no PATCH da obra. Com valor: o valor convertido. Vazio (ou que não converte) antes da execução:
+ * null, como sempre foi. Vazio com a obra em execução: o campo não vai no pedido (nunca null).
+ */
+export function executionFieldPatch(status, field, value) {
+  const converted = isBlank(value) ? undefined : toApi[field](value);
+  if (converted !== undefined && converted !== null && converted !== "" && !Number.isNaN(converted)) return { [field]: converted };
+  return isPlannedEndLocked(status) ? {} : { [field]: null };
 }

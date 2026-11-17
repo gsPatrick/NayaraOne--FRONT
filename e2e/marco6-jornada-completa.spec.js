@@ -12,7 +12,7 @@
  *   4. etapa com código, responsável e prazo obrigatório (Caderno §2; M6:16)
  *   5. orçamento: linha, margem mínima e aprovação (baseline congelada)
  *   6. material: requisição da etapa e recebimento do estoque
- *   7. obra em execução (Pronta → Em execução), previsão de término que não pode ser apagada e diário (RDO)
+ *   7. obra em execução (Pronta → Em execução), previsão de término, início e responsável que não podem ser apagados e diário (RDO)
  *   8. medição com evidência: enviar, revisar, aprovar (a aprovação confere a evidência)
  *   9. conta a pagar criada pelo consumidor do Financeiro (measurement.approved), no valor da medição e com a obra;
  *      a baixa pede a aprovação de outra pessoa e MFA recente — o spec captura essas exigências (regra do projeto: o
@@ -143,11 +143,16 @@ async function main() {
       await expect.visible(page.locator('button:has-text("Em execução")'));
       await page.click('button:has-text("Em execução")');
       await expect.visible(page.locator('button:has-text("Inspeção final")'));
-      // Item 4 da segunda leva: com a obra em execução, a previsão de término troca mas não é apagada.
+      // Item 4 da segunda leva e DI-BI2-9: com a obra em execução, previsão de término, início e responsável trocam mas não são apagados.
       await page.getByRole('button', { name: 'Editar', exact: true }).click();
       const editar = page.getByRole('dialog', { name: 'Editar obra' });
       await editar.locator('#e-ends').fill('');
-      await expect.visible(editar.getByText('não apagada'));
+      await expect.visible(editar.getByText('a previsão de término pode ser alterada, mas não apagada'));
+      // DI-BI2-9: o mesmo para os outros campos do gate (início e responsável).
+      await editar.locator('#e-starts').fill('');
+      await expect.visible(editar.getByText('a data de início pode ser alterada, mas não apagada'));
+      await editar.locator('#e-responsible').selectOption('');
+      await expect.visible(editar.getByText('o responsável pode ser trocado, mas não retirado'));
       expect(await editar.getByRole('button', { name: 'Salvar alterações' }).isDisabled()).toBe(true);
       await editar.getByRole('button', { name: 'Cancelar', exact: true }).click();
       await expect.notVisible(editar);

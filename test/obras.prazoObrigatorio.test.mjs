@@ -1,6 +1,7 @@
 // Segunda leva de 16/11/2026, Lote 4 (DI-BI2-3): a etapa da obra tem prazo obrigatório (M6:16 "Etapas possuem ... prazo")
 // e a previsão de término da obra não é apagada depois que a execução começa (READY -> ACTIVE). Antes, o término previsto
-// da etapa era "Opcional" e as duas telas mandavam `null` quando o campo ficava vazio.
+// da etapa era "Opcional" e as duas telas mandavam `null` quando o campo ficava vazio. DI-BI2-9: o mesmo vale para os
+// outros campos do gate READY -> ACTIVE (orçamento, início e responsável da obra).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -16,6 +17,10 @@ import {
   STAGE_END_REQUIRED_MESSAGE,
   PLANNED_END_HELPER_LOCKED,
   PLANNED_END_HELPER_OPEN,
+  EXECUTION_FIELD_MESSAGES,
+  executionFieldError,
+  executionFieldPatch,
+  hasExecutionFieldError,
 } from "@/app/painel/obras/lista/[id]/scheduleRules.js";
 
 const read = (p) => fs.readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
@@ -66,7 +71,13 @@ test("tela da obra usa as regras: prazo da etapa obrigatório e nenhum null nas 
   assert.doesNotMatch(page, /endsAt: dateOnlyInputToIso\(stageForm\.endsAt\) \|\| null/, "a forma antiga mandava null");
   assert.doesNotMatch(page, /endsAtPlanned: dateOnlyInputToIso\(editForm\.endsAtPlanned\) \|\| null/, "a forma antiga mandava null");
   assert.match(page, /endsAt: stageEndsAtPayload\(stageForm\.endsAt\)/);
-  assert.match(page, /\.\.\.plannedEndPatch\(project\.status, editForm\.endsAtPlanned\)/);
+  for (const field of ["responsibleUserId", "budgetAmount", "startsAt", "endsAtPlanned"]) {
+    assert.match(page, new RegExp(`executionFieldPatch\\(project\\.status, "${field}", editForm\\.${field}\\)`), field);
+  }
+  assert.doesNotMatch(page, /responsibleUserId: editForm\.responsibleUserId \|\| null/, "a forma antiga apagava o responsável");
+  assert.doesNotMatch(page, /startsAt: dateOnlyInputToIso\(editForm\.startsAt\) \|\| null/, "a forma antiga apagava o início");
+  assert.doesNotMatch(page, /toNumber\(editForm\.budgetAmount\) : null/, "a forma antiga apagava o orçamento");
+  assert.match(page, /hasExecutionFieldError\(project\.status, executionFields\(\)\)\}>Salvar alterações/);
   assert.match(page, /disabled=\{!canSaveStage\(stageForm, stageDateErrors\)\}/);
   // O campo de término previsto da etapa é obrigatório (antes: helper "Opcional").
   const endField = page.slice(page.indexOf('label="Término previsto"'), page.indexOf('id="m-stage-end"'));
@@ -76,4 +87,29 @@ test("tela da obra usa as regras: prazo da etapa obrigatório e nenhum null nas 
   assert.doesNotMatch(endField, /"Opcional"/);
   assert.match(page, /required=\{isPlannedEndLocked\(project\.status\)\}/);
   assert.ok(read("app/painel/obras/lista/[id]/scheduleRules.js").split("\n").length <= 400);
+});
+
+test("DI-BI2-9: orçamento, início e responsável da obra também não são apagados com a obra em execução", () => {
+  for (const status of PLANNED_END_LOCKED_STATUSES) {
+    for (const field of ["budgetAmount", "startsAt", "responsibleUserId", "endsAtPlanned"]) {
+      for (const vazio of VAZIOS) {
+        assert.deepEqual(executionFieldPatch(status, field, vazio), {}, `${status}/${field}: vazio nunca vira null`);
+        assert.equal(executionFieldError(status, field, vazio), EXECUTION_FIELD_MESSAGES[field]);
+      }
+    }
+    assert.equal(hasExecutionFieldError(status, { responsibleUserId: "", startsAt: "2026-10-01" }), true);
+    assert.equal(hasExecutionFieldError(status, { responsibleUserId: "u1", startsAt: "2026-10-01", endsAtPlanned: "2027-01-01", budgetAmount: "0" }), false);
+    assert.deepEqual(executionFieldPatch(status, "budgetAmount", "1.234,50"), { budgetAmount: 1234.5 });
+    assert.deepEqual(executionFieldPatch(status, "budgetAmount", "0"), { budgetAmount: 0 }, "zero não é vazio");
+    assert.deepEqual(executionFieldPatch(status, "budgetAmount", "abc"), {}, "número inválido nunca vira null");
+    assert.deepEqual(executionFieldPatch(status, "startsAt", "2026-10-05"), { startsAt: "2026-10-05T15:00:00.000Z" });
+    assert.deepEqual(executionFieldPatch(status, "responsibleUserId", "u2"), { responsibleUserId: "u2" });
+  }
+  for (const status of ["PLANNED", "BUDGETED", "READY", "CANCELLED"]) {
+    for (const field of ["budgetAmount", "startsAt", "responsibleUserId", "endsAtPlanned"]) {
+      assert.deepEqual(executionFieldPatch(status, field, ""), { [field]: null }, `${status}/${field}: apagar continua possível`);
+      assert.equal(executionFieldError(status, field, ""), "");
+    }
+  }
+  assert.match(EXECUTION_FIELD_MESSAGES.responsibleUserId, /não retirado/);
 });
