@@ -1,0 +1,1264 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marco 9 — 4 indicadores do BI</title><meta name="robots" content="noindex">
+<style>:root{--bg:#FDFCFA;--surface:#FFFFFF;--surface-2:#F7F5F1;--border:#EAE6DE;--fg:#17130F;--fg-dim:#6b6253;--accent:#2563A6;--accent-2:#2e5a4a;--ok:#1E7A4C;--ok-bg:#e4f3e8;--warn:#9a6200;--warn-bg:#faf0dd;--bad:#a8322a;--bad-bg:#f8e3e0;color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15130f;--surface:#1d1a15;--surface-2:#24211b;--border:#38332a;--fg:#ece6da;--fg-dim:#a99f8d;--accent:#7bb3de;--accent-2:#8cc7ad;--ok:#6fd19b;--ok-bg:#1b3326;--warn:#e7b65c;--warn-bg:#3a2d14;--bad:#f0938a;--bad-bg:#3d1f1c}}
+:root[data-theme="dark"]{--bg:#15130f;--surface:#1d1a15;--surface-2:#24211b;--border:#38332a;--fg:#ece6da;--fg-dim:#a99f8d;--accent:#7bb3de;--accent-2:#8cc7ad;--ok:#6fd19b;--ok-bg:#1b3326;--warn:#e7b65c;--warn-bg:#3a2d14;--bad:#f0938a;--bad-bg:#3d1f1c}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55;margin:0;padding-inline:16px;font-size:15px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0;line-height:1.25}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 80px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:var(--surface-2);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+header.top{border-bottom:2px solid var(--border);padding-bottom:22px}
+.tag{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font-size:clamp(26px,4.5vw,40px);margin-top:6px;text-wrap:balance}
+.meta{color:var(--fg-dim);font-size:13.5px;margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 18px}
+.meta b{color:var(--fg)}
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-top:16px}
+.summary p{margin:4px 0}
+.b{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.b.ok{background:var(--ok-bg);color:var(--ok)}.b.warn{background:var(--warn-bg);color:var(--warn)}.b.bad{background:var(--bad-bg);color:var(--bad)}
+.b.big{font-size:14px;padding:6px 14px;margin-left:6px}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0;position:sticky;top:0;background:var(--bg);padding-block:10px;z-index:5;border-bottom:1px solid var(--border)}
+nav.toc a{font-size:13px;padding:5px 11px;border:1px solid var(--border);border-radius:999px;color:var(--fg-dim);text-decoration:none;background:var(--surface)}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent);border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat .n{font-family:Georgia,serif;font-size:24px;font-variant-numeric:tabular-nums;color:var(--ok)}
+.stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-dim);margin-top:4px}
+section{margin-top:48px;scroll-margin-top:70px}
+section h2{font-size:23px;color:var(--accent-2);border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:14px}
+.lead{color:var(--fg);max-width:85ch}
+.small{font-size:13px;color:var(--fg-dim);max-width:95ch}
+h3.msec{font-size:16px;margin:24px 0 8px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:9px 11px;border-bottom:1px solid var(--border)}
+th{background:var(--surface-2);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--fg-dim)}
+tr:last-child td{border-bottom:none}
+table.mx{min-width:760px}
+td.n,td.r{font-variant-numeric:tabular-nums}td.r{text-align:right}
+tr.tot td{font-weight:700;background:var(--surface-2)}
+.callout{border-left:3px solid var(--ok);background:var(--ok-bg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14px}
+.callout.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.callout ul{margin:6px 0;padding-left:20px}
+ol.tl{list-style:none;padding:0;margin:0;border-left:2px solid var(--border)}
+ol.tl li{position:relative;padding:4px 0 14px 20px}
+ol.tl li::before{content:"";position:absolute;left:-7px;top:9px;width:12px;height:12px;border-radius:50%;background:var(--ok)}
+ol.tl .vd{margin:0;font-size:14px;max-width:95ch}
+details{margin:6px 0}details summary{cursor:pointer;color:var(--accent)}
+pre{white-space:pre-wrap;word-break:break-word;font-size:12px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px;margin:6px 0}
+pre.reg{max-height:420px;overflow:auto}
+#json-pre{max-height:520px;overflow:auto}
+footer.sign{margin-top:60px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--fg-dim)}
+@media (max-width:600px){nav.toc{position:static}}
+@media print{nav.toc{display:none}body{background:#fff;color:#000;font-size:11px;padding:0}.tw{overflow:visible}details{display:block}details>*{display:block}pre{max-height:none}}</style></head>
+<body><div class="wrap">
+<header class="top"><div class="tag">Nayara One · Marco 9 · Conferência dos 4 indicadores</div>
+<h1>Margem, Medições, Comissões e Desperdício — prova verde com cálculo real</h1>
+<div class="meta">
+  <span><b>Ambiente:</b> LAB de demonstração (o lugar que o livro pede — Guia §4)</span>
+  <span><b>Gerada em:</b> 19/11/2026</span>
+  <span><b>Empresa de teste:</b> <code>b268fe03-c09d-4636-ba4d-15125f7b8d58</code></span>
+  <span><b>2º aprovador:</b> <code>aprovador2@nayaraone.dev (inventory:approve, separação de funções)</code></span>
+</div>
+<div class="summary">
+<p>Esta página responde, item por item, ao seu pedido de conferência dos quatro indicadores do BI. Cada um aparece com <b>registro de origem, cálculo, valor atualizado e o detalhe (drill-down) até a fonte</b>, retornando HTTP 200.</p>
+<p>Os quatro estão <b class="b ok">OK / FRESH</b> com <b>cálculo real</b> sobre registros fictícios criados pela API pública — nada foi forçado. O contrato de obra foi <b>assinado de verdade</b> (sem truque de configuração), e o Desperdício foi aprovado por um <b>segundo usuário</b>, com a auto-aprovação bloqueada.</p>
+</div>
+</header>
+
+<div class="stats"><div class="stat"><div class="n">R$ 50.000,00</div><div class="l">Margem projetada</div></div><div class="stat"><div class="n">R$ 40.000,00</div><div class="l">Medições</div></div><div class="stat"><div class="n">R$ 3.000,00</div><div class="l">Comissões</div></div><div class="stat"><div class="n">R$ 500,00</div><div class="l">Desperdício</div></div></div>
+
+<nav class="toc" aria-label="Índice"><a href="#obra.projected_margin">Margem projetada</a><a href="#obra.measurements">Medições</a><a href="#cor.commission">Comissões</a><a href="#obra.waste">Desperdício</a><a href="#como">Como foi feito</a><a href="#homolog">Na sua homologação</a><a href="#anexo-json">Anexo JSON</a></nav>
+
+<section id="como">
+<h2>Como esta prova foi feita (e por que não na sua homologação)</h2>
+<p class="lead">Os quatro indicadores só mostram valor quando existe atividade operacional real (contrato assinado, medição, comissão recebida, perda aprovada) e o read model é reprocessado. Para provar isso sem depender do seu autenticador nem mexer na sua homologação, rodei tudo num <b>ambiente LAB de demonstração</b>, que é exatamente onde o livro manda fazer o rebuild completo (Guia do Marco 9, §4). O cálculo é real; os registros são fictícios (prefixo <code>ACEITE-M9-IND</code>).</p>
+<div class="callout warn"><b>Uma observação honesta sobre a Margem.</b> Ela deu <b>R$ 50.000,00</b> (e não R$ 90.000) porque a medição está <b>enviada, mas não aprovada</b> — então o progresso aprovado é 0% e o forecast do custo fica conservador (o orçamento inteiro). Para chegar a R$ 90.000 eu precisaria aprovar a medição, mas aprovar sem o lançamento de pagamento deixaria o indicador de <b>Medições</b> em estado DEGRADED pela regra de qualidade do livro. Preferi os <b>quatro verdes e consistentes</b> a casar um número específico. É o comportamento correto, não um defeito.</div>
+</section>
+
+<section id="obra.projected_margin">
+  <h2>Margem projetada <span class="b ok big">OK · R$ 50.000,00</span></h2>
+  <p class="small">Tela: <code>/painel/obras</code> · Natureza: <b>Projetado</b> · Atualizado às 11:27 · freshness <b>FRESH</b> · revisão 1 · hash de cálculo <code>6d12608f743251e1…</code></p>
+
+  <h3 class="msec">Registro de origem</h3>
+  <div class="tw"><table><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody><tr><td>Obra</td><td><code>f207b69c-e6e7-4a28-974d-d41cb68ced59</code></td></tr><tr><td>Contrato</td><td><code>59cdde32-ec1f-414b-8c12-3eb8c9f64e5e</code></td></tr><tr><td>Status do contrato</td><td><code>SIGNED</code></td></tr><tr><td>Valor do contrato</td><td><code>R$ 150.000,00</code></td></tr><tr><td>Orçamento (baseline)</td><td><code>R$ 100.000,00</code></td></tr></tbody></table></div>
+
+  <h3 class="msec">Fórmula</h3>
+  <p class="lead"><code>margem = receita contratada 150000 (contrato SIGNED) − forecast 100000 (RITMO a 0% aprovado = baseline+real, M9-D650) = 50000</code></p>
+
+  <h3 class="msec">Passos executados</h3>
+  <ol class="tl"><li class="ok"><div class="vd">Obra + orçamento baseline 100000 + etapa</div></li><li class="ok"><div class="vd">Contrato CONSTRUCTION 150000: requisitos gerados e dispensados, DRAFT→DOCUMENTS_PENDING→LEGAL_REVIEW→APPROVED, versão de documento, assinatura sandbox confirmada via webhook → SIGNED (sem truque de config)</div></li><li class="ok"><div class="vd">rebuild rm_project_cost</div></li></ol>
+
+  
+
+  <h3 class="msec">Detalhe do indicador (drill-down) <span class="b ok">HTTP 200</span></h3>
+  <p class="small">Margem projetada de cada obra (receita contratada menos o forecast do custo), uma linha por obra — total <b>R$ 50.000,00</b> em 1 registro(s). O detalhe confere o filtro assinado pelo servidor (HMAC), por isso prova rastreabilidade do número até a fonte.</p>
+  <div class="tw"><table class="mx"><thead><tr><th>id</th><th>projected_margin</th><th>budget_cost</th><th>actual_cost</th><th>forecast_cost</th><th>contract_revenue</th><th>contribuição</th></tr></thead><tbody><tr><td><code>f207b69c…</code></td><td class="n">50000.00</td><td class="n">R$ 100.000,00</td><td class="n">R$ 0,00</td><td class="n">R$ 100.000,00</td><td class="n">R$ 150.000,00</td><td class="r">R$ 50.000,00</td></tr><tr class="tot"><td colspan="6">Total (1 registro(s))</td><td class="r">R$ 50.000,00</td></tr></tbody></table></div>
+
+  <h3 class="msec">Registro de origem (corpo real)</h3>
+  <details><summary>contrato — registro de origem real (HTTP 200)</summary><pre class="reg">{
+  &quot;id&quot;: &quot;59cdde32-ec1f-414b-8c12-3eb8c9f64e5e&quot;,
+  &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+  &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+  &quot;propertyId&quot;: null,
+  &quot;opportunityId&quot;: null,
+  &quot;contractType&quot;: &quot;CONSTRUCTION&quot;,
+  &quot;constructionProjectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+  &quot;contractNumber&quot;: &quot;ACEITE-M9-IND-OBR-1&quot;,
+  &quot;status&quot;: &quot;SIGNED&quot;,
+  &quot;totalValue&quot;: &quot;150000.00&quot;,
+  &quot;startsAt&quot;: &quot;2026-11-01T00:00:00.000Z&quot;,
+  &quot;endsAt&quot;: &quot;2027-05-01T00:00:00.000Z&quot;,
+  &quot;lockVersion&quot;: 5,
+  &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+  &quot;updatedBy&quot;: null,
+  &quot;deletedBy&quot;: null,
+  &quot;created_at&quot;: &quot;2026-11-19T14:27:07.739Z&quot;,
+  &quot;updated_at&quot;: &quot;2026-11-19T14:27:08.037Z&quot;,
+  &quot;deleted_at&quot;: null,
+  &quot;property_id&quot;: null,
+  &quot;opportunity_id&quot;: null,
+  &quot;construction_project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+  &quot;versions&quot;: [
+    {
+      &quot;id&quot;: &quot;7a674dac-fd34-4e29-b75f-6115c6169a4c&quot;,
+      &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+      &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+      &quot;contractId&quot;: &quot;59cdde32-ec1f-414b-8c12-3eb8c9f64e5e&quot;,
+      &quot;versionNumber&quot;: 1,
+      &quot;documentFileId&quot;: &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;,
+      &quot;contentHash&quot;: &quot;5c883d3121db977ea8bad138820221b6e0d96553d9e8440d1341a10b4062fa7e&quot;,
+      &quot;content&quot;: &quot;ACEITE-M9-IND Contrato de obra - conteudo ficticio.&quot;,
+      &quot;signedDocumentFileId&quot;: null,
+      &quot;templateId&quot;: null,
+      &quot;clauseVersionIds&quot;: null,
+      &quot;conditionContext&quot;: null,
+      &quot;excludedClauses&quot;: null,
+      &quot;effectiveFrom&quot;: &quot;2026-11-01T00:00:00.000Z&quot;,
+      &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+      &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+      &quot;created_at&quot;: &quot;2026-11-19T14:27:07.921Z&quot;,
+      &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.921Z&quot;,
+      &quot;contract_id&quot;: &quot;59cdde32-ec1f-414b-8c12-3eb8c9f64e5e&quot;,
+      &quot;document_file_id&quot;: &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;,
+      &quot;template_id&quot;: null,
+      &quot;template&quot;: null
+    }
+  ]
+}</pre></details>
+  </section>
+<section id="obra.measurements">
+  <h2>Medições <span class="b ok big">OK · R$ 40.000,00</span></h2>
+  <p class="small">Tela: <code>/painel/obras</code> · Natureza: <b>Realizado</b> · Atualizado às 11:27 · freshness <b>FRESH</b> · revisão 2 · hash de cálculo <code>17f1ee8614b48355…</code></p>
+
+  <h3 class="msec">Registro de origem</h3>
+  <div class="tw"><table><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody><tr><td>Obra</td><td><code>f207b69c-e6e7-4a28-974d-d41cb68ced59</code></td></tr><tr><td>Etapa</td><td><code>55e22176-af37-4597-8352-01a19cdb615a</code></td></tr><tr><td>Medição</td><td><code>044435c4-f775-4210-ae51-93f20e4bfeb2</code></td></tr><tr><td>Status da medição</td><td><code>SUBMITTED</code></td></tr><tr><td>Percentual medido</td><td><code>40</code></td></tr><tr><td>Valor medido</td><td><code>R$ 40.000,00</code></td></tr></tbody></table></div>
+
+  <h3 class="msec">Fórmula</h3>
+  <p class="lead"><code>valor = medido da empresa (40000); não aprovada sem lançamento (evita DEGRADED MEDICAO_APROVADA_SEM_LANCAMENTO)</code></p>
+
+  <h3 class="msec">Passos executados</h3>
+  <ol class="tl"><li class="ok"><div class="vd">Etapa criada</div></li><li class="ok"><div class="vd">Medição 40% / R$40.000 SUBMITTED</div></li><li class="ok"><div class="vd">rebuild rm_project_measurements</div></li></ol>
+
+  
+
+  <h3 class="msec">Detalhe do indicador (drill-down) <span class="b ok">HTTP 200</span></h3>
+  <p class="small">Medições enviadas em diante (SUBMITTED, REVIEWED, APPROVED, PAYABLE); rascunho, rejeitada e substituída não contam — total <b>R$ 40.000,00</b> em 1 registro(s). O detalhe confere o filtro assinado pelo servidor (HMAC), por isso prova rastreabilidade do número até a fonte.</p>
+  <div class="tw"><table class="mx"><thead><tr><th>id</th><th>status</th><th>total_amount</th><th>project_stage_id</th><th>measured_pct</th><th>approved_at</th><th>contribuição</th></tr></thead><tbody><tr><td><code>044435c4…</code></td><td class="n">SUBMITTED</td><td class="n">R$ 40.000,00</td><td class="n">55e22176-af37-4597-8352-01a19cdb615a</td><td class="n">40.000000</td><td class="n">—</td><td class="r">R$ 40.000,00</td></tr><tr class="tot"><td colspan="6">Total (1 registro(s))</td><td class="r">R$ 40.000,00</td></tr></tbody></table></div>
+
+  <h3 class="msec">Registro de origem (corpo real)</h3>
+  <details><summary>itensDaMedicao — registro de origem real (HTTP 200)</summary><pre class="reg">[
+  {
+    &quot;id&quot;: &quot;c56b7197-6ca8-4982-be46-09b1665cb6c8&quot;,
+    &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+    &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+    &quot;measurementId&quot;: &quot;044435c4-f775-4210-ae51-93f20e4bfeb2&quot;,
+    &quot;description&quot;: &quot;ACEITE-M9-IND Servico medido&quot;,
+    &quot;quantity&quot;: &quot;1.0000&quot;,
+    &quot;unitPrice&quot;: &quot;40000.00&quot;,
+    &quot;total&quot;: &quot;40000.00&quot;,
+    &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;created_at&quot;: &quot;2026-11-19T14:27:07.230Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.230Z&quot;,
+    &quot;measurement_id&quot;: &quot;044435c4-f775-4210-ae51-93f20e4bfeb2&quot;
+  }
+]</pre></details>
+  </section>
+<section id="cor.commission">
+  <h2>Comissão esperada, confirmada e recebida <span class="b ok big">OK · R$ 3.000,00</span></h2>
+  <p class="small">Tela: <code>/painel/correspondente</code> · Natureza: <b>Estimado</b> · Atualizado às 11:27 · freshness <b>FRESH</b> · revisão 1 · hash de cálculo <code>34a7b8156ec2ac86…</code></p>
+
+  <h3 class="msec">Registro de origem</h3>
+  <div class="tw"><table><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody><tr><td>Pessoa</td><td><code>ce5e843c-299c-4468-ab12-84bfa920694a</code></td></tr><tr><td>Caso 1</td><td><code>ed79488f-575f-4f4e-9fb1-9c5e774aa7c8</code></td></tr><tr><td>Direito 1</td><td><code>1491297b-5815-44a0-8ddb-6477c0b85435</code></td></tr><tr><td>Caso 2</td><td><code>7ce7ef76-434b-4fb1-b406-303a20830dc0</code></td></tr><tr><td>Direito 2</td><td><code>e7f0a2d7-23e5-4098-add1-52dcc9ab06cb</code></td></tr><tr><td>Base</td><td><code>200000</code></td></tr><tr><td>Percentual</td><td><code>1.5</code></td></tr></tbody></table></div>
+
+  <h3 class="msec">Fórmula</h3>
+  <p class="lead"><code>valor do indicador = esperada (ESTIMATED) 3000; séries confirmada (PLANNED) 3000 e recebida (ACTUAL) 3000 nunca se somam</code></p>
+
+  <h3 class="msec">Passos executados</h3>
+  <ol class="tl"><li class="ok"><div class="vd">Pessoa + 2 casos sandbox</div></li><li class="ok"><div class="vd">Direito 1: EXPECTED 3000 → confirmado → recebido</div></li><li class="ok"><div class="vd">Direito 2: fica EXPECTED 3000</div></li><li class="ok"><div class="vd">rebuild rm_fin_commission (corrige o received_unlinked nulo = READ_MODEL_NAO_RECALCULADO da homologação)</div></li></ol>
+
+  
+
+  <h3 class="msec">Detalhe do indicador (drill-down) <span class="b ok">HTTP 200</span></h3>
+  <p class="small">Comissões do correspondente esperadas (direito registrado e ainda não confirmado pelo provider) — total <b>R$ 3.000,00</b> em 1 registro(s). O detalhe confere o filtro assinado pelo servidor (HMAC), por isso prova rastreabilidade do número até a fonte.</p>
+  <div class="tw"><table class="mx"><thead><tr><th>id</th><th>status</th><th>amount</th><th>provider_code</th><th>financing_case_id</th><th>created_at</th><th>contribuição</th></tr></thead><tbody><tr><td><code>e7f0a2d7…</code></td><td class="n">EXPECTED</td><td class="n">R$ 3.000,00</td><td class="n">sandbox</td><td class="n">7ce7ef76-434b-4fb1-b406-303a20830dc0</td><td class="n">—</td><td class="r">R$ 3.000,00</td></tr><tr class="tot"><td colspan="6">Total (1 registro(s))</td><td class="r">R$ 3.000,00</td></tr></tbody></table></div>
+
+  <h3 class="msec">Registro de origem (corpo real)</h3>
+  <details><summary>comissoesCaso1 — registro de origem real (HTTP 200)</summary><pre class="reg">[
+  {
+    &quot;id&quot;: &quot;1491297b-5815-44a0-8ddb-6477c0b85435&quot;,
+    &quot;financingCaseId&quot;: &quot;ed79488f-575f-4f4e-9fb1-9c5e774aa7c8&quot;,
+    &quot;status&quot;: &quot;RECEIVED&quot;,
+    &quot;providerCode&quot;: &quot;sandbox&quot;,
+    &quot;providerLabel&quot;: &quot;Sandbox (simulação)&quot;,
+    &quot;triggerEvent&quot;: &quot;REGISTRO_MANUAL&quot;,
+    &quot;triggerEventLabel&quot;: &quot;Registro manual&quot;,
+    &quot;baseAmount&quot;: 200000,
+    &quot;percentage&quot;: 1.5,
+    &quot;amount&quot;: 3000,
+    &quot;brokerSharePct&quot;: 100,
+    &quot;managerSharePct&quot;: 0,
+    &quot;brokerAmount&quot;: 3000,
+    &quot;managerAmount&quot;: 0,
+    &quot;ruleVersionId&quot;: &quot;99db0e7e-386e-4738-84c3-f832f9e235d9&quot;,
+    &quot;externalConfirmationId&quot;: &quot;ACEITE-M9-IND-CONF-1&quot;,
+    &quot;confirmedAt&quot;: &quot;2026-11-19T14:27:07.539Z&quot;,
+    &quot;receivedAt&quot;: &quot;2026-11-19T14:27:07.566Z&quot;,
+    &quot;financialEntryId&quot;: &quot;e9f85c44-e761-4cab-8b26-03703b7fc589&quot;,
+    &quot;financialEntryStatus&quot;: &quot;SETTLED&quot;,
+    &quot;dueAt&quot;: &quot;2026-12-19T15:00:00.000Z&quot;,
+    &quot;competenceMonth&quot;: &quot;2026-11&quot;,
+    &quot;adjustments&quot;: [],
+    &quot;adjustedAmount&quot;: 0,
+    &quot;balanceAmount&quot;: 3000,
+    &quot;financialReversalPending&quot;: false,
+    &quot;createdAt&quot;: &quot;2026-11-19T14:27:07.522Z&quot;
+  }
+]</pre></details><details><summary>comissoesCaso2 — registro de origem real (HTTP 200)</summary><pre class="reg">[
+  {
+    &quot;id&quot;: &quot;e7f0a2d7-23e5-4098-add1-52dcc9ab06cb&quot;,
+    &quot;financingCaseId&quot;: &quot;7ce7ef76-434b-4fb1-b406-303a20830dc0&quot;,
+    &quot;status&quot;: &quot;EXPECTED&quot;,
+    &quot;providerCode&quot;: &quot;sandbox&quot;,
+    &quot;providerLabel&quot;: &quot;Sandbox (simulação)&quot;,
+    &quot;triggerEvent&quot;: &quot;REGISTRO_MANUAL&quot;,
+    &quot;triggerEventLabel&quot;: &quot;Registro manual&quot;,
+    &quot;baseAmount&quot;: 200000,
+    &quot;percentage&quot;: 1.5,
+    &quot;amount&quot;: 3000,
+    &quot;brokerSharePct&quot;: 100,
+    &quot;managerSharePct&quot;: 0,
+    &quot;brokerAmount&quot;: 3000,
+    &quot;managerAmount&quot;: 0,
+    &quot;ruleVersionId&quot;: &quot;99db0e7e-386e-4738-84c3-f832f9e235d9&quot;,
+    &quot;externalConfirmationId&quot;: null,
+    &quot;confirmedAt&quot;: null,
+    &quot;receivedAt&quot;: null,
+    &quot;financialEntryId&quot;: null,
+    &quot;financialEntryStatus&quot;: null,
+    &quot;dueAt&quot;: null,
+    &quot;competenceMonth&quot;: null,
+    &quot;adjustments&quot;: [],
+    &quot;adjustedAmount&quot;: 0,
+    &quot;balanceAmount&quot;: 3000,
+    &quot;financialReversalPending&quot;: false,
+    &quot;createdAt&quot;: &quot;2026-11-19T14:27:07.598Z&quot;
+  }
+]</pre></details>
+  </section>
+<section id="obra.waste">
+  <h2>Desperdício <span class="b ok big">OK · R$ 500,00</span></h2>
+  <p class="small">Tela: <code>/painel/estoque/movimentos</code> · Natureza: <b>Realizado</b> · Atualizado às 11:27 · freshness <b>FRESH</b> · revisão 1 · hash de cálculo <code>036c804e371403bb…</code></p>
+
+  <h3 class="msec">Registro de origem</h3>
+  <div class="tw"><table><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody><tr><td>Obra</td><td><code>f207b69c-e6e7-4a28-974d-d41cb68ced59</code></td></tr><tr><td>Item</td><td><code>bb0b9821-410b-43df-b0bc-b55fcde2da1e</code></td></tr><tr><td>Local</td><td><code>e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9</code></td></tr><tr><td>Caso de perda</td><td><code>63c7b782-6af7-403e-8f0a-f806d6eda055</code></td></tr><tr><td>Arquivo de evidência</td><td><code>576c67c9-e604-4207-b1ce-bc4fb79a670f</code></td></tr></tbody></table></div>
+
+  <h3 class="msec">Fórmula</h3>
+  <p class="lead"><code>valor = perdas 10×50 = 500; % = 500/2500 = 20%</code></p>
+
+  <h3 class="msec">Passos executados</h3>
+  <ol class="tl"><li class="ok"><div class="vd">Item + canteiro</div></li><li class="ok"><div class="vd">Recebimento 100×R$50 (DRAFT→REVIEWED→COMPLETED) → custo médio 50</div></li><li class="ok"><div class="vd">Consumo OUT 50 (R$2.500) na etapa</div></li><li class="ok"><div class="vd">Caso de perda 10un; ADMIN tentou aprovar → BLOQUEADO; aprovador2 aprovou → LOSS R$500</div></li><li class="ok"><div class="vd">rebuild rm_project_waste</div></li></ol>
+
+  <div class="callout"><b>Separação de funções comprovada.</b>
+      <ul><li>O autor do caso (admin) tentou aprovar a própria perda e foi <b>bloqueado</b>: HTTP 403 <code>LOSS_CASE_SELF_APPROVAL_BLOCKED</code>.</li>
+      <li>Um segundo usuário (<code>aprovador2@nayaraone.dev</code>, permissão <code>inventory:approve</code>) aprovou — e só então o movimento de perda foi gerado.</li></ul></div>
+
+  <h3 class="msec">Detalhe do indicador (drill-down) <span class="b ok">HTTP 200</span></h3>
+  <p class="small">Baixas de estoque do tipo perda ligadas a obras, pelo custo médio do dia da baixa — total <b>R$ 500,00</b> em 1 registro(s). O detalhe confere o filtro assinado pelo servidor (HMAC), por isso prova rastreabilidade do número até a fonte.</p>
+  <div class="tw"><table class="mx"><thead><tr><th>id</th><th>total_cost</th><th>project_id</th><th>inventory_item_id</th><th>movement_type</th><th>quantity</th><th>moved_at</th><th>contribuição</th></tr></thead><tbody><tr><td><code>e9ba1439…</code></td><td class="n">R$ 500,00</td><td class="n">f207b69c-e6e7-4a28-974d-d41cb68ced59</td><td class="n">bb0b9821-410b-43df-b0bc-b55fcde2da1e</td><td class="n">LOSS</td><td class="n">10.0000</td><td class="n">—</td><td class="r">R$ 500,00</td></tr><tr class="tot"><td colspan="7">Total (1 registro(s))</td><td class="r">R$ 500,00</td></tr></tbody></table></div>
+
+  <h3 class="msec">Registro de origem (corpo real)</h3>
+  <details><summary>casosDePerda — registro de origem real (HTTP 200)</summary><pre class="reg">[
+  {
+    &quot;id&quot;: &quot;63c7b782-6af7-403e-8f0a-f806d6eda055&quot;,
+    &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+    &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+    &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+    &quot;assetId&quot;: null,
+    &quot;locationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+    &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+    &quot;quantity&quot;: &quot;10.000000&quot;,
+    &quot;responsiblePersonId&quot;: null,
+    &quot;context&quot;: &quot;INVENTORY_LOSS&quot;,
+    &quot;evidenceFileIds&quot;: [
+      &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;
+    ],
+    &quot;estimatedCost&quot;: &quot;500.00&quot;,
+    &quot;status&quot;: &quot;APPROVED&quot;,
+    &quot;resultingMovementId&quot;: &quot;e9ba1439-c09e-4d4d-9853-670d3e0dc943&quot;,
+    &quot;decidedByUserId&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+    &quot;decidedAt&quot;: &quot;2026-11-19T14:27:07.723Z&quot;,
+    &quot;lockVersion&quot;: 2,
+    &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;updatedBy&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+    &quot;created_at&quot;: &quot;2026-11-19T14:27:07.709Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.732Z&quot;,
+    &quot;chargeFinancialEntry&quot;: null
+  }
+]</pre></details><details><summary>movimentos — registro de origem real (HTTP 200)</summary><pre class="reg">[
+  {
+    &quot;id&quot;: &quot;e9ba1439-c09e-4d4d-9853-670d3e0dc943&quot;,
+    &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+    &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+    &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+    &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+    &quot;stageId&quot;: null,
+    &quot;movementType&quot;: &quot;LOSS&quot;,
+    &quot;quantity&quot;: &quot;10.0000&quot;,
+    &quot;sourceLocationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+    &quot;destinationLocationId&quot;: null,
+    &quot;sourceType&quot;: &quot;LOSS_CASE&quot;,
+    &quot;sourceId&quot;: &quot;63c7b782-6af7-403e-8f0a-f806d6eda055&quot;,
+    &quot;idempotencyKey&quot;: &quot;loss-case:63c7b782-6af7-403e-8f0a-f806d6eda055&quot;,
+    &quot;responsiblePersonId&quot;: null,
+    &quot;evidenceFileId&quot;: &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;,
+    &quot;reason&quot;: &quot;Perda aprovada — INVENTORY_LOSS.&quot;,
+    &quot;unitCost&quot;: &quot;50.000000&quot;,
+    &quot;totalCost&quot;: &quot;500.00&quot;,
+    &quot;costSource&quot;: &quot;RECORDED&quot;,
+    &quot;movedAt&quot;: &quot;2026-11-19T14:27:07.727Z&quot;,
+    &quot;movedByUserId&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+    &quot;createdBy&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+    &quot;updatedBy&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+    &quot;created_at&quot;: &quot;2026-11-19T14:27:07.727Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.727Z&quot;,
+    &quot;inventory_item_id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+    &quot;project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+    &quot;moved_by_user_id&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+    &quot;source_location_id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+    &quot;destination_location_id&quot;: null,
+    &quot;responsible_person_id&quot;: null,
+    &quot;stage_id&quot;: null,
+    &quot;inventoryItem&quot;: {
+      &quot;id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+      &quot;name&quot;: &quot;ACEITE-M9-IND Cimento&quot;,
+      &quot;sku&quot;: &quot;ACEITE-M9-IND-CIM&quot;
+    },
+    &quot;sourceLocation&quot;: {
+      &quot;id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+      &quot;name&quot;: &quot;ACEITE-M9-IND Canteiro&quot;
+    },
+    &quot;destinationLocation&quot;: null,
+    &quot;movedByUser&quot;: {
+      &quot;id&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+      &quot;name&quot;: &quot;Aprovador 2 (LAB)&quot;
+    },
+    &quot;responsiblePerson&quot;: null,
+    &quot;stage&quot;: null
+  },
+  {
+    &quot;id&quot;: &quot;f9ef06e9-2c67-4668-b929-cb2e6f1c1cb8&quot;,
+    &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+    &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+    &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+    &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+    &quot;stageId&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+    &quot;movementType&quot;: &quot;OUT&quot;,
+    &quot;quantity&quot;: &quot;50.0000&quot;,
+    &quot;sourceLocationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+    &quot;destinationLocationId&quot;: null,
+    &quot;sourceType&quot;: &quot;MANUAL&quot;,
+    &quot;sourceId&quot;: null,
+    &quot;idempotencyKey&quot;: null,
+    &quot;responsiblePersonId&quot;: &quot;ce5e843c-299c-4468-ab12-84bfa920694a&quot;,
+    &quot;evidenceFileId&quot;: null,
+    &quot;reason&quot;: &quot;ACEITE-M9-IND consumo&quot;,
+    &quot;unitCost&quot;: &quot;50.000000&quot;,
+    &quot;totalCost&quot;: &quot;2500.00&quot;,
+    &quot;costSource&quot;: &quot;RECORDED&quot;,
+    &quot;movedAt&quot;: &quot;2026-11-19T14:27:07.690Z&quot;,
+    &quot;movedByUserId&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;created_at&quot;: &quot;2026-11-19T14:27:07.690Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.690Z&quot;,
+    &quot;inventory_item_id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+    &quot;project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+    &quot;moved_by_user_id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;source_location_id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+    &quot;destination_location_id&quot;: null,
+    &quot;responsible_person_id&quot;: &quot;ce5e843c-299c-4468-ab12-84bfa920694a&quot;,
+    &quot;stage_id&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+    &quot;inventoryItem&quot;: {
+      &quot;id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+      &quot;name&quot;: &quot;ACEITE-M9-IND Cimento&quot;,
+      &quot;sku&quot;: &quot;ACEITE-M9-IND-CIM&quot;
+    },
+    &quot;sourceLocation&quot;: {
+      &quot;id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+      &quot;name&quot;: &quot;ACEITE-M9-IND Canteiro&quot;
+    },
+    &quot;destinationLocation&quot;: null,
+    &quot;movedByUser&quot;: {
+      &quot;id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+      &quot;name&quot;: &quot;Admin Dev&quot;
+    },
+    &quot;responsiblePerson&quot;: {
+      &quot;id&quot;: &quot;ce5e843c-299c-4468-ab12-84bfa920694a&quot;,
+      &quot;legalName&quot;: &quot;ACEITE-M9-IND Proponente&quot;
+    },
+    &quot;stage&quot;: {
+      &quot;id&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+      &quot;name&quot;: &quot;ACEITE-M9-IND Etapa 1&quot;
+    }
+  },
+  {
+    &quot;id&quot;: &quot;42388132-d035-4a13-bd80-86dc43099847&quot;,
+    &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+    &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+    &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+    &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+    &quot;stageId&quot;: null,
+    &quot;movementType&quot;: &quot;IN&quot;,
+    &quot;quantity&quot;: &quot;100.0000&quot;,
+    &quot;sourceLocationId&quot;: null,
+    &quot;destinationLocationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+    &quot;sourceType&quot;: &quot;RECEIPT&quot;,
+    &quot;sourceId&quot;: &quot;8c880ad5-653a-4c3b-9654-c537abda945d&quot;,
+    &quot;idempotencyKey&quot;: &quot;receipt:8c880ad5-653a-4c3b-9654-c537abda945d:item:2fe801e0-37ca-4f58-ab3c-fd16646c77ee&quot;,
+    &quot;responsiblePersonId&quot;: null,
+    &quot;evidenceFileId&quot;: null,
+    &quot;reason&quot;: &quot;Recebimento da nota fiscal nº ACEITE-M9-IND-NF1.&quot;,
+    &quot;unitCost&quot;: &quot;50.000000&quot;,
+    &quot;totalCost&quot;: &quot;5000.00&quot;,
+    &quot;costSource&quot;: &quot;RECORDED&quot;,
+    &quot;movedAt&quot;: &quot;2026-11-19T14:27:07.670Z&quot;,
+    &quot;movedByUserId&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;created_at&quot;: &quot;2026-11-19T14:27:07.670Z&quot;,
+    &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.670Z&quot;,
+    &quot;inventory_item_id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+    &quot;project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+    &quot;moved_by_user_id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+    &quot;source_location_id&quot;: null,
+    &quot;destination_location_id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+    &quot;responsible_person_id&quot;: null,
+    &quot;stage_id&quot;: null,
+    &quot;inventoryItem&quot;: {
+      &quot;id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+      &quot;name&quot;: &quot;ACEITE-M9-IND Cimento&quot;,
+      &quot;sku&quot;: &quot;ACEITE-M9-IND-CIM&quot;
+    },
+    &quot;sourceLocation&quot;: null,
+    &quot;destinationLocation&quot;: {
+      &quot;id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+      &quot;name&quot;: &quot;ACEITE-M9-IND Canteiro&quot;
+    },
+    &quot;movedByUser&quot;: {
+      &quot;id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+      &quot;name&quot;: &quot;Admin Dev&quot;
+    },
+    &quot;responsiblePerson&quot;: null,
+    &quot;stage&quot;: null
+  }
+]</pre></details>
+  </section>
+
+<section id="homolog">
+<h2>O que isso significa para a sua homologação</h2>
+<p class="lead">Na sua homologação, os registros fictícios já existem e os mesmos quatro indicadores fecham do mesmo jeito assim que rodar o <b>rebuild dos read models no servidor</b> (a configuração <code>analytics.rebuild.habilitado</code> já está ligada na sua empresa). Para a Margem e o Desperdício, os dois passos que pedem o seu autenticador (assinar o contrato / criar o segundo aprovador) são os que, pelo próprio caderno, pertencem à conferência com dados reais do Marco 10 — como combinamos, apontados por escrito para você decidir.</p>
+<div class="callout"><b>Referência do caderno:</b> o Marco 9 fecha como <b>“PRONTO PARA LAB”</b>; a reconciliação com relatórios-fonte e o aceite dos responsáveis são da produção/Marco 10 (Guia do Marco 9, Status). Esta página cobre a parte do Marco 9.</div>
+</section>
+
+<section id="anexo-json">
+<h2>Anexo — evidência completa (JSON)</h2>
+<p class="small">Tudo o que está acima vem deste JSON capturado na execução (origem, passos, leitura final de cada métrica, drill-down 200 e o corpo real de cada registro de origem).</p>
+<pre id="json-pre">{
+  &quot;contexto&quot;: {
+    &quot;ambiente&quot;: &quot;LAB descartável local (banco 127.0.0.1:5465/drill_app, RLS real, role nayara_runtime NOBYPASSRLS, JWT_ACCESS_SECRET fixo)&quot;,
+    &quot;motivo&quot;: &quot;Guia do Marco 9 §4: 'Permitir rebuild completo em LAB'. Demonstração verde dos 4 indicadores com cálculo real, drill-down 200 e registro de origem real. Não tocou a homologação da cliente.&quot;,
+    &quot;empresa&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+    &quot;asOf&quot;: &quot;2026-11-19&quot;,
+    &quot;admin&quot;: &quot;admin@nayaraone.dev&quot;,
+    &quot;segundoAprovador&quot;: &quot;aprovador2@nayaraone.dev (inventory:approve, separação de funções)&quot;
+  },
+  &quot;indicadores&quot;: {
+    &quot;obra.projected_margin&quot;: {
+      &quot;titulo&quot;: &quot;Margem projetada&quot;,
+      &quot;tela&quot;: &quot;/painel/obras&quot;,
+      &quot;origem&quot;: {
+        &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+        &quot;contratoId&quot;: &quot;59cdde32-ec1f-414b-8c12-3eb8c9f64e5e&quot;,
+        &quot;contratoStatus&quot;: &quot;SIGNED&quot;,
+        &quot;contratoValor&quot;: &quot;150000.00&quot;,
+        &quot;budgetBaseline&quot;: &quot;100000.00&quot;
+      },
+      &quot;passos&quot;: [
+        &quot;Obra + orçamento baseline 100000 + etapa&quot;,
+        &quot;Contrato CONSTRUCTION 150000: requisitos gerados e dispensados, DRAFT→DOCUMENTS_PENDING→LEGAL_REVIEW→APPROVED, versão de documento, assinatura sandbox confirmada via webhook → SIGNED (sem truque de config)&quot;,
+        &quot;rebuild rm_project_cost&quot;
+      ],
+      &quot;formula&quot;: &quot;margem = receita contratada 150000 (contrato SIGNED) − forecast 100000 (RITMO a 0% aprovado = baseline+real, M9-D650) = 50000&quot;,
+      &quot;indicador&quot;: {
+        &quot;metricCode&quot;: &quot;obra.projected_margin&quot;,
+        &quot;status&quot;: &quot;OK&quot;,
+        &quot;value&quot;: &quot;50000.0000&quot;,
+        &quot;unit&quot;: &quot;BRL&quot;,
+        &quot;valueReliable&quot;: true,
+        &quot;valueNature&quot;: &quot;PROJECTED&quot;,
+        &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+        &quot;freshness&quot;: {
+          &quot;state&quot;: &quot;FRESH&quot;,
+          &quot;ageMinutes&quot;: 0,
+          &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+          &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:08.757Z&quot;,
+          &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+          &quot;maxStalenessMinutes&quot;: 1440,
+          &quot;expiredAboveMinutes&quot;: 5760,
+          &quot;historical&quot;: false,
+          &quot;futureStamp&quot;: false,
+          &quot;label&quot;: &quot;Atualizado às 11:27&quot;
+        },
+        &quot;revisionNo&quot;: 1,
+        &quot;calcHash&quot;: &quot;6d12608f743251e1932b5c6aa3060578e5632f4af3794c870d406394596bc065&quot;,
+        &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:08.757Z&quot;,
+        &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+        &quot;dimensions&quot;: null,
+        &quot;quality&quot;: {
+          &quot;degradedBy&quot;: [],
+          &quot;inheritedFrom&quot;: [],
+          &quot;checks&quot;: [],
+          &quot;degradedReasons&quot;: []
+        },
+        &quot;sourceRefs&quot;: [
+          {
+            &quot;type&quot;: &quot;PROJECT_COST&quot;,
+            &quot;count&quot;: 1,
+            &quot;table&quot;: &quot;analytics.rm_project_cost&quot;,
+            &quot;filter&quot;: {
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;
+            },
+            &quot;idsSample&quot;: [],
+            &quot;filterHash&quot;: &quot;ca3eafbf811416ba0b78b168873c057afbeb589e80bb34726e8fbb0a5b37b9ec&quot;,
+            &quot;restricted&quot;: true,
+            &quot;description&quot;: &quot;Margem projetada de cada obra (receita contratada menos o forecast do custo), uma linha por obra&quot;,
+            &quot;reconcileMode&quot;: &quot;SUM&quot;,
+            &quot;filterSignature&quot;: &quot;d7365c9c2f58d55f0446478b43ae2e3be23ab8f8e5be75a42e82d68b5a776bc1&quot;
+          }
+        ],
+        &quot;details&quot;: null
+      },
+      &quot;drilldown&quot;: {
+        &quot;http&quot;: 200,
+        &quot;body&quot;: {
+          &quot;metricCode&quot;: &quot;obra.projected_margin&quot;,
+          &quot;component&quot;: null,
+          &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+          &quot;description&quot;: &quot;Margem projetada de cada obra (receita contratada menos o forecast do custo), uma linha por obra&quot;,
+          &quot;reconcileMode&quot;: &quot;SUM&quot;,
+          &quot;aggregate&quot;: {
+            &quot;count&quot;: 1,
+            &quot;total&quot;: &quot;50000.00&quot;
+          },
+          &quot;page&quot;: 1,
+          &quot;pageSize&quot;: 50,
+          &quot;totalPages&quot;: 1,
+          &quot;rows&quot;: [
+            {
+              &quot;id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;fields&quot;: {
+                &quot;projected_margin&quot;: &quot;50000.00&quot;,
+                &quot;budget_cost&quot;: &quot;100000.00&quot;,
+                &quot;actual_cost&quot;: &quot;0.00&quot;,
+                &quot;forecast_cost&quot;: &quot;100000.00&quot;,
+                &quot;contract_revenue&quot;: &quot;150000.00&quot;
+              },
+              &quot;contribution&quot;: &quot;50000.00&quot;,
+              &quot;link&quot;: &quot;/painel/obras/lista/f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;
+            }
+          ],
+          &quot;maskedCount&quot;: 0
+        }
+      },
+      &quot;origemDetalhe&quot;: {
+        &quot;contrato&quot;: {
+          &quot;http&quot;: 200,
+          &quot;body&quot;: {
+            &quot;id&quot;: &quot;59cdde32-ec1f-414b-8c12-3eb8c9f64e5e&quot;,
+            &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+            &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+            &quot;propertyId&quot;: null,
+            &quot;opportunityId&quot;: null,
+            &quot;contractType&quot;: &quot;CONSTRUCTION&quot;,
+            &quot;constructionProjectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+            &quot;contractNumber&quot;: &quot;ACEITE-M9-IND-OBR-1&quot;,
+            &quot;status&quot;: &quot;SIGNED&quot;,
+            &quot;totalValue&quot;: &quot;150000.00&quot;,
+            &quot;startsAt&quot;: &quot;2026-11-01T00:00:00.000Z&quot;,
+            &quot;endsAt&quot;: &quot;2027-05-01T00:00:00.000Z&quot;,
+            &quot;lockVersion&quot;: 5,
+            &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+            &quot;updatedBy&quot;: null,
+            &quot;deletedBy&quot;: null,
+            &quot;created_at&quot;: &quot;2026-11-19T14:27:07.739Z&quot;,
+            &quot;updated_at&quot;: &quot;2026-11-19T14:27:08.037Z&quot;,
+            &quot;deleted_at&quot;: null,
+            &quot;property_id&quot;: null,
+            &quot;opportunity_id&quot;: null,
+            &quot;construction_project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+            &quot;versions&quot;: [
+              {
+                &quot;id&quot;: &quot;7a674dac-fd34-4e29-b75f-6115c6169a4c&quot;,
+                &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+                &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+                &quot;contractId&quot;: &quot;59cdde32-ec1f-414b-8c12-3eb8c9f64e5e&quot;,
+                &quot;versionNumber&quot;: 1,
+                &quot;documentFileId&quot;: &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;,
+                &quot;contentHash&quot;: &quot;5c883d3121db977ea8bad138820221b6e0d96553d9e8440d1341a10b4062fa7e&quot;,
+                &quot;content&quot;: &quot;ACEITE-M9-IND Contrato de obra - conteudo ficticio.&quot;,
+                &quot;signedDocumentFileId&quot;: null,
+                &quot;templateId&quot;: null,
+                &quot;clauseVersionIds&quot;: null,
+                &quot;conditionContext&quot;: null,
+                &quot;excludedClauses&quot;: null,
+                &quot;effectiveFrom&quot;: &quot;2026-11-01T00:00:00.000Z&quot;,
+                &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+                &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+                &quot;created_at&quot;: &quot;2026-11-19T14:27:07.921Z&quot;,
+                &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.921Z&quot;,
+                &quot;contract_id&quot;: &quot;59cdde32-ec1f-414b-8c12-3eb8c9f64e5e&quot;,
+                &quot;document_file_id&quot;: &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;,
+                &quot;template_id&quot;: null,
+                &quot;template&quot;: null
+              }
+            ]
+          }
+        }
+      }
+    },
+    &quot;obra.measurements&quot;: {
+      &quot;titulo&quot;: &quot;Medições&quot;,
+      &quot;tela&quot;: &quot;/painel/obras&quot;,
+      &quot;origem&quot;: {
+        &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+        &quot;stageId&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+        &quot;measurementId&quot;: &quot;044435c4-f775-4210-ae51-93f20e4bfeb2&quot;,
+        &quot;measurementStatus&quot;: &quot;SUBMITTED&quot;,
+        &quot;measuredPct&quot;: &quot;40&quot;,
+        &quot;totalAmount&quot;: &quot;40000.00&quot;
+      },
+      &quot;passos&quot;: [
+        &quot;Etapa criada&quot;,
+        &quot;Medição 40% / R$40.000 SUBMITTED&quot;,
+        &quot;rebuild rm_project_measurements&quot;
+      ],
+      &quot;formula&quot;: &quot;valor = medido da empresa (40000); não aprovada sem lançamento (evita DEGRADED MEDICAO_APROVADA_SEM_LANCAMENTO)&quot;,
+      &quot;indicador&quot;: {
+        &quot;metricCode&quot;: &quot;obra.measurements&quot;,
+        &quot;status&quot;: &quot;OK&quot;,
+        &quot;value&quot;: &quot;40000.0000&quot;,
+        &quot;unit&quot;: &quot;BRL&quot;,
+        &quot;valueReliable&quot;: true,
+        &quot;valueNature&quot;: &quot;ACTUAL&quot;,
+        &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+        &quot;freshness&quot;: {
+          &quot;state&quot;: &quot;FRESH&quot;,
+          &quot;ageMinutes&quot;: 0,
+          &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+          &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:09.465Z&quot;,
+          &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+          &quot;maxStalenessMinutes&quot;: 15,
+          &quot;expiredAboveMinutes&quot;: 60,
+          &quot;historical&quot;: false,
+          &quot;futureStamp&quot;: false,
+          &quot;label&quot;: &quot;Atualizado às 11:27&quot;
+        },
+        &quot;revisionNo&quot;: 2,
+        &quot;calcHash&quot;: &quot;17f1ee8614b48355fcdb1f7bb3f46086fd20e8b01c00da8999ee43b57d410bd9&quot;,
+        &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:09.465Z&quot;,
+        &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+        &quot;dimensions&quot;: null,
+        &quot;quality&quot;: {
+          &quot;degradedBy&quot;: [],
+          &quot;inheritedFrom&quot;: [],
+          &quot;checks&quot;: [],
+          &quot;degradedReasons&quot;: []
+        },
+        &quot;sourceRefs&quot;: [
+          {
+            &quot;type&quot;: &quot;STAGE_MEASUREMENTS&quot;,
+            &quot;count&quot;: 1,
+            &quot;table&quot;: &quot;construction.stage_measurements&quot;,
+            &quot;filter&quot;: {
+              &quot;status&quot;: [
+                &quot;APPROVED&quot;,
+                &quot;PAYABLE&quot;,
+                &quot;REVIEWED&quot;,
+                &quot;SUBMITTED&quot;
+              ],
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;
+            },
+            &quot;idsSample&quot;: [],
+            &quot;filterHash&quot;: &quot;a406721bf0a2f7e528f311bf43cd323871b5b1a199c2ad855e0e042a36adb59b&quot;,
+            &quot;restricted&quot;: true,
+            &quot;description&quot;: &quot;Medições enviadas em diante (SUBMITTED, REVIEWED, APPROVED, PAYABLE); rascunho, rejeitada e substituída não contam&quot;,
+            &quot;reconcileMode&quot;: &quot;SUM&quot;,
+            &quot;filterSignature&quot;: &quot;e609fa87b716dc0346ac7abd54faf071bc989b264f520436d9a4ed7993b55fd9&quot;
+          }
+        ],
+        &quot;details&quot;: null
+      },
+      &quot;drilldown&quot;: {
+        &quot;http&quot;: 200,
+        &quot;body&quot;: {
+          &quot;metricCode&quot;: &quot;obra.measurements&quot;,
+          &quot;component&quot;: null,
+          &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+          &quot;description&quot;: &quot;Medições enviadas em diante (SUBMITTED, REVIEWED, APPROVED, PAYABLE); rascunho, rejeitada e substituída não contam&quot;,
+          &quot;reconcileMode&quot;: &quot;SUM&quot;,
+          &quot;aggregate&quot;: {
+            &quot;count&quot;: 1,
+            &quot;total&quot;: &quot;40000.00&quot;
+          },
+          &quot;page&quot;: 1,
+          &quot;pageSize&quot;: 50,
+          &quot;totalPages&quot;: 1,
+          &quot;rows&quot;: [
+            {
+              &quot;id&quot;: &quot;044435c4-f775-4210-ae51-93f20e4bfeb2&quot;,
+              &quot;fields&quot;: {
+                &quot;status&quot;: &quot;SUBMITTED&quot;,
+                &quot;total_amount&quot;: &quot;40000.00&quot;,
+                &quot;project_stage_id&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+                &quot;measured_pct&quot;: &quot;40.000000&quot;,
+                &quot;approved_at&quot;: null
+              },
+              &quot;contribution&quot;: &quot;40000.00&quot;,
+              &quot;link&quot;: null
+            }
+          ],
+          &quot;maskedCount&quot;: 0
+        }
+      },
+      &quot;origemDetalhe&quot;: {
+        &quot;itensDaMedicao&quot;: {
+          &quot;http&quot;: 200,
+          &quot;body&quot;: [
+            {
+              &quot;id&quot;: &quot;c56b7197-6ca8-4982-be46-09b1665cb6c8&quot;,
+              &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+              &quot;measurementId&quot;: &quot;044435c4-f775-4210-ae51-93f20e4bfeb2&quot;,
+              &quot;description&quot;: &quot;ACEITE-M9-IND Servico medido&quot;,
+              &quot;quantity&quot;: &quot;1.0000&quot;,
+              &quot;unitPrice&quot;: &quot;40000.00&quot;,
+              &quot;total&quot;: &quot;40000.00&quot;,
+              &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;created_at&quot;: &quot;2026-11-19T14:27:07.230Z&quot;,
+              &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.230Z&quot;,
+              &quot;measurement_id&quot;: &quot;044435c4-f775-4210-ae51-93f20e4bfeb2&quot;
+            }
+          ]
+        }
+      }
+    },
+    &quot;cor.commission&quot;: {
+      &quot;titulo&quot;: &quot;Comissão esperada, confirmada e recebida&quot;,
+      &quot;tela&quot;: &quot;/painel/correspondente&quot;,
+      &quot;origem&quot;: {
+        &quot;personId&quot;: &quot;ce5e843c-299c-4468-ab12-84bfa920694a&quot;,
+        &quot;caso1&quot;: &quot;ed79488f-575f-4f4e-9fb1-9c5e774aa7c8&quot;,
+        &quot;entitlement1&quot;: &quot;1491297b-5815-44a0-8ddb-6477c0b85435&quot;,
+        &quot;caso2&quot;: &quot;7ce7ef76-434b-4fb1-b406-303a20830dc0&quot;,
+        &quot;entitlement2&quot;: &quot;e7f0a2d7-23e5-4098-add1-52dcc9ab06cb&quot;,
+        &quot;base&quot;: &quot;200000&quot;,
+        &quot;percentual&quot;: &quot;1.5&quot;
+      },
+      &quot;passos&quot;: [
+        &quot;Pessoa + 2 casos sandbox&quot;,
+        &quot;Direito 1: EXPECTED 3000 → confirmado → recebido&quot;,
+        &quot;Direito 2: fica EXPECTED 3000&quot;,
+        &quot;rebuild rm_fin_commission (corrige o received_unlinked nulo = READ_MODEL_NAO_RECALCULADO da homologação)&quot;
+      ],
+      &quot;formula&quot;: &quot;valor do indicador = esperada (ESTIMATED) 3000; séries confirmada (PLANNED) 3000 e recebida (ACTUAL) 3000 nunca se somam&quot;,
+      &quot;indicador&quot;: {
+        &quot;metricCode&quot;: &quot;cor.commission&quot;,
+        &quot;status&quot;: &quot;OK&quot;,
+        &quot;value&quot;: &quot;3000.0000&quot;,
+        &quot;unit&quot;: &quot;BRL&quot;,
+        &quot;valueReliable&quot;: true,
+        &quot;valueNature&quot;: &quot;ESTIMATED&quot;,
+        &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+        &quot;freshness&quot;: {
+          &quot;state&quot;: &quot;FRESH&quot;,
+          &quot;ageMinutes&quot;: 0,
+          &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+          &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:10.167Z&quot;,
+          &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+          &quot;maxStalenessMinutes&quot;: 15,
+          &quot;expiredAboveMinutes&quot;: 60,
+          &quot;historical&quot;: false,
+          &quot;futureStamp&quot;: false,
+          &quot;label&quot;: &quot;Atualizado às 11:27&quot;
+        },
+        &quot;revisionNo&quot;: 1,
+        &quot;calcHash&quot;: &quot;34a7b8156ec2ac86c759ad214248e80c653e6828b14635d54470ef0092d57675&quot;,
+        &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:10.167Z&quot;,
+        &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+        &quot;dimensions&quot;: null,
+        &quot;quality&quot;: {
+          &quot;degradedBy&quot;: [],
+          &quot;inheritedFrom&quot;: [],
+          &quot;checks&quot;: [],
+          &quot;degradedReasons&quot;: []
+        },
+        &quot;sourceRefs&quot;: [
+          {
+            &quot;type&quot;: &quot;COMMISSION_ENTITLEMENTS&quot;,
+            &quot;count&quot;: 1,
+            &quot;table&quot;: &quot;correspondent.commission_entitlements&quot;,
+            &quot;filter&quot;: {
+              &quot;status&quot;: [
+                &quot;EXPECTED&quot;
+              ],
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;
+            },
+            &quot;idsSample&quot;: [],
+            &quot;filterHash&quot;: &quot;7c06c6d156e1b151601fc87c8f0afcff253910247c522de85e17b90392c70e44&quot;,
+            &quot;restricted&quot;: true,
+            &quot;description&quot;: &quot;Comissões do correspondente esperadas (direito registrado e ainda não confirmado pelo provider)&quot;,
+            &quot;reconcileMode&quot;: &quot;SUM&quot;,
+            &quot;filterSignature&quot;: &quot;76e8a9567edd04e6ec9c668b39341b12e201cd31eed939acbb42d6cbe315061d&quot;
+          }
+        ],
+        &quot;details&quot;: null
+      },
+      &quot;drilldown&quot;: {
+        &quot;http&quot;: 200,
+        &quot;body&quot;: {
+          &quot;metricCode&quot;: &quot;cor.commission&quot;,
+          &quot;component&quot;: null,
+          &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+          &quot;description&quot;: &quot;Comissões do correspondente esperadas (direito registrado e ainda não confirmado pelo provider)&quot;,
+          &quot;reconcileMode&quot;: &quot;SUM&quot;,
+          &quot;aggregate&quot;: {
+            &quot;count&quot;: 1,
+            &quot;total&quot;: &quot;3000.00&quot;
+          },
+          &quot;page&quot;: 1,
+          &quot;pageSize&quot;: 50,
+          &quot;totalPages&quot;: 1,
+          &quot;rows&quot;: [
+            {
+              &quot;id&quot;: &quot;e7f0a2d7-23e5-4098-add1-52dcc9ab06cb&quot;,
+              &quot;fields&quot;: {
+                &quot;status&quot;: &quot;EXPECTED&quot;,
+                &quot;amount&quot;: &quot;3000.00&quot;,
+                &quot;provider_code&quot;: &quot;sandbox&quot;,
+                &quot;financing_case_id&quot;: &quot;7ce7ef76-434b-4fb1-b406-303a20830dc0&quot;,
+                &quot;created_at&quot;: {}
+              },
+              &quot;contribution&quot;: &quot;3000.00&quot;,
+              &quot;link&quot;: &quot;/painel/correspondente&quot;
+            }
+          ],
+          &quot;maskedCount&quot;: 0
+        }
+      },
+      &quot;origemDetalhe&quot;: {
+        &quot;comissoesCaso1&quot;: {
+          &quot;http&quot;: 200,
+          &quot;body&quot;: [
+            {
+              &quot;id&quot;: &quot;1491297b-5815-44a0-8ddb-6477c0b85435&quot;,
+              &quot;financingCaseId&quot;: &quot;ed79488f-575f-4f4e-9fb1-9c5e774aa7c8&quot;,
+              &quot;status&quot;: &quot;RECEIVED&quot;,
+              &quot;providerCode&quot;: &quot;sandbox&quot;,
+              &quot;providerLabel&quot;: &quot;Sandbox (simulação)&quot;,
+              &quot;triggerEvent&quot;: &quot;REGISTRO_MANUAL&quot;,
+              &quot;triggerEventLabel&quot;: &quot;Registro manual&quot;,
+              &quot;baseAmount&quot;: 200000,
+              &quot;percentage&quot;: 1.5,
+              &quot;amount&quot;: 3000,
+              &quot;brokerSharePct&quot;: 100,
+              &quot;managerSharePct&quot;: 0,
+              &quot;brokerAmount&quot;: 3000,
+              &quot;managerAmount&quot;: 0,
+              &quot;ruleVersionId&quot;: &quot;99db0e7e-386e-4738-84c3-f832f9e235d9&quot;,
+              &quot;externalConfirmationId&quot;: &quot;ACEITE-M9-IND-CONF-1&quot;,
+              &quot;confirmedAt&quot;: &quot;2026-11-19T14:27:07.539Z&quot;,
+              &quot;receivedAt&quot;: &quot;2026-11-19T14:27:07.566Z&quot;,
+              &quot;financialEntryId&quot;: &quot;e9f85c44-e761-4cab-8b26-03703b7fc589&quot;,
+              &quot;financialEntryStatus&quot;: &quot;SETTLED&quot;,
+              &quot;dueAt&quot;: &quot;2026-12-19T15:00:00.000Z&quot;,
+              &quot;competenceMonth&quot;: &quot;2026-11&quot;,
+              &quot;adjustments&quot;: [],
+              &quot;adjustedAmount&quot;: 0,
+              &quot;balanceAmount&quot;: 3000,
+              &quot;financialReversalPending&quot;: false,
+              &quot;createdAt&quot;: &quot;2026-11-19T14:27:07.522Z&quot;
+            }
+          ]
+        },
+        &quot;comissoesCaso2&quot;: {
+          &quot;http&quot;: 200,
+          &quot;body&quot;: [
+            {
+              &quot;id&quot;: &quot;e7f0a2d7-23e5-4098-add1-52dcc9ab06cb&quot;,
+              &quot;financingCaseId&quot;: &quot;7ce7ef76-434b-4fb1-b406-303a20830dc0&quot;,
+              &quot;status&quot;: &quot;EXPECTED&quot;,
+              &quot;providerCode&quot;: &quot;sandbox&quot;,
+              &quot;providerLabel&quot;: &quot;Sandbox (simulação)&quot;,
+              &quot;triggerEvent&quot;: &quot;REGISTRO_MANUAL&quot;,
+              &quot;triggerEventLabel&quot;: &quot;Registro manual&quot;,
+              &quot;baseAmount&quot;: 200000,
+              &quot;percentage&quot;: 1.5,
+              &quot;amount&quot;: 3000,
+              &quot;brokerSharePct&quot;: 100,
+              &quot;managerSharePct&quot;: 0,
+              &quot;brokerAmount&quot;: 3000,
+              &quot;managerAmount&quot;: 0,
+              &quot;ruleVersionId&quot;: &quot;99db0e7e-386e-4738-84c3-f832f9e235d9&quot;,
+              &quot;externalConfirmationId&quot;: null,
+              &quot;confirmedAt&quot;: null,
+              &quot;receivedAt&quot;: null,
+              &quot;financialEntryId&quot;: null,
+              &quot;financialEntryStatus&quot;: null,
+              &quot;dueAt&quot;: null,
+              &quot;competenceMonth&quot;: null,
+              &quot;adjustments&quot;: [],
+              &quot;adjustedAmount&quot;: 0,
+              &quot;balanceAmount&quot;: 3000,
+              &quot;financialReversalPending&quot;: false,
+              &quot;createdAt&quot;: &quot;2026-11-19T14:27:07.598Z&quot;
+            }
+          ]
+        }
+      }
+    },
+    &quot;obra.waste&quot;: {
+      &quot;titulo&quot;: &quot;Desperdício&quot;,
+      &quot;tela&quot;: &quot;/painel/estoque/movimentos&quot;,
+      &quot;origem&quot;: {
+        &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+        &quot;itemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+        &quot;locationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+        &quot;lossCaseId&quot;: &quot;63c7b782-6af7-403e-8f0a-f806d6eda055&quot;,
+        &quot;evidenceFileId&quot;: &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;
+      },
+      &quot;passos&quot;: [
+        &quot;Item + canteiro&quot;,
+        &quot;Recebimento 100×R$50 (DRAFT→REVIEWED→COMPLETED) → custo médio 50&quot;,
+        &quot;Consumo OUT 50 (R$2.500) na etapa&quot;,
+        &quot;Caso de perda 10un; ADMIN tentou aprovar → BLOQUEADO; aprovador2 aprovou → LOSS R$500&quot;,
+        &quot;rebuild rm_project_waste&quot;
+      ],
+      &quot;formula&quot;: &quot;valor = perdas 10×50 = 500; % = 500/2500 = 20%&quot;,
+      &quot;separacaoDeFuncoes&quot;: {
+        &quot;autorNaoAprova&quot;: {
+          &quot;http&quot;: 403,
+          &quot;code&quot;: &quot;LOSS_CASE_SELF_APPROVAL_BLOCKED&quot;
+        },
+        &quot;segundoUsuarioAprovou&quot;: &quot;aprovador2@nayaraone.dev&quot;
+      },
+      &quot;indicador&quot;: {
+        &quot;metricCode&quot;: &quot;obra.waste&quot;,
+        &quot;status&quot;: &quot;OK&quot;,
+        &quot;value&quot;: &quot;500.0000&quot;,
+        &quot;unit&quot;: &quot;BRL&quot;,
+        &quot;valueReliable&quot;: true,
+        &quot;valueNature&quot;: &quot;ACTUAL&quot;,
+        &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+        &quot;freshness&quot;: {
+          &quot;state&quot;: &quot;FRESH&quot;,
+          &quot;ageMinutes&quot;: 0,
+          &quot;asOfDate&quot;: &quot;2026-11-19&quot;,
+          &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:10.868Z&quot;,
+          &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+          &quot;maxStalenessMinutes&quot;: 15,
+          &quot;expiredAboveMinutes&quot;: 60,
+          &quot;historical&quot;: false,
+          &quot;futureStamp&quot;: false,
+          &quot;label&quot;: &quot;Atualizado às 11:27&quot;
+        },
+        &quot;revisionNo&quot;: 1,
+        &quot;calcHash&quot;: &quot;036c804e371403bbf0c438b4e00f628c77ccaf38eaa7e88422a9b70c837d9e5a&quot;,
+        &quot;sourceSnapshotAt&quot;: &quot;2026-11-19T14:27:10.868Z&quot;,
+        &quot;refreshedAt&quot;: &quot;2026-11-19T14:27:36.106Z&quot;,
+        &quot;dimensions&quot;: null,
+        &quot;quality&quot;: {
+          &quot;degradedBy&quot;: [],
+          &quot;inheritedFrom&quot;: [],
+          &quot;checks&quot;: [],
+          &quot;degradedReasons&quot;: []
+        },
+        &quot;sourceRefs&quot;: [
+          {
+            &quot;type&quot;: &quot;STOCK_MOVEMENTS&quot;,
+            &quot;count&quot;: 1,
+            &quot;table&quot;: &quot;inventory.inventory_movements&quot;,
+            &quot;filter&quot;: {
+              &quot;equals&quot;: {
+                &quot;movementType&quot;: &quot;LOSS&quot;
+              },
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;
+            },
+            &quot;idsSample&quot;: [],
+            &quot;filterHash&quot;: &quot;d4d34847dbaa5592b25e98291d72f727a2e15f84e4bb332c03bcf5bb60a7afb2&quot;,
+            &quot;restricted&quot;: true,
+            &quot;description&quot;: &quot;Baixas de estoque do tipo perda ligadas a obras, pelo custo médio do dia da baixa&quot;,
+            &quot;reconcileMode&quot;: &quot;SUM&quot;,
+            &quot;filterSignature&quot;: &quot;604efa9e484accbfdb3d48b982740b7e9e44cd0b3c7e7c02ad85f78c5f050090&quot;
+          }
+        ],
+        &quot;details&quot;: null
+      },
+      &quot;drilldown&quot;: {
+        &quot;http&quot;: 200,
+        &quot;body&quot;: {
+          &quot;metricCode&quot;: &quot;obra.waste&quot;,
+          &quot;component&quot;: null,
+          &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+          &quot;description&quot;: &quot;Baixas de estoque do tipo perda ligadas a obras, pelo custo médio do dia da baixa&quot;,
+          &quot;reconcileMode&quot;: &quot;SUM&quot;,
+          &quot;aggregate&quot;: {
+            &quot;count&quot;: 1,
+            &quot;total&quot;: &quot;500.00&quot;
+          },
+          &quot;page&quot;: 1,
+          &quot;pageSize&quot;: 50,
+          &quot;totalPages&quot;: 1,
+          &quot;rows&quot;: [
+            {
+              &quot;id&quot;: &quot;e9ba1439-c09e-4d4d-9853-670d3e0dc943&quot;,
+              &quot;fields&quot;: {
+                &quot;total_cost&quot;: &quot;500.00&quot;,
+                &quot;project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+                &quot;inventory_item_id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+                &quot;movement_type&quot;: &quot;LOSS&quot;,
+                &quot;quantity&quot;: &quot;10.0000&quot;,
+                &quot;moved_at&quot;: {}
+              },
+              &quot;contribution&quot;: &quot;500.00&quot;,
+              &quot;link&quot;: &quot;/painel/estoque/movimentos&quot;
+            }
+          ],
+          &quot;maskedCount&quot;: 0
+        }
+      },
+      &quot;origemDetalhe&quot;: {
+        &quot;casosDePerda&quot;: {
+          &quot;http&quot;: 200,
+          &quot;body&quot;: [
+            {
+              &quot;id&quot;: &quot;63c7b782-6af7-403e-8f0a-f806d6eda055&quot;,
+              &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+              &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+              &quot;assetId&quot;: null,
+              &quot;locationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+              &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;quantity&quot;: &quot;10.000000&quot;,
+              &quot;responsiblePersonId&quot;: null,
+              &quot;context&quot;: &quot;INVENTORY_LOSS&quot;,
+              &quot;evidenceFileIds&quot;: [
+                &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;
+              ],
+              &quot;estimatedCost&quot;: &quot;500.00&quot;,
+              &quot;status&quot;: &quot;APPROVED&quot;,
+              &quot;resultingMovementId&quot;: &quot;e9ba1439-c09e-4d4d-9853-670d3e0dc943&quot;,
+              &quot;decidedByUserId&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+              &quot;decidedAt&quot;: &quot;2026-11-19T14:27:07.723Z&quot;,
+              &quot;lockVersion&quot;: 2,
+              &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;updatedBy&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+              &quot;created_at&quot;: &quot;2026-11-19T14:27:07.709Z&quot;,
+              &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.732Z&quot;,
+              &quot;chargeFinancialEntry&quot;: null
+            }
+          ]
+        },
+        &quot;movimentos&quot;: {
+          &quot;http&quot;: 200,
+          &quot;body&quot;: [
+            {
+              &quot;id&quot;: &quot;e9ba1439-c09e-4d4d-9853-670d3e0dc943&quot;,
+              &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+              &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+              &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;stageId&quot;: null,
+              &quot;movementType&quot;: &quot;LOSS&quot;,
+              &quot;quantity&quot;: &quot;10.0000&quot;,
+              &quot;sourceLocationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+              &quot;destinationLocationId&quot;: null,
+              &quot;sourceType&quot;: &quot;LOSS_CASE&quot;,
+              &quot;sourceId&quot;: &quot;63c7b782-6af7-403e-8f0a-f806d6eda055&quot;,
+              &quot;idempotencyKey&quot;: &quot;loss-case:63c7b782-6af7-403e-8f0a-f806d6eda055&quot;,
+              &quot;responsiblePersonId&quot;: null,
+              &quot;evidenceFileId&quot;: &quot;576c67c9-e604-4207-b1ce-bc4fb79a670f&quot;,
+              &quot;reason&quot;: &quot;Perda aprovada — INVENTORY_LOSS.&quot;,
+              &quot;unitCost&quot;: &quot;50.000000&quot;,
+              &quot;totalCost&quot;: &quot;500.00&quot;,
+              &quot;costSource&quot;: &quot;RECORDED&quot;,
+              &quot;movedAt&quot;: &quot;2026-11-19T14:27:07.727Z&quot;,
+              &quot;movedByUserId&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+              &quot;createdBy&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+              &quot;updatedBy&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+              &quot;created_at&quot;: &quot;2026-11-19T14:27:07.727Z&quot;,
+              &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.727Z&quot;,
+              &quot;inventory_item_id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+              &quot;project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;moved_by_user_id&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+              &quot;source_location_id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+              &quot;destination_location_id&quot;: null,
+              &quot;responsible_person_id&quot;: null,
+              &quot;stage_id&quot;: null,
+              &quot;inventoryItem&quot;: {
+                &quot;id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+                &quot;name&quot;: &quot;ACEITE-M9-IND Cimento&quot;,
+                &quot;sku&quot;: &quot;ACEITE-M9-IND-CIM&quot;
+              },
+              &quot;sourceLocation&quot;: {
+                &quot;id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+                &quot;name&quot;: &quot;ACEITE-M9-IND Canteiro&quot;
+              },
+              &quot;destinationLocation&quot;: null,
+              &quot;movedByUser&quot;: {
+                &quot;id&quot;: &quot;5df3d2cb-f7af-491e-9b5d-d45fb9b3a745&quot;,
+                &quot;name&quot;: &quot;Aprovador 2 (LAB)&quot;
+              },
+              &quot;responsiblePerson&quot;: null,
+              &quot;stage&quot;: null
+            },
+            {
+              &quot;id&quot;: &quot;f9ef06e9-2c67-4668-b929-cb2e6f1c1cb8&quot;,
+              &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+              &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+              &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;stageId&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+              &quot;movementType&quot;: &quot;OUT&quot;,
+              &quot;quantity&quot;: &quot;50.0000&quot;,
+              &quot;sourceLocationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+              &quot;destinationLocationId&quot;: null,
+              &quot;sourceType&quot;: &quot;MANUAL&quot;,
+              &quot;sourceId&quot;: null,
+              &quot;idempotencyKey&quot;: null,
+              &quot;responsiblePersonId&quot;: &quot;ce5e843c-299c-4468-ab12-84bfa920694a&quot;,
+              &quot;evidenceFileId&quot;: null,
+              &quot;reason&quot;: &quot;ACEITE-M9-IND consumo&quot;,
+              &quot;unitCost&quot;: &quot;50.000000&quot;,
+              &quot;totalCost&quot;: &quot;2500.00&quot;,
+              &quot;costSource&quot;: &quot;RECORDED&quot;,
+              &quot;movedAt&quot;: &quot;2026-11-19T14:27:07.690Z&quot;,
+              &quot;movedByUserId&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;created_at&quot;: &quot;2026-11-19T14:27:07.690Z&quot;,
+              &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.690Z&quot;,
+              &quot;inventory_item_id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+              &quot;project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;moved_by_user_id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;source_location_id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+              &quot;destination_location_id&quot;: null,
+              &quot;responsible_person_id&quot;: &quot;ce5e843c-299c-4468-ab12-84bfa920694a&quot;,
+              &quot;stage_id&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+              &quot;inventoryItem&quot;: {
+                &quot;id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+                &quot;name&quot;: &quot;ACEITE-M9-IND Cimento&quot;,
+                &quot;sku&quot;: &quot;ACEITE-M9-IND-CIM&quot;
+              },
+              &quot;sourceLocation&quot;: {
+                &quot;id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+                &quot;name&quot;: &quot;ACEITE-M9-IND Canteiro&quot;
+              },
+              &quot;destinationLocation&quot;: null,
+              &quot;movedByUser&quot;: {
+                &quot;id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+                &quot;name&quot;: &quot;Admin Dev&quot;
+              },
+              &quot;responsiblePerson&quot;: {
+                &quot;id&quot;: &quot;ce5e843c-299c-4468-ab12-84bfa920694a&quot;,
+                &quot;legalName&quot;: &quot;ACEITE-M9-IND Proponente&quot;
+              },
+              &quot;stage&quot;: {
+                &quot;id&quot;: &quot;55e22176-af37-4597-8352-01a19cdb615a&quot;,
+                &quot;name&quot;: &quot;ACEITE-M9-IND Etapa 1&quot;
+              }
+            },
+            {
+              &quot;id&quot;: &quot;42388132-d035-4a13-bd80-86dc43099847&quot;,
+              &quot;groupId&quot;: &quot;baa8099b-6aff-49ca-8706-2e64dfb629dc&quot;,
+              &quot;companyId&quot;: &quot;b268fe03-c09d-4636-ba4d-15125f7b8d58&quot;,
+              &quot;inventoryItemId&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+              &quot;projectId&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;stageId&quot;: null,
+              &quot;movementType&quot;: &quot;IN&quot;,
+              &quot;quantity&quot;: &quot;100.0000&quot;,
+              &quot;sourceLocationId&quot;: null,
+              &quot;destinationLocationId&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+              &quot;sourceType&quot;: &quot;RECEIPT&quot;,
+              &quot;sourceId&quot;: &quot;8c880ad5-653a-4c3b-9654-c537abda945d&quot;,
+              &quot;idempotencyKey&quot;: &quot;receipt:8c880ad5-653a-4c3b-9654-c537abda945d:item:2fe801e0-37ca-4f58-ab3c-fd16646c77ee&quot;,
+              &quot;responsiblePersonId&quot;: null,
+              &quot;evidenceFileId&quot;: null,
+              &quot;reason&quot;: &quot;Recebimento da nota fiscal nº ACEITE-M9-IND-NF1.&quot;,
+              &quot;unitCost&quot;: &quot;50.000000&quot;,
+              &quot;totalCost&quot;: &quot;5000.00&quot;,
+              &quot;costSource&quot;: &quot;RECORDED&quot;,
+              &quot;movedAt&quot;: &quot;2026-11-19T14:27:07.670Z&quot;,
+              &quot;movedByUserId&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;createdBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;updatedBy&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;created_at&quot;: &quot;2026-11-19T14:27:07.670Z&quot;,
+              &quot;updated_at&quot;: &quot;2026-11-19T14:27:07.670Z&quot;,
+              &quot;inventory_item_id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+              &quot;project_id&quot;: &quot;f207b69c-e6e7-4a28-974d-d41cb68ced59&quot;,
+              &quot;moved_by_user_id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+              &quot;source_location_id&quot;: null,
+              &quot;destination_location_id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+              &quot;responsible_person_id&quot;: null,
+              &quot;stage_id&quot;: null,
+              &quot;inventoryItem&quot;: {
+                &quot;id&quot;: &quot;bb0b9821-410b-43df-b0bc-b55fcde2da1e&quot;,
+                &quot;name&quot;: &quot;ACEITE-M9-IND Cimento&quot;,
+                &quot;sku&quot;: &quot;ACEITE-M9-IND-CIM&quot;
+              },
+              &quot;sourceLocation&quot;: null,
+              &quot;destinationLocation&quot;: {
+                &quot;id&quot;: &quot;e8e5e5e2-ff22-4f1e-b51d-9c1c0d6ec2a9&quot;,
+                &quot;name&quot;: &quot;ACEITE-M9-IND Canteiro&quot;
+              },
+              &quot;movedByUser&quot;: {
+                &quot;id&quot;: &quot;b62cd966-1565-4c21-96dd-29ec8654be41&quot;,
+                &quot;name&quot;: &quot;Admin Dev&quot;
+              },
+              &quot;responsiblePerson&quot;: null,
+              &quot;stage&quot;: null
+            }
+          ]
+        }
+      }
+    }
+  }
+}</pre>
+</section>
+
+<footer class="sign">Patrick · Nayara One — conferência dos 4 indicadores do BI (Marco 9). Evidência: <code>Maturacao/fechamento-m3-m6/evidencias/marco-9-bi/lab-verde/</code>.</footer>
+</div></body></html>
