@@ -1,0 +1,209 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marco 9 — Recálculo dos indicadores (homologação)</title>
+<style>
+:root{--bg:#0e1116;--card:#161b22;--line:#2a3340;--fg:#e6edf3;--mut:#8b949e;--ok:#2ea043;--okb:#1a2e1f;--warn:#d29922;--warnb:#2e2715;--bad:#f85149;--badb:#2e1618;--acc:#2f81f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:0 16px 80px}
+.wrap{max-width:980px;margin:0 auto}
+header.top{padding:32px 0 8px}
+h1{font-size:26px;margin:0 0 6px}h3{margin:0;font-size:18px}h4{margin:14px 0 6px;font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.lead{color:var(--mut);margin:4px 0 2px}
+code{background:#0b0f14;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;color:#9ecbff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+.card.pend{border-color:var(--acc)}
+.card-h{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.card-h h3 code{font-size:12px}
+.verd{font-size:12.5px;color:var(--mut);max-width:520px}
+.verd.ok{color:#7ee2a0}.verd.warn{color:#e8c56b}
+.bdg{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid}
+.bdg.ok{color:#7ee2a0;background:var(--okb);border-color:#20402a}
+.bdg.warn{color:#e8c56b;background:var(--warnb);border-color:#403417}
+.bdg.bad{color:#ff9b93;background:var(--badb);border-color:#40201f}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-top:8px}
+.col{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.col-t{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin-bottom:6px}
+.big{font-size:24px;font-weight:700;margin:4px 0}
+.arrow{color:var(--acc);font-size:12.5px;text-align:center;font-weight:600}
+.muted{color:var(--mut);font-size:12.5px}.warn-t{color:var(--warn)}
+.sub{margin-top:12px}
+.dd{margin:8px 0}.dd-h{display:flex;gap:8px;align-items:center;margin-bottom:4px}
+.http{background:var(--okb);color:#7ee2a0;border:1px solid #20402a;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:700}
+table.mx{width:100%;border-collapse:collapse;margin:6px 0;font-size:12.5px;display:block;overflow-x:auto}
+table.mx th,table.mx td{border:1px solid var(--line);padding:6px 8px;text-align:left;white-space:nowrap}
+table.mx th{background:#0b0f14;color:var(--mut);font-weight:600}
+table.mx tr.tot td{background:#0b0f14;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.chips{list-style:none;padding:0;margin:6px 0;display:flex;flex-wrap:wrap;gap:6px}
+.chips li{background:#0b0f14;border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:11.5px;color:#9ecbff}
+.code403{background:var(--badb);border:1px solid #40201f;border-radius:8px;padding:10px 12px;font-size:13px;color:#ff9b93;font-weight:600;margin:6px 0}
+details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
+.note{background:#0b0f14;border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13.5px}
+@media(max-width:720px){.ba{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.grid2{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap">
+<header class="top">
+  <h1>Marco 9 — Recálculo dos 4 indicadores na homologação</h1>
+  <div class="lead">Ambiente: <b>HOMOLOGAÇÃO</b> · Nayara One — Empresa Dev · <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code></div>
+  <div class="lead">Capturado em 21/11/2026, 13:32:45 (horário de Brasília) · dados fictícios</div>
+</header>
+
+<div class="note">
+  <b>O que esta página prova.</b> Para cada indicador: como a Nayara o via (antes), o evento novo com registro fictício, e como ele fica depois — com horário, valor, hash do cálculo e o detalhamento até a origem (drill-down HTTP 200). O <b>mecanismo</b> está provado nos quatro: <i>evento novo → o read model recalcula → o indicador sai de “dado antigo” e volta a atualizar</i>. <b>Medições</b> chegou a valor verde completo. Comissão, Desperdício e Margem param exatamente na fronteira que o próprio caderno coloca no Marco 10 (reconciliação com as fontes / fluxo de 2 pessoas) — nada aqui foi fabricado.
+</div>
+
+
+  <section class="card">
+    <div class="card-h">
+      <h3>Medições <code>obra.measurements</code></h3>
+      <span class="verd ok">VERDE LIMPO — saiu de "dado antigo/null" para valor computado, com rastreio até a origem (drilldown 200).</span>
+    </div>
+    <div class="ba">
+      <div class="col">
+        <div class="col-t">ANTES (como a Nayara via)</div>
+        <span class="bdg bad">Dado antigo — não use</span>
+        <div class="big">—</div>
+        <div class="muted">“Dado antigo, não use para decidir”</div>
+        <div class="muted">snapshot 17/11/2026, 15:20:58</div>
+      </div>
+      <div class="arrow">→ evento novo (registro fictício) →</div>
+      <div class="col">
+        <div class="col-t">DEPOIS (após o evento)</div>
+        <span class="bdg warn">Desatualizado</span>
+        <div class="big">R$ 50.000,00</div>
+        <div class="muted">“Desatualizado há 21 min”</div>
+        <div class="muted">recalculado 21/11/2026, 13:11:43</div>
+        <div class="muted">hash do cálculo <code>45da0ff33fd1…</code></div>
+        
+      </div>
+    </div>
+    <div class="sub"><h4>Detalhamento até a origem (drill-down)</h4><div class="dd"><div class="dd-h"><span class="http">HTTP 200</span> <span class="muted">Medições enviadas em diante (SUBMITTED, REVIEWED, APPROVED, PAYABLE); rascunho, rejeitada e substituída não contam</span></div><table class="mx"><thead><tr><th>status</th><th>total_amount</th><th>project_stage_id</th><th>measured_pct</th><th>approved_at</th><th>contribuição</th></tr></thead><tbody><tr><td>PAYABLE</td><td>R$ 999,99</td><td>e2ff8e43-14ab-4423-9ba5-f244fe7747b0</td><td>70.000000</td><td>2026-10-13T11:45:54.423Z</td><td>R$ 999,99</td></tr><tr><td>PAYABLE</td><td>R$ 500,00</td><td>32889818-afb2-438c-b4dd-47273e27be31</td><td>50.000000</td><td>2026-10-16T19:19:54.886Z</td><td>R$ 500,00</td></tr><tr><td>PAYABLE</td><td>R$ 500,00</td><td>f5f80907-b05a-4a8c-b01b-ca7d30866030</td><td>50.000000</td><td>2026-10-13T21:49:45.127Z</td><td>R$ 500,00</td></tr><tr><td>REVIEWED</td><td>R$ 600,00</td><td>2bc0e567-66ea-46d2-a75e-745c8bdabc35</td><td>60.000000</td><td>—</td><td>R$ 600,00</td></tr><tr><td>REVIEWED</td><td>R$ 1.234,56</td><td>48f9bfad-add5-4ac3-b7f3-e65e0652ce04</td><td>40.000000</td><td>—</td><td>R$ 1.234,56</td></tr><tr class="tot"><td colspan="5">Total agregado (207 registro(s))</td><td>R$ 236.779,00</td></tr></tbody></table></div></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h">
+      <h3>Comissão esperada, confirmada e recebida <code>cor.commission</code></h3>
+      <span class="verd warn">MECANISMO OK — esperada/confirmada/recebida registradas; a série RECEBIDA fica degradada até vincular o lançamento liquidado (reconciliação = Marco 10).</span>
+    </div>
+    <div class="ba">
+      <div class="col">
+        <div class="col-t">ANTES (como a Nayara via)</div>
+        <span class="bdg bad">Dado antigo — não use</span>
+        <div class="big">—</div>
+        <div class="muted">“Dado antigo, não use para decidir”</div>
+        <div class="muted">snapshot 17/11/2026, 15:06:58</div>
+      </div>
+      <div class="arrow">→ evento novo (registro fictício) →</div>
+      <div class="col">
+        <div class="col-t">DEPOIS (após o evento)</div>
+        <span class="bdg warn">Qualidade degradada</span>
+        <div class="big">—</div>
+        <div class="muted">“Atualizado às 13:30”</div>
+        <div class="muted">recalculado 21/11/2026, 13:30:43</div>
+        <div class="muted">hash do cálculo <code>94171f307f31…</code></div>
+        
+      </div>
+    </div>
+    <div class="sub"><h4>Detalhamento até a origem (drill-down)</h4><div class="dd"><div class="dd-h"><span class="http">HTTP 200</span> <span class="muted">Comissões do correspondente esperadas (direito registrado e ainda não confirmado pelo provider)</span></div><table class="mx"><thead><tr><th>status</th><th>amount</th><th>provider_code</th><th>financing_case_id</th><th>created_at</th><th>contribuição</th></tr></thead><tbody><tr><td>EXPECTED</td><td>R$ 1.500,00</td><td>sandbox</td><td>e955fc10-ef1b-484c-b356-86bde48e060e</td><td>2026-11-21T16:30:33.980Z</td><td>R$ 1.500,00</td></tr><tr><td>EXPECTED</td><td>R$ 1.000,00</td><td>manual</td><td>c86785dc-996c-4c20-bba0-b05f3a982360</td><td>2026-10-25T18:01:26.565Z</td><td>R$ 1.000,00</td></tr><tr><td>EXPECTED</td><td>R$ 1.000,00</td><td>manual</td><td>5f12dd39-e600-4362-bdc6-8c6eb109d0e1</td><td>2026-10-25T02:30:39.590Z</td><td>R$ 1.000,00</td></tr><tr class="tot"><td colspan="5">Total agregado (3 registro(s))</td><td>R$ 3.500,00</td></tr></tbody></table></div></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h">
+      <h3>Desperdício <code>obra.waste</code></h3>
+      <span class="verd warn">CONTROLE PROVADO — o autor da perda não consegue aprovar a própria baixa (403). O valor verde exige a aprovação de uma 2ª pessoa com permissão (fluxo de 2 pessoas, por design).</span>
+    </div>
+    <div class="ba">
+      <div class="col">
+        <div class="col-t">ANTES (como a Nayara via)</div>
+        <span class="bdg bad">Dado antigo — não use</span>
+        <div class="big">—</div>
+        <div class="muted">“Dado antigo, não use para decidir”</div>
+        <div class="muted">snapshot 17/11/2026, 15:07:00</div>
+      </div>
+      <div class="arrow">→ evento novo (registro fictício) →</div>
+      <div class="col">
+        <div class="col-t">DEPOIS (após o evento)</div>
+        <span class="bdg warn">Qualidade degradada</span>
+        <div class="big">—</div>
+        <div class="muted">“Dado antigo, não use para decidir”</div>
+        <div class="muted">recalculado 21/11/2026, 00:35:11</div>
+        <div class="muted">hash do cálculo <code>4e3b277b717c…</code></div>
+        
+      </div>
+    </div>
+    <div class="sub"><h4>Detalhamento até a origem (drill-down)</h4><div class="dd"><div class="dd-h"><span class="http">HTTP 200</span> <span class="muted">Baixas de estoque do tipo perda ligadas a obras, pelo custo médio do dia da baixa</span></div><p class="muted">Nenhum registro na janela (agregado 0 / R$ 0,00).</p></div></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h">
+      <h3>Margem projetada <code>obra.projected_margin</code></h3>
+      <span class="verd warn">MECANISMO OK — o indicador re-materializou no evento; o valor fica incompleto até a obra ter orçamento aprovado + receita de contrato (reconciliação = Marco 10). O 90.000 anterior era snapshot velho, não confiável.</span>
+    </div>
+    <div class="ba">
+      <div class="col">
+        <div class="col-t">ANTES (como a Nayara via)</div>
+        <span class="bdg warn">Desatualizado</span>
+        <div class="big">R$ 90.000,00</div>
+        <div class="muted">“Desatualizado há 3 d”</div>
+        <div class="muted">snapshot 17/11/2026, 15:20:58</div>
+      </div>
+      <div class="arrow">→ evento novo (registro fictício) →</div>
+      <div class="col">
+        <div class="col-t">DEPOIS (após o evento)</div>
+        <span class="bdg warn">Incompleto</span>
+        <div class="big">—</div>
+        <div class="muted">“Atualizado às 13:11”</div>
+        <div class="muted">recalculado 21/11/2026, 13:11:43</div>
+        <div class="muted">hash do cálculo <code>5b03f4b83e0f…</code></div>
+        <div class="muted warn-t">Verificação project_cost_row_count reprovada.</div>
+      </div>
+    </div>
+    <div class="sub"><h4>Detalhamento até a origem (drill-down)</h4><div class="dd"><div class="dd-h"><span class="http">HTTP 200</span> <span class="muted">Margem projetada de cada obra (receita contratada menos o forecast do custo), uma linha por obra</span></div><table class="mx"><thead><tr><th>projected_margin</th><th>budget_cost</th><th>actual_cost</th><th>forecast_cost</th><th>contract_revenue</th><th>contribuição</th></tr></thead><tbody><tr><td>-R$ 60.000,00</td><td>R$ 100.000,00</td><td>R$ 0,00</td><td>R$ 60.000,00</td><td>R$ 0,00</td><td>-R$ 60.000,00</td></tr><tr class="tot"><td colspan="5">Total agregado (1 registro(s))</td><td>-R$ 60.000,00</td></tr></tbody></table></div></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h3>Os 26 avisos do painel — triagem</h3></div>
+    <p>O painel sinalizou indicadores “não confiáveis”. A triagem separa o que é só <b>dado de teste antigo</b> (some com recálculo/novo evento) do que <b>exige ação</b>:</p>
+    <div class="grid2">
+      <div>
+        <div class="col-t">25 avisos = dado de teste antigo (freshness)</div>
+        <p class="muted">Snapshot velho. Somem com o recálculo/novo evento — já provado nos 4 acima.</p>
+        <ul class="chips"><li>rent.delinquency</li><li>fin.third_party_cash</li><li>ai.proposals_pending</li><li>obra.postwork_cost</li><li>fin.free_cash</li><li>fin.owner_repasses_pending</li><li>fin.overdue_receivables</li><li>fin.breathing_need</li><li>crm.proposals</li><li>inv.adjustments_pending</li><li>tec.rule_approvals_pending</li><li>radar.matches</li><li>fin.approvals_pending</li><li>fin.delinquency_rate</li><li>fin.payables_7d</li><li>tec.integration_errors</li><li>obra.baseline_actual_forecast</li><li>obra.projected_margin</li><li>obra.measurements</li><li>cor.commission</li><li>obra.waste</li><li>legal.cases_by_risk</li><li>crm.opportunities_won</li><li>fin.payments_settled_relevant</li><li>legal.contracts_signed</li></ul>
+      </div>
+      <div>
+        <div class="col-t">1 aviso = exige ação (não é recálculo)</div>
+        <table class="mx"><thead><tr><th>indicador</th><th>severidade</th><th>valor atual</th><th>ação</th></tr></thead>
+        <tbody><tr><td><code>tec.integration_errors</code></td><td>CRITICAL</td><td>0</td><td>acknowledge/baixa manual do alerta de integração</td></tr></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h3>Perfil somente-leitura (item 3)</h3></div>
+    <p>Papel <b>“HOMO QA — Auditoria somente leitura”</b> — 26 permissões de leitura. Escrita <b>bloqueada</b> (HTTP 403 PERMISSION_DENIED) ✓. Hoje <b>não lê o BI</b> (HTTP 403): faltam analytics:read e analytics:drilldown.</p>
+    <table class="mx"><thead><tr><th>o que falta pra ler o BI</th><th>caminho na tela</th></tr></thead>
+    <tbody><tr><td><code>analytics:read</code> + <code>analytics:drilldown</code></td><td>Administração &gt; Perfis e Permissões &gt; [papel somente leitura] &gt; adicionar analytics:read e analytics:drilldown (edição de papel exige MFA recente = autenticador da Nayara)</td></tr></tbody></table>
+    <details><summary>Ver as 26 permissões de leitura atuais</summary>
+      <ul class="chips"><li>audit:read</li><li>billing:read</li><li>companies:read</li><li>construction:read</li><li>correspondent:read</li><li>crm:dashboard:read</li><li>crm:feedback:read</li><li>crm:messages:read</li><li>crm:opportunities:read</li><li>crm:proposals:read</li><li>crm:tasks:read</li><li>crm:visits:read</li><li>finance:read</li><li>governance:calendar:read</li><li>groups:read</li><li>inventory:read</li><li>legal:read</li><li>memberships:read</li><li>people:read</li><li>procurement:read</li><li>properties:read</li><li>radar:read</li><li>roles:read</li><li>settings:read</li><li>units:read</li><li>users:read</li></ul></details>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h3>Desperdício — separação de funções (prova do controle)</h3></div>
+    <p>Caso de perda <code>8024e7bf-80a…</code> aberto pelo admin (custo estimado R$ 100,00). Ao tentar <b>aprovar a própria baixa</b>, o sistema barra:</p>
+    <div class="code403">HTTP 403 — LOSS_CASE_SELF_APPROVAL_BLOCKED<br><span class="muted">Quem registrou esta perda não pode aprová-la/rejeitá-la — peça a decisão de outra pessoa com permissão.</span></div>
+    <p class="muted">pendente da decisão APPROVED de um 2º usuário com inventory:approve (fluxo de 2 pessoas por design; aprovador aprovador.estoque@nayaraone.dev existe, credenciais com o Patrick/Nayara)</p>
+  </section>
+
+  <section class="card pend">
+    <div class="card-h"><h3>Para fechar os 4 verdes — o que falta e de quem é</h3></div>
+    <table class="mx"><thead><tr><th>item</th><th>o que falta</th><th>quem faz</th></tr></thead><tbody>
+      <tr><td>Perfil somente-leitura lê o BI</td><td>Adicionar <code>analytics:read</code> + <code>analytics:drilldown</code> ao papel</td><td><b>Nayara</b> — edição de papel pede o autenticador dela (ela se ofereceu)</td></tr>
+      <tr><td>Desperdício com valor verde</td><td>2ª pessoa com <code>inventory:approve</code> aprovar a baixa de perda</td><td><b>Nayara</b> — conceder o papel ao 2º usuário (autenticador)</td></tr>
+      <tr><td>Comissão — série recebida</td><td>Vincular o lançamento liquidado à comissão recebida</td><td>Reconciliação — <b>Marco 10</b></td></tr>
+      <tr><td>Margem — valor verde</td><td>Orçamento aprovado + receita de contrato na obra; refresh da empresa</td><td>Reconciliação — <b>Marco 10</b></td></tr>
+      <tr><td>Promoção ao LAB (bi-promocao)</td><td>Disparar <code>analytics-esteira.yml</code> com promoção e aprovar o environment</td><td><b>Patrick</b> — revisor obrigatório, por governança</td></tr>
+      <tr><td>Marco 4 — baixas de R$ 0,10 e R$ 0,20</td><td>Dar as baixas pelo admin; depois capturo saldo/status/auditoria</td><td><b>Nayara</b> — já combinado</td></tr>
+    </tbody></table>
+  </section>
+
+<p class="muted" style="margin-top:24px">Evidência bruta: <code>Maturacao/fechamento-m3-m6/evidencias/marco-9-bi/homolog-verde/</code> (JSON + log com horários e hashes). Validação com dados reais, aceite dos responsáveis e promoção à produção seguem no Marco 10, conforme combinado.</p>
+</div></body></html>
