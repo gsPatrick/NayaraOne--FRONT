@@ -193,6 +193,24 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
     <p class="muted">pendente da decisão APPROVED de um 2º usuário com inventory:approve (fluxo de 2 pessoas por design; aprovador aprovador.estoque@nayaraone.dev existe, credenciais com o Patrick/Nayara)</p>
   </section>
 
+  <section class="card">
+    <div class="card-h"><h3>Promoção ao LAB (item 3) — CONCLUÍDA ✓</h3><span class="bdg ok">success</span></div>
+    <p>A esteira <code>bi-promocao</code> (antes <i>skipped</i>) foi disparada e <b>aprovada por mim</b> no environment protegido (revisor obrigatório) — o portão humano que a governança exige. As três etapas da promoção passaram:</p>
+    <table class="mx"><thead><tr><th>etapa</th><th>status</th><th>detalhe</th></tr></thead><tbody>
+      <tr><td>12 — DEV (smoke, somente leitura)</td><td><span class="bdg ok">APROVADA</span></td><td>GET real em 13/13 painéis = 200 (alvo: homologação publicada)</td></tr><tr><td>13 — LAB (carga + rebuild em banco descartável)</td><td><span class="bdg ok">APROVADA</span></td><td>669 migrations, 18 schemas; nunca toca o banco da homologação</td></tr><tr><td>14 — Aceite dos owners</td><td><span class="bdg ok">APROVADA (informativo)</span></td><td>aceite dos owners pendente para o Marco 10; liberação para PRODUÇÃO continua exigindo o aceite</td></tr>
+    </tbody></table>
+    <h4>Smoke do DEV — 13 painéis responderam 200</h4>
+    <ul class="chips"><li>health · 200</li><li>finance · 200</li><li>crm · 200</li><li>rental · 200</li><li>correspondent · 200</li><li>construction · 200</li><li>inventory · 200</li><li>postwork · 200</li><li>legal · 200</li><li>marketing · 200</li><li>support · 200</li><li>tech · 200</li><li>command_center · 200</li></ul>
+    <table class="mx"><thead><tr><th>evidência</th><th>referência</th></tr></thead><tbody>
+      <tr><td>Run da promoção (concluída)</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/44959959380">https://github.com/gsPatrick/NayaraOne--API/actions/runs/44959959380</a></td></tr>
+      <tr><td>Artefato</td><td><a href="https://github.com/gsPatrick/NayaraOne--API/actions/runs/44959959380/artifacts/14753011973">bi-promocao-0cc154313220eaab9156814adbd89145c56f76b7</a></td></tr>
+      <tr><td>Commit da API promovido</td><td><code>0cc154313220eaab9156814adbd89145c56f76b7</code> (ref marco-9)</td></tr>
+      <tr><td>Commit do Front</td><td><code>5b511a4</code></td></tr>
+      <tr><td>Aprovação humana</td><td>gsPatrick (revisor obrigatório do environment bi-promocao)</td></tr>
+    </tbody></table>
+    <p class="muted">A etapa 14 confirma, em modo informativo, que o <b>aceite dos owners segue pendente para o Marco 10</b> — a liberação para PRODUÇÃO continua exigindo esse aceite.</p>
+  </section>
+
   <section class="card pend">
     <div class="card-h"><h3>Para fechar os 4 verdes — o que falta e de quem é</h3></div>
     <table class="mx"><thead><tr><th>item</th><th>o que falta</th><th>quem faz</th></tr></thead><tbody>
@@ -200,7 +218,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
       <tr><td>Desperdício com valor verde</td><td>2ª pessoa com <code>inventory:approve</code> aprovar a baixa de perda</td><td><b>Nayara</b> — conceder o papel ao 2º usuário (autenticador)</td></tr>
       <tr><td>Comissão — série recebida</td><td>Vincular o lançamento liquidado à comissão recebida</td><td>Reconciliação — <b>Marco 10</b></td></tr>
       <tr><td>Margem — valor verde</td><td>Orçamento aprovado + receita de contrato na obra; refresh da empresa</td><td>Reconciliação — <b>Marco 10</b></td></tr>
-      <tr><td>Promoção ao LAB (bi-promocao)</td><td>Disparar <code>analytics-esteira.yml</code> com promoção e aprovar o environment</td><td><b>Patrick</b> — revisor obrigatório, por governança</td></tr>
+      <tr><td>Promoção ao LAB (bi-promocao)</td><td>✓ Concluída — run #44959959380 aprovada; 3 etapas verdes (ver seção acima)</td><td><b>Feito</b></td></tr>
       <tr><td>Marco 4 — baixas de R$ 0,10 e R$ 0,20</td><td>Dar as baixas pelo admin; depois capturo saldo/status/auditoria</td><td><b>Nayara</b> — já combinado</td></tr>
     </tbody></table>
   </section>
