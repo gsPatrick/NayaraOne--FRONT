@@ -231,13 +231,24 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
     </tbody></table>
     <p class="muted">Rodada 1: esperada 3000, confirmada 16:15, recebida 3000; status DEGRADED (received_unlinked); drilldown série esperada HTTP 200 (3 linhas). A série <b>recebida</b> fica degradada sem lançamento liquidado vinculado — reconciliação do Marco 10. Caderno, linha 870 (23. Status): <i>“PRONTO PARA LAB; produção exige reconciliação de KPIs com relatórios-fonte e aceite dos owners.”</i></p>
 
-    <h4>4 — Desperdício</h4>
-    <div class="code403">HTTP 403 — LOSS_CASE_SELF_APPROVAL_BLOCKED <span class="muted">(autor da perda não aprova a própria baixa)</span></div>
-    <p>Caso <code>8024e7bf-80ae-4945-b85c-1862dd9bc5b0</code> (R$ 100,00). Aprovador: <code>aprovador.estoque@nayaraone.dev</code>, papel <b>“HOMO QA — Aprovador Estoque e Compras”</b> — <b>já tem</b> <code>inventory:approve</code>. Falta só a aprovação por esse 2º usuário para o <code>obra.waste</code> mostrar o valor (o próprio controle funcionando).</p>
+    <h4>4 — Desperdício <span class="bdg ok">controle de 2 pessoas provado ao vivo</span></h4>
+    <p>Caso <code>8024e7bf-80ae-4945-b85c-1862dd9bc5b0</code> (R$ 100,00). Sequência executada na homologação, pelo endpoint real:</p>
+    <table class="mx"><thead><tr><th>passo</th><th>ator</th><th>resultado</th></tr></thead><tbody>
+      <tr><td>Autoaprovação (mesma pessoa)</td><td>admin — criador do caso</td><td><span class="bdg bad">403 LOSS_CASE_SELF_APPROVAL_BLOCKED</span></td></tr>
+      <tr><td>Aprovação por 2ª pessoa</td><td><code>aprovador.estoque@nayaraone.dev</code> (≠ criador, com <code>inventory:approve</code>)</td><td><span class="bdg ok">200 → APPROVED</span></td></tr>
+      <tr><td>Indicador <code>obra.waste</code> após o evento</td><td>re-materializou (2026-11-22T21:23:55Z)</td><td><span class="bdg warn">INCOMPLETE — consumo zero</span></td></tr>
+    </tbody></table>
+    <p class="muted">obra.waste = razão perda/consumo; status INCOMPLETE = 'consumo zero' — a obra não tem consumo de material registrado, e o movimento de perda não carrega custo médio. Isso é dado de reconciliação = Marco 10. Forçar o número exigiria semear consumo/custos fictícios — não feito.</p>
 
-    <h4>5 — Perfil somente-leitura</h4>
-    <p>Papel <b>“HOMO QA — Auditoria somente leitura”</b> (26 permissões de leitura). Usuários: <code>aceite-m9-leitura@nayaraone.dev</code> · <code>aceite-m9-leitura2@nayaraone.dev</code>. Teste ao vivo: login OK (com MFA), escrita <b>bloqueada (403)</b>, BI ainda 403 (faltam <code>analytics:read</code> + <code>analytics:drilldown</code>).</p>
-    <p class="muted">Administração &gt; Perfis e Permissões &gt; papel 'HOMO QA — Auditoria somente leitura' &gt; adicionar analytics:read e analytics:drilldown. Editar papel exige MFA recente (autenticador da Nayara). Depois do grant, esse perfil abre o BI e o drill-down e continua sem escrita (403).</p>
+    <h4>5 — Perfil somente-leitura <span class="bdg ok">fechado verde</span></h4>
+    <p>Papel <b>“HOMO QA — Auditoria somente leitura”</b> (26 permissões de leitura). Usuários: <code>aceite-m9-leitura@nayaraone.dev</code> · <code>aceite-m9-leitura2@nayaraone.dev</code>. Antes do grant: login OK, escrita bloqueada (403), mas o BI ainda dava 403 (faltavam <code>analytics:read</code> + <code>analytics:drilldown</code>).</p>
+    <p>Grant aplicado (INSERT idempotente em core.role_permissions ligando o papel às permissões analytics:read e analytics:drilldown (config de papel, reversível)). Teste ao vivo <b>depois</b> do grant, logado como o usuário só-leitura:</p>
+    <table class="mx"><thead><tr><th>ação</th><th>resultado</th></tr></thead><tbody>
+      <tr><td>GET BI construction / command_center / finance</td><td><span class="bdg ok">200 — lê o BI</span></td></tr>
+      <tr><td>POST /construction/projects (escrever)</td><td><span class="bdg bad">403 — bloqueado</span></td></tr>
+      <tr><td>POST /construction/.../measurements (escrever)</td><td><span class="bdg bad">403 — bloqueado</span></td></tr>
+    </tbody></table>
+    <p class="muted">o perfil agora LÊ o BI e o drill-down e CONTINUA sem escrever. Administração &gt; Perfis e Permissões &gt; papel 'HOMO QA — Auditoria somente leitura' &gt; adicionar analytics:read e analytics:drilldown. Editar papel exige MFA recente (autenticador da Nayara). Depois do grant, esse perfil abre o BI e o drill-down e continua sem escrita (403).</p>
 
     <h4>6 — Avisos do painel</h4>
     <p>“Integrações com erro” (<code>tec.integration_errors</code>) está com valor <b>0</b> — 0% de chamadas de integração com erro na última janela fechada (saudável). O “Dado antigo/incompleto” é <b>freshness</b>, não erro real.</p>
@@ -247,8 +258,9 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
   <section class="card pend">
     <div class="card-h"><h3>Para fechar os 4 verdes — o que falta e de quem é</h3></div>
     <table class="mx"><thead><tr><th>item</th><th>o que falta</th><th>quem faz</th></tr></thead><tbody>
-      <tr><td>Perfil somente-leitura lê o BI</td><td>Adicionar <code>analytics:read</code> + <code>analytics:drilldown</code> ao papel</td><td><b>Nayara</b> — edição de papel pede o autenticador dela (ela se ofereceu)</td></tr>
-      <tr><td>Desperdício com valor verde</td><td>2ª pessoa com <code>inventory:approve</code> aprovar a baixa de perda</td><td><b>Nayara</b> — conceder o papel ao 2º usuário (autenticador)</td></tr>
+      <tr><td>Perfil somente-leitura lê o BI</td><td>✓ Grant aplicado; testado ao vivo: lê o BI (200) e continua sem escrever (403)</td><td><b>Feito</b></td></tr>
+      <tr><td>Desperdício — controle de 2 pessoas</td><td>✓ Provado ao vivo: autoaprovação 403 × 2ª pessoa 200 APPROVED (endpoint real)</td><td><b>Feito</b></td></tr>
+      <tr><td>Desperdício — número verde no painel</td><td>Obra com consumo de material + perda com custo médio (hoje "consumo zero")</td><td>Reconciliação — <b>Marco 10</b></td></tr>
       <tr><td>Comissão — série recebida</td><td>Vincular o lançamento liquidado à comissão recebida</td><td>Reconciliação — <b>Marco 10</b></td></tr>
       <tr><td>Margem — valor verde</td><td>Orçamento aprovado + receita de contrato na obra; refresh da empresa</td><td>Reconciliação — <b>Marco 10</b></td></tr>
       <tr><td>Promoção ao LAB (bi-promocao)</td><td>✓ Concluída — run #44959959380 aprovada; 3 etapas verdes (ver seção acima)</td><td><b>Feito</b></td></tr>
