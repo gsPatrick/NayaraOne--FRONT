@@ -211,6 +211,39 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
     <p class="muted">A etapa 14 confirma, em modo informativo, que o <b>aceite dos owners segue pendente para o Marco 10</b> — a liberação para PRODUÇÃO continua exigindo esse aceite.</p>
   </section>
 
+  <section class="card" style="border-color:var(--acc)">
+    <div class="card-h"><h3>Rodada 2 — os 6 pontos da sua última mensagem</h3><span class="bdg ok">verificado na homologação</span></div>
+    <p class="muted">Capturado em 22/11/2026, 14:00:00 · Empresa Dev <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code>. Itens 2, 5 e 6 provados ao vivo; 1 e 3 na fronteira do Marco 10 (com citação do caderno); 4 com o controle provado (403) e os dados exatos para a aprovação final.</p>
+
+    <h4>1 — Margem projetada</h4>
+    <p>Orçamento <b>já aprovado</b> (baseline R$ 100.000,00, APPROVED). Drill-down (HTTP 200): budget R$ 100.000,00 − forecast R$ 60.000,00, receita de contrato R$ 0,00 → margem projetada <b>-R$ 60.000,00</b> (fórmula: projected_margin = contract_revenue - forecast_cost). O valor é calculado e auditável; o headline verde depende de contrato assinado com receita + rebuild da empresa = <b>Marco 10</b>.</p>
+
+    <h4>2 — Medições: reconciliação R$ 50.777,00 × R$ 237.556,00</h4>
+    <p>Mesmo filtro de status nos dois (ambos usam status IN (SUBMITTED, REVIEWED, APPROVED, PAYABLE); rascunho/rejeitada/substituída não contam). A diferença é <b>escopo</b>, não filtro: ESCOPO: headline = obras materializadas no read model rm_project_measurements (1 obra agora); drilldown = tabela crua da empresa toda (50 obras). Batem por obra: a fatia da obra ACEITE-M9 no drilldown = 50777 = o headline. Batem por obra. headline = drilldown só quando TODAS as obras estão materializadas (rebuild da empresa, desligado no ambiente publicado) = Marco 10 / console do servidor.</p>
+    <p class="muted">Freshness: obra.measurements é EVENT, maxStaleness 15 min: volta a 'Dado antigo' 15 min após o evento, mas o VALOR computado permanece até o próximo evento (re-provado: evento 16:50:52Z -&gt; FRESH 50777 no mesmo segundo)</p>
+
+    <h4>3 — Comissões: as três séries</h4>
+    <table class="mx"><thead><tr><th>série</th><th>significado</th></tr></thead><tbody>
+      <tr><td><b>esperada</b></td><td>ESTIMATED = soma da comissão prevista</td></tr>
+      <tr><td><b>confirmada</b></td><td>PLANNED = soma da comissão dos casos aprovados pelo banco</td></tr>
+      <tr><td><b>recebida</b></td><td>ACTUAL = soma das comissões recebidas COM lançamento liquidado vinculado</td></tr>
+      <tr><td>a receber</td><td>confirmada - recebida</td></tr>
+    </tbody></table>
+    <p class="muted">Rodada 1: esperada 3000, confirmada 16:15, recebida 3000; status DEGRADED (received_unlinked); drilldown série esperada HTTP 200 (3 linhas). A série <b>recebida</b> fica degradada sem lançamento liquidado vinculado — reconciliação do Marco 10. Caderno, linha 870 (23. Status): <i>“PRONTO PARA LAB; produção exige reconciliação de KPIs com relatórios-fonte e aceite dos owners.”</i></p>
+
+    <h4>4 — Desperdício</h4>
+    <div class="code403">HTTP 403 — LOSS_CASE_SELF_APPROVAL_BLOCKED <span class="muted">(autor da perda não aprova a própria baixa)</span></div>
+    <p>Caso <code>8024e7bf-80ae-4945-b85c-1862dd9bc5b0</code> (R$ 100,00). Aprovador: <code>aprovador.estoque@nayaraone.dev</code>, papel <b>“HOMO QA — Aprovador Estoque e Compras”</b> — <b>já tem</b> <code>inventory:approve</code>. Falta só a aprovação por esse 2º usuário para o <code>obra.waste</code> mostrar o valor (o próprio controle funcionando).</p>
+
+    <h4>5 — Perfil somente-leitura</h4>
+    <p>Papel <b>“HOMO QA — Auditoria somente leitura”</b> (26 permissões de leitura). Usuários: <code>aceite-m9-leitura@nayaraone.dev</code> · <code>aceite-m9-leitura2@nayaraone.dev</code>. Teste ao vivo: login OK (com MFA), escrita <b>bloqueada (403)</b>, BI ainda 403 (faltam <code>analytics:read</code> + <code>analytics:drilldown</code>).</p>
+    <p class="muted">Administração &gt; Perfis e Permissões &gt; papel 'HOMO QA — Auditoria somente leitura' &gt; adicionar analytics:read e analytics:drilldown. Editar papel exige MFA recente (autenticador da Nayara). Depois do grant, esse perfil abre o BI e o drill-down e continua sem escrita (403).</p>
+
+    <h4>6 — Avisos do painel</h4>
+    <p>“Integrações com erro” (<code>tec.integration_errors</code>) está com valor <b>0</b> — 0% de chamadas de integração com erro na última janela fechada (saudável). O “Dado antigo/incompleto” é <b>freshness</b>, não erro real.</p>
+    <p class="muted">O que a confirmação manual resolve: POST /analytics/alerts/:id/ack (permissão analytics:alert:ack): OPEN -&gt; ACKNOWLEDGED, com autor e instante, auditado. 'Reconhecer NÃO resolve, NÃO muda cooldown e NÃO mexe na tarefa: a normalização automática continua.' Ou seja, o ack é uma BAIXA OPERACIONAL (um humano confirma que viu/está tratando o alerta CRÍTICO), tirando-o da fila OPEN — NÃO é recálculo. O valor do indicador (0% erros) já está saudável; o 'Dado antigo' é freshness, que o recálculo/novo evento resolve. Registros de erro individuais (errorClass UNKNOWN por timeout) são baixados em /integration-errors/:id/resolve (vira RESOLVED com nota).</p>
+  </section>
+
   <section class="card pend">
     <div class="card-h"><h3>Para fechar os 4 verdes — o que falta e de quem é</h3></div>
     <table class="mx"><thead><tr><th>item</th><th>o que falta</th><th>quem faz</th></tr></thead><tbody>
