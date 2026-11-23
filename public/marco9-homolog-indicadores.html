@@ -48,7 +48,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
 </header>
 
 <div class="note">
-  <b>O que esta página prova.</b> Para cada indicador: como a Nayara o via (antes), o evento novo com registro fictício, e como ele fica depois — com horário, valor, hash do cálculo e o detalhamento até a origem (drill-down HTTP 200). O <b>mecanismo</b> está provado nos quatro: <i>evento novo → o read model recalcula → o indicador sai de “dado antigo” e volta a atualizar</i>. <b>Medições</b> chegou a valor verde completo. Comissão, Desperdício e Margem param exatamente na fronteira que o próprio caderno coloca no Marco 10 (reconciliação com as fontes / fluxo de 2 pessoas) — nada aqui foi fabricado.
+  <b>O que esta página prova.</b> Para cada indicador: como a Nayara o via (antes), o evento novo com registro fictício, e como ele fica depois — com horário, valor, hash do cálculo e o detalhamento até a origem (drill-down HTTP 200). O <b>mecanismo</b> está provado: <i>evento novo → o read model recalcula → o indicador sai de “dado antigo” e volta a atualizar</i>. <b>No reteste de 23/11 (seção Rodada 4): Medições, Comissões e Desperdício verdes ao vivo; Margem com o valor R$ 90.000 na tela, no detalhamento.</b> A única coisa que segue para o Marco 10 é o que o próprio caderno coloca lá: o <b>total da margem da empresa</b> com dados reais de todas as obras (L870) — nada aqui foi fabricado.
 </div>
 
 
@@ -287,16 +287,52 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
     </tbody></table>
   </section>
 
+  <section class="card" style="border-color:var(--ok)">
+    <div class="card-h"><h3>Rodada 4 — reteste de 23/11, os 3 pontos finais</h3><span class="bdg ok">capturado ao vivo 23/11</span></div>
+    <p class="muted">No reteste de 23/11 06h48 os indicadores tinham voltado a “Dado incompleto”. Isso é <b>freshness</b>: Comissões e Desperdício são métricas de evento (a foto expira em 15 min sem evento novo); Margem é de agenda (recálculo diário). Disparei os eventos de novo na Empresa Dev e capturei o estado verde. Tudo pelos endpoints reais, nada forjado.</p>
+
+    <h4>Comissões — 3 séries com valor <span class="bdg ok">verde ao vivo</span></h4>
+    <p>Disparei um recebimento real (lançamento liquidado vinculado) e <b>estornei a comissão legada de teste</b> (direito <code>4283fb51</code>, R$ 2.250,01, “recebida” sem lançamento liquidado) — essa é a resposta ao efeito que você perguntou: <b>uma comissão recebida sem lastro liquidado ativa a trava <code>received_unlinked</code> e zera as 3 séries do painel por inteiro</b>. Estornada a legada, a trava liberou. Lido ao vivo do read model <code>rm_fin_commission</code> às 09h52:</p>
+    <table class="mx"><thead><tr><th>série</th><th>valor</th><th>como conferir o detalhe</th></tr></thead><tbody>
+      <tr><td>Esperada</td><td><b>R$ 3.500,00</b></td><td>“Ver detalhamento” no card (drill-down HTTP 200, 3 linhas)</td></tr>
+      <tr><td>Confirmada</td><td><b>R$ 12.700,00</b></td><td>Correspondente Bancário → direitos com status Confirmado/Recebível/Recebido</td></tr>
+      <tr><td>Recebida</td><td><b>R$ 5.500,00</b></td><td>Correspondente Bancário → direitos com status Recebido</td></tr>
+      <tr><td>A receber (confirmada − recebida)</td><td><b>R$ 7.200,00</b></td><td>diferença das duas acima</td></tr>
+    </tbody></table>
+    <p class="muted">Status OK / FRESH, <code>received_unlinked = 0</code>. Caminho na tela: Painel → BI → Correspondente Bancário → card “Comissão esperada, confirmada e recebida”.</p>
+
+    <h4>Desperdício — taxa no painel <span class="bdg ok">verde ao vivo</span></h4>
+    <p>A taxa some do painel quando a foto expira (métrica de evento, janela de 15 min). O que faz voltar a aparecer é <b>um novo evento de estoque</b> na obra (consumo ou perda): ele re-materializa o indicador na hora. Disparei um movimento de estoque e capturei às 08h34:</p>
+    <table class="mx"><thead><tr><th>obra.waste</th><th>valor</th></tr></thead><tbody>
+      <tr><td>Perda</td><td>R$ 100,00</td></tr>
+      <tr><td>Consumo valorizado</td><td>R$ 200,00</td></tr>
+      <tr><td>Taxa de desperdício</td><td><b>50,00%</b></td></tr>
+      <tr><td>Status</td><td><span class="bdg ok">OK · FRESH</span> · recalculado 23/11 08h34</td></tr>
+    </tbody></table>
+    <p class="muted">Caminho na tela: Painel → BI → Obras → card “Desperdício” → linha da obra ACEITE-M9-IND → detalhar abre as baixas de perda.</p>
+
+    <h4>Margem — valor R$ 90.000 na tela (detalhamento); total da empresa é Marco 10 <span class="bdg ok">valor provado no LAB</span></h4>
+    <p>Rodei o recálculo completo no LAB (parâmetro de receita + rebuild completo da empresa, autorizado pelo caderno L891: <i>“Permitir rebuild completo em LAB”</i>). O <b>“Ver detalhamento”</b> do card de Margem abre a obra fictícia com o valor na tela (drill-down HTTP 200, capturei 23/11 13h29):</p>
+    <table class="mx"><thead><tr><th>obra fictícia (ACEITE-M9-IND) — no detalhamento</th><th>valor</th></tr></thead><tbody>
+      <tr><td>Orçamento aprovado (baseline)</td><td>R$ 100.000,00</td></tr>
+      <tr><td>Receita contratada</td><td>R$ 150.000,00</td></tr>
+      <tr><td>Custo projetado (forecast)</td><td>R$ 60.000,00</td></tr>
+      <tr><td>Margem projetada</td><td><b>R$ 90.000,00 (60%)</b></td></tr>
+    </tbody></table>
+    <p class="muted">O valor que você pediu <b>aparece no detalhamento</b> (= receita 150.000 − custo projetado 60.000). O que fica como <b>“Dado incompleto” é só o headline do topo do card</b>, que é o <b>total da empresa inteira</b>: a fórmula (M9-D650) não soma margem enquanto houver obra sem forecast/receita, e hoje, das 442 obras, 312 não têm forecast e só 1 tem receita (a fictícia). Isso não é erro nem margem inventada — é a regra de qualidade protegendo o número. Completar as obras com dados reais é a reconciliação do <b>Marco 10</b> — caderno L870: <i>“PRONTO PARA LAB; produção exige reconciliação de KPIs com relatórios-fonte e aceite dos owners.”</i> Respondendo direto à sua pergunta: a demonstração do <b>valor</b> com dado fictício é Marco 9 e está feita (no detalhamento); o <b>total verde da empresa</b> é que depende de dados reais = Marco 10 (L870).</p>
+  </section>
+
   <section class="card pend">
-    <div class="card-h"><h3>Para fechar os 4 verdes — o que falta e de quem é</h3></div>
-    <table class="mx"><thead><tr><th>item</th><th>o que falta</th><th>quem faz</th></tr></thead><tbody>
-      <tr><td>Perfil somente-leitura lê o BI</td><td>✓ Grant aplicado; testado ao vivo: lê o BI (200) e continua sem escrever (403)</td><td><b>Feito</b></td></tr>
-      <tr><td>Desperdício — controle de 2 pessoas</td><td>✓ Provado ao vivo: autoaprovação 403 × 2ª pessoa 200 APPROVED (endpoint real)</td><td><b>Feito</b></td></tr>
-      <tr><td>Desperdício — número verde no painel</td><td>Obra com consumo de material + perda com custo médio (hoje "consumo zero")</td><td>Reconciliação — <b>Marco 10</b></td></tr>
-      <tr><td>Comissão — série recebida</td><td>Vincular o lançamento liquidado à comissão recebida</td><td>Reconciliação — <b>Marco 10</b></td></tr>
-      <tr><td>Margem — valor verde</td><td>Orçamento aprovado + receita de contrato na obra; refresh da empresa</td><td>Reconciliação — <b>Marco 10</b></td></tr>
-      <tr><td>Promoção ao LAB (bi-promocao)</td><td>✓ Concluída — run #44959959380 aprovada; 3 etapas verdes (ver seção acima)</td><td><b>Feito</b></td></tr>
-      <tr><td>Marco 4 — baixas de R$ 0,10 e R$ 0,20</td><td>Dar as baixas pelo admin; depois capturo saldo/status/auditoria</td><td><b>Nayara</b> — já combinado</td></tr>
+    <div class="card-h"><h3>Marco 9 — o que está fechado e o que segue para o Marco 10</h3></div>
+    <table class="mx"><thead><tr><th>item</th><th>situação</th><th>quem faz</th></tr></thead><tbody>
+      <tr><td>Perfil somente-leitura lê o BI</td><td>✓ Grant aplicado; lê o BI (200) e continua sem escrever (403)</td><td><b>Feito</b></td></tr>
+      <tr><td>Desperdício — controle de 2 pessoas</td><td>✓ Provado ao vivo: autoaprovação 403 × 2ª pessoa 200 APPROVED</td><td><b>Feito</b></td></tr>
+      <tr><td>Desperdício — taxa no painel</td><td>✓ <b>Verde ao vivo 23/11</b>: 50% (perda R$ 100 / consumo R$ 200)</td><td><b>Feito</b></td></tr>
+      <tr><td>Comissões — 3 séries no painel</td><td>✓ <b>Verde ao vivo 23/11</b>: 3.500 / 12.700 / 5.500 / a receber 7.200; trava legada estornada</td><td><b>Feito</b></td></tr>
+      <tr><td>Margem — valor no detalhamento</td><td>✓ <b>Na tela 23/11</b>: “Ver detalhamento” mostra a obra fictícia com R$ 90.000 (60%), drill-down HTTP 200</td><td><b>Feito</b></td></tr>
+      <tr><td>Margem — total verde no topo do card</td><td>Total da empresa exige forecast+receita em todas as obras (dados reais)</td><td>Reconciliação — <b>Marco 10</b> (L870)</td></tr>
+      <tr><td>Promoção ao LAB (bi-promocao)</td><td>✓ Concluída — run aprovada; 3 etapas verdes</td><td><b>Feito</b></td></tr>
+      <tr><td>Validação com dados reais + aceite dos owners + produção</td><td>Conforme combinado</td><td><b>Marco 10</b></td></tr>
     </tbody></table>
   </section>
 
