@@ -18,6 +18,14 @@ function columnsOf(rows) {
 
 function Aggregate({ aggregate }) {
   if (!aggregate) return <p>O detalhe não está liberado para o seu perfil.</p>;
+  // Total parcial (M9-D650): a origem marca `partial` quando há linhas sem valor que aparecem na lista mas não entram na soma; mostra quantas têm valor.
+  if (aggregate.partial) {
+    return (
+      <p className={styles.aggregate} data-bi-aggregate data-bi-partial>
+        Total parcial: <strong>{aggregate.computed ?? "-"}</strong> de <strong>{aggregate.count ?? "-"}</strong> registro(s) com valor calculado{aggregate.total !== undefined && aggregate.total !== null ? <> · soma <strong>{String(aggregate.total)}</strong></> : null}. Os demais aparecem na lista sem valor e não entram na soma.
+      </p>
+    );
+  }
   return (
     <p className={styles.aggregate} data-bi-aggregate>
       Total permitido: <strong>{aggregate.count ?? "-"}</strong> registro(s){aggregate.total !== undefined && aggregate.total !== null ? <> · soma <strong>{String(aggregate.total)}</strong></> : null}.
