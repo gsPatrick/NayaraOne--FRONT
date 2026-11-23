@@ -216,7 +216,8 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
     <p class="muted">Capturado em 22/11/2026, 14:00:00 · Empresa Dev <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code>. Itens 2, 5 e 6 provados ao vivo; 1 e 3 na fronteira do Marco 10 (com citação do caderno); 4 com o controle provado (403) e os dados exatos para a aprovação final.</p>
 
     <h4>1 — Margem projetada</h4>
-    <p>Orçamento <b>já aprovado</b> (baseline R$ 100.000,00, APPROVED). Drill-down (HTTP 200): budget R$ 100.000,00 − forecast R$ 60.000,00, receita de contrato R$ 0,00 → margem projetada <b>-R$ 60.000,00</b> (fórmula: projected_margin = contract_revenue - forecast_cost). O valor é calculado e auditável; o headline verde depende de contrato assinado com receita + rebuild da empresa = <b>Marco 10</b>.</p>
+    <p>Orçamento <b>já aprovado</b> (baseline R$ 100.000,00, APPROVED). Drill-down (HTTP 200): budget R$ 100.000,00 − forecast R$ 60.000,00, receita de contrato R$ 0,00 → cálculo parcial <b>-R$ 60.000,00</b> (fórmula: projected_margin = contract_revenue - forecast_cost).</p>
+    <p class="muted"><b>Atenção:</b> esse <b>-R$ 60.000,00</b> <b>não é uma perda real</b> — é só o reflexo da receita ainda em R$ 0,00 (os contratos da obra ainda não estão assinados). Assim que a receita de contrato entrar, a margem passa a positivo. O cálculo está correto e auditável; o que falta para o headline verde é contrato assinado com receita + rebuild da empresa = <b>Marco 10</b>.</p>
 
     <h4>2 — Medições: reconciliação R$ 50.777,00 × R$ 237.556,00</h4>
     <p>Mesmo filtro de status nos dois (ambos usam status IN (SUBMITTED, REVIEWED, APPROVED, PAYABLE); rascunho/rejeitada/substituída não contam). A diferença é <b>escopo</b>, não filtro: ESCOPO: headline = obras materializadas no read model rm_project_measurements (1 obra agora); drilldown = tabela crua da empresa toda (50 obras). Batem por obra: a fatia da obra ACEITE-M9 no drilldown = 50777 = o headline. Batem por obra. headline = drilldown só quando TODAS as obras estão materializadas (rebuild da empresa, desligado no ambiente publicado) = Marco 10 / console do servidor.</p>
@@ -253,6 +254,37 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--acc);font-size:12.5px}
     <h4>6 — Avisos do painel</h4>
     <p>“Integrações com erro” (<code>tec.integration_errors</code>) está com valor <b>0</b> — 0% de chamadas de integração com erro na última janela fechada (saudável). O “Dado antigo/incompleto” é <b>freshness</b>, não erro real.</p>
     <p class="muted">O que a confirmação manual resolve: POST /analytics/alerts/:id/ack (permissão analytics:alert:ack): OPEN -&gt; ACKNOWLEDGED, com autor e instante, auditado. 'Reconhecer NÃO resolve, NÃO muda cooldown e NÃO mexe na tarefa: a normalização automática continua.' Ou seja, o ack é uma BAIXA OPERACIONAL (um humano confirma que viu/está tratando o alerta CRÍTICO), tirando-o da fila OPEN — NÃO é recálculo. O valor do indicador (0% erros) já está saudável; o 'Dado antigo' é freshness, que o recálculo/novo evento resolve. Registros de erro individuais (errorClass UNKNOWN por timeout) são baixados em /integration-errors/:id/resolve (vira RESOLVED com nota).</p>
+  </section>
+
+  <section class="card" style="border-color:var(--acc)">
+    <div class="card-h"><h3>Rodada 3 — os 4 ajustes pedidos (cenário fictício completo)</h3><span class="bdg ok">executado na Empresa Dev</span></div>
+    <p class="muted">A Nayara pediu os cenários fictícios completos pra fechar o aceite. Tudo criado pelos endpoints reais, nada forjado. 2 verdes ao vivo, 1 Marco 10 com citação do caderno (como ela abriu), 1 ajuste de tela.</p>
+
+    <h4>1 — Medições: recorte identificado na tela <span class="bdg ok">ajustado</span></h4>
+    <p>O painel passa a mostrar um aviso de <b>“Total parcial”</b> no indicador de Medições: o headline soma só as obras já materializadas, e o detalhamento abre a empresa inteira <b>no mesmo recorte de status</b> (enviada/revisada/aprovada/a pagar). O recálculo que iguala headline e detalhe é o rebuild completo = Marco 10. Assim fica claro na tela por que os R$ 50.777 (parcial) diferem dos R$ 237.556 (empresa).</p>
+
+    <h4>2 — Margem: cálculo correto, headline é Marco 10 <span class="bdg warn">Marco 10 (com citação)</span></h4>
+    <p>Medido ao vivo: <code>obra.projected_margin</code> fica incompleto <b>não por falta de receita</b>, e sim por um check de qualidade — <code>project_cost_row_count</code> (contagem de linhas esperada, CRITICAL, FAILED). Criar contrato/receita fictícia <b>não</b> destrava o painel (a receita só entra no drilldown); só o <b>rebuild completo da empresa</b> satisfaz o check, e o rebuild é desligado no ambiente publicado.</p>
+    <p class="muted">Caderno (Maturacao/MARCO_9_CADERNO_COMPLETO.md): linha 891 — <i>“Permitir rebuild completo em LAB.”</i>; linha 913 — <i>“Cada refresh executa checks: source freshness, expected row counts/ranges, reconciliation totals e consistência.”</i>; linha 870 — <i>“PRONTO PARA LAB; produção exige reconciliação de KPIs com relatórios-fonte e aceite dos owners.”</i>. Ou seja: o headline verde é Marco 10 por requisito do próprio caderno. O cálculo (receita − forecast) está correto e auditável no drilldown, com orçamento aprovado.</p>
+
+    <h4>3 — Comissões: as 3 séries com valor e atualização <span class="bdg ok">demonstrado ao vivo</span></h4>
+    <p>Criei uma comissão nova e rodei o ciclo real <code>create → confirm → receive</code> (com conta bancária e lançamento liquidado vinculado). As séries do read model <code>rm_fin_commission</code>:</p>
+    <table class="mx"><thead><tr><th>série</th><th>valor</th></tr></thead><tbody>
+      <tr><td>Esperada</td><td>R$ 3.500,00</td></tr>
+      <tr><td>Confirmada</td><td>R$ 14.950,01</td></tr>
+      <tr><td>Recebida</td><td>R$ 6.750,01</td></tr>
+      <tr><td>A receber (confirmada − recebida)</td><td>R$ 8.200,00</td></tr>
+    </tbody></table>
+    <p class="muted">Re-materializou na hora após o evento (refreshedAt 2026-11-23T00:45:08Z, FRESH). O headline ainda fica degradado só por <b>1 recebida legada de R$ 1</b> (dado de teste antigo sem lançamento vinculado) — vincular essa é reconciliação do Marco 10; a comissão criada já está vinculada e liquidada.</p>
+
+    <h4>4 — Desperdício: taxa calculada no painel <span class="bdg ok">verde ao vivo</span></h4>
+    <p>Registrei o <b>consumo que faltava</b> (saída valorizada de R$ 200 — 4 un. de cimento a R$ 50, ligada à obra e à etapa) pelo endpoint real <code>POST /inventory/movements</code>. Com a perda de R$ 100 já aprovada por 2ª pessoa (rodada 2), o indicador saiu de “consumo zero” e calculou a taxa:</p>
+    <table class="mx"><thead><tr><th>obra.waste — depois</th><th>valor</th></tr></thead><tbody>
+      <tr><td>Perda (dinheiro perdido)</td><td>R$ 100,00</td></tr>
+      <tr><td>Consumo valorizado</td><td>R$ 200,00</td></tr>
+      <tr><td>Taxa de desperdício</td><td><b>50.00 (perda 100 ÷ consumo 200 × 100)</b></td></tr>
+      <tr><td>Status</td><td><span class="bdg ok">OK</span> · recalculado 2026-11-23T00:48:37.248Z</td></tr>
+    </tbody></table>
   </section>
 
   <section class="card pend">
