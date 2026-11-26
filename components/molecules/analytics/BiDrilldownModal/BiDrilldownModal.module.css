@@ -4,3 +4,16 @@
 .table { width: 100%; border-collapse: collapse; font-size: var(--text-caption); }
 .table th, .table td { padding: var(--space-2) var(--space-3); text-align: left; border-bottom: 1px solid var(--color-border); white-space: nowrap; }
 .table th { color: var(--color-ink-muted); font-weight: 600; }
+
+.note { margin: var(--space-3) 0; padding: var(--space-3); border-left: 3px solid var(--color-border); background: var(--color-surface-muted, rgba(127,127,127,0.08)); border-radius: var(--radius-md, 6px); font-size: var(--text-caption); color: var(--color-ink-muted); line-height: 1.5; }
+.note strong { color: inherit; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin: var(--space-3) 0; }
+.search { flex: 1 1 240px; min-width: 180px; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md, 6px); font-size: var(--text-caption); background: var(--color-surface, #fff); color: inherit; }
+.pageSize { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-ink-muted); font-size: var(--text-caption); white-space: nowrap; }
+.pageSize select { padding: var(--space-1) var(--space-2); border: 1px solid var(--color-border); border-radius: var(--radius-md, 6px); background: var(--color-surface, #fff); color: inherit; }
+
+.pager { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; justify-content: space-between; margin-top: var(--space-3); }
+.pagerInfo { color: var(--color-ink-muted); font-size: var(--text-caption); }
+.pagerBtn { padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md, 6px); background: var(--color-surface, #fff); color: inherit; cursor: pointer; font-size: var(--text-caption); }
+.pagerBtn:disabled { opacity: 0.5; cursor: not-allowed; }
