@@ -1,0 +1,174 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medições — antes e depois (reteste 26/11)</title>
+<style>
+:root{--bg:#0e1116;--card:#161b22;--line:#2a3340;--fg:#e6edf3;--mut:#8b949e;--ok:#2ea043;--okb:#1a2e1f;--warn:#d29922;--warnb:#2e2715;--bad:#f85149;--badb:#2e1618;--acc:#2f81f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:0 16px 80px}
+.wrap{max-width:980px;margin:0 auto}
+header.top{padding:32px 0 8px}
+h1{font-size:26px;margin:0 0 6px}h3{margin:0;font-size:18px}h4{margin:14px 0 6px;font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.lead{color:var(--mut);margin:4px 0 2px}
+code{background:#0b0f14;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12px;color:#9ecbff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:16px 0}
+.card-h{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.verd{font-size:12.5px;color:var(--mut);max-width:560px}
+.verd.ok{color:#7ee2a0}.verd.warn{color:#e8c56b}
+.bdg{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid}
+.bdg.ok{color:#7ee2a0;background:var(--okb);border-color:#20402a}
+.bdg.warn{color:#e8c56b;background:var(--warnb);border-color:#403417}
+.bdg.bad{color:#ff9b93;background:var(--badb);border-color:#40201f}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-top:8px}
+.col{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.col-t{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin-bottom:6px}
+.big{font-size:24px;font-weight:700;margin:4px 0}
+.big.ok{color:#7ee2a0}.big.bad{color:#ff9b93}
+.arrow{color:var(--acc);font-size:12.5px;text-align:center;font-weight:600}
+.muted{color:var(--mut);font-size:12.5px}
+.sub{margin-top:12px}
+table.mx{width:100%;border-collapse:collapse;margin:6px 0;font-size:12.5px;display:block;overflow-x:auto}
+table.mx th,table.mx td{border:1px solid var(--line);padding:6px 8px;text-align:left;white-space:nowrap}
+table.mx th{background:#0b0f14;color:var(--mut);font-weight:600}
+table.mx tr.tot td{background:#0b0f14;font-weight:700}
+.tg{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:5px}
+.tg.ok{color:#7ee2a0;background:var(--okb)}.tg.bad{color:#ff9b93;background:var(--badb)}
+.note{background:#0b0f14;border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:8px;padding:12px 16px;margin:12px 0;font-size:13.5px}
+.qa{display:flex;flex-direction:column;gap:10px}
+.qa .qi{background:#0b0f14;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.qa .q{font-weight:700;margin-bottom:3px}
+.qa .a{color:var(--mut);font-size:13.5px}.qa .a b{color:var(--fg)}
+ol.steps{margin:4px 0 0;padding-left:20px}ol.steps li{margin:6px 0}
+ol.steps b{color:var(--fg)}ol.steps span{color:var(--mut)}
+ul.chk{list-style:none;padding:0;margin:4px 0}ul.chk li{padding:4px 0 4px 22px;position:relative;color:var(--mut)}
+ul.chk li::before{content:"→";position:absolute;left:0;color:var(--acc)}
+ul.chk b{color:var(--fg)}
+.path{background:#0b0f14;border:1px solid var(--line);border-radius:5px;padding:1px 7px;font-size:12px;color:#9ecbff}
+.foot{color:var(--mut);font-size:12.5px;margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
+@media(max-width:720px){.ba{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+</style></head>
+<body><div class="wrap">
+
+<header class="top">
+  <h1>Medições — antes e depois</h1>
+  <div class="lead">Reteste de 26/11/2026 · Ambiente: <b>HOMOLOGAÇÃO</b> · Nayara One — Empresa Dev · <code>110723f9-4ad2-45fb-b6ec-1f2631821f32</code></div>
+  <div class="lead">Indicador <code>obra.measurements</code> · dados fictícios de teste</div>
+</header>
+
+<div class="note">
+  <b>O que esta página mostra.</b> Por que o cartão de Medições exibia "Dado incompleto", qual era a causa exata (com os identificadores), o que foi corrigido e como você confere no painel. Tudo a partir do estado real do sistema. <b>Resultado: o cartão voltou a R$ 237.556,00, atualizado às 22:31.</b>
+</div>
+
+<section class="card">
+  <div class="card-h">
+    <h3>O cartão de Medições</h3>
+    <span class="verd ok">RESOLVIDO — saiu de "Dado incompleto / sem valor" para o valor computado, atualizado às 22:31.</span>
+  </div>
+  <div class="ba">
+    <div class="col">
+      <div class="col-t">Antes</div>
+      <span class="bdg bad">Dado incompleto</span>
+      <div class="big bad">— sem valor</div>
+      <div class="muted">Causa: 30 medições aprovadas sem o pagamento previsto</div>
+      <div class="muted">Confiável para decidir: não</div>
+    </div>
+    <div class="arrow">→ regularização →</div>
+    <div class="col">
+      <div class="col-t">Depois</div>
+      <span class="bdg ok">Atualizado</span>
+      <div class="big ok">R$ 237.556,00</div>
+      <div class="muted">"Atualizado às 22:31" · revisão 2</div>
+      <div class="muted">Medições sem pagamento: 0</div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-h"><h3>As suas três perguntas, respondidas</h3></div>
+  <div class="qa">
+    <div class="qi"><div class="q">Qual data o cartão consulta?</div>
+      <div class="a">Sempre o <b>dia de hoje</b> (calendário de São Paulo), não um acumulado fixo. Às 23h de 25/11 o "hoje" era 25/11 (dia consistente, R$ 50.777); às 00h56 de 26/11 virou 26/11, e passou a mostrar esse dia.</div></div>
+    <div class="qi"><div class="q">Por que o valor parcial sumiu na virada?</div>
+      <div class="a">Não foi desatualização nem queda — o cartão estava, inclusive, atualizado (fonte relida às 10:04). É uma <b>regra do indicador</b>: se houver medição aprovada/a pagar <b>sem o lançamento de pagamento previsto</b>, o cartão esconde o número e mostra "Dado incompleto", em vez de exibir um total apoiado numa aprovação sem contrapartida financeira. No dia 26 havia 30 medições nessa situação.</div></div>
+    <div class="qi"><div class="q">Quando o valor volta?</div>
+      <div class="a">Assim que a inconsistência é resolvida — vinculando o pagamento ou revertendo a aprovação — e o indicador do dia é recalculado. Foi o que fizemos: as 30 foram regularizadas e o cartão voltou a <b>R$ 237.556,00</b>.</div></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-h">
+    <h3>A causa: 30 medições de teste</h3>
+    <span class="verd warn">Eram artefatos de um teste automatizado ("FAILURE DRILL"), não dados reais.</span>
+  </div>
+  <div class="muted" style="margin:4px 0 10px">Cada medição ficou marcada como aprovada, mas com a conta a pagar cancelada ou inexistente. Somadas, davam os R$ 237.556,00 do "Ver detalhe", e por isso seguravam o cartão inteiro. Por isso você não achava "a" medição: eram várias.</div>
+  <table class="mx">
+    <thead><tr><th>Situação da medição</th><th>Conta de pagamento</th><th>Qtd</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td>Aprovada / a pagar</td><td><span class="tg bad">Cancelada</span></td><td>29</td><td>R$ 28.999,71</td></tr>
+      <tr><td>Aprovada</td><td><span class="tg bad">Sem conta</span></td><td>1</td><td>—</td></tr>
+      <tr class="tot"><td>Total de infratores</td><td></td><td>30</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <h4>Amostra dos identificadores</h4>
+  <div class="muted" style="margin-bottom:6px">As 30 foram salvas em backup antes de qualquer alteração.</div>
+  <table class="mx">
+    <thead><tr><th>ID da medição</th><th>Valor</th></tr></thead>
+    <tbody>
+      <tr><td><code>aa439dff-ba15-4ebb-bd14-fa1655a87914</code></td><td>R$ 999,99</td></tr>
+      <tr><td><code>273d2d4c-c9dc-4777-ad84-0ac1aa2e3f7c</code></td><td>R$ 999,99</td></tr>
+      <tr><td><code>3d89b2e5-32be-42ad-a004-d4c123c676f8</code></td><td>R$ 999,99</td></tr>
+      <tr><td><code>6fbe5aec-0114-4a62-b534-193e774c494d</code></td><td>R$ 999,99</td></tr>
+      <tr><td><code>5f9b477b-035b-47e8-a32e-821ccf6ee293</code></td><td>R$ 999,99</td></tr>
+      <tr class="tot"><td>… + 25 medições (lista completa guardada)</td><td>—</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <div class="card-h">
+    <h3>Linha do tempo do indicador</h3>
+    <span class="verd ok">Nada foi apagado — cada recálculo entra como nova revisão.</span>
+  </div>
+  <div class="muted" style="margin:4px 0 8px">O cartão sempre lê a revisão mais recente de cada dia.</div>
+  <table class="mx">
+    <thead><tr><th>Data-base</th><th>Revisão</th><th>Situação</th><th>Valor da empresa</th><th>Origem</th></tr></thead>
+    <tbody>
+      <tr><td>22/11</td><td>1 → 2</td><td><span class="tg ok">OK</span></td><td>R$ 50.777,00</td><td>cálculo diário</td></tr>
+      <tr><td>23/11</td><td>1</td><td><span class="tg ok">OK</span></td><td>R$ 50.777,00</td><td>cálculo diário</td></tr>
+      <tr><td>24/11</td><td>—</td><td><span class="tg">sem registro</span></td><td>—</td><td>janela de instabilidade</td></tr>
+      <tr><td>25/11</td><td>1</td><td><span class="tg ok">OK</span></td><td>R$ 50.777,00</td><td>cálculo diário</td></tr>
+      <tr><td>25/11</td><td>2</td><td><span class="tg bad">Dado incompleto</span></td><td>—</td><td>recálculo na madrugada de 26 (dado ainda sujo)</td></tr>
+      <tr><td>26/11</td><td>1</td><td><span class="tg bad">Dado incompleto</span></td><td>—</td><td>cálculo diário (dado ainda sujo)</td></tr>
+      <tr class="tot"><td>26/11</td><td>2</td><td><span class="tg ok">OK</span></td><td>R$ 237.556,00</td><td>recálculo após regularização (22:31)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="card">
+  <div class="card-h"><h3>O que fizemos</h3></div>
+  <ol class="steps">
+    <li><b>Identificamos e guardamos</b> <span>— localizamos as 30 medições infratoras e salvamos o estado original delas em backup antes de tocar em qualquer coisa.</span></li>
+    <li><b>Regularizamos</b> <span>— como são dados de teste sem pagamento real, revertemos as 30 para "em revisão", retirando a marca de "aprovada sem pagamento". Resultado: 0 infratores.</span></li>
+    <li><b>Recalculamos o indicador</b> <span>— reconstruímos a base de cálculo das medições a partir do dado limpo (282 obras, 30 corrigidas).</span></li>
+    <li><b>Atualizamos o cartão</b> <span>— uma nova revisão do dia foi gravada com o valor correto, sem apagar o histórico.</span></li>
+  </ol>
+  <div class="note" style="margin-top:14px"><b>Composição atual do indicador:</b> medido R$ 237.556,00 · aprovado R$ 121.938,81 · pendente de aprovação R$ 115.617,19 · medições sem pagamento: 0.</div>
+</section>
+
+<section class="card">
+  <div class="card-h"><h3>A regra, em uma frase</h3></div>
+  <div class="a muted">Medição aprovada precisa ter o pagamento previsto lançado. Enquanto houver uma aprovada "solta", o cartão segura o número e sinaliza, em vez de mostrar um total que não tem contrapartida no financeiro. É proteção contra decidir com base em um valor inconsistente — não uma falha.</div>
+</section>
+
+<section class="card">
+  <div class="card-h"><h3>Como você confere</h3></div>
+  <ul class="chk">
+    <li>Abra <span class="path">Painel → Obras → Medições</span>. O cartão mostra <b>R$ 237.556,00</b> com o selo "Atualizado às 22:31".</li>
+    <li>Em <b>Ver detalhe</b>, o detalhamento por obra continua acessível, com busca e paginação.</li>
+    <li>Se quiser ver a virada ao vivo, reproduzimos com uma medição fictícia: criá-la, aprovar sem lançar o pagamento (o cartão trava) e, em seguida, vincular o pagamento (o valor volta na hora).</li>
+  </ul>
+</section>
+
+<div class="foot">
+  Evidência gerada a partir do estado real do sistema (Empresa Dev, homologação). Esses são dados de teste; os dados reais da Nayara Imóveis ainda não foram importados e não foram tocados. Todas as alterações desta correção são reversíveis e têm backup.
+</div>
+
+</div></body></html>
